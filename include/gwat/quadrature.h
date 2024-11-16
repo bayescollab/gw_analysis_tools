@@ -2,11 +2,11 @@
 #define QUADRATURE_H
 
 
-#include "util.h"
+#include <vector>
 
 
-//!\class Quadrature
-//!\brief Class to evaluate integrals with established spacing and weights.
+//! \class Quadrature
+//! \brief Class to evaluate integrals with established spacing and weights.
 class Quadrature
 {
 protected:
@@ -14,9 +14,9 @@ protected:
     int length = 0;
 
 public:
-    ~Quadrature() = default;
+    virtual ~Quadrature() = default;
 
-    virtual double integrate(double *integrand) = 0;
+    virtual double integrate(const double *integrand) = 0;
     virtual int get_length() {return length;}
 };
 
@@ -36,8 +36,39 @@ private:
 public:
     SimpsonsQuad(int length, double delta);
 
-    double integrate(double *integrand);
+    virtual double integrate(const double *integrand);
 };
+
+SimpsonsQuad CreateSimpsonsQuad(
+    std::vector<double> &xPoints,
+    double a,
+    double b,
+    int num
+);
+
+//! \brief Simpson's rule for logarithmically uniformly-spaced integrals.
+//!
+//! Quadrature with the classic extended 3-point rule
+//! (see, e.g., Numerical Recipes, extended Simpsons rule).
+//! For even lengths, the trapezoidal rule is used at the last interval.
+//! 
+class SimpsonsLogQuad : public SimpsonsQuad
+{
+private:
+    std::vector<double> xArray;
+    // double *xArray;     //< Array of points in the integrand
+
+public:
+    SimpsonsLogQuad(int length, double logdelta, const double *xArray);
+    double integrate(const double *integrand) override;
+};
+
+SimpsonsLogQuad CreateSimpsonsLogQuad(
+    std::vector<double> &xPoints,
+    double a,
+    double b,
+    int num
+);
 
 
 #endif // QUADRATURE_H

@@ -9,7 +9,6 @@
 #include "gIMRPhenomP.h"
 #include "IMRPhenomD_NRT.h"
 #include "ppE_IMRPhenomD.h"
-#include "ppE_IMRPhenomD_NRT.h"
 #include "ppE_IMRPhenomP.h"
 #include "ppE_utilities.h"
 #include "detector_util.h"
@@ -1148,9 +1147,6 @@ void time_phase_corrected_autodiff(double *times, int length, double *frequencie
 		else if(generation_method.find("IMR") != std::string::npos){
 			local_method = "ppE_IMRPhenomD_IMR";
 		}
-		else if(generation_method.find("NRT") != std::string::npos){
-			local_method = "ppE_IMRPhenomD_NRT";
-		}
 	}
 	//std::string local_method = generation_method;
 
@@ -1332,9 +1328,6 @@ void time_phase_corrected(T *times, int length, T *frequencies,gen_params_base<T
 		}
 		else if(generation_method.find("IMR") != std::string::npos){
 			local_method = "ppE_IMRPhenomD_IMR";
-		}
-		else if(generation_method.find("NRT") != std::string::npos){
-			local_method = "ppE_IMRPhenomD_NRT";
 		}
 	}
 

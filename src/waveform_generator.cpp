@@ -144,9 +144,15 @@ int fourier_waveform(T *frequencies, /**< double array of frequencies for the wa
 			status = ppemodeld.construct_waveform(frequencies, length, wp->hplus, &params);
 
 		}
-		else if(local_method == "ppE_IMRPhenomD_NRT")
+		else if(local_method == "ppE_IMRPhenomD_NRT_Inspiral")
 		{
-			ppE_IMRPhenomD_NRT<T> ppemodeld;
+			ppE_IMRPhenomD_NRT_Inspiral<T> ppemodeld;
+			status = ppemodeld.construct_waveform(frequencies, length, wp->hplus, &params);
+
+		}
+		else if(local_method == "ppE_IMRPhenomD_NRT_IMR")
+		{
+			ppE_IMRPhenomD_NRT_IMR<T> ppemodeld;
 			status = ppemodeld.construct_waveform(frequencies, length, wp->hplus, &params);
 
 		}
@@ -480,6 +486,7 @@ int fourier_waveform(double *frequencies, /**< double array of frequencies for t
 	//	for( int i = 0; i < params.Nmod; i++)
 	//		parameters->betappe[i] = temp[i];
 	//}
+	/*
 	else if(generation_method == "ppE_IMRPhenomD_IMR")
 	{
 		ppE_IMRPhenomD_IMR<double> ppemodeld;
@@ -487,15 +494,7 @@ int fourier_waveform(double *frequencies, /**< double array of frequencies for t
 		params.bppe = parameters->bppe;
 		params.Nmod = parameters->Nmod;
 		status = ppemodeld.construct_waveform(frequencies, length, waveform, &params);
-	}
-	else if(generation_method == "ppE_IMRPhenomD_NRT")
-	{
-		ppE_IMRPhenomD_NRT<double> ppemodeld;
-		params.betappe = parameters->betappe;
-		params.bppe = parameters->bppe;
-		params.Nmod = parameters->Nmod;
-		status = ppemodeld.construct_waveform(frequencies, length, waveform, &params);
-	}
+		}*/
 	else if(generation_method == "IMRPhenomD_NRT")
 	  {
 	    IMRPhenomD_NRT<double> modeldNRT;
@@ -572,12 +571,6 @@ int fourier_amplitude(T *frequencies, /**< double array of frequencies for the w
 		else if(local_method == "ppE_IMRPhenomD_IMR")
 		{
 			ppE_IMRPhenomD_IMR<T> ppemodeld;
-			status = ppemodeld.construct_amplitude(frequencies, length, amplitude, &params);
-
-		}
-		else if(local_method == "ppE_IMRPhenomD_NRT")
-		{
-			ppE_IMRPhenomD_NRT<T> ppemodeld;
 			status = ppemodeld.construct_amplitude(frequencies, length, amplitude, &params);
 
 		}
@@ -776,17 +769,6 @@ int fourier_phase(T *frequencies, /**<double array of frequencies for the wavefo
 				phase[i]*= (T)(-1.);
 		}
 	}
-		else if(local_method == "ppE_IMRPhenomD_NRT")
-	{
-		params.betappe = parameters->betappe;
-		params.bppe = parameters->bppe;
-		params.Nmod = parameters->Nmod;
-		ppE_IMRPhenomD_NRT<T> ppemodeld;
-		status = ppemodeld.construct_phase(frequencies, length, phase, &params);
-		for(int i = 0 ; i<length; i++){
-				phase[i]*= (T)(-1.);
-		}
-	}
 	else if(local_method == "gIMRPhenomD")
 	{
 		gIMRPhenomD<T> gmodeld;
@@ -865,12 +847,6 @@ int fourier_phase(T *frequencies, /**<double array of frequencies for the wavefo
 		else if(local_method == "ppE_IMRPhenomD_IMR")
 		{
 			ppE_IMRPhenomD_IMR<T> ppemodeld;
-			status = ppemodeld.construct_phase(frequencies, length, phase_plus, &params);
-
-		}
-		else if(local_method == "ppE_IMRPhenomD_NRT")
-		{
-			ppE_IMRPhenomD_NRT<T> ppemodeld;
 			status = ppemodeld.construct_phase(frequencies, length, phase_plus, &params);
 
 		}

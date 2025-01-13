@@ -1,0 +1,41 @@
+# Pull the image from the online repository with all the dependencies pre-installed 
+FROM scottperkins/gw.base.deps:latest 
+
+# Install any other dependencies (like custom repositories)
+
+# Make the directory for the source code *in the container*
+RUN mkdir /opt/BayesShip
+# Make a build directory
+RUN mkdir /opt/BayesShip/build
+# Copy all source files into the container
+COPY BayesShip/ /opt/BayesShip/
+# Make the current working directory the build directory
+WORKDIR /opt/BayesShip/build/
+# Configure the installation
+RUN cmake -DCMAKE_INSTALL_PREFIX=/usr/local ../
+# Compile and install the library
+RUN make -j 4 install
+
+# Install the main source code
+RUN mkdir /opt/gw_analysis_tools
+RUN mkdir /opt/gw_analysis_tools/build
+COPY gw_analysis_tools/ /opt/gw_analysis_tools/
+RUN cmake -DCMAKE_INSTALL_PREFIX=/usr/local ../
+RUN make -j 4 
+RUN make install 
+WORKDIR /
+
+# Remove the source files *from the container* in case one wants to host the image on DockerHub (removing the source files allows for maintaining privacy of thesource code until public) 
+# RUN rm -r /opt/gw_analysis_tools/
+# RUN rm -r /opt/BayesShip/
+
+# Install code for running injections
+# RUN mkdir /opt/eape
+# COPY eape/ /opt/eape/
+# WORKDIR /opt/eape/
+# RUN make 
+
+# Install jupyterlab for post-processing of data
+RUN pip3 install --upgrade pip
+RUN pip3 install jupyter jupyterlab
+CMD ["jupyter-lab", "--no-browser", "--allow-root", "--ip=0.0.0.0", "--port=8989"]

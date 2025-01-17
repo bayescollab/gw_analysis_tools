@@ -2,6 +2,7 @@
 #define WAVEFORM_UTIL_H
 #include "waveform_generator.h"
 #include "util.h"
+#include "quadrature.h"
 #include <string>
 #include <gsl/gsl_integration.h>
 
@@ -70,6 +71,14 @@ double calculate_snr_internal(double *psd,
 	std::string integration_method="SIMPSONS",
 	double *weights=NULL,
 	bool log10_freq=false);
+
+// SNR calculator with Quadrature method
+double calculate_snr_internal(
+	double *psd,
+	std::complex<double> *waveform,
+	const Quadrature *QuadMethod
+);
+
 double calculate_snr(std::string sensitivity_curve,
 	std::string detector,
 	std::string generation_method,

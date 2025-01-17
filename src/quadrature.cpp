@@ -32,7 +32,7 @@ SimpsonsQuad::SimpsonsQuad(
     }
 }
 
-double SimpsonsQuad::integrate(const double *integrand)
+double SimpsonsQuad::integrate(const double *integrand) const
 {
     // Integrand array index
     int i = 1;
@@ -106,7 +106,7 @@ SimpsonsLogQuad::SimpsonsLogQuad(
     this->xArray.shrink_to_fit();
 }
 
-double SimpsonsLogQuad::integrate(const double *integrand)
+double SimpsonsLogQuad::integrate(const double *integrand) const
 {
     // Integrand weighted by the x points
     std::vector<double> wintegrand;
@@ -133,14 +133,16 @@ SimpsonsLogQuad CreateSimpsonsLogQuad(
 
     // Hold the current x value
     double x = a;
+    // Store the initial x value
+    double loga = std::log10(x);
     // Hold the current log(x) value
-    double logx = std::log10(x);
+    double logx = loga;
     // Store the point
     xPoints.push_back(x);
 
-    while (x < b)
+    for (int i = 1; i < num; i++)
     {
-        logx += logDelta;
+        logx = loga + i*logDelta;
         x = std::pow(10, logx);
         xPoints.push_back(x);
     }

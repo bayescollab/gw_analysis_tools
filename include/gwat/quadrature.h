@@ -16,8 +16,8 @@ protected:
 public:
     virtual ~Quadrature() = default;
 
-    virtual double integrate(const double *integrand) = 0;
-    virtual int get_length() {return length;}
+    virtual double integrate(const double *integrand) const = 0;
+    virtual int get_length() const {return length;}
 };
 
 //! \brief Simpson's rule for uniformly-spaced integrals.
@@ -36,7 +36,7 @@ private:
 public:
     SimpsonsQuad(int length, double delta);
 
-    virtual double integrate(const double *integrand);
+    virtual double integrate(const double *integrand) const;
 };
 
 SimpsonsQuad CreateSimpsonsQuad(
@@ -60,7 +60,7 @@ private:
 
 public:
     SimpsonsLogQuad(int length, double logdelta, const double *xArray);
-    double integrate(const double *integrand) override;
+    double integrate(const double *integrand) const override;
 };
 
 SimpsonsLogQuad CreateSimpsonsLogQuad(

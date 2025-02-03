@@ -228,7 +228,7 @@ int test_error(int argc, char *argv[])
 	params.shift_time=false;
 	params.shift_phase=false;
 	params.dep_postmerger=true;
-	params.sky_average=false;
+	//params.sky_average=false;
 	params.tidal_love=true;
 	params.tidal_s=242;
 	//params.tidal_s=2420;
@@ -236,13 +236,14 @@ int test_error(int argc, char *argv[])
 	//params.tidal2 = 0; 
 	
 
-	double beta = 0.;
+	double beta = 2.e-7;
 	//int b = 5.;
 	int b = -7.;
 	std::cout<<"Beta: "<<beta<<std::endl;
 	std::cout<<"b: "<<b<<std::endl;
 
-	
+	//sky_avg test
+	params.sky_average = true;
 	
 	params.Nmod = 1;
 	params.bppe = new double[1];
@@ -263,7 +264,7 @@ int test_error(int argc, char *argv[])
 	params.psi = 2.;
 	double gps = 1187008882.4;
 	params.gmst = gps_to_GMST_radian(gps);
-	params.sky_average = false;
+	//params.sky_average = false;
 
 	
 
@@ -290,7 +291,7 @@ int test_error(int argc, char *argv[])
 	int length = (int)((fmax-fmin)/deltaF);
 	params.tc=Tsignal-T_merger;
 	double *frequency = new double[length];
-	int Ndetect = 3;
+	int Ndetect = 1;
 	double **psd = new double*[Ndetect];
 	
 	bool AD = false;
@@ -323,11 +324,11 @@ int test_error(int argc, char *argv[])
 	
 	std::cout<<"frequency[10]:"<<frequency[10]<<std::endl;
 
-	int dim = 11;	
+	int dim = 7;	
 	double* output = new double[dim];
 
-	std::string method = "IMRPhenomD_NRT";
-	std::string true_method = "IMRPhenomD";
+	std::string method = "IMRPhenomD";
+	std::string true_method = "ppE_IMRPhenomD_IMR";
 
 	//std::string true_method = "ppE_IMRPhenomD_NRT_Inspiral";
 
@@ -451,9 +452,9 @@ int test_error(int argc, char *argv[])
 		  //std::arg(hcppE[i])
 		phase_EA_unwrap[i]
 		<<std::endl;
-		noise_curve_file<<frequency[i]<<","<<psd[1][i]<<std::endl;
+		noise_curve_file<<frequency[i]<<","<<psd[0][i]<<std::endl;
 	}
-	exit(1);
+	
 
 	
 	for(int a = 0; a < no_of_DL_steps; a++){
@@ -477,8 +478,8 @@ int test_error(int argc, char *argv[])
 
 	
 
-	calculate_systematic_error(frequency, hcg, hcppE, length, method, detectors, detectors[0], output_sys, dim, &params, 2, psd[1]);
-	calculate_statistical_error(frequency, length, method, detectors, detectors[0], output_stat, dim, &params, 2, psd);
+	calculate_systematic_error(frequency, hcg, hcppE, length, method, detectors, detectors[0], output_sys, dim, &params, 2, psd[0], Ndetect);
+	calculate_statistical_error(frequency, length, method, detectors, detectors[0], output_stat, dim, &params, 2, psd, Ndetect);
 
 	output_file<<sqrt(total_snr_temp)<< ",";
 	stat_output_file<<sqrt(total_snr_temp)<< ",";
@@ -493,7 +494,7 @@ int test_error(int argc, char *argv[])
 
 	}
 	output_file.close();
-	std::vector<std::string> param_info = {"RA", "DEC", "psi", "phiRef", "tc", "iota_L", "ln DL", "ln chirpmass", "eta", "chi1", "chi2"};
+	std::vector<std::string> param_info = {"ln A0", "phic", "tc", "ln chirpmass", "ln eta", "chi_symm", "chi_antisymm", "betas"};
 
 	
 
@@ -502,7 +503,7 @@ int test_error(int argc, char *argv[])
 	}
 	
 
-	calculate_statistical_error(frequency, length, method, detectors, detectors[0], output_stat, dim, &params, 2, psd);
+	//calculate_statistical_error(frequency, length, method, detectors, detectors[0], output_stat, dim, &params, 2, psd, Ndetect);
 	//std::cout<<"SNR: "<<sqrt(output[0])<<std::endl;
 
 	for(int i = 0; i < dim; i++){

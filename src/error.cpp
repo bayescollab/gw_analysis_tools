@@ -23,7 +23,8 @@ void calculate_systematic_error(
 	gen_params_base<double> *parameters,
 	int order,/**< Order of the numerical derivative (2 or 4)**/
 	//double *parameters,
-	double *noise
+	double *noise,
+	int Ndetect
 )
 {
 	//populate noise and frequency
@@ -54,7 +55,7 @@ void calculate_systematic_error(
 		}
 	}
 	
-	for(int i = 0 ;i < 3; i++){
+	for(int i = 0 ;i < Ndetect; i++){
 		fisher_numerical(frequency, length, generation_method, detectors[i],detectors[0], fisher_temp, dimension, parameters, 2,NULL,NULL, noise);
 		for(int k = 0 ; k<dimension; k++){
 			//std::cout<<i<<": "<<std::endl;
@@ -182,9 +183,10 @@ void calculate_statistical_error(
 	int dimension, 
 	gen_params_base<double> *parameters,
 	int order,/**< Order of the numerical derivative (2 or 4)**/
-	double **noise
+	double **noise,
+	int Ndetect
 ){
-	int num_detectors = 3;
+	int num_detectors = Ndetect;
 
 	std::cout<<__LINE__<<": Calculating statistical Error"<<std::endl;
 

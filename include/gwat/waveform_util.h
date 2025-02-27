@@ -333,5 +333,17 @@ int threshold_times_full_gsl(gen_params_base<double> *params,
 	gsl_integration_workspace *w,
 	int np
 	);
-#endif
 
+// Leading-order time to merger in seconds
+// Adapted from XLALSimInspiralTaylorF2ReducedSpinChirpTime
+double TaylorF2ReducedSpinChirpTime(
+	const double fStart,	//< Starting GW frequency in Hertz
+	const double m1,	//< Primary mass in solar units
+	const double m2,	//< Secondary mass in solar units
+	const double s1z,	//< Dimension-less primary aligned spin component
+	const double s2z,	//< Dimension-less secondary aligned spin component
+	const int PNO		//< Twice the PN phase order
+);
+
+
+#endif

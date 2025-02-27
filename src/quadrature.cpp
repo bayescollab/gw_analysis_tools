@@ -1,7 +1,11 @@
 #include "quadrature.h"
 #include "util.h"
 #include <iostream>
+#include <algorithm>
 
+
+// Error message for when Simpson's rule is not ideal
+const std::string SIMPSONS_ERANGE_MESSAGE {"Not enough points for Simpson's rule. Result may be inaccurate."};
 
 SimpsonsQuad::SimpsonsQuad(
     int length,     //< Length of integrand
@@ -14,8 +18,7 @@ SimpsonsQuad::SimpsonsQuad(
     // Check if there are not enough samples
     if (length < 3)
     {
-        std::cerr << "Not enough points for Simpson's rule. "
-         << "Result may be inaccurate.\n";
+        std::cerr << SIMPSONS_ERANGE_MESSAGE << "\n";
     }
 
     if ((length % 2) == 0)
@@ -130,10 +133,11 @@ SimpsonsLogQuad CreateSimpsonsLogQuad(
 {
     // Calculate the spacing in log-space
     double logDelta = (std::log10(b) - std::log10(a)) / (num-1);
+    std::cout << "log-spacing = " << logDelta << ".\n";
 
     // Hold the current x value
     double x = a;
-    // Store the initial x value
+    // Store the initial log(x) value
     double loga = std::log10(x);
     // Hold the current log(x) value
     double logx = loga;

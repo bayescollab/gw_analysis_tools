@@ -334,7 +334,7 @@ int threshold_times_full_gsl(gen_params_base<double> *params,
 	int np
 	);
 
-// Leading-order time to merger in seconds
+// Time to merger in seconds, for circular binaries
 // Adapted from XLALSimInspiralTaylorF2ReducedSpinChirpTime
 double TaylorF2ReducedSpinChirpTime(
 	const double fStart,	//< Starting GW frequency in Hertz

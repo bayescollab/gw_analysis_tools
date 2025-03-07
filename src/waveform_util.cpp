@@ -125,6 +125,41 @@ double data_snr(double *frequencies,
 	return sqrt(inner_prod);
 
 }
+
+template <class T>
+void create_single_GW_detection(
+	std::complex<T> *response,
+	std::string detector,
+	T *frequencies,
+	int length,
+	gen_params_base<T> *gen_params,
+	std::string generation_method
+)
+{
+	waveform_polarizations<T> wp;
+	assign_polarizations(generation_method, &wp);
+	wp.allocate_memory(length);
+
+	fourier_waveform(frequencies, length, &wp,generation_method, gen_params);
+	fourier_detector_response_equatorial(
+		frequencies, length,&wp, response,
+		gen_params->RA,gen_params->DEC,gen_params->psi,
+		gen_params->gmst,(T *)NULL, gen_params->LISA_alpha0,gen_params->LISA_phi0, gen_params->theta_l, gen_params->phi_l,
+		detector
+	);
+
+	wp.deallocate_memory();
+}
+
+template void create_single_GW_detection<double>(
+	std::complex<double> *,
+	std::string,
+	double *,
+	int,
+	gen_params_base<double> *,
+	std::string
+);
+
 template <class T>
 void create_coherent_GW_detection(
 	std::string *detectors,

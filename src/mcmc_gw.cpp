@@ -2511,8 +2511,22 @@ double MCMC_likelihood_extrinsic(bool save_waveform,
 		responses[i] = new std::complex<double>[data_length[i]];
 	}
 	//parameters->tc = -(parameters->tc);	
-	create_coherent_GW_detection(detectors, num_detectors, frequencies,data_length, save_waveform, parameters, generation_method, responses);
-
+	if (num_detectors == 1)
+	{
+		create_single_GW_detection(
+            responses[0],
+            detectors[0],
+            frequencies[0],
+            data_length[0],
+            parameters,
+            generation_method
+        );
+	}
+	else
+	{
+		create_coherent_GW_detection(detectors, num_detectors, frequencies,data_length, save_waveform, parameters, generation_method, responses);
+	}
+	
 	if (QuadMethod == NULL)
 	{
 		// Scott's way

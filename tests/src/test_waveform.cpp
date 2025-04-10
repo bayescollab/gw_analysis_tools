@@ -44,6 +44,7 @@ int polarization_testing(int argc, char *argv[]);
 int BHEvaporation_test(int argc, char *argv[]);
 int EA_parameterization_test(int argc, char *argv[]);
 int EA_consistency_test(int argc, char *argv[]);
+int EOS_testing(int argc, char *argv[]); 
 void RT_ERROR_MSG();
 const double MPC_M=3.08567758128e22;
 
@@ -90,10 +91,19 @@ int main(int argc, char *argv[])
 	if(runtime_opt == 8){
 		return EA_consistency_test(argc,argv);
 	}
+	if(runtime_opt == 9){
+	        return EOS_testing(argc,argv);
+	}
 	else{
 		RT_ERROR_MSG();
 		return 1;
 	}
+}
+
+int EOS_testing(int argc, char *argv[])
+{
+  std::cout<<"TESTING EOS INFRASTRUCTURE"<<std::endl;
+  return 0; 
 }
 
 int EA_consistency_test(int argc, char *argv[])

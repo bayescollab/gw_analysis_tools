@@ -502,8 +502,8 @@ struct source_parameters
         T bump_width;    /*! Width of feature */
         T bump_offset;  /*! Location of feature */
         T plat; /*! Constant value (or plateau)  of cs^2 after feature*/
-        T rhoc1; /*! Central energy density of star 1 -- to replace mass in sampling*/
-        T rhoc2; /*! Central energy density of star 2 -- to replace mass in sampling*/
+        T nbc1; /*! Central baryon number density of star 1 -- to replace mass in sampling*/
+        T nbc2; /*! Central baryon number density of star 2 -- to replace mass in sampling*/
 
 	//######### ppE parameters ##############
 	/*Beta factor for ppE formalism*/

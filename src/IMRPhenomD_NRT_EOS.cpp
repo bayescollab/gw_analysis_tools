@@ -38,6 +38,18 @@ void IMRPhenomD_NRT_EOS<T>::build_cs2_one_bump(source_parameters<T> *sp)
   
 }
 
+template<class T> 
+void IMRPhenomD_NRT_EOS<T>::cs2_to_eos_convert()
+{
+  
+}
+
+ template<class T> 
+void IMRPhenomD_NRT_EOS<T>::get_m_love()
+{
+
+}
+
 
 template class IMRPhenomD_NRT_EOS<double>;
 template class IMRPhenomD_NRT_EOS<adouble>; 

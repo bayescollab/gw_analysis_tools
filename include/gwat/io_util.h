@@ -64,7 +64,7 @@ int count_lines_LOSC_data_file(std::string file, int *count);
 
 /*!\brief Utility to read in a table of data (two dimensionsal vector)
 *
-* Takes filename and delimiter of data, and assigns to output
+* Takes filename and delimiter of data and assigns to output
 *
 * File can be of arbitrary type and size
 */
@@ -74,16 +74,16 @@ void read_file(std::string filename, /**< input filename, relative to execution 
 	char delimiter /**< delimiter used in read-in data file */){
 	std::fstream file_in;
 	file_in.open(filename);
-	if(file_in.good()){
+	if(file_in.good()){	// Checks if the file was read in successfully with no errors
 		std::string line;
-		while(std::getline(file_in, line)){
-			std::vector<T> row;
+		while(std::getline(file_in, line)){	// Reads the current line in the file
+			std::vector<T> row;	// Initializes a row vector to store values
 			std::stringstream lineStream(line);
-			T item;
-			while(lineStream >> item >> delimiter){
-				row.push_back(item);
+			T item;	// Initializes to read an item of value type T (based on the vector that is passed in)
+			while(lineStream >> item >> delimiter){	// Parses for first an item, then the delimiter used to separate items until a new line is read
+				row.push_back(item);	// Adds the currently parsed item to the row vector
 			}
-			output.push_back(row);
+			output.push_back(row);	// Adds the row vector to the output table
 		}
 	}
 	else{

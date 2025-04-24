@@ -3,6 +3,10 @@
 #include <string>
 #include <unordered_map>
 #include <complex>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <vector>
 
 /*! \file
  *
@@ -56,6 +60,37 @@ void free_LOSC_data(std::complex<double> **data,
 int count_lines_data_file(std::string file, int *count);
 int count_lines_LOSC_PSD_file(std::string file, int *count);
 int count_lines_LOSC_data_file(std::string file, int *count);
+
+
+/*!\brief Utility to read in a table of data (two dimensionsal vector)
+*
+* Takes filename and delimiter of data, and assigns to output
+*
+* File can be of arbitrary type and size
+*/
+template<typename T>
+void read_file(std::string filename, /**< input filename, relative to execution directory */
+	std::vector<std::vector<T>>& output, /*< output to store file read-in, passed in by reference*/
+	char delimiter /**< delimiter used in read-in data file */){
+	std::fstream file_in;
+	file_in.open(filename);
+	if(file_in.good()){
+		std::string line;
+		while(std::getline(file_in, line)){
+			std::vector<T> row;
+			std::stringstream lineStream(line);
+			T item;
+			while(lineStream >> item >> delimiter){
+				row.push_back(item);
+			}
+			output.push_back(row);
+		}
+	}
+	else{
+		std::cout<<"ERROR -- File "<<filename<<" not found"<<std::endl;
+		exit(1);
+	}
+}
 
 
 

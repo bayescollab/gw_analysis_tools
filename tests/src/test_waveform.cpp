@@ -13,7 +13,6 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 
-
 #define _LAL
 #ifdef _LAL
 	#include <lal/LALSimulation.h>
@@ -115,7 +114,20 @@ int EA_consistency_test(int argc, char *argv[])
 	params.shift_time=true;
 	params.shift_phase=true;
 
-	//Inputting a point that we think gives a NAN
+	//A GW170817 like event 
+	params.RA = 3.42;
+	params.DEC = -.37; 
+	params.psi = .2;
+	params.incl_angle = 2.532207345558998;
+	params.phiRef = 1.70673419607014;
+	//params.Luminosity_Distance = exp(5.86687228835658);
+	params.mass1 = 1.44;
+	params.mass2 = 1.29399;
+	params.spin1[2] = .003;
+	params.spin2[2] = -.002; 
+	params.tidal_s = 250.384067976897;
+
+	/* //A point that gives a NAN
 	params.RA = 2.07169357356823;
 	params.DEC = asin(0.603993587177344); 
 	params.psi = 2.5232117171185;
@@ -127,7 +139,7 @@ int EA_consistency_test(int argc, char *argv[])
 	params.spin1[2] = -0.00456451703346724;
 	params.spin2[2] = 0.00826504741178317; 
 	params.tidal_s = 250.384067976897;
-	
+	*/
 	
 	params.tc = 6;
 	params.equatorial_orientation = false;
@@ -166,13 +178,22 @@ int EA_consistency_test(int argc, char *argv[])
 	}
 
 	for (int i = 0 ; i<iterations; i++){
-	  params.alpha_param = true;
-	  params.alpha1_EA =  -0.185022041097348;
-	  params.alpha2_EA = -0.0070102640180704;
-	  params.cbarw_EA = 0.999640898572741;
-	  params.csigma_EA = 0; 
+	  params.alpha_param = true; 
+	  params.alpha1_EA = -5.53584498257556007e-07;
+	  params.alpha2_EA = -6.5861481401721529e-08;
+          //params.alpha1_EA = -0.087895; //distinct from GR injection
+          //params.alpha2_EA = -0.00767322; //distinct from GR injection
+          params.cbarw_EA = 0.163453;
+          params.csigma_EA = 0;
+	  
+	  //params.alpha_param = true;
+	  //params.alpha1_EA =  -0.185022041097348;
+	  //params.alpha2_EA = -0.0070102640180704;
+	  //params.cbarw_EA = 0.999640898572741;
+	  //params.csigma_EA = 0; 
 	  
 	  //Small values of coupling constants
+	  //params.alpha_param = false; 
 	  //params.ca_EA = 1.0E-30; 
 	  //params.ctheta_EA = 2E-30; 
 	  //params.cw_EA = 2E-30; 
@@ -206,11 +227,11 @@ int EA_consistency_test(int argc, char *argv[])
 	  
 	  //params.tidal1 = gsl_rng_uniform(r)*100+5;
 	  //params.tidal2 = gsl_rng_uniform(r)*100+5;
-		
+	  
 	  std::complex<double> *responseEA =  new std::complex<double>[samples];
 	  std::complex<double> *responseGR =  new std::complex<double>[samples];
 
-	  fourier_detector_response(freqs, samples, responseEA, "Hanford", "EA_IMRPhenomD_NRT", &params, (double *) NULL);
+	  fourier_detector_response(freqs, samples, responseEA, "Hanford", "EA_IMRPhenomD", &params, (double *) NULL);
 	  //fourier_detector_response(freqs, samples, responseEA, "Hanford", "IMRPhenomD_NRT", &params, (double *) NULL);
 	  fourier_detector_response(freqs, samples, responseGR, "Hanford", "IMRPhenomD_NRT", &params, (double *) NULL);
 	  

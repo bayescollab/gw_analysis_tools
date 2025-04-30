@@ -10,6 +10,7 @@
 #include "gIMRPhenomD.h"
 #include "IMRPhenomD_NRT.h"
 #include "EA_IMRPhenomD_NRT.h"
+#include "EA_IMRPhenomD.h"
 #include "IMRPhenomP_NRT.h"
 #include "ppE_utilities.h"
 #include "gIMRPhenomP.h"
@@ -173,6 +174,13 @@ int fourier_waveform(T *frequencies, /**< double array of frequencies for the wa
 		    restrictedEval = false;
 		    EA_IMRPhenomD_NRT<T> EAmodeldNRT;
 		    status = EAmodeldNRT.EA_construct_waveform(frequencies, length, wp, &params);
+
+		  }
+		else if(local_method == "EA_IMRPhenomD")
+		  {
+		    restrictedEval = false;
+		    EA_IMRPhenomD<T> EAmodeld;
+		    status = EAmodeld.EA_construct_waveform(frequencies, length, wp, &params);
 
 		  }
 
@@ -591,6 +599,12 @@ int fourier_amplitude(T *frequencies, /**< double array of frequencies for the w
 		    status = EAmodeldNRT.construct_amplitude(frequencies, length, amplitude, &params);
 
 		  }
+		else if(local_method == "EA_IMRPhenomD")
+		  {
+		    EA_IMRPhenomD<T> EAmodeld;
+		    status = EAmodeld.construct_amplitude(frequencies, length, amplitude, &params);
+
+		  }
 		else{
 			IMRPhenomD<T> modeld;
 			status = modeld.construct_amplitude(frequencies, length, amplitude, &params);
@@ -802,6 +816,11 @@ int fourier_phase(T *frequencies, /**<double array of frequencies for the wavefo
 	    params.tidal2 = parameters->tidal2;
 	    status = EAmodeldNRT.construct_phase(frequencies, length, phase, &params);
 	  }
+	else if(local_method == "EA_IMRPhenomD")
+	  {
+	    EA_IMRPhenomD<T> EAmodeld;
+	    status = EAmodeld.construct_phase(frequencies, length, phase, &params);
+	  }
 
 	return status ;
 }
@@ -865,6 +884,12 @@ int fourier_phase(T *frequencies, /**<double array of frequencies for the wavefo
 		  {
 		    EA_IMRPhenomD_NRT<T> EAmodeldNRT;
 		    status = EAmodeldNRT.construct_phase(frequencies, length, phase_plus, &params);
+
+		  }
+		else if(local_method == "EA_IMRPhenomD")
+		  {
+		    EA_IMRPhenomD<T> EAmodeld;
+		    status = EAmodeld.construct_phase(frequencies, length, phase_plus, &params);
 
 		  }
 		else{
@@ -1356,7 +1381,7 @@ std::string prep_source_parameters(source_parameters<T> *out, gen_params_base<T>
 
 	  }
 	}
-	if(generation_method.find("EA_IMRPhenomD_NRT") != std::string::npos){
+	if(generation_method.find("EA_IMRPhenomD") != std::string::npos){
 	  out->alpha_param = in->alpha_param;
 	  out->EA_region1 = in->EA_region1;
 	  if(in->alpha_param){
@@ -1377,8 +1402,16 @@ std::string prep_source_parameters(source_parameters<T> *out, gen_params_base<T>
 	    }
 	  }
 		out->csigma_EA = in->csigma_EA;
-		EA_IMRPhenomD_NRT<T> EAmodeldNRT;
-		EAmodeldNRT.pre_calculate_EA_factors(out);
+		if(generation_method.find("NRT") != std::string::npos)
+		  {
+		    EA_IMRPhenomD_NRT<T> EAmodeldNRT;
+		    EAmodeldNRT.pre_calculate_EA_factors(out);
+		  }
+		else
+		  {
+		    EA_IMRPhenomD<T> EAmodeld;
+		    EAmodeld.pre_calculate_EA_factors(out);
+		  }
 	}
 	if(check_theory_support(generation_method)){
 		theory_ppE_map<T> mapping;
@@ -1491,7 +1524,7 @@ bool check_extra_polarizations(std::string generation_method)
 	if(generation_method == "polarization_test_IMRPhenomD"){
 		return true;
 	}
-	if(generation_method.find("EA_IMRPhenomD_NRT") != std::string::npos){
+	if(generation_method.find("EA_IMRPhenomD") != std::string::npos){
 		return true;
 	}
 	return false;
@@ -1508,7 +1541,7 @@ void assign_polarizations(std::string generation_method, waveform_polarizations<
 		wp->active_polarizations[4]=true;
 		wp->active_polarizations[5]=true;
 	}
-	else if(generation_method.find("EA_IMRPhenomD_NRT") != std::string::npos){
+	else if(generation_method.find("EA_IMRPhenomD") != std::string::npos){
 		wp->active_polarizations[0]=true;
 		wp->active_polarizations[1]=true;
 		wp->active_polarizations[2]=true;

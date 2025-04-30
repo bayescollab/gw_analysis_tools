@@ -103,6 +103,137 @@ int main(int argc, char *argv[])
 int EOS_testing(int argc, char *argv[])
 {
   std::cout<<"TESTING EOS INFRASTRUCTURE"<<std::endl;
+  	gen_params params;	
+	params.spin1[1] = .0;
+	params.spin2[1] = .0;
+	params.spin1[0] = .0;
+	params.spin2[0] = .0;
+	params.Luminosity_Distance = 100;
+	//params.phiRef = 1;
+	//params.RA = 2.;
+	//params.DEC = -1.1;
+	params.f_ref = 20;
+	params.NSflag1 = true;
+	params.NSflag2 = true;
+	params.horizon_coord = false;
+	params.shift_time=true;
+	params.shift_phase=true;
+
+	//Inputting a point that we think gives a NAN
+	params.RA = 2.07169357356823;
+	params.DEC = asin(0.603993587177344); 
+	params.psi = 2.5232117171185;
+	params.incl_angle = acos(0.214429833819749);
+	params.phiRef = 1.70673419607014;
+	params.Luminosity_Distance = exp(5.86687228835658);
+	params.mass1 = 2.78785;
+	params.mass2 = 1.71587;
+	params.spin1[2] = -0.00456451703346724;
+	params.spin2[2] = 0.00826504741178317; 
+	//params.tidal_s = 250.384067976897;
+	//params.tidal1 = ;
+	//params.tidal2 = ; 
+	
+	params.tc = 6;
+	params.equatorial_orientation = false;
+	//params.psi = 1.;
+	//params.incl_angle = M_PI/3.;
+	params.gmst=3;
+	params.tidal_love = false;
+
+	source_parameters<double> sp ;
+
+
+	int iterations = 1;
+	int samples = 2*8032;
+	double **output = allocate_2D_array(samples, 6);
+		
+
+	double FMIN = 5;
+	double FMAX = 4096;
+	//double FMAX = 100;
+	double deltaf = (FMAX-FMIN)/samples;
+
+	double *freqs= new double[samples];
+	for (int i = 0 ; i<samples; i++){
+		freqs[i] = FMIN + deltaf*i;
+	}
+
+	const gsl_rng_type *T;
+	gsl_rng *r ;
+	gsl_rng_env_setup();
+	T = gsl_rng_default;
+	r = gsl_rng_alloc(T);
+	double *testPSD=new double[samples];
+	populate_noise(freqs, "AdLIGOMidHigh", testPSD,samples, 48);
+	for(int i = 0 ; i<samples; i++){
+		testPSD[i] *= testPSD[i];
+	}
+
+	for (int i = 0 ; i<iterations; i++){
+	  
+	  //params.mass1 = gsl_rng_uniform(r) +1;
+	  //params.mass2 = gsl_rng_uniform(r) +1;
+	  //if(params.mass2>params.mass1){
+	  //  double temp = params.mass2;
+	  //    params.mass2 = params.mass1;
+	  //  params.mass1 = temp;
+	  //}
+
+	  //params.spin1[2] = gsl_rng_uniform(r)*.05 -.025;
+	  //params.spin2[2] = gsl_rng_uniform(r)*.05 -.025;
+
+	  //params.tidal_s = gsl_rng_uniform(r)*1000+5;
+	  
+	  params.tidal1 = gsl_rng_uniform(r)*100+5;
+	  params.tidal2 = gsl_rng_uniform(r)*100+5;
+		
+	  std::complex<double> *responseEOS =  new std::complex<double>[samples];
+	  std::complex<double> *responseNRT =  new std::complex<double>[samples];
+
+	  fourier_detector_response(freqs, samples, responseEOS, "Hanford", "IMRPhenomD_NRT_EOS", &params, (double *) NULL);
+	  fourier_detector_response(freqs, samples, responseNRT, "Hanford", "IMRPhenomD_NRT", &params, (double *) NULL);
+	  
+	  double matchresponse = match(responseEOS, responseNRT, testPSD, freqs, samples);
+	  //double matchresponse = match(responseGR, responseGR, testPSD, freqs, samples); //Sending in the same waveform to test match function
+
+	  std::cout<<"Match: "<<matchresponse<<std::endl;
+
+	  double *phase_EOS = new double[samples];
+	  double *phase_NRT = new double[samples];
+	  double *phase_EOS_unwrap = new double[samples];
+	  double *phase_NRT_unwrap = new double[samples];
+	  for(int i = 0 ; i<samples ; i++){
+	    phase_EOS[i]= std::atan2(std::imag(responseEOS[i]),std::real(responseEOS[i]));
+	    phase_NRT[i]= std::atan2(std::imag(responseNRT[i]),std::real(responseNRT[i]));
+	  }
+	  unwrap_array(phase_EOS, phase_EOS_unwrap,samples);
+	  unwrap_array(phase_NRT, phase_NRT_unwrap,samples);
+	
+	  for(int j = 0 ; j < samples ; j++){
+	    output[j][0] = std::real(responseEOS[j]);
+	    output[j][1] = std::imag(responseEOS[j]);
+	    output[j][2] = std::real(responseNRT[j]);
+	    output[j][3] = std::imag(responseNRT[j]);
+	    output[j][4] = phase_EOS_unwrap[j];
+	    output[j][5] = phase_NRT_unwrap[j];
+	  }
+	  write_file("data/EOS_NRT_COMP_"+std::to_string(i)+".csv", output, samples, 6);
+
+	  delete [] responseEOS;
+	  delete [] responseNRT;
+	  delete [] phase_EOS;
+	  delete [] phase_NRT;
+	  delete [] phase_EOS_unwrap;
+	  delete [] phase_NRT_unwrap;
+	}
+	delete [] testPSD;
+	gsl_rng_free(r);
+	delete [] freqs;
+	deallocate_2D_array(output, samples, 4);
+	delete [] params.betappe;
+	delete [] params.bppe;
+	return 0;
   return 0; 
 }
 

@@ -8,6 +8,7 @@
 #include "ppE_IMRPhenomP.h"
 #include "gIMRPhenomD.h"
 #include "IMRPhenomD_NRT.h"
+#include "IMRPhenomD_NRT_EOS.h"
 #include "EA_IMRPhenomD_NRT.h"
 #include "IMRPhenomP_NRT.h"
 #include "ppE_utilities.h"
@@ -165,6 +166,12 @@ int fourier_waveform(T *frequencies, /**< double array of frequencies for the wa
 		  {
 		    IMRPhenomD_NRT<T> modeldNRT;
 		    status = modeldNRT.construct_waveform(frequencies, length, wp->hplus, &params);
+
+		  }
+		else if(local_method == "IMRPhenomD_NRT_EOS")
+		  {
+		    IMRPhenomD_NRT_EOS<T> modeldNRTEOS;
+		    status = modeldNRTEOS.construct_waveform(frequencies, length, wp->hplus, &params);
 
 		  }
 		else if(local_method == "EA_IMRPhenomD_NRT")
@@ -490,6 +497,12 @@ int fourier_waveform(double *frequencies, /**< double array of frequencies for t
 	    status = modeldNRT.construct_waveform(frequencies, length, waveform, &params);
 
 	  }
+	else if(generation_method == "IMRPhenomD_NRT_EOS")
+	  {
+	    IMRPhenomD_NRT_EOS<double> modeldNRTEOS;
+	    status = modeldNRTEOS.construct_waveform(frequencies, length, waveform, &params);
+
+	  }
 	//else if(generation_method == "IMRPhenomPv2")
 	//{
 	//	IMRPhenomPv2<double> modeld;
@@ -573,6 +586,12 @@ int fourier_amplitude(T *frequencies, /**< double array of frequencies for the w
 		  {
 		    IMRPhenomD_NRT<T> modeldNRT;
 		    status = modeldNRT.construct_amplitude(frequencies, length, amplitude, &params);
+
+		  }
+		else if(local_method == "IMRPhenomD_NRT_EOS")
+		  {
+		    IMRPhenomD_NRT_EOS<T> modeldNRTEOS;
+		    status = modeldNRTEOS.construct_amplitude(frequencies, length, amplitude, &params);
 
 		  }
 		else if(local_method == "EA_IMRPhenomD_NRT")
@@ -781,9 +800,16 @@ int fourier_phase(T *frequencies, /**<double array of frequencies for the wavefo
 	else if(local_method == "IMRPhenomD_NRT")
 	  {
 	    IMRPhenomD_NRT<T> modeldNRT;
-	    params.tidal1 = parameters->tidal1; //Is this right?!?
+	    params.tidal1 = parameters->tidal1; 
 	    params.tidal2 = parameters->tidal2;
 	    status = modeldNRT.construct_phase(frequencies, length, phase, &params);
+	  }
+	else if(local_method == "IMRPhenomD_NRT_EOS")
+	  {
+	    IMRPhenomD_NRT_EOS<T> modeldNRTEOS;
+	    params.tidal1 = parameters->tidal1; 
+	    params.tidal2 = parameters->tidal2;
+	    status = modeldNRTEOS.construct_phase(frequencies, length, phase, &params);
 	  }
 	else if(local_method == "EA_IMRPhenomD_NRT")
 	  {
@@ -849,6 +875,12 @@ int fourier_phase(T *frequencies, /**<double array of frequencies for the wavefo
 		  {
 		    IMRPhenomD_NRT<T> modeldNRT;
 		    status = modeldNRT.construct_phase(frequencies, length, phase_plus, &params);
+
+		  }
+		else if(local_method == "IMRPhenomD_NRT_EOS")
+		  {
+		    IMRPhenomD_NRT_EOS<T> modeldNRTEOS;
+		    status = modeldNRTEOS.construct_phase(frequencies, length, phase_plus, &params);
 
 		  }
 		else if(local_method == "EA_IMRPhenomD_NRT")
@@ -1318,6 +1350,14 @@ std::string prep_source_parameters(source_parameters<T> *out, gen_params_base<T>
 										  * out->eta *out->eta*out->eta)*(out->tidal1-out->tidal2));
 		//debugger_print(__FILE__,__LINE__,out->tidal_weighted);
 		}
+	}
+	if(generation_method.find("EOS") != std::string::npos){
+	  out->bump_mag = in->bump_mag;
+	  out->bump_width = in->bump_width;
+	  out->bump_offset = in->bump_offset;
+	  out->plat = in->plat;
+	  out->nbc1 = in->nbc1;
+	  out->nbc2 = in->nbc2;
 	}
 	if(generation_method.find("EA_IMRPhenomD_NRT") != std::string::npos){
 	  out->alpha_param = in->alpha_param;

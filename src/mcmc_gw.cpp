@@ -2905,7 +2905,8 @@ std::string MCMC_prep_params(double *param, double *temp_params, gen_params_base
 	gen_params->tidal_love = mod_struct->tidal_love;
 	gen_params->tidal_love_error = mod_struct->tidal_love_error;
 	gen_params->alpha_param = mod_struct->alpha_param;
-	gen_params->EA_region1 = mod_struct->EA_region1; 
+	gen_params->EA_region1 = mod_struct->EA_region1;
+	gen_params->EOS_plat_flag = mod_struct->EOS_plat_flag; 
 	gen_params->f_ref = 20;
 	gen_params->shift_time = true;
 	gen_params->shift_phase = true;

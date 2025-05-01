@@ -156,7 +156,8 @@ public:
         T bump_mag; 	/*! Magnitude of feature */
         T bump_width;    /*! Width of feature */
         T bump_offset;  /*! Location of feature */
-        T plat; /*! Constant value (or plateau)  of cs^2 after feature*/
+        T plat = 1./3.; /*! Constant value (or plateau)  of cs^2 after feature*/
+        bool EOS_plat_flag = false; /*! Flag to determine if plateau is a free parameter. When true, plateau is sampled on. By default, this is set to false so plateau is always 1./3.  */
         T nbc1; /*! Central baryon number density of star 1 -- to replace mass in sampling*/
         T nbc2; /*! Central baryon number density of star 2 -- to replace mass in sampling*/
   
@@ -509,6 +510,7 @@ struct source_parameters
         T bump_width;    /*! Width of feature */
         T bump_offset;  /*! Location of feature */
         T plat; /*! Constant value (or plateau)  of cs^2 after feature*/
+        bool EOS_plat_flag = false; /*! Flag to determine if plateau is a free parameter. When true, plateau is sampled on. By default, this is set to false so plateau is always 1./3.  */
         T nbc1; /*! Central baryon number density of star 1 -- to replace mass in sampling*/
         T nbc2; /*! Central baryon number density of star 2 -- to replace mass in sampling*/
 

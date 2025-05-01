@@ -119,6 +119,8 @@ int EOS_testing(int argc, char *argv[])
 	params.shift_time=true;
 	params.shift_phase=true;
 
+	params.EOS_plat_flag=false; 
+
 	//Inputting a point that we think gives a NAN
 	params.RA = 2.07169357356823;
 	params.DEC = asin(0.603993587177344); 

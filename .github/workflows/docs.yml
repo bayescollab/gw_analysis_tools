@@ -28,7 +28,9 @@ jobs:
         && pip3 install sphinx-sitemap
         && pip3 install myst-parser
     - name: Checkout repo
-      uses: actions/checkout@1.0.0
+      uses: actions/checkout@v4
+      with:
+        clean: false
     - name: Build docs
       run: cd docs_sphinx
         && make html

@@ -30,8 +30,7 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@1.0.0
     - name: Build docs
-      run: source doc_env/bin/activate
-        && cd docs_sphinx
+      run: cd docs_sphinx
         && make html
         && cd _build/html
         && touch .nojekyll

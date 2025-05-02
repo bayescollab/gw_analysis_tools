@@ -15,6 +15,9 @@ jobs:
     runs-on: macos-latest
 
     steps:
+    - name: Setup environment
+      run: python3 -m venv doc_env
+        && source doc_env
     - name: Requirements
       run: brew install doxygen
         && brew install sphinx-doc

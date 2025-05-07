@@ -1,15 +1,15 @@
-#ifndef IMRPHENOMD_NRT_EA_H
-#define IMRPHENOMD_NRT_EA_H
+#ifndef IMRPHENOMD_EA_H
+#define IMRPHENOMD_EA_H
 #include "IMRPhenomD.h"
-#include "IMRPhenomD_NRT.h"
+#include "EA_IMRPhenomD_NRT.h"
 #include "util.h"
 #include "waveform_generator.h"
 
 template<class T>
-class EA_IMRPhenomD_NRT: public IMRPhenomD_NRT<T>
+class EA_IMRPhenomD T: public IMRPhenomD<T>
 {
 public:
-  virtual T calculate_EA_sensitivity(int body, source_parameters<T> *p);
+ // virtual T calculate_EA_sensitivity(int body, source_parameters<T> *p);
 
   virtual void EA_check_nan(source_parameters<T> *p);
 

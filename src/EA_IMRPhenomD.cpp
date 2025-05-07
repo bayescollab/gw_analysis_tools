@@ -1,4 +1,5 @@
 #include "EA_IMRPhenomD_NRT.h"
+#include "EA_IMRPhenomD.h"
 #include "IMRPhenomD_NRT.h"
 #include "IMRPhenomD.h"
 #include <math.h>
@@ -18,101 +19,102 @@
  * Add relevant references.
  */
 
-template<class T>
-T EA_IMRPhenomD_NRT<T>::calculate_EA_sensitivity(int body, source_parameters<T> *p)
-{
-  T lambda, compact, OmRatio, s;
-  /* The tidal deformability (love number), compactness, binding energy (Omega)
-   * to mass ratio, and sensitivity.
-   */
-  //std::cout<<"body #"<<body<<std::endl; 
-  if(body == 1)
-    {
-     lambda = p->tidal1;
-    }
-  else
-    {
-      lambda = p->tidal2;
-    }
+// template<class T>
+// T EA_IMRPhenomD_NRT<T>::calculate_EA_sensitivity(int body, source_parameters<T> *p)
+// {
+//   T lambda, compact, OmRatio, s;
+//   /* The tidal deformability (love number), compactness, binding energy (Omega)
+//    * to mass ratio, and sensitivity.
+//    */
+//   //std::cout<<"body #"<<body<<std::endl; 
+//   if(body == 1)
+//     {
+//      lambda = p->tidal1;
+//     }
+//   else
+//     {
+//       lambda = p->tidal2;
+//     }
 
-  /* Compactness computed using C-Love relation from arXiv:1903.03909,
-   * equation 8, values in table 1.
-   */
-  T a[3] = {-919.6,330.3,-857.2};
-  T b[3] = {-383.5,192.5,-811.1};
+//   /* Compactness computed using C-Love relation from arXiv:1903.03909,
+//    * equation 8, values in table 1.
+//    */
+//   T a[3] = {-919.6,330.3,-857.2};
+//   T b[3] = {-383.5,192.5,-811.1};
 
-  // Useful Powers
-  T lambda_pow[3];
-  lambda_pow[0] = pow(lambda, - 1./5.);
-  lambda_pow[1] = lambda_pow[0] * lambda_pow[0];
-  lambda_pow[2] = lambda_pow[0] * lambda_pow[1];
-  T K, num, denom;
-  K = 0.2496;
-  num = 1 + a[0]*lambda_pow[0] + a[1]*lambda_pow[1] + a[2]*lambda_pow[2];
-  denom = 1 + b[0]*lambda_pow[0] + b[1]*lambda_pow[1] + b[2]*lambda_pow[2];
+//   // Useful Powers
+//   T lambda_pow[3];
+//   lambda_pow[0] = pow(lambda, - 1./5.);
+//   lambda_pow[1] = lambda_pow[0] * lambda_pow[0];
+//   lambda_pow[2] = lambda_pow[0] * lambda_pow[1];
+//   T K, num, denom;
+//   K = 0.2496;
+//   num = 1 + a[0]*lambda_pow[0] + a[1]*lambda_pow[1] + a[2]*lambda_pow[2];
+//   denom = 1 + b[0]*lambda_pow[0] + b[1]*lambda_pow[1] + b[2]*lambda_pow[2];
 
-  //compact = p->compact1; //artifact from testing with specific values of C
-  compact = K * lambda_pow[0] * (num/denom);
-	//std::cout<<"Compactness: "<<compact<<std::endl;
+//   //compact = p->compact1; //artifact from testing with specific values of C
+//   compact = K * lambda_pow[0] * (num/denom);
+// 	//std::cout<<"Compactness: "<<compact<<std::endl;
   
-  if(body == 1)
-    {
-      p->compact1 = compact;
-    }
-  else
-    {
-      p->compact2 = compact;
-    }
+//   if(body == 1)
+//     {
+//       p->compact1 = compact;
+//     }
+//   else
+//     {
+//       p->compact2 = compact;
+//     }
   
-  /* Calculation of sensitivities taken from arXiv:2104.04596v1
-   * Equation 80 of that paper was inverted to get binding energy to mass ratio
-   * as a function of compactness.
-   * Equation 81 was used to compute sensitivity as a function of the binding
-   * energy to mass ratio.
-   */
-  OmRatio = (-5./7.)*compact - ((18275.*p->alpha1_EA)/168168.)*pow(compact, 3.);
+//   /* Calculation of sensitivities taken from arXiv:2104.04596v1
+//    * Equation 80 of that paper was inverted to get binding energy to mass ratio
+//    * as a function of compactness.
+//    * Equation 81 was used to compute sensitivity as a function of the binding
+//    * energy to mass ratio.
+//    */
+//   OmRatio = (-5./7.)*compact - ((18275.*p->alpha1_EA)/168168.)*pow(compact, 3.);
 
-  //std::cout<<" compactness = "<<compact<<", OmRatio = "<<OmRatio<<std::endl;
-  //std::cout<<" compactness = "<<compact<<", OmRatio = "<<OmRatio<<std::endl;
+//   //std::cout<<" compactness = "<<compact<<", OmRatio = "<<OmRatio<<std::endl;
+//   //std::cout<<" compactness = "<<compact<<", OmRatio = "<<OmRatio<<std::endl;
    
-  T coeff1, coeff2, coeff3;
+//   T coeff1, coeff2, coeff3;
    
-  coeff1 =  ((3.*p->alpha1_EA + 2.*p->alpha2_EA)/3.);
-  coeff2 = ((573.*pow(p->alpha1_EA, 3.) + p->alpha1_EA*p->alpha1_EA*(67669. - 764.*p->alpha2_EA) + 96416.*p->alpha2_EA*p->alpha2_EA + 68.*p->alpha1_EA*p->alpha2_EA*(9.*p->alpha2_EA - 2632.))/(25740.*p->alpha1_EA));
-  coeff3 = (1./(656370000.*p->cw_EA*p->alpha1_EA*p->alpha1_EA))*(-4.*p->alpha1_EA*p->alpha1_EA*(p->alpha1_EA + 8.)*(36773030.*p->alpha1_EA*p->alpha1_EA - 39543679.*p->alpha1_EA*p->alpha2_EA + 11403314.*p->alpha2_EA*p->alpha2_EA) + p->cw_EA*(1970100.*pow(p->alpha1_EA,5.) - 13995878400.*pow(p->alpha2_EA, 3.) - 640.*p->alpha1_EA*p->alpha2_EA*p->alpha2_EA*(-49528371. + 345040.*p->alpha2_EA) - 5.*pow(p->alpha1_EA, 4.)*(19548109. + 788040.*p->alpha2_EA) - 16.*p->alpha1_EA*p->alpha1_EA*p->alpha2_EA*(1294533212. - 29152855.*p->alpha2_EA + 212350.*p->alpha2_EA*p->alpha2_EA) + pow(p->alpha1_EA,3.)*(2699192440. - 309701434.*p->alpha2_EA + 5974000.*p->alpha2_EA*p->alpha2_EA)));
+//   coeff1 =  ((3.*p->alpha1_EA + 2.*p->alpha2_EA)/3.);
+//   coeff2 = ((573.*pow(p->alpha1_EA, 3.) + p->alpha1_EA*p->alpha1_EA*(67669. - 764.*p->alpha2_EA) + 96416.*p->alpha2_EA*p->alpha2_EA + 68.*p->alpha1_EA*p->alpha2_EA*(9.*p->alpha2_EA - 2632.))/(25740.*p->alpha1_EA));
+//   coeff3 = (1./(656370000.*p->cw_EA*p->alpha1_EA*p->alpha1_EA))*(-4.*p->alpha1_EA*p->alpha1_EA*(p->alpha1_EA + 8.)*(36773030.*p->alpha1_EA*p->alpha1_EA - 39543679.*p->alpha1_EA*p->alpha2_EA + 11403314.*p->alpha2_EA*p->alpha2_EA) + p->cw_EA*(1970100.*pow(p->alpha1_EA,5.) - 13995878400.*pow(p->alpha2_EA, 3.) - 640.*p->alpha1_EA*p->alpha2_EA*p->alpha2_EA*(-49528371. + 345040.*p->alpha2_EA) - 5.*pow(p->alpha1_EA, 4.)*(19548109. + 788040.*p->alpha2_EA) - 16.*p->alpha1_EA*p->alpha1_EA*p->alpha2_EA*(1294533212. - 29152855.*p->alpha2_EA + 212350.*p->alpha2_EA*p->alpha2_EA) + pow(p->alpha1_EA,3.)*(2699192440. - 309701434.*p->alpha2_EA + 5974000.*p->alpha2_EA*p->alpha2_EA)));
   
-  s = coeff1 * (OmRatio) + coeff2 * (OmRatio*OmRatio) + coeff3 * (pow(OmRatio, 3.));
+//   s = coeff1 * (OmRatio) + coeff2 * (OmRatio*OmRatio) + coeff3 * (pow(OmRatio, 3.));
   
-  /*
-  //Coded s(C) directly from eqn.79 of arXiv:2104.04596v1 for comparison purposes. This gives exactly the same answer as what was used above (a good sign obviously)
-  coeff1 = (5./21.)*(-3*p->alpha1_EA + 2*p->alpha2_EA);
-  coeff2 = (5./(252252.*p->alpha1_EA))*(573.*pow(p->alpha1_EA, 3.) + (67669. - 746.*p->alpha2_EA)*p->alpha1_EA*p->alpha1_EA + 96416.*p->alpha2_EA*p->alpha2_EA + 68.*p->alpha1_EA*p->alpha2_EA*(-2632.+9.*p->alpha2_EA));
-  coeff3 = 1./(1801079280.*p->cw_EA*p->alpha1_EA*p->alpha1_EA)*(16.*p->alpha1_EA*p->alpha1_EA*(8+p->alpha1_EA)*(36773030.*p->alpha1_EA*p->alpha1_EA - 39543679.*p->alpha1_EA*p->alpha2_EA + 11403314.*p->alpha2_EA*p->alpha2_EA) + p->cw_EA*(-1970100.*pow(p->alpha1_EA, 5.) + 13995878400.*pow(p->alpha2_EA, 3.) + 640.*p->alpha1_EA*p->alpha2_EA*p->alpha2_EA*(-49528371. + 345040.*p->alpha2_EA) + 5*pow(p->alpha1_EA, 4.)*(-19596941. + 788040.*p->alpha2_EA) + pow(p->alpha1_EA, 3.)*(-2699192440. + 440184934.*p->alpha2_EA - 5974000.*p->alpha2_EA*p->alpha2_EA)*(16.*p->alpha1_EA*p->alpha1_EA*p->alpha2_EA*(1294533212. - 29152855.*p->alpha2_EA + 212350.*p->alpha2_EA*p->alpha2_EA)))); 
+//   /*
+//   //Coded s(C) directly from eqn.79 of arXiv:2104.04596v1 for comparison purposes. This gives exactly the same answer as what was used above (a good sign obviously)
+//   coeff1 = (5./21.)*(-3*p->alpha1_EA + 2*p->alpha2_EA);
+//   coeff2 = (5./(252252.*p->alpha1_EA))*(573.*pow(p->alpha1_EA, 3.) + (67669. - 746.*p->alpha2_EA)*p->alpha1_EA*p->alpha1_EA + 96416.*p->alpha2_EA*p->alpha2_EA + 68.*p->alpha1_EA*p->alpha2_EA*(-2632.+9.*p->alpha2_EA));
+//   coeff3 = 1./(1801079280.*p->cw_EA*p->alpha1_EA*p->alpha1_EA)*(16.*p->alpha1_EA*p->alpha1_EA*(8+p->alpha1_EA)*(36773030.*p->alpha1_EA*p->alpha1_EA - 39543679.*p->alpha1_EA*p->alpha2_EA + 11403314.*p->alpha2_EA*p->alpha2_EA) + p->cw_EA*(-1970100.*pow(p->alpha1_EA, 5.) + 13995878400.*pow(p->alpha2_EA, 3.) + 640.*p->alpha1_EA*p->alpha2_EA*p->alpha2_EA*(-49528371. + 345040.*p->alpha2_EA) + 5*pow(p->alpha1_EA, 4.)*(-19596941. + 788040.*p->alpha2_EA) + pow(p->alpha1_EA, 3.)*(-2699192440. + 440184934.*p->alpha2_EA - 5974000.*p->alpha2_EA*p->alpha2_EA)*(16.*p->alpha1_EA*p->alpha1_EA*p->alpha2_EA*(1294533212. - 29152855.*p->alpha2_EA + 212350.*p->alpha2_EA*p->alpha2_EA)))); 
 
-  s = coeff1 * (compact) + coeff2 * (compact*compact) + coeff3 * (pow(compact, 3.));
-  */
+//   s = coeff1 * (compact) + coeff2 * (compact*compact) + coeff3 * (pow(compact, 3.));
+//   */
   
-  //if(p->c14_EA < pow(10, -32.)){
-  /* std::cout<<"c1: "<<p->c1_EA<<", c14: "<<p->c14_EA<<", c13: "<<p->c13_EA<<", cminus: "<<p->cminus_EA<<std::endl;
+//   //if(p->c14_EA < pow(10, -32.)){
+//   /* std::cout<<"c1: "<<p->c1_EA<<", c14: "<<p->c14_EA<<", c13: "<<p->c13_EA<<", cminus: "<<p->cminus_EA<<std::endl;
       
-      std::cout<<"alpha1: "<<p->alpha1_EA<<std::endl;
-      std::cout<<"alpha2: "<<p->alpha2_EA<<std::endl;
-      std::cout<<"Coeff1: "<<coeff1<<std::endl;
-      std::cout<<"Coeff2: "<<coeff2<<std::endl;
-      std::cout<<"Coeff3: "<<coeff3<<std::endl;
-      std::cout<<"tidal1: "<<p->tidal1<<", tidal2: "<<p->tidal2<<std::endl;
-      std::cout<<"lambda: "<<lambda<<std::endl; 
-      std::cout<<"lambda^(-1/5): "<<lambda_pow[0]<<std::endl; 
-      std::cout<<"compact: "<<compact<<std::endl; 
-      std::cout<<"OmRatio: "<<OmRatio<<std::endl;
-      std::cout<<"s "<<s<<std::endl;*/
-      // }
-  //if(p->c14_EA < pow(10, -32.)){std::cout<<"s "<<s<<std::endl;}
-  /*if(s > 1){
-    std::cout<<"sensitivity = "<<s<<", coeff1 = "<<coeff1<<", coeff2 = "<<coeff2<<", coeff3 = "<<coeff3<<std::endl;
-    }*/
-  return s;
-}
+//       std::cout<<"alpha1: "<<p->alpha1_EA<<std::endl;
+//       std::cout<<"alpha2: "<<p->alpha2_EA<<std::endl;
+//       std::cout<<"Coeff1: "<<coeff1<<std::endl;
+//       std::cout<<"Coeff2: "<<coeff2<<std::endl;
+//       std::cout<<"Coeff3: "<<coeff3<<std::endl;
+//       std::cout<<"tidal1: "<<p->tidal1<<", tidal2: "<<p->tidal2<<std::endl;
+//       std::cout<<"lambda: "<<lambda<<std::endl; 
+//       std::cout<<"lambda^(-1/5): "<<lambda_pow[0]<<std::endl; 
+//       std::cout<<"compact: "<<compact<<std::endl; 
+//       std::cout<<"OmRatio: "<<OmRatio<<std::endl;
+//       std::cout<<"s "<<s<<std::endl;*/
+//       // }
+//   //if(p->c14_EA < pow(10, -32.)){std::cout<<"s "<<s<<std::endl;}
+//   /*if(s > 1){
+//     std::cout<<"sensitivity = "<<s<<", coeff1 = "<<coeff1<<", coeff2 = "<<coeff2<<", coeff3 = "<<coeff3<<std::endl;
+//     }*/
+//   return s;
+// }
+
 
 template<>
 void EA_IMRPhenomD_NRT<double>::EA_check_nan(source_parameters<double> *p)
@@ -265,8 +267,8 @@ void EA_IMRPhenomD_NRT<T>::pre_calculate_EA_factors(source_parameters<T> *p)
   p->D_EA = 1./(6.*p->c14_EA * pow(p->cV_EA, 5.));
 
   //Get sensitivities
-  p->s1_EA = calculate_EA_sensitivity(1, p);
-  p->s2_EA = calculate_EA_sensitivity(2, p);
+  // p->s1_EA = calculate_EA_sensitivity(1, p);
+  // p->s2_EA = calculate_EA_sensitivity(2, p);
   
   //The functions that are actually used to compute the phase
   p->S_EA = p->s1_EA*(p->mass2/p->M) + p->s2_EA*(p->mass1/p->M);
@@ -667,5 +669,5 @@ int EA_IMRPhenomD_NRT<T>::construct_waveform(T *frequencies, int length, std::co
   return 1;
 }
 
-template class EA_IMRPhenomD_NRT<double>;
-template class EA_IMRPhenomD_NRT<adouble>;
+template class EA_IMRPhenomD<double>;
+template class EA_IMRPhenomD<adouble>;

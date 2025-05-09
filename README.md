@@ -4,4 +4,4 @@ A suite of tools useful for doing statistical studies  on gravitational wave sci
 
 # Documentation
 
-The documentation (such as tutorials) can be found [here](https://scottperkins.github.io/gw_analysis_tools/index.html).
+The documentation (such as tutorials) can be found [here](https://bayescollab.github.io/gw_analysis_tools/).

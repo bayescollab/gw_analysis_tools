@@ -139,6 +139,11 @@ Functions</h2></td></tr>
 <tr class="separator:a3ede6a16fff122f2195a58f1b29de9f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a92474a9479a801dcbb9a6d50aa8d3670" id="r_a92474a9479a801dcbb9a6d50aa8d3670"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a92474a9479a801dcbb9a6d50aa8d3670">data_snr</a> (double *frequencies, int length, std::complex&lt; double &gt; *data, std::complex&lt; double &gt; *response, double *psd)</td></tr>
 <tr class="separator:a92474a9479a801dcbb9a6d50aa8d3670"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a103d9ffeddb43d37f217002a6d7c862d" id="r_a103d9ffeddb43d37f217002a6d7c862d"><td class="memTemplParams" colspan="2">template&lt;class <a class="el" href="mcmc__sampler_8cpp.html#aef1cd57f3e1037b1fb2d9cfcb3dbec2a">T</a>&gt; </td></tr>
+<tr class="memitem:a103d9ffeddb43d37f217002a6d7c862d"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a103d9ffeddb43d37f217002a6d7c862d">create_single_GW_detection</a> (std::complex&lt; <a class="el" href="mcmc__sampler_8cpp.html#aef1cd57f3e1037b1fb2d9cfcb3dbec2a">T</a> &gt; *response, std::string detector, <a class="el" href="mcmc__sampler_8cpp.html#aef1cd57f3e1037b1fb2d9cfcb3dbec2a">T</a> *frequencies, int length, <a class="el" href="classgen__params__base.html">gen_params_base</a>&lt; <a class="el" href="mcmc__sampler_8cpp.html#aef1cd57f3e1037b1fb2d9cfcb3dbec2a">T</a> &gt; *<a class="el" href="classgen__params.html">gen_params</a>, std::string generation_method)</td></tr>
+<tr class="separator:a103d9ffeddb43d37f217002a6d7c862d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e0d2990c8666b2e3c25e921d37b0365" id="r_a0e0d2990c8666b2e3c25e921d37b0365"><td class="memItemLeft" align="right" valign="top">template void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0e0d2990c8666b2e3c25e921d37b0365">create_single_GW_detection&lt; double &gt;</a> (std::complex&lt; double &gt; *, std::string, double *, int, <a class="el" href="classgen__params__base.html">gen_params_base</a>&lt; double &gt; *, std::string)</td></tr>
+<tr class="separator:a0e0d2990c8666b2e3c25e921d37b0365"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7855961a7e993506d0eb6992de2946b6" id="r_a7855961a7e993506d0eb6992de2946b6"><td class="memTemplParams" colspan="2">template&lt;class <a class="el" href="mcmc__sampler_8cpp.html#aef1cd57f3e1037b1fb2d9cfcb3dbec2a">T</a>&gt; </td></tr>
 <tr class="memitem:a7855961a7e993506d0eb6992de2946b6"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a7855961a7e993506d0eb6992de2946b6">create_coherent_GW_detection</a> (std::string *detectors, int detector_N, <a class="el" href="mcmc__sampler_8cpp.html#aef1cd57f3e1037b1fb2d9cfcb3dbec2a">T</a> **frequencies, int *lengths, bool reuse_WF, <a class="el" href="classgen__params__base.html">gen_params_base</a>&lt; <a class="el" href="mcmc__sampler_8cpp.html#aef1cd57f3e1037b1fb2d9cfcb3dbec2a">T</a> &gt; *<a class="el" href="classgen__params.html">gen_params</a>, std::string generation_method, std::complex&lt; <a class="el" href="mcmc__sampler_8cpp.html#aef1cd57f3e1037b1fb2d9cfcb3dbec2a">T</a> &gt; **responses)</td></tr>
 <tr class="separator:a7855961a7e993506d0eb6992de2946b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1088,6 +1093,90 @@ template&lt;class <a class="el" href="mcmc__sampler_8cpp.html#aef1cd57f3e1037b1f
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">std::complex&lt; double &gt; **</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a103d9ffeddb43d37f217002a6d7c862d" name="a103d9ffeddb43d37f217002a6d7c862d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a103d9ffeddb43d37f217002a6d7c862d">&#9670;&#160;</a></span>create_single_GW_detection()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class <a class="el" href="mcmc__sampler_8cpp.html#aef1cd57f3e1037b1fb2d9cfcb3dbec2a">T</a>&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void create_single_GW_detection </td>
+          <td>(</td>
+          <td class="paramtype">std::complex&lt; <a class="el" href="mcmc__sampler_8cpp.html#aef1cd57f3e1037b1fb2d9cfcb3dbec2a">T</a> &gt; *</td>          <td class="paramname"><span class="paramname"><em>response</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>detector</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="mcmc__sampler_8cpp.html#aef1cd57f3e1037b1fb2d9cfcb3dbec2a">T</a> *</td>          <td class="paramname"><span class="paramname"><em>frequencies</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>length</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classgen__params__base.html">gen_params_base</a>&lt; <a class="el" href="mcmc__sampler_8cpp.html#aef1cd57f3e1037b1fb2d9cfcb3dbec2a">T</a> &gt; *</td>          <td class="paramname"><span class="paramname"><em>gen_params</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>generation_method</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0e0d2990c8666b2e3c25e921d37b0365" name="a0e0d2990c8666b2e3c25e921d37b0365"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0e0d2990c8666b2e3c25e921d37b0365">&#9670;&#160;</a></span>create_single_GW_detection&lt; double &gt;()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">template void <a class="el" href="waveform__util_8h.html#a103d9ffeddb43d37f217002a6d7c862d">create_single_GW_detection</a>&lt; double &gt; </td>
+          <td>(</td>
+          <td class="paramtype">std::complex&lt; double &gt; *</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classgen__params__base.html">gen_params_base</a>&lt; double &gt; *</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">

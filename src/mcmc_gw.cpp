@@ -867,6 +867,45 @@ double Log_Likelihood_internal(std::complex<double> *data,
 	//return -2*(HH- 2*DH);
 }
 
+//! \brief Compute unmarginalized likelihood with a specified Quadrature method
+double Log_Likelihood_internal(
+	std::complex<double> *data,
+	double *psd,
+	std::complex<double> *detector_response,
+	Quadrature *QuadMethod
+)
+{
+	// Length of integrand
+	int length = QuadMethod->get_length();
+	// Hold the integrand values
+	double *integrand = new double [length];
+	// Array index, to be used for all loops
+	int i;
+
+	// (h|h) integral
+	for (i=0; i<length; i++)
+	{
+		integrand[i] = real(
+			detector_response[i] * std::conj(detector_response[i]) / psd[i]
+		);
+	}
+	double hh = 4.*QuadMethod->integrate(integrand);
+
+	// (d|h) integral
+	for (i=0; i<length; i++)
+	{
+		integrand[i] = real(
+			data[i] * std::conj(detector_response[i]) / psd[i]
+		);
+	}
+	double dh = 4.*QuadMethod->integrate(integrand);
+
+	// Clean up
+	delete [] integrand;
+
+	return -0.5*hh + dh;
+}
+
 
 struct skysearch_params{
 	std::complex<double> *hplus;
@@ -2382,7 +2421,8 @@ double MCMC_likelihood_extrinsic(bool save_waveform,
 	std::string integration_method, 
 	bool log10F, 
 	std::string *detectors, 
-	int num_detectors
+	int num_detectors,
+	Quadrature *QuadMethod
 	)
 {
 	//################################################################
@@ -2463,18 +2503,33 @@ double MCMC_likelihood_extrinsic(bool save_waveform,
 	
 	//#################################################################################
 	//#################################################################################
-	double T = 1./( frequencies[1]-frequencies[0]);
-	double tc_ref = T-parameters->tc;
+	//double T = 1./( frequencies[0][1]-frequencies[0][0]);
+	//double tc_ref = T-parameters->tc;
 	double ll=0;
 	std::complex<double> **responses = new std::complex<double>*[num_detectors];	
 	for(int i = 0 ; i<num_detectors; i++){
 		responses[i] = new std::complex<double>[data_length[i]];
 	}
-	parameters->tc = tc_ref;	
+	//parameters->tc = -(parameters->tc);	
 	create_coherent_GW_detection(detectors, num_detectors, frequencies,data_length, save_waveform, parameters, generation_method, responses);
-	for(int i = 0 ;i<num_detectors; i++){
+
+	if (QuadMethod == NULL)
+	{
+		// Scott's way
+		for(int i = 0 ;i<num_detectors; i++){
 		ll += Log_Likelihood_internal(data[i],psd[i],frequencies[i],weights[i],responses[i],data_length[i], log10F,integration_method);	
-	}		
+		}
+	}
+	else
+	{
+		// New way. Would be nice to make this the standard.
+		for(int i=0; i<num_detectors; i++)
+		{
+			ll += Log_Likelihood_internal(
+				data[i], psd[i], responses[i], QuadMethod
+			);
+		}
+	}
 	
 	for(int i = 0 ; i<num_detectors; i++){
 		delete [] responses[i];

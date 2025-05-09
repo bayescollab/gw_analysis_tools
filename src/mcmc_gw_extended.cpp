@@ -669,6 +669,13 @@ public:
 	
 			}
 		}
+		else if (mcmcVar->mcmc_adaptive)
+		{
+			ll = mcmcVar->adaptivell->log_likelihood(
+				mcmcVar->mcmc_detectors, mcmcVar->mcmc_num_detectors,
+				&gen_params, local_gen, mcmcVar->mcmc_save_waveform
+				);
+		}
 		else{
 			double RA = gen_params.RA;
 			double DEC = gen_params.DEC;
@@ -678,7 +685,7 @@ public:
 			ll =  MCMC_likelihood_extrinsic(mcmcVar->mcmc_save_waveform, 
 				&gen_params,local_gen, local_lengths, 
 				local_freqs, local_data, local_noise, local_weights, local_integration_method, mcmcVar->user_parameters->log10F,mcmcVar->mcmc_detectors, 
-				 mcmcVar->mcmc_num_detectors);
+				 mcmcVar->mcmc_num_detectors, mcmcVar->QuadMethod);
 			//ll=2;
 	
 			//ll = Log_Likelihood(mcmc_data[0], 
@@ -1269,7 +1276,14 @@ bayesship::bayesshipSampler *  PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
 	mcmcVar.mcmc_mod_struct = mod_struct;
 	mcmcVar.mcmc_save_waveform = true;
 	mcmcVar.maxDim = dimension;
+	mcmcVar.QuadMethod = mod_struct->QuadMethod;
 
+	if (mod_struct->adaptivell != nullptr)
+	{
+		std::cout << "Sampling with adaptive likelihood\n";
+		mcmcVar.adaptivell = mod_struct->adaptivell;
+		mcmcVar.mcmc_adaptive = true;
+	}
 
 
 //##########################################################
@@ -1379,7 +1393,7 @@ bayesship::bayesshipSampler *  PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
 		}	
 		user_parameters[i]->fisher_PSD= mod_struct->fisher_PSD;
 		user_parameters[i]->fisher_length= mod_struct->fisher_length;
-
+		user_parameters[i]->QuadMethod = mod_struct->QuadMethod;
 
 		user_parameters[i]->mod_struct = mod_struct;
 
@@ -2276,7 +2290,8 @@ void MCMC_fisher_wrapper_v3(bayesship::positionInfo *pos,   double **output, std
 		else{
 			fisher_numerical(local_freq[i], local_lengths[i],
 				"MCMC_"+local_gen_method, mcmcVar->mcmc_detectors[i],mcmcVar->mcmc_detectors[0],temp_out,local_dimension, 
-				&params, 4, NULL, NULL, local_noise[i]);
+				&params, 4, NULL, NULL, local_noise[i],
+				mcmcVar->user_parameters->QuadMethod);
 
 		}
 		for(int j =0; j<local_dimension; j++){

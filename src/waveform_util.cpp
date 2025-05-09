@@ -509,6 +509,30 @@ double calculate_snr_internal(double *psd,
         return sqrt(integral);
 }
 
+// SNR calculator with Quadrature method
+double calculate_snr_internal(
+	double *psd,
+	std::complex<double> *waveform,
+	const Quadrature *QuadMethod
+)
+{
+	int length = QuadMethod->get_length();
+	// Integrand array
+	double *integrand = new double [length];
+
+	for (int i = 0; i < length; i++)
+	{
+		integrand[i] = real(conj(waveform[i])*waveform[i]/psd[i]);
+	}
+
+	double innerproduct = QuadMethod->integrate(integrand);
+	
+	// Clean-up
+	delete [] integrand;
+
+	return 2.*sqrt(innerproduct);
+}
+
 /* \brief calculates the detector response for a given waveform and detector -- polarization angle =0
  */
 template<class T>
@@ -3721,6 +3745,56 @@ double snr_threshold_subroutine(double fmin, double fmax, double rel_err, gen_pa
 	double result, err;
 	int errcode = gsl_integration_qag(&F,fmin, fmax, 0,rel_err, np, GSL_INTEG_GAUSS15,w, &result, &err);
 	return sqrt(result);
+}
+
+double TaylorF2ReducedSpinChirpTime(
+	const double fStart,	//< Starting GW frequency in Hertz
+	const double m1,	//< Primary mass in solar units
+	const double m2,	//< Secondary mass in solar units
+	const double s1z,	//< Dimension-less primary aligned spin component
+	const double s2z,	//< Dimension-less secondary aligned spin component
+	const int PNO		//< Twice the PN phase order
+)
+{
+    const double m = m1+m2; 
+    const double eta = m1*m2/(m*m);
+    const double eta2 = eta*eta;
+
+	// Compute reduced-spin parameter (arXiv:1107.1267, Eq. (5.9))
+	const double delta = (m1 - m2) / m;
+	const double chi_s = (s1z + s2z) / 2.;
+	const double chi_a = (s1z - s2z) / 2.;
+	const double chi = chi_s * (1. - 76. * eta / 113.) + delta * chi_a;
+
+    const double chi2 = chi*chi;
+    const double sigma0 = (-12769*(-81. + 4.*eta))/(16.*(-113. + 76.*eta)*(-113. + 76.*eta));
+    const double gamma0 = (565*(-146597. + 135856.*eta + 17136.*eta2))/(2268.*(-113. + 76.*eta));
+ 
+	double v = cbrt(M_PI * m * GWAT_MTSUN_SI * fStart); // Initial dimension-less velocity
+    double vk = v;  // v^k
+    double tk[8];  // chirp time coefficients up to 3.5 PN
+	const double Pi_p2 = M_PI*M_PI;
+
+	// chirp time coefficients up to 3.5PN
+    tk[0] = (5.*m*GWAT_MTSUN_SI)/(256.*pow_int(v,8)*eta);
+    tk[1] = 0.;
+    tk[2] = 2.9484126984126986 + (11*eta)/3.;
+    tk[3] = (-32*M_PI)/5. + (226.*chi)/15.;
+    tk[4] = 6.020630590199042 - 2*sigma0*chi2 + (5429*eta)/504. + (617*eta2)/72.;
+    tk[5] = (3*gamma0*chi)/5. - (7729*M_PI)/252. + (13*M_PI*eta)/3.;
+    tk[6] = -428.291776175525 + (128*Pi_p2)/3. + (6848*gamma_E)/105. + (3147553127*eta)/3.048192e6 -
+       (451*Pi_p2*eta)/12. - (15211*eta2)/1728. + (25565*eta2*eta)/1296. + (6848*log(4*v))/105.;
+    tk[7] = (-15419335*M_PI)/127008. - (75703*M_PI*eta)/756. + (14809*M_PI*eta2)/378.;
+
+	// compute chirp time
+    double tau = 1.;  // chirp time
+    for (size_t k = 2; k <= PNO; k++) {
+        vk *= v;
+        tau += tk[k] * vk;
+    }
+    tau *= tk[0];
+
+	return tau;
 }
 
 //###########################################################################

@@ -8,6 +8,8 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -15,6 +17,13 @@ jobs:
     runs-on: macos-latest
 
     steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+    - name: Setup environment
+      run: python3 -m venv doc_env
+        && source doc_env/bin/activate
+        && python3 -m pip install --upgrade pip
+        && echo PATH=$PATH >> $GITHUB_ENV
     - name: Requirements
       run: brew install doxygen
         && brew install sphinx-doc
@@ -22,10 +31,9 @@ jobs:
         && pip3 install breathe
         && pip3 install sphinx-sitemap
         && pip3 install myst-parser
-    - name: Checkout repo
-      uses: actions/checkout@1.0.0
     - name: Build docs
-      run: cd docs_sphinx
+      run: source doc_env/bin/activate
+        && cd docs_sphinx
         && make html
         && cd _build/html
         && touch .nojekyll

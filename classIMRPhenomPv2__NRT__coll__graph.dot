@@ -8,5 +8,5 @@ digraph "IMRPhenomPv2_NRT&lt; T &gt;"
   Node2 -> Node1 [id="edge1_Node000001_Node000002",dir="back",color="steelblue1",style="solid",tooltip=" "];
   Node2 [id="Node000002",label="IMRPhenomPv2\< T \>",height=0.2,width=0.4,color="gray40", fillcolor="white", style="filled",URL="$classIMRPhenomPv2.html",tooltip=" "];
   Node3 -> Node2 [id="edge2_Node000002_Node000003",dir="back",color="steelblue1",style="solid",tooltip=" "];
-  Node3 [id="Node000003",label="IMRPhenomD\< T \>",height=0.2,width=0.4,color="gray40", fillcolor="white", style="filled",tooltip=" "];
+  Node3 [id="Node000003",label="IMRPhenomD\< T \>",height=0.2,width=0.4,color="gray40", fillcolor="white", style="filled",URL="$classIMRPhenomD.html",tooltip=" "];
 }

@@ -35,8 +35,9 @@ var searchData=
   ['num_5fsegments_32',['num_segments',['../D__Z__Config_8h.html#aac953daa8839736a9045defba4330a71',1,'D_Z_Config.h']]],
   ['num_5fsrc_5fparams_33',['num_src_params',['../fisher_8cpp.html#ad08ddae761a3005399569df9dd80d261',1,'fisher.cpp']]],
   ['num_5fthreads_34',['num_threads',['../classsampler.html#a0d3c87df5d138ce4cd2286d55a54eb04',1,'sampler']]],
-  ['numswpswppthreads_35',['numSwpSWPPThreads',['../classThreadPool.html#a4759d05545738e03325dc54f7ed2b5d6',1,'ThreadPool']]],
-  ['numswpswpthreads_36',['numSwpSWPThreads',['../classThreadPool.html#a4a06a902b9d11f43d59c12f0537ac879',1,'ThreadPool']]],
-  ['numthreads_37',['numThreads',['../classsampler.html#a67740d4b88501036e9f05955d4664708',1,'sampler']]],
-  ['numthreads_5finternal_38',['numThreads_internal',['../classthreadPool.html#ab5c2fe4faa757c5fadf78f8d96f81c02',1,'threadPool']]]
+  ['number_5fof_5fbins_35',['number_of_bins',['../classRelativeBinningLikelihood.html#aafcfe7e0d61e165864bd0984823c0fc6',1,'RelativeBinningLikelihood']]],
+  ['numswpswppthreads_36',['numSwpSWPPThreads',['../classThreadPool.html#a4759d05545738e03325dc54f7ed2b5d6',1,'ThreadPool']]],
+  ['numswpswpthreads_37',['numSwpSWPThreads',['../classThreadPool.html#a4a06a902b9d11f43d59c12f0537ac879',1,'ThreadPool']]],
+  ['numthreads_38',['numThreads',['../classsampler.html#a67740d4b88501036e9f05955d4664708',1,'sampler']]],
+  ['numthreads_5finternal_39',['numThreads_internal',['../classthreadPool.html#ab5c2fe4faa757c5fadf78f8d96f81c02',1,'threadPool']]]
 ];

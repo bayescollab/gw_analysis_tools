@@ -29,8 +29,9 @@ var searchData=
   ['num_5frjstep_26',['num_RJstep',['../classsampler.html#a7b934ed8a7b185ad220cf4e0fa419c40',1,'sampler']]],
   ['num_5fsegments_27',['num_segments',['../D__Z__Config_8h.html#aac953daa8839736a9045defba4330a71',1,'D_Z_Config.h']]],
   ['num_5fthreads_28',['num_threads',['../classsampler.html#a0d3c87df5d138ce4cd2286d55a54eb04',1,'sampler']]],
-  ['numswpswppthreads_29',['numSwpSWPPThreads',['../classThreadPool.html#a4759d05545738e03325dc54f7ed2b5d6',1,'ThreadPool']]],
-  ['numswpswpthreads_30',['numSwpSWPThreads',['../classThreadPool.html#a4a06a902b9d11f43d59c12f0537ac879',1,'ThreadPool']]],
-  ['numthreads_31',['numThreads',['../classsampler.html#a67740d4b88501036e9f05955d4664708',1,'sampler']]],
-  ['numthreads_5finternal_32',['numThreads_internal',['../classthreadPool.html#ab5c2fe4faa757c5fadf78f8d96f81c02',1,'threadPool']]]
+  ['number_5fof_5fbins_29',['number_of_bins',['../classRelativeBinningLikelihood.html#aafcfe7e0d61e165864bd0984823c0fc6',1,'RelativeBinningLikelihood']]],
+  ['numswpswppthreads_30',['numSwpSWPPThreads',['../classThreadPool.html#a4759d05545738e03325dc54f7ed2b5d6',1,'ThreadPool']]],
+  ['numswpswpthreads_31',['numSwpSWPThreads',['../classThreadPool.html#a4a06a902b9d11f43d59c12f0537ac879',1,'ThreadPool']]],
+  ['numthreads_32',['numThreads',['../classsampler.html#a67740d4b88501036e9f05955d4664708',1,'sampler']]],
+  ['numthreads_5finternal_33',['numThreads_internal',['../classthreadPool.html#ab5c2fe4faa757c5fadf78f8d96f81c02',1,'threadPool']]]
 ];

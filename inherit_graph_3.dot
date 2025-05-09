@@ -5,5 +5,5 @@ digraph "Graphical Class Hierarchy"
   edge [fontname=Helvetica,fontsize=10,labelfontname=Helvetica,labelfontsize=10];
   node [fontname=Helvetica,fontsize=10,shape=box,height=0.2,width=0.4];
   rankdir="LR";
-  Node0 [id="Node000000",label="comparator_ac_fft",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$classcomparator__ac__fft.html",tooltip="comparator to sort ac-jobs"];
+  Node0 [id="Node000000",label="Comparator",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$classComparator.html",tooltip="Class to facilitate the comparing of chains for priority."];
 }

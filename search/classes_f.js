@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['waveform_5fpolarizations_0',['waveform_polarizations',['../classwaveform__polarizations.html',1,'']]]
+  ['useful_5fpowers_0',['useful_powers',['../structuseful__powers.html',1,'']]]
 ];

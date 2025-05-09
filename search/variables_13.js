@@ -41,10 +41,11 @@ var searchData=
   ['time_5felapsed_5fwall_5fac_38',['time_elapsed_wall_ac',['../classsampler.html#a34e5def2ae898e19d183a2099f5332e5',1,'sampler']]],
   ['time_5ftapes_39',['time_tapes',['../structgsl__subroutine.html#ae173f0d099a21774a228f9e6f1870d1f',1,'gsl_subroutine']]],
   ['tmax_40',['TMAX',['../mcmc__sampler_8cpp.html#a657a808227468e1f1d0a4fe505c438a8',1,'mcmc_sampler.cpp']]],
-  ['trim_5flengths_41',['trim_lengths',['../classmcmc__sampler__output.html#a8a5a260d30dec785e6fefc8cc1fec16b',1,'mcmc_sampler_output']]],
-  ['trimmed_42',['trimmed',['../structdump__file__struct.html#a2151f09435b9ad6ea13d06afe9d2b388',1,'dump_file_struct']]],
-  ['trimmed_5ffile_43',['trimmed_file',['../classmcmc__sampler__output.html#adff65f4de143c911c50da8e12a22e401',1,'mcmc_sampler_output']]],
-  ['tune_44',['tune',['../classsampler.html#a332154646380d81754c91b9ae85f753f',1,'sampler']]],
-  ['twopi_5fmsec_45',['twopi_Msec',['../structPhenomPv3Storage.html#a1e13d0fbba499581249d68c381f7abf3',1,'PhenomPv3Storage']]],
-  ['types_5fof_5fsteps_46',['types_of_steps',['../classsampler.html#a0a556351f7c28b8577e5e7f8106ae626',1,'sampler']]]
+  ['trapdel_41',['TrapDel',['../classSimpsonsQuad.html#ad706baf4eac6993026015a9bd9a5f006',1,'SimpsonsQuad']]],
+  ['trim_5flengths_42',['trim_lengths',['../classmcmc__sampler__output.html#a8a5a260d30dec785e6fefc8cc1fec16b',1,'mcmc_sampler_output']]],
+  ['trimmed_43',['trimmed',['../structdump__file__struct.html#a2151f09435b9ad6ea13d06afe9d2b388',1,'dump_file_struct']]],
+  ['trimmed_5ffile_44',['trimmed_file',['../classmcmc__sampler__output.html#adff65f4de143c911c50da8e12a22e401',1,'mcmc_sampler_output']]],
+  ['tune_45',['tune',['../classsampler.html#a332154646380d81754c91b9ae85f753f',1,'sampler']]],
+  ['twopi_5fmsec_46',['twopi_Msec',['../structPhenomPv3Storage.html#a1e13d0fbba499581249d68c381f7abf3',1,'PhenomPv3Storage']]],
+  ['types_5fof_5fsteps_47',['types_of_steps',['../classsampler.html#a0a556351f7c28b8577e5e7f8106ae626',1,'sampler']]]
 ];

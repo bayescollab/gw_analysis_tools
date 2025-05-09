@@ -69,5 +69,24 @@ digraph "/Users/runner/work/gw_analysis_tools/gw_analysis_tools/include/gwat/gwa
   Node22 -> Node17 [id="edge40_Node000022_Node000017",color="steelblue1",style="solid",tooltip=" "];
   Node22 -> Node18 [id="edge41_Node000022_Node000018",color="steelblue1",style="solid",tooltip=" "];
   Node16 -> Node2 [id="edge42_Node000016_Node000002",color="steelblue1",style="solid",tooltip=" "];
-  Node1 -> Node16 [id="edge43_Node000001_Node000016",color="steelblue1",style="solid",tooltip=" "];
+  Node12 -> Node24 [id="edge43_Node000012_Node000024",color="steelblue1",style="solid",tooltip=" "];
+  Node24 [id="Node000024",label="quadrature.h",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$quadrature_8h.html",tooltip=" "];
+  Node24 -> Node23 [id="edge44_Node000024_Node000023",color="steelblue1",style="solid",tooltip=" "];
+  Node12 -> Node25 [id="edge45_Node000012_Node000025",color="steelblue1",style="solid",tooltip=" "];
+  Node25 [id="Node000025",label="adaptivelikelihoods.h",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$adaptivelikelihoods_8h.html",tooltip=" "];
+  Node25 -> Node26 [id="edge46_Node000025_Node000026",color="steelblue1",style="solid",tooltip=" "];
+  Node26 [id="Node000026",label="waveform_util.h",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$waveform__util_8h.html",tooltip=" "];
+  Node26 -> Node27 [id="edge47_Node000026_Node000027",color="steelblue1",style="solid",tooltip=" "];
+  Node27 [id="Node000027",label="waveform_generator.h",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$waveform__generator_8h.html",tooltip=" "];
+  Node27 -> Node18 [id="edge48_Node000027_Node000018",color="steelblue1",style="solid",tooltip=" "];
+  Node27 -> Node2 [id="edge49_Node000027_Node000002",color="steelblue1",style="solid",tooltip=" "];
+  Node27 -> Node4 [id="edge50_Node000027_Node000004",color="steelblue1",style="solid",tooltip=" "];
+  Node27 -> Node3 [id="edge51_Node000027_Node000003",color="steelblue1",style="solid",tooltip=" "];
+  Node26 -> Node2 [id="edge52_Node000026_Node000002",color="steelblue1",style="solid",tooltip=" "];
+  Node26 -> Node24 [id="edge53_Node000026_Node000024",color="steelblue1",style="solid",tooltip=" "];
+  Node26 -> Node3 [id="edge54_Node000026_Node000003",color="steelblue1",style="solid",tooltip=" "];
+  Node26 -> Node28 [id="edge55_Node000026_Node000028",color="steelblue1",style="solid",tooltip=" "];
+  Node28 [id="Node000028",label="gsl/gsl_integration.h",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
+  Node25 -> Node23 [id="edge56_Node000025_Node000023",color="steelblue1",style="solid",tooltip=" "];
+  Node1 -> Node16 [id="edge57_Node000001_Node000016",color="steelblue1",style="solid",tooltip=" "];
 }

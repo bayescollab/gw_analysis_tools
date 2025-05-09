@@ -5,5 +5,9 @@ digraph "Graphical Class Hierarchy"
   edge [fontname=Helvetica,fontsize=10,labelfontname=Helvetica,labelfontsize=10];
   node [fontname=Helvetica,fontsize=10,shape=box,height=0.2,width=0.4];
   rankdir="LR";
-  Node0 [id="Node000000",label="swap_struct",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$structswap__struct.html",tooltip=" "];
+  Node0 [id="Node000000",label="Quadrature",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$classQuadrature.html",tooltip="Class to evaluate integrals with established spacing and weights."];
+  Node0 -> Node1 [id="edge27_Node000000_Node000001",dir="back",color="steelblue1",style="solid",tooltip=" "];
+  Node1 [id="Node000001",label="SimpsonsQuad",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$classSimpsonsQuad.html",tooltip="Simpson's rule for uniformly-spaced integrals."];
+  Node1 -> Node2 [id="edge28_Node000001_Node000002",dir="back",color="steelblue1",style="solid",tooltip=" "];
+  Node2 [id="Node000002",label="SimpsonsLogQuad",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$classSimpsonsLogQuad.html",tooltip="Simpson's rule for logarithmically uniformly-spaced integrals."];
 }

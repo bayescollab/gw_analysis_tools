@@ -62,7 +62,11 @@ digraph "/Users/runner/work/gw_analysis_tools/gw_analysis_tools/src/standardPrio
   Node22 [id="Node000022",label="waveform_util.h",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$waveform__util_8h.html",tooltip=" "];
   Node22 -> Node19 [id="edge35_Node000022_Node000019",color="steelblue1",style="solid",tooltip=" "];
   Node22 -> Node3 [id="edge36_Node000022_Node000003",color="steelblue1",style="solid",tooltip=" "];
-  Node22 -> Node4 [id="edge37_Node000022_Node000004",color="steelblue1",style="solid",tooltip=" "];
-  Node22 -> Node23 [id="edge38_Node000022_Node000023",color="steelblue1",style="solid",tooltip=" "];
-  Node23 [id="Node000023",label="gsl/gsl_integration.h",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
+  Node22 -> Node23 [id="edge37_Node000022_Node000023",color="steelblue1",style="solid",tooltip=" "];
+  Node23 [id="Node000023",label="quadrature.h",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$quadrature_8h.html",tooltip=" "];
+  Node23 -> Node24 [id="edge38_Node000023_Node000024",color="steelblue1",style="solid",tooltip=" "];
+  Node24 [id="Node000024",label="vector",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
+  Node22 -> Node4 [id="edge39_Node000022_Node000004",color="steelblue1",style="solid",tooltip=" "];
+  Node22 -> Node25 [id="edge40_Node000022_Node000025",color="steelblue1",style="solid",tooltip=" "];
+  Node25 [id="Node000025",label="gsl/gsl_integration.h",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
 }

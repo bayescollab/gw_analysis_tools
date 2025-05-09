@@ -7,7 +7,7 @@ var searchData=
   ['param_5fstatus_4',['param_status',['../classsampler.html#aa04bac8a01666df1e63f66106978fc0e',1,'sampler']]],
   ['params_5',['params',['../structgsl__snr__struct.html#a0919a6d9e322d8c8192216608f39eaf1',1,'gsl_snr_struct']]],
   ['pd_6',['PD',['../classlogPriorStandard__D.html#a259ae129ea361121e4eb205b04b83fba',1,'logPriorStandard_D::PD'],['../classlogPriorStandard__P.html#ad58cbf1731002882504b359836065358',1,'logPriorStandard_P::PD']]],
-  ['pfn_7',['pfn',['../classmcr__sampler.html#a002df436846c9b530987b09bfbfa350c',1,'mcr_sampler']]],
+  ['pfn_7',['pfn',['../classmcr__sampler.html#ad87f2d7738158ed37629c34336b0aa60',1,'mcr_sampler']]],
   ['phase_5ftapes_8',['phase_tapes',['../structgsl__subroutine.html#ae3f14cb143f4e7d1b6d0be279370ad26',1,'gsl_subroutine']]],
   ['phi_9',['phi',['../classgen__params__base.html#a500f71cd641e52356d6371894f7d8a07',1,'gen_params_base::phi'],['../structsource__parameters.html#ac9b7d9ce563fe8e9241e5b9165746b13',1,'source_parameters::phi']]],
   ['phi1_5fprior_10',['phi1_prior',['../structpriorData.html#a76c28978943499e22a43edacf25c8a6b',1,'priorData']]],
@@ -43,7 +43,8 @@ var searchData=
   ['progress_40',['progress',['../classsampler.html#af248578ba42f306ff0d9d1e47a75c055',1,'sampler']]],
   ['prop_5fmh_5ffactor_41',['prop_MH_factor',['../classsampler.html#ab72a903105e9ccb18356e3db4312b9ba',1,'sampler']]],
   ['proper_5ffisher_42',['proper_fisher',['../classsampler.html#a2f740ef7f8608a9e46b3b1849553c81a',1,'sampler']]],
-  ['psds_43',['psds',['../classppEFisherRJVariables.html#a1074a4077a7a823b9161a10c6bbb91f3',1,'ppEFisherRJVariables']]],
-  ['psi_44',['psi',['../classgen__params__base.html#af1c02da522106d065ee3ebefe77a11a6',1,'gen_params_base']]],
-  ['pt_5falloc_45',['PT_alloc',['../classsampler.html#afdcb7687d4e6f6d818795b916f2912cf',1,'sampler']]]
+  ['psd_43',['psd',['../structifo__data__struct.html#aa64f4e40c54660a7a7763359ac072c70',1,'ifo_data_struct']]],
+  ['psds_44',['psds',['../classppEFisherRJVariables.html#a1074a4077a7a823b9161a10c6bbb91f3',1,'ppEFisherRJVariables']]],
+  ['psi_45',['psi',['../classgen__params__base.html#af1c02da522106d065ee3ebefe77a11a6',1,'gen_params_base']]],
+  ['pt_5falloc_46',['PT_alloc',['../classsampler.html#afdcb7687d4e6f6d818795b916f2912cf',1,'sampler']]]
 ];

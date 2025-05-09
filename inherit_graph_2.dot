@@ -5,5 +5,27 @@ digraph "Graphical Class Hierarchy"
   edge [fontname=Helvetica,fontsize=10,labelfontname=Helvetica,labelfontsize=10];
   node [fontname=Helvetica,fontsize=10,shape=box,height=0.2,width=0.4];
   rankdir="LR";
-  Node0 [id="Node000000",label="Comparator",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$classComparator.html",tooltip="Class to facilitate the comparing of chains for priority."];
+  Node0 [id="Node000000",label="bayesship::probabilityFn",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
+  Node0 -> Node1 [id="edge2_Node000000_Node000001",dir="back",color="steelblue1",style="solid",tooltip=" "];
+  Node1 [id="Node000001",label="MCMC_likelihood_wrapper_v2",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$classMCMC__likelihood__wrapper__v2.html",tooltip=" "];
+  Node0 -> Node2 [id="edge3_Node000000_Node000002",dir="back",color="steelblue1",style="solid",tooltip=" "];
+  Node2 [id="Node000002",label="MCMC_likelihood_wrapper\l_v2_RJ",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$classMCMC__likelihood__wrapper__v2__RJ.html",tooltip=" "];
+  Node0 -> Node3 [id="edge4_Node000000_Node000003",dir="back",color="steelblue1",style="solid",tooltip=" "];
+  Node3 [id="Node000003",label="logPriorStandard_D",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$classlogPriorStandard__D.html",tooltip=" "];
+  Node3 -> Node4 [id="edge5_Node000003_Node000004",dir="back",color="steelblue1",style="solid",tooltip=" "];
+  Node4 [id="Node000004",label="logPriorStandard_D_NRT",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$classlogPriorStandard__D__NRT.html",tooltip=" "];
+  Node4 -> Node5 [id="edge6_Node000004_Node000005",dir="back",color="steelblue1",style="solid",tooltip=" "];
+  Node5 [id="Node000005",label="logPriorStandard_D\l_NRT_EA",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$classlogPriorStandard__D__NRT__EA.html",tooltip=" "];
+  Node4 -> Node6 [id="edge7_Node000004_Node000006",dir="back",color="steelblue1",style="solid",tooltip=" "];
+  Node6 [id="Node000006",label="logPriorStandard_D\l_NRT_mod",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$classlogPriorStandard__D__NRT__mod.html",tooltip=" "];
+  Node3 -> Node7 [id="edge8_Node000003_Node000007",dir="back",color="steelblue1",style="solid",tooltip=" "];
+  Node7 [id="Node000007",label="logPriorStandard_D_mod",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$classlogPriorStandard__D__mod.html",tooltip=" "];
+  Node0 -> Node8 [id="edge9_Node000000_Node000008",dir="back",color="steelblue1",style="solid",tooltip=" "];
+  Node8 [id="Node000008",label="logPriorStandard_P",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$classlogPriorStandard__P.html",tooltip=" "];
+  Node8 -> Node9 [id="edge10_Node000008_Node000009",dir="back",color="steelblue1",style="solid",tooltip=" "];
+  Node9 [id="Node000009",label="logPriorStandard_P_NRT",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$classlogPriorStandard__P__NRT.html",tooltip=" "];
+  Node9 -> Node10 [id="edge11_Node000009_Node000010",dir="back",color="steelblue1",style="solid",tooltip=" "];
+  Node10 [id="Node000010",label="logPriorStandard_P\l_NRT_mod",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$classlogPriorStandard__P__NRT__mod.html",tooltip=" "];
+  Node8 -> Node11 [id="edge12_Node000008_Node000011",dir="back",color="steelblue1",style="solid",tooltip=" "];
+  Node11 [id="Node000011",label="logPriorStandard_P_mod",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$classlogPriorStandard__P__mod.html",tooltip=" "];
 }

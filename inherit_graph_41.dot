@@ -5,5 +5,5 @@ digraph "Graphical Class Hierarchy"
   edge [fontname=Helvetica,fontsize=10,labelfontname=Helvetica,labelfontsize=10];
   node [fontname=Helvetica,fontsize=10,shape=box,height=0.2,width=0.4];
   rankdir="LR";
-  Node0 [id="Node000000",label="useful_powers\< T \>",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$structuseful__powers.html",tooltip="To speed up calculations within the for loops, we pre-calculate reoccuring powers of M*F and Pi,..."];
+  Node0 [id="Node000000",label="theory_ppE_map\< T \>",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$structtheory__ppE__map.html",tooltip=" "];
 }

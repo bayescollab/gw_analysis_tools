@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../">
 <head>
@@ -5,20 +7,16 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>mcmc_sampler_internals &mdash; GW Analysis Tools  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
-      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="../_static/doctools.js?v=9a2dae69"></script>
-        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -118,151 +116,155 @@
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv412kde_proposalP7samplerPdPdPiPiPiPii"><code class="docutils literal notranslate"><span class="pre">kde_proposal()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv49limit_inf"><code class="docutils literal notranslate"><span class="pre">limit_inf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv419mcmc_data_interface"><code class="docutils literal notranslate"><span class="pre">mcmc_data_interface</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N19mcmc_data_interfaceD0Ev"><code class="docutils literal notranslate"><span class="pre">mcmc_data_interface::~mcmc_data_interface()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N19mcmc_data_interface7min_dimE"><code class="docutils literal notranslate"><span class="pre">mcmc_data_interface::min_dim</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N19mcmc_data_interface8chain_idE"><code class="docutils literal notranslate"><span class="pre">mcmc_data_interface::chain_id</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N19mcmc_data_interface7max_dimE"><code class="docutils literal notranslate"><span class="pre">mcmc_data_interface::max_dim</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N19mcmc_data_interface19nested_model_numberE"><code class="docutils literal notranslate"><span class="pre">mcmc_data_interface::nested_model_number</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N19mcmc_data_interface12chain_numberE"><code class="docutils literal notranslate"><span class="pre">mcmc_data_interface::chain_number</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N19mcmc_data_interface13RJ_step_widthE"><code class="docutils literal notranslate"><span class="pre">mcmc_data_interface::RJ_step_width</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N19mcmc_data_interface10burn_phaseE"><code class="docutils literal notranslate"><span class="pre">mcmc_data_interface::burn_phase</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N19mcmc_data_interfaceD0Ev"><code class="docutils literal notranslate"><span class="pre">~mcmc_data_interface()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N19mcmc_data_interface7min_dimE"><code class="docutils literal notranslate"><span class="pre">min_dim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N19mcmc_data_interface8chain_idE"><code class="docutils literal notranslate"><span class="pre">chain_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N19mcmc_data_interface7max_dimE"><code class="docutils literal notranslate"><span class="pre">max_dim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N19mcmc_data_interface19nested_model_numberE"><code class="docutils literal notranslate"><span class="pre">nested_model_number</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N19mcmc_data_interface12chain_numberE"><code class="docutils literal notranslate"><span class="pre">chain_number</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N19mcmc_data_interface13RJ_step_widthE"><code class="docutils literal notranslate"><span class="pre">RJ_step_width</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N19mcmc_data_interface10burn_phaseE"><code class="docutils literal notranslate"><span class="pre">burn_phase</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv47sampler"><code class="docutils literal notranslate"><span class="pre">sampler</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler10interfacesE"><code class="docutils literal notranslate"><span class="pre">sampler::interfaces</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler12block_sampleE"><code class="docutils literal notranslate"><span class="pre">sampler::block_sample</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler17block_sample_probE"><code class="docutils literal notranslate"><span class="pre">sampler::block_sample_prob</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler9block_numE"><code class="docutils literal notranslate"><span class="pre">sampler::block_num</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler18block_boundary_idsE"><code class="docutils literal notranslate"><span class="pre">sampler::block_boundary_ids</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler8kde_stepE"><code class="docutils literal notranslate"><span class="pre">sampler::kde_step</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler4tuneE"><code class="docutils literal notranslate"><span class="pre">sampler::tune</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler14types_of_stepsE"><code class="docutils literal notranslate"><span class="pre">sampler::types_of_steps</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler9step_probE"><code class="docutils literal notranslate"><span class="pre">sampler::step_prob</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15prob_boundariesE"><code class="docutils literal notranslate"><span class="pre">sampler::prob_boundaries</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler11chain_tempsE"><code class="docutils literal notranslate"><span class="pre">sampler::chain_temps</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler13swap_partnersE"><code class="docutils literal notranslate"><span class="pre">sampler::swap_partners</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler12swap_acceptsE"><code class="docutils literal notranslate"><span class="pre">sampler::swap_accepts</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler12random_swapsE"><code class="docutils literal notranslate"><span class="pre">sampler::random_swaps</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler19chain_neighborhoodsE"><code class="docutils literal notranslate"><span class="pre">sampler::chain_neighborhoods</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15chain_neighborsE"><code class="docutils literal notranslate"><span class="pre">sampler::chain_neighbors</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler23chain_neighborhoods_idsE"><code class="docutils literal notranslate"><span class="pre">sampler::chain_neighborhoods_ids</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler19chain_neighbors_idsE"><code class="docutils literal notranslate"><span class="pre">sampler::chain_neighbors_ids</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler12chain_radiusE"><code class="docutils literal notranslate"><span class="pre">sampler::chain_radius</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler17restrict_swappingE"><code class="docutils literal notranslate"><span class="pre">sampler::restrict_swapping</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler17isolate_ensemblesE"><code class="docutils literal notranslate"><span class="pre">sampler::isolate_ensembles</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler22isolate_ensembles_coldE"><code class="docutils literal notranslate"><span class="pre">sampler::isolate_ensembles_cold</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler9swap_rateE"><code class="docutils literal notranslate"><span class="pre">sampler::swap_rate</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler10burn_phaseE"><code class="docutils literal notranslate"><span class="pre">sampler::burn_phase</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler17ensemble_proposalE"><code class="docutils literal notranslate"><span class="pre">sampler::ensemble_proposal</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler22ensemble_proposal_rateE"><code class="docutils literal notranslate"><span class="pre">sampler::ensemble_proposal_rate</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15ensemble_prop_aE"><code class="docutils literal notranslate"><span class="pre">sampler::ensemble_prop_a</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler7waitingE"><code class="docutils literal notranslate"><span class="pre">sampler::waiting</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15restarted_chainE"><code class="docutils literal notranslate"><span class="pre">sampler::restarted_chain</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler11waiting_SWPE"><code class="docutils literal notranslate"><span class="pre">sampler::waiting_SWP</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler13queue_mutexesE"><code class="docutils literal notranslate"><span class="pre">sampler::queue_mutexes</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler9chain_posE"><code class="docutils literal notranslate"><span class="pre">sampler::chain_pos</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler8swp_freqE"><code class="docutils literal notranslate"><span class="pre">sampler::swp_freq</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler7chain_NE"><code class="docutils literal notranslate"><span class="pre">sampler::chain_N</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler10numThreadsE"><code class="docutils literal notranslate"><span class="pre">sampler::numThreads</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler7N_stepsE"><code class="docutils literal notranslate"><span class="pre">sampler::N_steps</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler9dimensionE"><code class="docutils literal notranslate"><span class="pre">sampler::dimension</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler7min_dimE"><code class="docutils literal notranslate"><span class="pre">sampler::min_dim</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler7max_dimE"><code class="docutils literal notranslate"><span class="pre">sampler::max_dim</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler12fisher_existE"><code class="docutils literal notranslate"><span class="pre">sampler::fisher_exist</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler13proper_fisherE"><code class="docutils literal notranslate"><span class="pre">sampler::proper_fisher</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler9de_primedE"><code class="docutils literal notranslate"><span class="pre">sampler::de_primed</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler8priorityE"><code class="docutils literal notranslate"><span class="pre">sampler::priority</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler16ref_chain_statusE"><code class="docutils literal notranslate"><span class="pre">sampler::ref_chain_status</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler13ref_chain_idsE"><code class="docutils literal notranslate"><span class="pre">sampler::ref_chain_ids</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler13ref_chain_numE"><code class="docutils literal notranslate"><span class="pre">sampler::ref_chain_num</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler22prioritize_cold_chainsE"><code class="docutils literal notranslate"><span class="pre">sampler::prioritize_cold_chains</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler6outputE"><code class="docutils literal notranslate"><span class="pre">sampler::output</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler4poolE"><code class="docutils literal notranslate"><span class="pre">sampler::pool</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler8progressE"><code class="docutils literal notranslate"><span class="pre">sampler::progress</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler13show_progressE"><code class="docutils literal notranslate"><span class="pre">sampler::show_progress</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler11num_threadsE"><code class="docutils literal notranslate"><span class="pre">sampler::num_threads</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler14history_lengthE"><code class="docutils literal notranslate"><span class="pre">sampler::history_length</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler14history_updateE"><code class="docutils literal notranslate"><span class="pre">sampler::history_update</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler16current_hist_posE"><code class="docutils literal notranslate"><span class="pre">sampler::current_hist_pos</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler7historyE"><code class="docutils literal notranslate"><span class="pre">sampler::history</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler14history_statusE"><code class="docutils literal notranslate"><span class="pre">sampler::history_status</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler19current_likelihoodsE"><code class="docutils literal notranslate"><span class="pre">sampler::current_likelihoods</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler19check_stepsize_freqE"><code class="docutils literal notranslate"><span class="pre">sampler::check_stepsize_freq</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler23max_target_accept_ratioE"><code class="docutils literal notranslate"><span class="pre">sampler::max_target_accept_ratio</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler23min_target_accept_ratioE"><code class="docutils literal notranslate"><span class="pre">sampler::min_target_accept_ratio</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler20gauss_last_accept_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::gauss_last_accept_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler20gauss_last_reject_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::gauss_last_reject_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler28gauss_last_accept_ct_per_dimE"><code class="docutils literal notranslate"><span class="pre">sampler::gauss_last_accept_ct_per_dim</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler28gauss_last_reject_ct_per_dimE"><code class="docutils literal notranslate"><span class="pre">sampler::gauss_last_reject_ct_per_dim</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler17de_last_accept_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::de_last_accept_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler17de_last_reject_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::de_last_reject_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler19fish_last_accept_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::fish_last_accept_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler19fish_last_reject_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::fish_last_reject_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler18kde_last_accept_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::kde_last_accept_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler18kde_last_reject_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::kde_last_reject_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler21RJstep_last_accept_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::RJstep_last_accept_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler21RJstep_last_reject_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::RJstep_last_reject_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler22randgauss_width_numberE"><code class="docutils literal notranslate"><span class="pre">sampler::randgauss_width_number</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15randgauss_widthE"><code class="docutils literal notranslate"><span class="pre">sampler::randgauss_width</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler11fisher_vecsE"><code class="docutils literal notranslate"><span class="pre">sampler::fisher_vecs</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler11fisher_valsE"><code class="docutils literal notranslate"><span class="pre">sampler::fisher_vals</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler16fisher_vecs_propE"><code class="docutils literal notranslate"><span class="pre">sampler::fisher_vecs_prop</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler16fisher_vals_propE"><code class="docutils literal notranslate"><span class="pre">sampler::fisher_vals_prop</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler13fisher_matrixE"><code class="docutils literal notranslate"><span class="pre">sampler::fisher_matrix</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler18fisher_matrix_propE"><code class="docutils literal notranslate"><span class="pre">sampler::fisher_matrix_prop</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler16fisher_update_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::fisher_update_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler14prop_MH_factorE"><code class="docutils literal notranslate"><span class="pre">sampler::prop_MH_factor</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler20fisher_update_numberE"><code class="docutils literal notranslate"><span class="pre">sampler::fisher_update_number</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler7kde_covE"><code class="docutils literal notranslate"><span class="pre">sampler::kde_cov</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler10kde_fisherE"><code class="docutils literal notranslate"><span class="pre">sampler::kde_fisher</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler13kde_cov_lndetE"><code class="docutils literal notranslate"><span class="pre">sampler::kde_cov_lndet</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler21kde_cov_update_numberE"><code class="docutils literal notranslate"><span class="pre">sampler::kde_cov_update_number</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler17kde_cov_update_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::kde_cov_update_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15user_parametersE"><code class="docutils literal notranslate"><span class="pre">sampler::user_parameters</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler22local_param_allocationE"><code class="docutils literal notranslate"><span class="pre">sampler::local_param_allocation</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler4rvecE"><code class="docutils literal notranslate"><span class="pre">sampler::rvec</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler11nan_counterE"><code class="docutils literal notranslate"><span class="pre">sampler::nan_counter</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler9num_gaussE"><code class="docutils literal notranslate"><span class="pre">sampler::num_gauss</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler8num_fishE"><code class="docutils literal notranslate"><span class="pre">sampler::num_fish</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler6num_deE"><code class="docutils literal notranslate"><span class="pre">sampler::num_de</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler9num_mmalaE"><code class="docutils literal notranslate"><span class="pre">sampler::num_mmala</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler10num_RJstepE"><code class="docutils literal notranslate"><span class="pre">sampler::num_RJstep</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler7num_kdeE"><code class="docutils literal notranslate"><span class="pre">sampler::num_kde</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler16time_elapsed_cpuE"><code class="docutils literal notranslate"><span class="pre">sampler::time_elapsed_cpu</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler17time_elapsed_wallE"><code class="docutils literal notranslate"><span class="pre">sampler::time_elapsed_wall</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler19time_elapsed_cpu_acE"><code class="docutils literal notranslate"><span class="pre">sampler::time_elapsed_cpu_ac</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler20time_elapsed_wall_acE"><code class="docutils literal notranslate"><span class="pre">sampler::time_elapsed_wall_ac</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler13kde_accept_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::kde_accept_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler13kde_reject_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::kde_reject_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler14fish_accept_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::fish_accept_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler14fish_reject_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::fish_reject_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler12de_accept_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::de_accept_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler12de_reject_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::de_reject_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15gauss_accept_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::gauss_accept_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15gauss_reject_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::gauss_reject_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler23gauss_accept_ct_per_dimE"><code class="docutils literal notranslate"><span class="pre">sampler::gauss_accept_ct_per_dim</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler23gauss_reject_ct_per_dimE"><code class="docutils literal notranslate"><span class="pre">sampler::gauss_reject_ct_per_dim</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15mmala_accept_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::mmala_accept_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15mmala_reject_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::mmala_reject_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler16RJstep_accept_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::RJstep_accept_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler16RJstep_reject_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::RJstep_reject_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler14swap_accept_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::swap_accept_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler14swap_reject_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::swap_reject_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler14step_accept_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::step_accept_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler14step_reject_ctE"><code class="docutils literal notranslate"><span class="pre">sampler::step_reject_ct</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler35thermodynamic_integrated_likelihoodE"><code class="docutils literal notranslate"><span class="pre">sampler::thermodynamic_integrated_likelihood</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler41thermodynamic_integrated_likelihood_termsE"><code class="docutils literal notranslate"><span class="pre">sampler::thermodynamic_integrated_likelihood_terms</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler12ll_lp_outputE"><code class="docutils literal notranslate"><span class="pre">sampler::ll_lp_output</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler6log_llE"><code class="docutils literal notranslate"><span class="pre">sampler::log_ll</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler6log_lpE"><code class="docutils literal notranslate"><span class="pre">sampler::log_lp</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler1AE"><code class="docutils literal notranslate"><span class="pre">sampler::A</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler8PT_allocE"><code class="docutils literal notranslate"><span class="pre">sampler::PT_alloc</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15linear_swappingE"><code class="docutils literal notranslate"><span class="pre">sampler::linear_swapping</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler12param_statusE"><code class="docutils literal notranslate"><span class="pre">sampler::param_status</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler6RJMCMCE"><code class="docutils literal notranslate"><span class="pre">sampler::RJMCMC</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15update_RJ_widthE"><code class="docutils literal notranslate"><span class="pre">sampler::update_RJ_width</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler12model_statusE"><code class="docutils literal notranslate"><span class="pre">sampler::model_status</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler19nested_model_numberE"><code class="docutils literal notranslate"><span class="pre">sampler::nested_model_number</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler10interfacesE"><code class="docutils literal notranslate"><span class="pre">interfaces</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler12block_sampleE"><code class="docutils literal notranslate"><span class="pre">block_sample</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler17block_sample_probE"><code class="docutils literal notranslate"><span class="pre">block_sample_prob</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler9block_numE"><code class="docutils literal notranslate"><span class="pre">block_num</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler18block_boundary_idsE"><code class="docutils literal notranslate"><span class="pre">block_boundary_ids</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler8kde_stepE"><code class="docutils literal notranslate"><span class="pre">kde_step</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler4tuneE"><code class="docutils literal notranslate"><span class="pre">tune</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler14types_of_stepsE"><code class="docutils literal notranslate"><span class="pre">types_of_steps</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler9step_probE"><code class="docutils literal notranslate"><span class="pre">step_prob</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15prob_boundariesE"><code class="docutils literal notranslate"><span class="pre">prob_boundaries</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler11chain_tempsE"><code class="docutils literal notranslate"><span class="pre">chain_temps</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler13swap_partnersE"><code class="docutils literal notranslate"><span class="pre">swap_partners</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler12swap_acceptsE"><code class="docutils literal notranslate"><span class="pre">swap_accepts</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler12random_swapsE"><code class="docutils literal notranslate"><span class="pre">random_swaps</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler19chain_neighborhoodsE"><code class="docutils literal notranslate"><span class="pre">chain_neighborhoods</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15chain_neighborsE"><code class="docutils literal notranslate"><span class="pre">chain_neighbors</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler23chain_neighborhoods_idsE"><code class="docutils literal notranslate"><span class="pre">chain_neighborhoods_ids</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler19chain_neighbors_idsE"><code class="docutils literal notranslate"><span class="pre">chain_neighbors_ids</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler12chain_radiusE"><code class="docutils literal notranslate"><span class="pre">chain_radius</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler17restrict_swappingE"><code class="docutils literal notranslate"><span class="pre">restrict_swapping</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler17isolate_ensemblesE"><code class="docutils literal notranslate"><span class="pre">isolate_ensembles</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler22isolate_ensembles_coldE"><code class="docutils literal notranslate"><span class="pre">isolate_ensembles_cold</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler9swap_rateE"><code class="docutils literal notranslate"><span class="pre">swap_rate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler10burn_phaseE"><code class="docutils literal notranslate"><span class="pre">burn_phase</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler17ensemble_proposalE"><code class="docutils literal notranslate"><span class="pre">ensemble_proposal</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler22ensemble_proposal_rateE"><code class="docutils literal notranslate"><span class="pre">ensemble_proposal_rate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15ensemble_prop_aE"><code class="docutils literal notranslate"><span class="pre">ensemble_prop_a</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler7waitingE"><code class="docutils literal notranslate"><span class="pre">waiting</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15restarted_chainE"><code class="docutils literal notranslate"><span class="pre">restarted_chain</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler11waiting_SWPE"><code class="docutils literal notranslate"><span class="pre">waiting_SWP</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler13queue_mutexesE"><code class="docutils literal notranslate"><span class="pre">queue_mutexes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler9chain_posE"><code class="docutils literal notranslate"><span class="pre">chain_pos</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler8swp_freqE"><code class="docutils literal notranslate"><span class="pre">swp_freq</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler7chain_NE"><code class="docutils literal notranslate"><span class="pre">chain_N</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler10numThreadsE"><code class="docutils literal notranslate"><span class="pre">numThreads</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler7N_stepsE"><code class="docutils literal notranslate"><span class="pre">N_steps</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler9dimensionE"><code class="docutils literal notranslate"><span class="pre">dimension</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler7min_dimE"><code class="docutils literal notranslate"><span class="pre">min_dim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler7max_dimE"><code class="docutils literal notranslate"><span class="pre">max_dim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler12fisher_existE"><code class="docutils literal notranslate"><span class="pre">fisher_exist</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler13proper_fisherE"><code class="docutils literal notranslate"><span class="pre">proper_fisher</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler9de_primedE"><code class="docutils literal notranslate"><span class="pre">de_primed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler8priorityE"><code class="docutils literal notranslate"><span class="pre">priority</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler16ref_chain_statusE"><code class="docutils literal notranslate"><span class="pre">ref_chain_status</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler13ref_chain_idsE"><code class="docutils literal notranslate"><span class="pre">ref_chain_ids</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler13ref_chain_numE"><code class="docutils literal notranslate"><span class="pre">ref_chain_num</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler22prioritize_cold_chainsE"><code class="docutils literal notranslate"><span class="pre">prioritize_cold_chains</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler6outputE"><code class="docutils literal notranslate"><span class="pre">output</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler4poolE"><code class="docutils literal notranslate"><span class="pre">pool</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler8progressE"><code class="docutils literal notranslate"><span class="pre">progress</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler13show_progressE"><code class="docutils literal notranslate"><span class="pre">show_progress</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler11num_threadsE"><code class="docutils literal notranslate"><span class="pre">num_threads</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler14history_lengthE"><code class="docutils literal notranslate"><span class="pre">history_length</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler14history_updateE"><code class="docutils literal notranslate"><span class="pre">history_update</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler16current_hist_posE"><code class="docutils literal notranslate"><span class="pre">current_hist_pos</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler7historyE"><code class="docutils literal notranslate"><span class="pre">history</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler14history_statusE"><code class="docutils literal notranslate"><span class="pre">history_status</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler19current_likelihoodsE"><code class="docutils literal notranslate"><span class="pre">current_likelihoods</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler19check_stepsize_freqE"><code class="docutils literal notranslate"><span class="pre">check_stepsize_freq</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler23max_target_accept_ratioE"><code class="docutils literal notranslate"><span class="pre">max_target_accept_ratio</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler23min_target_accept_ratioE"><code class="docutils literal notranslate"><span class="pre">min_target_accept_ratio</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler20gauss_last_accept_ctE"><code class="docutils literal notranslate"><span class="pre">gauss_last_accept_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler20gauss_last_reject_ctE"><code class="docutils literal notranslate"><span class="pre">gauss_last_reject_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler28gauss_last_accept_ct_per_dimE"><code class="docutils literal notranslate"><span class="pre">gauss_last_accept_ct_per_dim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler28gauss_last_reject_ct_per_dimE"><code class="docutils literal notranslate"><span class="pre">gauss_last_reject_ct_per_dim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler17de_last_accept_ctE"><code class="docutils literal notranslate"><span class="pre">de_last_accept_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler17de_last_reject_ctE"><code class="docutils literal notranslate"><span class="pre">de_last_reject_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler19fish_last_accept_ctE"><code class="docutils literal notranslate"><span class="pre">fish_last_accept_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler19fish_last_reject_ctE"><code class="docutils literal notranslate"><span class="pre">fish_last_reject_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler18kde_last_accept_ctE"><code class="docutils literal notranslate"><span class="pre">kde_last_accept_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler18kde_last_reject_ctE"><code class="docutils literal notranslate"><span class="pre">kde_last_reject_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler21RJstep_last_accept_ctE"><code class="docutils literal notranslate"><span class="pre">RJstep_last_accept_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler21RJstep_last_reject_ctE"><code class="docutils literal notranslate"><span class="pre">RJstep_last_reject_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler22randgauss_width_numberE"><code class="docutils literal notranslate"><span class="pre">randgauss_width_number</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15randgauss_widthE"><code class="docutils literal notranslate"><span class="pre">randgauss_width</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler11fisher_vecsE"><code class="docutils literal notranslate"><span class="pre">fisher_vecs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler11fisher_valsE"><code class="docutils literal notranslate"><span class="pre">fisher_vals</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler16fisher_vecs_propE"><code class="docutils literal notranslate"><span class="pre">fisher_vecs_prop</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler16fisher_vals_propE"><code class="docutils literal notranslate"><span class="pre">fisher_vals_prop</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler13fisher_matrixE"><code class="docutils literal notranslate"><span class="pre">fisher_matrix</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler18fisher_matrix_propE"><code class="docutils literal notranslate"><span class="pre">fisher_matrix_prop</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler16fisher_update_ctE"><code class="docutils literal notranslate"><span class="pre">fisher_update_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler14prop_MH_factorE"><code class="docutils literal notranslate"><span class="pre">prop_MH_factor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler20fisher_update_numberE"><code class="docutils literal notranslate"><span class="pre">fisher_update_number</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler7kde_covE"><code class="docutils literal notranslate"><span class="pre">kde_cov</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler10kde_fisherE"><code class="docutils literal notranslate"><span class="pre">kde_fisher</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler13kde_cov_lndetE"><code class="docutils literal notranslate"><span class="pre">kde_cov_lndet</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler21kde_cov_update_numberE"><code class="docutils literal notranslate"><span class="pre">kde_cov_update_number</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler17kde_cov_update_ctE"><code class="docutils literal notranslate"><span class="pre">kde_cov_update_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler2lpE"><code class="docutils literal notranslate"><span class="pre">lp</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler2llE"><code class="docutils literal notranslate"><span class="pre">ll</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler4fishE"><code class="docutils literal notranslate"><span class="pre">fish</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15user_parametersE"><code class="docutils literal notranslate"><span class="pre">user_parameters</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler22local_param_allocationE"><code class="docutils literal notranslate"><span class="pre">local_param_allocation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler4rvecE"><code class="docutils literal notranslate"><span class="pre">rvec</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler11nan_counterE"><code class="docutils literal notranslate"><span class="pre">nan_counter</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler9num_gaussE"><code class="docutils literal notranslate"><span class="pre">num_gauss</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler8num_fishE"><code class="docutils literal notranslate"><span class="pre">num_fish</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler6num_deE"><code class="docutils literal notranslate"><span class="pre">num_de</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler9num_mmalaE"><code class="docutils literal notranslate"><span class="pre">num_mmala</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler10num_RJstepE"><code class="docutils literal notranslate"><span class="pre">num_RJstep</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler7num_kdeE"><code class="docutils literal notranslate"><span class="pre">num_kde</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler16time_elapsed_cpuE"><code class="docutils literal notranslate"><span class="pre">time_elapsed_cpu</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler17time_elapsed_wallE"><code class="docutils literal notranslate"><span class="pre">time_elapsed_wall</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler19time_elapsed_cpu_acE"><code class="docutils literal notranslate"><span class="pre">time_elapsed_cpu_ac</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler20time_elapsed_wall_acE"><code class="docutils literal notranslate"><span class="pre">time_elapsed_wall_ac</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler13kde_accept_ctE"><code class="docutils literal notranslate"><span class="pre">kde_accept_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler13kde_reject_ctE"><code class="docutils literal notranslate"><span class="pre">kde_reject_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler14fish_accept_ctE"><code class="docutils literal notranslate"><span class="pre">fish_accept_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler14fish_reject_ctE"><code class="docutils literal notranslate"><span class="pre">fish_reject_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler12de_accept_ctE"><code class="docutils literal notranslate"><span class="pre">de_accept_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler12de_reject_ctE"><code class="docutils literal notranslate"><span class="pre">de_reject_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15gauss_accept_ctE"><code class="docutils literal notranslate"><span class="pre">gauss_accept_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15gauss_reject_ctE"><code class="docutils literal notranslate"><span class="pre">gauss_reject_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler23gauss_accept_ct_per_dimE"><code class="docutils literal notranslate"><span class="pre">gauss_accept_ct_per_dim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler23gauss_reject_ct_per_dimE"><code class="docutils literal notranslate"><span class="pre">gauss_reject_ct_per_dim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15mmala_accept_ctE"><code class="docutils literal notranslate"><span class="pre">mmala_accept_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15mmala_reject_ctE"><code class="docutils literal notranslate"><span class="pre">mmala_reject_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler16RJstep_accept_ctE"><code class="docutils literal notranslate"><span class="pre">RJstep_accept_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler16RJstep_reject_ctE"><code class="docutils literal notranslate"><span class="pre">RJstep_reject_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler14swap_accept_ctE"><code class="docutils literal notranslate"><span class="pre">swap_accept_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler14swap_reject_ctE"><code class="docutils literal notranslate"><span class="pre">swap_reject_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler14step_accept_ctE"><code class="docutils literal notranslate"><span class="pre">step_accept_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler14step_reject_ctE"><code class="docutils literal notranslate"><span class="pre">step_reject_ct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler35thermodynamic_integrated_likelihoodE"><code class="docutils literal notranslate"><span class="pre">thermodynamic_integrated_likelihood</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler41thermodynamic_integrated_likelihood_termsE"><code class="docutils literal notranslate"><span class="pre">thermodynamic_integrated_likelihood_terms</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler12ll_lp_outputE"><code class="docutils literal notranslate"><span class="pre">ll_lp_output</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler6log_llE"><code class="docutils literal notranslate"><span class="pre">log_ll</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler6log_lpE"><code class="docutils literal notranslate"><span class="pre">log_lp</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler1AE"><code class="docutils literal notranslate"><span class="pre">A</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler8PT_allocE"><code class="docutils literal notranslate"><span class="pre">PT_alloc</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15linear_swappingE"><code class="docutils literal notranslate"><span class="pre">linear_swapping</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler12param_statusE"><code class="docutils literal notranslate"><span class="pre">param_status</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler6RJMCMCE"><code class="docutils literal notranslate"><span class="pre">RJMCMC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler2rjE"><code class="docutils literal notranslate"><span class="pre">rj</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler15update_RJ_widthE"><code class="docutils literal notranslate"><span class="pre">update_RJ_width</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler12model_statusE"><code class="docutils literal notranslate"><span class="pre">model_status</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7sampler19nested_model_numberE"><code class="docutils literal notranslate"><span class="pre">nested_model_number</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -1234,18 +1236,18 @@
 <dd></dd></dl>
 
 <dl class="cpp var">
-<dt class="sig sig-object cpp">
-<span class="target" id="classsampler_1adb9cc4f4a0feef8fe1345e26ea6e7c5e"></span><span class="sig-name descname"><span class="pre">std::function&lt;</span> <span class="pre">double(double</span> <span class="pre">*,</span> <span class="pre">int</span> <span class="pre">*,</span> <span class="pre">int,mcmc_data_interface</span> <span class="pre">*,</span> <span class="pre">void</span> <span class="pre">*)</span> <span class="pre">lp</span> <span class="pre">)</span></span></dt>
+<dt class="sig sig-object cpp" id="_CPPv4N7sampler2lpE">
+<span id="_CPPv3N7sampler2lpE"></span><span id="_CPPv2N7sampler2lpE"></span><span class="target" id="classsampler_1a0221d8113584825b1a5420b8bbc4a099"></span><a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">function</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">double</span></span><span class="p"><span class="pre">(</span></span><span class="kt"><span class="pre">double</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv419mcmc_data_interface" title="mcmc_data_interface"><span class="n"><span class="pre">mcmc_data_interface</span></span></a><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lp</span></span></span><a class="headerlink" href="#_CPPv4N7sampler2lpE" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="cpp var">
-<dt class="sig sig-object cpp">
-<span class="target" id="classsampler_1a3a2e90ed27678580268fe8780009d001"></span><span class="sig-name descname"><span class="pre">std::function&lt;</span> <span class="pre">double(double</span> <span class="pre">*,</span> <span class="pre">int</span> <span class="pre">*,</span> <span class="pre">int,mcmc_data_interface</span> <span class="pre">*,</span> <span class="pre">void</span> <span class="pre">*)</span> <span class="pre">ll</span> <span class="pre">)</span></span></dt>
+<dt class="sig sig-object cpp" id="_CPPv4N7sampler2llE">
+<span id="_CPPv3N7sampler2llE"></span><span id="_CPPv2N7sampler2llE"></span><span class="target" id="classsampler_1a1c3acd78289d85769e5dfa8ce07ae238"></span><a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">function</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">double</span></span><span class="p"><span class="pre">(</span></span><span class="kt"><span class="pre">double</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv419mcmc_data_interface" title="mcmc_data_interface"><span class="n"><span class="pre">mcmc_data_interface</span></span></a><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ll</span></span></span><a class="headerlink" href="#_CPPv4N7sampler2llE" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="cpp var">
-<dt class="sig sig-object cpp">
-<span class="target" id="classsampler_1ac57df81c469116546452cafdb1471e4d"></span><span class="sig-name descname"><span class="pre">std::function&lt;</span> <span class="pre">void(double</span> <span class="pre">*,</span> <span class="pre">int</span> <span class="pre">*,</span> <span class="pre">int,double</span> <span class="pre">**,</span> <span class="pre">mcmc_data_interface</span> <span class="pre">*,</span> <span class="pre">void</span> <span class="pre">*)</span> <span class="pre">fish</span> <span class="pre">)</span></span></dt>
+<dt class="sig sig-object cpp" id="_CPPv4N7sampler4fishE">
+<span id="_CPPv3N7sampler4fishE"></span><span id="_CPPv2N7sampler4fishE"></span><span class="target" id="classsampler_1aa1299587bc35b3466a5e33fd1b09a406"></span><a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">function</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">void</span></span><span class="p"><span class="pre">(</span></span><span class="kt"><span class="pre">double</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv419mcmc_data_interface" title="mcmc_data_interface"><span class="n"><span class="pre">mcmc_data_interface</span></span></a><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">fish</span></span></span><a class="headerlink" href="#_CPPv4N7sampler4fishE" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="cpp var">
@@ -1459,8 +1461,8 @@
 <dd></dd></dl>
 
 <dl class="cpp var">
-<dt class="sig sig-object cpp">
-<span class="target" id="classsampler_1a09395b2230a0964c2390c84671d8da74"></span><span class="sig-name descname"><span class="pre">std::function&lt;</span> <span class="pre">void(double</span> <span class="pre">*,</span> <span class="pre">double</span> <span class="pre">*,</span> <span class="pre">int</span> <span class="pre">*,</span> <span class="pre">int</span> <span class="pre">*,</span> <span class="pre">int</span> <span class="pre">*,</span> <span class="pre">int</span> <span class="pre">*,</span> <span class="pre">double</span> <span class="pre">*,</span> <span class="pre">mcmc_data_interface</span> <span class="pre">*,</span> <span class="pre">void</span> <span class="pre">*)</span> <span class="pre">rj</span> <span class="pre">)</span></span></dt>
+<dt class="sig sig-object cpp" id="_CPPv4N7sampler2rjE">
+<span id="_CPPv3N7sampler2rjE"></span><span id="_CPPv2N7sampler2rjE"></span><span class="target" id="classsampler_1a319323d9202deee92fc441cba31f5740"></span><a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">function</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">void</span></span><span class="p"><span class="pre">(</span></span><span class="kt"><span class="pre">double</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv419mcmc_data_interface" title="mcmc_data_interface"><span class="n"><span class="pre">mcmc_data_interface</span></span></a><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">rj</span></span></span><a class="headerlink" href="#_CPPv4N7sampler2rjE" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="cpp var">

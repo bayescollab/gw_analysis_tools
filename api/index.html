@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../">
 <head>
@@ -5,20 +7,16 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>API &mdash; GW Analysis Tools  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
-      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="../_static/doctools.js?v=9a2dae69"></script>
-        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -145,6 +143,8 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="IMRPhenomD.html">IMRPhenomD</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="IMRPhenomD.html#_CPPv417lambda_num_params"><code class="docutils literal notranslate"><span class="pre">lambda_num_params</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="IMRPhenomD.html#_CPPv4I0E17lambda_parameters"><code class="docutils literal notranslate"><span class="pre">lambda_parameters</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="IMRPhenomD.html#_CPPv4I0E10IMRPhenomD"><code class="docutils literal notranslate"><span class="pre">IMRPhenomD</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="IMRPhenomD_NRT.html">IMRPhenomD_NRT</a><ul>
@@ -162,6 +162,8 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="IMRPhenomP.html">IMRPhenomP</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="IMRPhenomP.html#c.ROTATEZ"><code class="docutils literal notranslate"><span class="pre">ROTATEZ</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="IMRPhenomP.html#c.ROTATEY"><code class="docutils literal notranslate"><span class="pre">ROTATEY</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="IMRPhenomP.html#_CPPv423IMRPhenomP_version_type"><code class="docutils literal notranslate"><span class="pre">IMRPhenomP_version_type</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="IMRPhenomP.html#_CPPv426tagIMRPhenomP_version_type"><code class="docutils literal notranslate"><span class="pre">tagIMRPhenomP_version_type</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="IMRPhenomP.html#_CPPv46sqrt_6"><code class="docutils literal notranslate"><span class="pre">sqrt_6</span></code></a></li>
@@ -212,6 +214,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="autocorrelation_cuda.html">autocorrelation_cuda</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="autocorrelation_cuda.html#c.THREADS_PER_BLOCK"><code class="docutils literal notranslate"><span class="pre">THREADS_PER_BLOCK</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="autocorrelation_cuda.html#_CPPv441write_file_auto_corr_from_data_file_accelNSt6stringENSt6stringEiiid"><code class="docutils literal notranslate"><span class="pre">write_file_auto_corr_from_data_file_accel()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="autocorrelation_cuda.html#_CPPv436write_file_auto_corr_from_data_accelNSt6stringEPPdiiid"><code class="docutils literal notranslate"><span class="pre">write_file_auto_corr_from_data_accel()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="autocorrelation_cuda.html#_CPPv425auto_corr_from_data_accelPPdiiidPPd"><code class="docutils literal notranslate"><span class="pre">auto_corr_from_data_accel()</span></code></a></li>
@@ -351,8 +354,9 @@
 <li class="toctree-l2"><a class="reference internal" href="fisher.html#_CPPv424tape_time_gsl_subroutineP14gsl_subroutine"><code class="docutils literal notranslate"><span class="pre">tape_time_gsl_subroutine()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="fisher.html#_CPPv425tape_phase_gsl_subroutineP14gsl_subroutine"><code class="docutils literal notranslate"><span class="pre">tape_phase_gsl_subroutine()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="fisher.html#_CPPv419prep_gsl_subroutineP14gsl_subroutine"><code class="docutils literal notranslate"><span class="pre">prep_gsl_subroutine()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="fisher.html#_CPPv416fisher_numericalPdi6string6string6stringPPdiP15gen_params_baseIdEiPiPiPd"><code class="docutils literal notranslate"><span class="pre">fisher_numerical()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fisher.html#_CPPv416fisher_numericalPdi6string6string6stringPPdiP15gen_params_baseIdEiPiPiPdP10Quadrature"><code class="docutils literal notranslate"><span class="pre">fisher_numerical()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="fisher.html#_CPPv425calculate_fisher_elementsPdiiPPNSt7complexIdEEPPdPdNSt6stringEPdb"><code class="docutils literal notranslate"><span class="pre">calculate_fisher_elements()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fisher.html#_CPPv425calculate_fisher_elementsPPdPPNSt7complexIdEEPdiP10Quadrature"><code class="docutils literal notranslate"><span class="pre">calculate_fisher_elements()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="fisher.html#_CPPv431calculate_fisher_elements_batchPdiiiPPNSt7complexIdEEPPdPdNSt6stringEPdb"><code class="docutils literal notranslate"><span class="pre">calculate_fisher_elements_batch()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="fisher.html#_CPPv421calculate_derivativesPPNSt7complexIdEEPdii6string6string6stringP15gen_params_baseIdEi"><code class="docutils literal notranslate"><span class="pre">calculate_derivatives()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="fisher.html#_CPPv415fisher_autodiffPdi6string6string6stringPPdiP10gen_paramsNSt6stringEPdbPdPiPi"><code class="docutils literal notranslate"><span class="pre">fisher_autodiff()</span></code></a></li>
@@ -475,6 +479,7 @@
 <li class="toctree-l2"><a class="reference internal" href="mcmc_gw.html#_CPPv429maximized_coal_Log_LikelihoodPNSt7complexIdEEPdPd6size_tP15gen_params_baseIdENSt6stringENSt6stringEP12fftw_outlinePdPd"><code class="docutils literal notranslate"><span class="pre">maximized_coal_Log_Likelihood()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="mcmc_gw.html#_CPPv438maximized_coal_Log_Likelihood_internalPNSt7complexIdEEPdPdPNSt7complexIdEE6size_tP12fftw_outlinePdPd"><code class="docutils literal notranslate"><span class="pre">maximized_coal_Log_Likelihood_internal()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="mcmc_gw.html#_CPPv423Log_Likelihood_internalPNSt7complexIdEEPdPdPdPNSt7complexIdEEibNSt6stringE"><code class="docutils literal notranslate"><span class="pre">Log_Likelihood_internal()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mcmc_gw.html#_CPPv423Log_Likelihood_internalPNSt7complexIdEEPdPNSt7complexIdEEP10Quadrature"><code class="docutils literal notranslate"><span class="pre">Log_Likelihood_internal()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="mcmc_gw.html#_CPPv433MCMC_likelihood_wrapper_SKYSEARCHPdP19mcmc_data_interfacePv"><code class="docutils literal notranslate"><span class="pre">MCMC_likelihood_wrapper_SKYSEARCH()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="mcmc_gw.html#_CPPv452SkySearch_PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GWP19mcmc_sampler_outputPPdiiiiPdPdPPdPdiiiiNSt6stringEPFdPdP19mcmc_data_interfacePvEibbiPPNSt7complexIdEEPPdPPdPidPNSt6stringEiPdPNSt7complexIdEEPNSt7complexIdEENSt6stringENSt6stringENSt6stringENSt6stringE"><code class="docutils literal notranslate"><span class="pre">SkySearch_PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="mcmc_gw.html#_CPPv412PTMCMC_MH_GWPPPdiiiPdPdPPdPdiPFdPdP19mcmc_data_interfacePvEibbiPPNSt7complexIdEEPPdPPdPidPNSt6stringEP24MCMC_modification_structNSt6stringENSt6stringENSt6stringENSt6stringENSt6stringENSt6stringE"><code class="docutils literal notranslate"><span class="pre">PTMCMC_MH_GW()</span></code></a></li>
@@ -484,7 +489,7 @@
 <li class="toctree-l2"><a class="reference internal" href="mcmc_gw.html#_CPPv421continue_PTMCMC_MH_GWNSt6stringEPPPdiiiPFdPdP19mcmc_data_interfacePvEibbiPPNSt7complexIdEEPPdPPdPidPNSt6stringEP24MCMC_modification_structNSt6stringENSt6stringENSt6stringENSt6stringENSt6stringENSt6stringEb"><code class="docutils literal notranslate"><span class="pre">continue_PTMCMC_MH_GW()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="mcmc_gw.html#_CPPv427PTMCMC_method_specific_prepNSt6stringEiPPdb"><code class="docutils literal notranslate"><span class="pre">PTMCMC_method_specific_prep()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="mcmc_gw.html#_CPPv429RJPTMCMC_method_specific_prepNSt6stringEiiPdb"><code class="docutils literal notranslate"><span class="pre">RJPTMCMC_method_specific_prep()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="mcmc_gw.html#_CPPv425MCMC_likelihood_extrinsicbP15gen_params_baseIdENSt6stringEPiPPdPPNSt7complexIdEEPPdPPdNSt6stringEbPNSt6stringEi"><code class="docutils literal notranslate"><span class="pre">MCMC_likelihood_extrinsic()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mcmc_gw.html#_CPPv425MCMC_likelihood_extrinsicbP15gen_params_baseIdENSt6stringEPiPPdPPNSt7complexIdEEPPdPPdNSt6stringEbPNSt6stringEiP10Quadrature"><code class="docutils literal notranslate"><span class="pre">MCMC_likelihood_extrinsic()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="mcmc_gw.html#_CPPv419MCMC_fisher_wrapperPdPPdP19mcmc_data_interfacePv"><code class="docutils literal notranslate"><span class="pre">MCMC_fisher_wrapper()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="mcmc_gw.html#_CPPv416MCMC_prep_paramsPdPdP15gen_params_baseIdEiNSt6stringEP24MCMC_modification_struct"><code class="docutils literal notranslate"><span class="pre">MCMC_prep_params()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="mcmc_gw.html#_CPPv423MCMC_likelihood_wrapperPdP19mcmc_data_interfacePv"><code class="docutils literal notranslate"><span class="pre">MCMC_likelihood_wrapper()</span></code></a></li>
@@ -701,10 +706,19 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="threadPool.html">threadPool</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="threadPool.html#_CPPv4I0E12default_comp"><code class="docutils literal notranslate"><span class="pre">default_comp</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="threadPool.html#_CPPv410ThreadPool"><code class="docutils literal notranslate"><span class="pre">ThreadPool</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="threadPool.html#_CPPv4I00E10threadPool"><code class="docutils literal notranslate"><span class="pre">threadPool</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="util.html">util</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="util.html#c.GWAT_LN2"><code class="docutils literal notranslate"><span class="pre">GWAT_LN2</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="util.html#c.GWAT_G_SI"><code class="docutils literal notranslate"><span class="pre">GWAT_G_SI</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="util.html#c.GWAT_TWOPI"><code class="docutils literal notranslate"><span class="pre">GWAT_TWOPI</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="util.html#c.GWAT_MSUN_SI"><code class="docutils literal notranslate"><span class="pre">GWAT_MSUN_SI</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="util.html#c.GWAT_MTSUN_SI"><code class="docutils literal notranslate"><span class="pre">GWAT_MTSUN_SI</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="util.html#c.GWAT_MRSUN_SI"><code class="docutils literal notranslate"><span class="pre">GWAT_MRSUN_SI</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="util.html#c.PBSTR"><code class="docutils literal notranslate"><span class="pre">PBSTR</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="util.html#c.PBWIDTH"><code class="docutils literal notranslate"><span class="pre">PBWIDTH</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="util.html#c.MAX_TOL_ATAN"><code class="docutils literal notranslate"><span class="pre">MAX_TOL_ATAN</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="util.html#_CPPv412gsl_LU_lndetPPdi"><code class="docutils literal notranslate"><span class="pre">gsl_LU_lndet()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="util.html#_CPPv410mvn_sampleiPdPPdiPPd"><code class="docutils literal notranslate"><span class="pre">mvn_sample()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="util.html#_CPPv410mvn_sampleiPdPPdiP7gsl_rngPPd"><code class="docutils literal notranslate"><span class="pre">mvn_sample()</span></code></a></li>
@@ -846,6 +860,7 @@
 <li class="toctree-l2"><a class="reference internal" href="waveform_util.html#_CPPv428data_snr_maximized_extrinsicPdiPdPdPdNSt6stringENSt6stringEP10gen_params"><code class="docutils literal notranslate"><span class="pre">data_snr_maximized_extrinsic()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="waveform_util.html#_CPPv413calculate_snrNSt6stringEPNSt7complexIdEEPdiNSt6stringEPdb"><code class="docutils literal notranslate"><span class="pre">calculate_snr()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="waveform_util.html#_CPPv422calculate_snr_internalPdPNSt7complexIdEEPdiNSt6stringEPdb"><code class="docutils literal notranslate"><span class="pre">calculate_snr_internal()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="waveform_util.html#_CPPv422calculate_snr_internalPdPNSt7complexIdEEPK10Quadrature"><code class="docutils literal notranslate"><span class="pre">calculate_snr_internal()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="waveform_util.html#_CPPv413calculate_snrNSt6stringENSt6stringENSt6stringEP15gen_params_baseIdEPdiNSt6stringEPdb"><code class="docutils literal notranslate"><span class="pre">calculate_snr()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="waveform_util.html#_CPPv417calculate_snr_gslPdNSt6stringENSt6stringENSt6stringEP15gen_params_baseIdEddd"><code class="docutils literal notranslate"><span class="pre">calculate_snr_gsl()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="waveform_util.html#_CPPv417calculate_snr_gslPdNSt6stringENSt6stringENSt6stringEP15gen_params_baseIdEdddP25gsl_integration_workspacei"><code class="docutils literal notranslate"><span class="pre">calculate_snr_gsl()</span></code></a></li>
@@ -879,6 +894,7 @@
 <li class="toctree-l2"><a class="reference internal" href="waveform_util.html#_CPPv424snr_threshold_subroutinedddP15gen_params_baseIdENSt6stringENSt6stringEP25gsl_integration_workspacei"><code class="docutils literal notranslate"><span class="pre">snr_threshold_subroutine()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="waveform_util.html#_CPPv419threshold_times_gslP15gen_params_baseIdENSt6stringEddddNSt6stringEdPdPddP25gsl_integration_workspacei"><code class="docutils literal notranslate"><span class="pre">threshold_times_gsl()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="waveform_util.html#_CPPv424threshold_times_full_gslP15gen_params_baseIdENSt6stringEddddNSt6stringEdPddP25gsl_integration_workspacei"><code class="docutils literal notranslate"><span class="pre">threshold_times_full_gsl()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="waveform_util.html#_CPPv428TaylorF2ReducedSpinChirpTimeKdKdKdKdKdKi"><code class="docutils literal notranslate"><span class="pre">TaylorF2ReducedSpinChirpTime()</span></code></a></li>
 </ul>
 </li>
 </ul>

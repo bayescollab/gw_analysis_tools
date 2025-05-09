@@ -35,7 +35,11 @@ digraph "/Users/runner/work/gw_analysis_tools/gw_analysis_tools/include/gwat/ppE
   Node13 -> Node5 [id="edge15_Node000013_Node000005",color="steelblue1",style="solid",tooltip=" "];
   Node13 -> Node4 [id="edge16_Node000013_Node000004",color="steelblue1",style="solid",tooltip=" "];
   Node12 -> Node3 [id="edge17_Node000012_Node000003",color="steelblue1",style="solid",tooltip=" "];
-  Node12 -> Node4 [id="edge18_Node000012_Node000004",color="steelblue1",style="solid",tooltip=" "];
-  Node12 -> Node15 [id="edge19_Node000012_Node000015",color="steelblue1",style="solid",tooltip=" "];
-  Node15 [id="Node000015",label="gsl/gsl_integration.h",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
+  Node12 -> Node15 [id="edge18_Node000012_Node000015",color="steelblue1",style="solid",tooltip=" "];
+  Node15 [id="Node000015",label="quadrature.h",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$quadrature_8h.html",tooltip=" "];
+  Node15 -> Node16 [id="edge19_Node000015_Node000016",color="steelblue1",style="solid",tooltip=" "];
+  Node16 [id="Node000016",label="vector",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
+  Node12 -> Node4 [id="edge20_Node000012_Node000004",color="steelblue1",style="solid",tooltip=" "];
+  Node12 -> Node17 [id="edge21_Node000012_Node000017",color="steelblue1",style="solid",tooltip=" "];
+  Node17 [id="Node000017",label="gsl/gsl_integration.h",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
 }

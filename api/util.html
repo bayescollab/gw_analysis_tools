@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../">
 <head>
@@ -5,20 +7,16 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>util &mdash; GW Analysis Tools  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
-      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="../_static/doctools.js?v=9a2dae69"></script>
-        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -82,6 +80,15 @@
 <li class="toctree-l2"><a class="reference internal" href="standardPriorLibrary.html">standardPriorLibrary</a></li>
 <li class="toctree-l2"><a class="reference internal" href="threadPool.html">threadPool</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">util</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#c.GWAT_LN2"><code class="docutils literal notranslate"><span class="pre">GWAT_LN2</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#c.GWAT_G_SI"><code class="docutils literal notranslate"><span class="pre">GWAT_G_SI</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#c.GWAT_TWOPI"><code class="docutils literal notranslate"><span class="pre">GWAT_TWOPI</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#c.GWAT_MSUN_SI"><code class="docutils literal notranslate"><span class="pre">GWAT_MSUN_SI</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#c.GWAT_MTSUN_SI"><code class="docutils literal notranslate"><span class="pre">GWAT_MTSUN_SI</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#c.GWAT_MRSUN_SI"><code class="docutils literal notranslate"><span class="pre">GWAT_MRSUN_SI</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#c.PBSTR"><code class="docutils literal notranslate"><span class="pre">PBSTR</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#c.PBWIDTH"><code class="docutils literal notranslate"><span class="pre">PBWIDTH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#c.MAX_TOL_ATAN"><code class="docutils literal notranslate"><span class="pre">MAX_TOL_ATAN</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv412gsl_LU_lndetPPdi"><code class="docutils literal notranslate"><span class="pre">gsl_LU_lndet()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv410mvn_sampleiPdPPdiPPd"><code class="docutils literal notranslate"><span class="pre">mvn_sample()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv410mvn_sampleiPdPPdiP7gsl_rngPPd"><code class="docutils literal notranslate"><span class="pre">mvn_sample()</span></code></a></li>
@@ -183,275 +190,275 @@
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv45LOG10"><code class="docutils literal notranslate"><span class="pre">LOG10</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv418DOUBLE_COMP_THRESH"><code class="docutils literal notranslate"><span class="pre">DOUBLE_COMP_THRESH</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv412fftw_outline"><code class="docutils literal notranslate"><span class="pre">fftw_outline</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N12fftw_outline2inE"><code class="docutils literal notranslate"><span class="pre">fftw_outline::in</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N12fftw_outline3outE"><code class="docutils literal notranslate"><span class="pre">fftw_outline::out</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N12fftw_outline1pE"><code class="docutils literal notranslate"><span class="pre">fftw_outline::p</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N12fftw_outline2inE"><code class="docutils literal notranslate"><span class="pre">in</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N12fftw_outline3outE"><code class="docutils literal notranslate"><span class="pre">out</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N12fftw_outline1pE"><code class="docutils literal notranslate"><span class="pre">p</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0E8sph_harm"><code class="docutils literal notranslate"><span class="pre">sph_harm</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8sph_harm3Y22E"><code class="docutils literal notranslate"><span class="pre">sph_harm::Y22</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8sph_harm3Y21E"><code class="docutils literal notranslate"><span class="pre">sph_harm::Y21</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8sph_harm3Y20E"><code class="docutils literal notranslate"><span class="pre">sph_harm::Y20</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8sph_harm4Y2m1E"><code class="docutils literal notranslate"><span class="pre">sph_harm::Y2m1</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8sph_harm4Y2m2E"><code class="docutils literal notranslate"><span class="pre">sph_harm::Y2m2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8sph_harm3Y22E"><code class="docutils literal notranslate"><span class="pre">Y22</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8sph_harm3Y21E"><code class="docutils literal notranslate"><span class="pre">Y21</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8sph_harm3Y20E"><code class="docutils literal notranslate"><span class="pre">Y20</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8sph_harm4Y2m1E"><code class="docutils literal notranslate"><span class="pre">Y2m1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8sph_harm4Y2m2E"><code class="docutils literal notranslate"><span class="pre">Y2m2</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0E15gen_params_base"><code class="docutils literal notranslate"><span class="pre">gen_params_base</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base16print_propertiesEv"><code class="docutils literal notranslate"><span class="pre">gen_params_base::print_properties()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base2x0E"><code class="docutils literal notranslate"><span class="pre">gen_params_base::x0</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base9cosmologyE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::cosmology</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base5mass1E"><code class="docutils literal notranslate"><span class="pre">gen_params_base::mass1</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base5mass2E"><code class="docutils literal notranslate"><span class="pre">gen_params_base::mass2</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base19Luminosity_DistanceE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::Luminosity_Distance</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base5spin1E"><code class="docutils literal notranslate"><span class="pre">gen_params_base::spin1</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base5spin2E"><code class="docutils literal notranslate"><span class="pre">gen_params_base::spin2</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base2tcE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::tc</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base6tidal1E"><code class="docutils literal notranslate"><span class="pre">gen_params_base::tidal1</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base6tidal2E"><code class="docutils literal notranslate"><span class="pre">gen_params_base::tidal2</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base7tidal_sE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::tidal_s</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base7tidal_aE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::tidal_a</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base14tidal_weightedE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::tidal_weighted</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base10tidal_loveE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::tidal_love</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base16tidal_love_errorE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::tidal_love_error</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base20delta_tidal_weightedE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::delta_tidal_weighted</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base11diss_tidal1E"><code class="docutils literal notranslate"><span class="pre">gen_params_base::diss_tidal1</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base11diss_tidal2E"><code class="docutils literal notranslate"><span class="pre">gen_params_base::diss_tidal2</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base12diss_tidal_sE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::diss_tidal_s</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base12diss_tidal_aE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::diss_tidal_a</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base19diss_tidal_weightedE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::diss_tidal_weighted</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base3psiE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::psi</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base10incl_angleE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::incl_angle</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base22equatorial_orientationE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::equatorial_orientation</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base7theta_lE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::theta_l</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base5phi_lE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::phi_l</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base13horizon_coordE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::horizon_coord</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base5thetaE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::theta</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base3phiE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::phi</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base2RAE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::RA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base3DECE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::DEC</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base4gmstE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::gmst</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base7NSflag1E"><code class="docutils literal notranslate"><span class="pre">gen_params_base::NSflag1</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base7NSflag2E"><code class="docutils literal notranslate"><span class="pre">gen_params_base::NSflag2</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base14dep_postmergerE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::dep_postmerger</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base5f_refE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::f_ref</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base10shift_timeE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::shift_time</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base11shift_phaseE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::shift_phase</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base6phiRefE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::phiRef</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base11sky_averageE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::sky_average</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base7thetaJNE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::thetaJN</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base6alpha0E"><code class="docutils literal notranslate"><span class="pre">gen_params_base::alpha0</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base4chipE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::chip</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base4phipE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::phip</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base20precess_reduced_flagE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::precess_reduced_flag</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base11LISA_alpha0E"><code class="docutils literal notranslate"><span class="pre">gen_params_base::LISA_alpha0</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base9LISA_phi0E"><code class="docutils literal notranslate"><span class="pre">gen_params_base::LISA_phi0</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base11theta_j_eclE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::theta_j_ecl</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base9phi_j_eclE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::phi_j_ecl</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base9Nmod_betaE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::Nmod_beta</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base10Nmod_alphaE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::Nmod_alpha</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base10Nmod_sigmaE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::Nmod_sigma</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base8Nmod_phiE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::Nmod_phi</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base5betaiE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::betai</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base6alphaiE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::alphai</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base6sigmaiE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::sigmai</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base4phiiE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::phii</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base10delta_betaE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::delta_beta</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base11delta_alphaE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::delta_alpha</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base11delta_sigmaE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::delta_sigma</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base9delta_phiE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::delta_phi</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base4bppeE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::bppe</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base4appeE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::appe</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base8alphappeE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::alphappe</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base7betappeE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::betappe</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base4NmodE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::Nmod</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base6chi1_lE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::chi1_l</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base6chi2_lE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::chi2_l</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base5phiJLE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::phiJL</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base7thetaJLE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::thetaJL</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base12zeta_polarizE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::zeta_polariz</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base11phi_alignedE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::phi_aligned</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base4chilE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::chil</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base7PNorderE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::PNorder</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base5ca_EAE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::ca_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base9ctheta_EAE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::ctheta_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base5cw_EAE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::cw_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base9csigma_EAE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::csigma_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base10EA_region1E"><code class="docutils literal notranslate"><span class="pre">gen_params_base::EA_region1</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base15delta_ctheta_EAE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::delta_ctheta_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base9alpha1_EAE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::alpha1_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base9alpha2_EAE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::alpha2_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base8cbarw_EAE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::cbarw_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base11alpha_paramE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::alpha_param</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base10include_l1E"><code class="docutils literal notranslate"><span class="pre">gen_params_base::include_l1</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base15Z_DL_spline_ptrE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::Z_DL_spline_ptr</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base14Z_DL_accel_ptrE"><code class="docutils literal notranslate"><span class="pre">gen_params_base::Z_DL_accel_ptr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base16print_propertiesEv"><code class="docutils literal notranslate"><span class="pre">print_properties()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base2x0E"><code class="docutils literal notranslate"><span class="pre">x0</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base9cosmologyE"><code class="docutils literal notranslate"><span class="pre">cosmology</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base5mass1E"><code class="docutils literal notranslate"><span class="pre">mass1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base5mass2E"><code class="docutils literal notranslate"><span class="pre">mass2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base19Luminosity_DistanceE"><code class="docutils literal notranslate"><span class="pre">Luminosity_Distance</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base5spin1E"><code class="docutils literal notranslate"><span class="pre">spin1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base5spin2E"><code class="docutils literal notranslate"><span class="pre">spin2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base2tcE"><code class="docutils literal notranslate"><span class="pre">tc</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base6tidal1E"><code class="docutils literal notranslate"><span class="pre">tidal1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base6tidal2E"><code class="docutils literal notranslate"><span class="pre">tidal2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base7tidal_sE"><code class="docutils literal notranslate"><span class="pre">tidal_s</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base7tidal_aE"><code class="docutils literal notranslate"><span class="pre">tidal_a</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base14tidal_weightedE"><code class="docutils literal notranslate"><span class="pre">tidal_weighted</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base10tidal_loveE"><code class="docutils literal notranslate"><span class="pre">tidal_love</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base16tidal_love_errorE"><code class="docutils literal notranslate"><span class="pre">tidal_love_error</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base20delta_tidal_weightedE"><code class="docutils literal notranslate"><span class="pre">delta_tidal_weighted</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base11diss_tidal1E"><code class="docutils literal notranslate"><span class="pre">diss_tidal1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base11diss_tidal2E"><code class="docutils literal notranslate"><span class="pre">diss_tidal2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base12diss_tidal_sE"><code class="docutils literal notranslate"><span class="pre">diss_tidal_s</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base12diss_tidal_aE"><code class="docutils literal notranslate"><span class="pre">diss_tidal_a</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base19diss_tidal_weightedE"><code class="docutils literal notranslate"><span class="pre">diss_tidal_weighted</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base3psiE"><code class="docutils literal notranslate"><span class="pre">psi</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base10incl_angleE"><code class="docutils literal notranslate"><span class="pre">incl_angle</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base22equatorial_orientationE"><code class="docutils literal notranslate"><span class="pre">equatorial_orientation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base7theta_lE"><code class="docutils literal notranslate"><span class="pre">theta_l</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base5phi_lE"><code class="docutils literal notranslate"><span class="pre">phi_l</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base13horizon_coordE"><code class="docutils literal notranslate"><span class="pre">horizon_coord</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base5thetaE"><code class="docutils literal notranslate"><span class="pre">theta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base3phiE"><code class="docutils literal notranslate"><span class="pre">phi</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base2RAE"><code class="docutils literal notranslate"><span class="pre">RA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base3DECE"><code class="docutils literal notranslate"><span class="pre">DEC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base4gmstE"><code class="docutils literal notranslate"><span class="pre">gmst</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base7NSflag1E"><code class="docutils literal notranslate"><span class="pre">NSflag1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base7NSflag2E"><code class="docutils literal notranslate"><span class="pre">NSflag2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base14dep_postmergerE"><code class="docutils literal notranslate"><span class="pre">dep_postmerger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base5f_refE"><code class="docutils literal notranslate"><span class="pre">f_ref</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base10shift_timeE"><code class="docutils literal notranslate"><span class="pre">shift_time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base11shift_phaseE"><code class="docutils literal notranslate"><span class="pre">shift_phase</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base6phiRefE"><code class="docutils literal notranslate"><span class="pre">phiRef</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base11sky_averageE"><code class="docutils literal notranslate"><span class="pre">sky_average</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base7thetaJNE"><code class="docutils literal notranslate"><span class="pre">thetaJN</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base6alpha0E"><code class="docutils literal notranslate"><span class="pre">alpha0</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base4chipE"><code class="docutils literal notranslate"><span class="pre">chip</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base4phipE"><code class="docutils literal notranslate"><span class="pre">phip</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base20precess_reduced_flagE"><code class="docutils literal notranslate"><span class="pre">precess_reduced_flag</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base11LISA_alpha0E"><code class="docutils literal notranslate"><span class="pre">LISA_alpha0</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base9LISA_phi0E"><code class="docutils literal notranslate"><span class="pre">LISA_phi0</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base11theta_j_eclE"><code class="docutils literal notranslate"><span class="pre">theta_j_ecl</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base9phi_j_eclE"><code class="docutils literal notranslate"><span class="pre">phi_j_ecl</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base9Nmod_betaE"><code class="docutils literal notranslate"><span class="pre">Nmod_beta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base10Nmod_alphaE"><code class="docutils literal notranslate"><span class="pre">Nmod_alpha</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base10Nmod_sigmaE"><code class="docutils literal notranslate"><span class="pre">Nmod_sigma</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base8Nmod_phiE"><code class="docutils literal notranslate"><span class="pre">Nmod_phi</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base5betaiE"><code class="docutils literal notranslate"><span class="pre">betai</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base6alphaiE"><code class="docutils literal notranslate"><span class="pre">alphai</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base6sigmaiE"><code class="docutils literal notranslate"><span class="pre">sigmai</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base4phiiE"><code class="docutils literal notranslate"><span class="pre">phii</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base10delta_betaE"><code class="docutils literal notranslate"><span class="pre">delta_beta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base11delta_alphaE"><code class="docutils literal notranslate"><span class="pre">delta_alpha</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base11delta_sigmaE"><code class="docutils literal notranslate"><span class="pre">delta_sigma</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base9delta_phiE"><code class="docutils literal notranslate"><span class="pre">delta_phi</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base4bppeE"><code class="docutils literal notranslate"><span class="pre">bppe</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base4appeE"><code class="docutils literal notranslate"><span class="pre">appe</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base8alphappeE"><code class="docutils literal notranslate"><span class="pre">alphappe</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base7betappeE"><code class="docutils literal notranslate"><span class="pre">betappe</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base4NmodE"><code class="docutils literal notranslate"><span class="pre">Nmod</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base6chi1_lE"><code class="docutils literal notranslate"><span class="pre">chi1_l</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base6chi2_lE"><code class="docutils literal notranslate"><span class="pre">chi2_l</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base5phiJLE"><code class="docutils literal notranslate"><span class="pre">phiJL</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base7thetaJLE"><code class="docutils literal notranslate"><span class="pre">thetaJL</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base12zeta_polarizE"><code class="docutils literal notranslate"><span class="pre">zeta_polariz</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base11phi_alignedE"><code class="docutils literal notranslate"><span class="pre">phi_aligned</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base4chilE"><code class="docutils literal notranslate"><span class="pre">chil</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base7PNorderE"><code class="docutils literal notranslate"><span class="pre">PNorder</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base5ca_EAE"><code class="docutils literal notranslate"><span class="pre">ca_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base9ctheta_EAE"><code class="docutils literal notranslate"><span class="pre">ctheta_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base5cw_EAE"><code class="docutils literal notranslate"><span class="pre">cw_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base9csigma_EAE"><code class="docutils literal notranslate"><span class="pre">csigma_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base10EA_region1E"><code class="docutils literal notranslate"><span class="pre">EA_region1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base15delta_ctheta_EAE"><code class="docutils literal notranslate"><span class="pre">delta_ctheta_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base9alpha1_EAE"><code class="docutils literal notranslate"><span class="pre">alpha1_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base9alpha2_EAE"><code class="docutils literal notranslate"><span class="pre">alpha2_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base8cbarw_EAE"><code class="docutils literal notranslate"><span class="pre">cbarw_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base11alpha_paramE"><code class="docutils literal notranslate"><span class="pre">alpha_param</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base10include_l1E"><code class="docutils literal notranslate"><span class="pre">include_l1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base15Z_DL_spline_ptrE"><code class="docutils literal notranslate"><span class="pre">Z_DL_spline_ptr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N15gen_params_base14Z_DL_accel_ptrE"><code class="docutils literal notranslate"><span class="pre">Z_DL_accel_ptr</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv410gen_params"><code class="docutils literal notranslate"><span class="pre">gen_params</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0E13useful_powers"><code class="docutils literal notranslate"><span class="pre">useful_powers</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers7MFthirdE"><code class="docutils literal notranslate"><span class="pre">useful_powers::MFthird</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers7MFsixthE"><code class="docutils literal notranslate"><span class="pre">useful_powers::MFsixth</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8MF7sixthE"><code class="docutils literal notranslate"><span class="pre">useful_powers::MF7sixth</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8MF2thirdE"><code class="docutils literal notranslate"><span class="pre">useful_powers::MF2third</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8MF4thirdE"><code class="docutils literal notranslate"><span class="pre">useful_powers::MF4third</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8MF5thirdE"><code class="docutils literal notranslate"><span class="pre">useful_powers::MF5third</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8MFsquareE"><code class="docutils literal notranslate"><span class="pre">useful_powers::MFsquare</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8MF7thirdE"><code class="docutils literal notranslate"><span class="pre">useful_powers::MF7third</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8MF8thirdE"><code class="docutils literal notranslate"><span class="pre">useful_powers::MF8third</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers6MFcubeE"><code class="docutils literal notranslate"><span class="pre">useful_powers::MFcube</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers14MFminus_5thirdE"><code class="docutils literal notranslate"><span class="pre">useful_powers::MFminus_5third</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers9MF3fourthE"><code class="docutils literal notranslate"><span class="pre">useful_powers::MF3fourth</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8PIsquareE"><code class="docutils literal notranslate"><span class="pre">useful_powers::PIsquare</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers6PIcubeE"><code class="docutils literal notranslate"><span class="pre">useful_powers::PIcube</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers7PIthirdE"><code class="docutils literal notranslate"><span class="pre">useful_powers::PIthird</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8PI2thirdE"><code class="docutils literal notranslate"><span class="pre">useful_powers::PI2third</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8PI4thirdE"><code class="docutils literal notranslate"><span class="pre">useful_powers::PI4third</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8PI5thirdE"><code class="docutils literal notranslate"><span class="pre">useful_powers::PI5third</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8PI7thirdE"><code class="docutils literal notranslate"><span class="pre">useful_powers::PI7third</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers14PIminus_5thirdE"><code class="docutils literal notranslate"><span class="pre">useful_powers::PIminus_5third</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers7MFthirdE"><code class="docutils literal notranslate"><span class="pre">MFthird</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers7MFsixthE"><code class="docutils literal notranslate"><span class="pre">MFsixth</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8MF7sixthE"><code class="docutils literal notranslate"><span class="pre">MF7sixth</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8MF2thirdE"><code class="docutils literal notranslate"><span class="pre">MF2third</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8MF4thirdE"><code class="docutils literal notranslate"><span class="pre">MF4third</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8MF5thirdE"><code class="docutils literal notranslate"><span class="pre">MF5third</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8MFsquareE"><code class="docutils literal notranslate"><span class="pre">MFsquare</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8MF7thirdE"><code class="docutils literal notranslate"><span class="pre">MF7third</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8MF8thirdE"><code class="docutils literal notranslate"><span class="pre">MF8third</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers6MFcubeE"><code class="docutils literal notranslate"><span class="pre">MFcube</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers14MFminus_5thirdE"><code class="docutils literal notranslate"><span class="pre">MFminus_5third</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers9MF3fourthE"><code class="docutils literal notranslate"><span class="pre">MF3fourth</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8PIsquareE"><code class="docutils literal notranslate"><span class="pre">PIsquare</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers6PIcubeE"><code class="docutils literal notranslate"><span class="pre">PIcube</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers7PIthirdE"><code class="docutils literal notranslate"><span class="pre">PIthird</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8PI2thirdE"><code class="docutils literal notranslate"><span class="pre">PI2third</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8PI4thirdE"><code class="docutils literal notranslate"><span class="pre">PI4third</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8PI5thirdE"><code class="docutils literal notranslate"><span class="pre">PI5third</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers8PI7thirdE"><code class="docutils literal notranslate"><span class="pre">PI7third</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N13useful_powers14PIminus_5thirdE"><code class="docutils literal notranslate"><span class="pre">PIminus_5third</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0E17source_parameters"><code class="docutils literal notranslate"><span class="pre">source_parameters</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters26populate_source_parametersEP15gen_params_baseI1TE"><code class="docutils literal notranslate"><span class="pre">source_parameters::populate_source_parameters()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5mass1E"><code class="docutils literal notranslate"><span class="pre">source_parameters::mass1</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5mass2E"><code class="docutils literal notranslate"><span class="pre">source_parameters::mass2</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters1ME"><code class="docutils literal notranslate"><span class="pre">source_parameters::M</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters1qE"><code class="docutils literal notranslate"><span class="pre">source_parameters::q</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6spin1zE"><code class="docutils literal notranslate"><span class="pre">source_parameters::spin1z</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6spin2zE"><code class="docutils literal notranslate"><span class="pre">source_parameters::spin2z</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6spin1xE"><code class="docutils literal notranslate"><span class="pre">source_parameters::spin1x</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6spin2xE"><code class="docutils literal notranslate"><span class="pre">source_parameters::spin2x</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6spin1yE"><code class="docutils literal notranslate"><span class="pre">source_parameters::spin1y</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6spin2yE"><code class="docutils literal notranslate"><span class="pre">source_parameters::spin2y</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters9chirpmassE"><code class="docutils literal notranslate"><span class="pre">source_parameters::chirpmass</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters3etaE"><code class="docutils literal notranslate"><span class="pre">source_parameters::eta</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5chi_sE"><code class="docutils literal notranslate"><span class="pre">source_parameters::chi_s</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5chi_aE"><code class="docutils literal notranslate"><span class="pre">source_parameters::chi_a</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters7chi_effE"><code class="docutils literal notranslate"><span class="pre">source_parameters::chi_eff</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6chi_pnE"><code class="docutils literal notranslate"><span class="pre">source_parameters::chi_pn</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters2DLE"><code class="docutils literal notranslate"><span class="pre">source_parameters::DL</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters10delta_massE"><code class="docutils literal notranslate"><span class="pre">source_parameters::delta_mass</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters3fRDE"><code class="docutils literal notranslate"><span class="pre">source_parameters::fRD</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5fdampE"><code class="docutils literal notranslate"><span class="pre">source_parameters::fdamp</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters2f1E"><code class="docutils literal notranslate"><span class="pre">source_parameters::f1</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters2f3E"><code class="docutils literal notranslate"><span class="pre">source_parameters::f3</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters8f1_phaseE"><code class="docutils literal notranslate"><span class="pre">source_parameters::f1_phase</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters8f2_phaseE"><code class="docutils literal notranslate"><span class="pre">source_parameters::f2_phase</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters2tcE"><code class="docutils literal notranslate"><span class="pre">source_parameters::tc</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters2A0E"><code class="docutils literal notranslate"><span class="pre">source_parameters::A0</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters11shift_phaseE"><code class="docutils literal notranslate"><span class="pre">source_parameters::shift_phase</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters14dep_postmergerE"><code class="docutils literal notranslate"><span class="pre">source_parameters::dep_postmerger</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters7NSflag1E"><code class="docutils literal notranslate"><span class="pre">source_parameters::NSflag1</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters7NSflag2E"><code class="docutils literal notranslate"><span class="pre">source_parameters::NSflag2</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters1sE"><code class="docutils literal notranslate"><span class="pre">source_parameters::s</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4chilE"><code class="docutils literal notranslate"><span class="pre">source_parameters::chil</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4chipE"><code class="docutils literal notranslate"><span class="pre">source_parameters::chip</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4phipE"><code class="docutils literal notranslate"><span class="pre">source_parameters::phip</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5f_refE"><code class="docutils literal notranslate"><span class="pre">source_parameters::f_ref</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters11phi_alignedE"><code class="docutils literal notranslate"><span class="pre">source_parameters::phi_aligned</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters10incl_angleE"><code class="docutils literal notranslate"><span class="pre">source_parameters::incl_angle</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6phiRefE"><code class="docutils literal notranslate"><span class="pre">source_parameters::phiRef</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6alpha0E"><code class="docutils literal notranslate"><span class="pre">source_parameters::alpha0</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters7thetaJNE"><code class="docutils literal notranslate"><span class="pre">source_parameters::thetaJN</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters12zeta_polarizE"><code class="docutils literal notranslate"><span class="pre">source_parameters::zeta_polariz</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters2x0E"><code class="docutils literal notranslate"><span class="pre">source_parameters::x0</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters7PNorderE"><code class="docutils literal notranslate"><span class="pre">source_parameters::PNorder</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6chi1_pE"><code class="docutils literal notranslate"><span class="pre">source_parameters::chi1_p</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6chi2_pE"><code class="docutils literal notranslate"><span class="pre">source_parameters::chi2_p</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6chi1_lE"><code class="docutils literal notranslate"><span class="pre">source_parameters::chi1_l</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6chi2_lE"><code class="docutils literal notranslate"><span class="pre">source_parameters::chi2_l</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5phiJLE"><code class="docutils literal notranslate"><span class="pre">source_parameters::phiJL</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters7thetaJLE"><code class="docutils literal notranslate"><span class="pre">source_parameters::thetaJL</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6tidal1E"><code class="docutils literal notranslate"><span class="pre">source_parameters::tidal1</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6tidal2E"><code class="docutils literal notranslate"><span class="pre">source_parameters::tidal2</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters14tidal_weightedE"><code class="docutils literal notranslate"><span class="pre">source_parameters::tidal_weighted</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters20delta_tidal_weightedE"><code class="docutils literal notranslate"><span class="pre">source_parameters::delta_tidal_weighted</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters15NRT_phase_coeffE"><code class="docutils literal notranslate"><span class="pre">source_parameters::NRT_phase_coeff</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5quad1E"><code class="docutils literal notranslate"><span class="pre">source_parameters::quad1</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5quad2E"><code class="docutils literal notranslate"><span class="pre">source_parameters::quad2</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4oct1E"><code class="docutils literal notranslate"><span class="pre">source_parameters::oct1</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4oct2E"><code class="docutils literal notranslate"><span class="pre">source_parameters::oct2</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters14ss_3p5PN_coeffE"><code class="docutils literal notranslate"><span class="pre">source_parameters::ss_3p5PN_coeff</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters19NRT_amp_coefficientE"><code class="docutils literal notranslate"><span class="pre">source_parameters::NRT_amp_coefficient</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters11diss_tidal1E"><code class="docutils literal notranslate"><span class="pre">source_parameters::diss_tidal1</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters11diss_tidal2E"><code class="docutils literal notranslate"><span class="pre">source_parameters::diss_tidal2</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters19diss_tidal_weightedE"><code class="docutils literal notranslate"><span class="pre">source_parameters::diss_tidal_weighted</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters25delta_diss_tidal_weightedE"><code class="docutils literal notranslate"><span class="pre">source_parameters::delta_diss_tidal_weighted</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters7betappeE"><code class="docutils literal notranslate"><span class="pre">source_parameters::betappe</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4bppeE"><code class="docutils literal notranslate"><span class="pre">source_parameters::bppe</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4appeE"><code class="docutils literal notranslate"><span class="pre">source_parameters::appe</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters8alphappeE"><code class="docutils literal notranslate"><span class="pre">source_parameters::alphappe</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4NmodE"><code class="docutils literal notranslate"><span class="pre">source_parameters::Nmod</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters3phiE"><code class="docutils literal notranslate"><span class="pre">source_parameters::phi</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5thetaE"><code class="docutils literal notranslate"><span class="pre">source_parameters::theta</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters2SPE"><code class="docutils literal notranslate"><span class="pre">source_parameters::SP</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters2SLE"><code class="docutils literal notranslate"><span class="pre">source_parameters::SL</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters11sky_averageE"><code class="docutils literal notranslate"><span class="pre">source_parameters::sky_average</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters10shift_timeE"><code class="docutils literal notranslate"><span class="pre">source_parameters::shift_time</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters15Z_DL_spline_ptrE"><code class="docutils literal notranslate"><span class="pre">source_parameters::Z_DL_spline_ptr</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters14Z_DL_accel_ptrE"><code class="docutils literal notranslate"><span class="pre">source_parameters::Z_DL_accel_ptr</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters9cosmologyE"><code class="docutils literal notranslate"><span class="pre">source_parameters::cosmology</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters9Nmod_betaE"><code class="docutils literal notranslate"><span class="pre">source_parameters::Nmod_beta</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters10Nmod_alphaE"><code class="docutils literal notranslate"><span class="pre">source_parameters::Nmod_alpha</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters10Nmod_sigmaE"><code class="docutils literal notranslate"><span class="pre">source_parameters::Nmod_sigma</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters8Nmod_phiE"><code class="docutils literal notranslate"><span class="pre">source_parameters::Nmod_phi</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5betaiE"><code class="docutils literal notranslate"><span class="pre">source_parameters::betai</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6alphaiE"><code class="docutils literal notranslate"><span class="pre">source_parameters::alphai</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6sigmaiE"><code class="docutils literal notranslate"><span class="pre">source_parameters::sigmai</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4phiiE"><code class="docutils literal notranslate"><span class="pre">source_parameters::phii</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters10delta_betaE"><code class="docutils literal notranslate"><span class="pre">source_parameters::delta_beta</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters11delta_alphaE"><code class="docutils literal notranslate"><span class="pre">source_parameters::delta_alpha</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters11delta_sigmaE"><code class="docutils literal notranslate"><span class="pre">source_parameters::delta_sigma</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters9delta_phiE"><code class="docutils literal notranslate"><span class="pre">source_parameters::delta_phi</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters9kappa3_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::kappa3_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters12epsilon_x_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::epsilon_x_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5ca_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::ca_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters9ctheta_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::ctheta_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5cw_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::cw_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters9csigma_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::csigma_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5c1_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::c1_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5c2_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::c2_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5c3_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::c3_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5c4_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::c4_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6c13_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::c13_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6c14_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::c14_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters9cminus_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::cminus_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters7cTsq_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::cTsq_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters7cVsq_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::cVsq_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters7cSsq_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::cSsq_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5cT_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::cT_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5cV_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::cV_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5cS_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::cS_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters9alpha1_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::alpha1_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters9alpha2_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::alpha2_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters8cbarw_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::cbarw_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters8beta1_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::beta1_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters8beta2_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::beta2_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4Z_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::Z_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5A1_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::A1_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5A2_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::A2_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5A3_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::A3_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5B3_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::B3_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4C_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::C_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4D_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::D_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6V_x_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::V_x_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6V_y_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::V_y_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6V_z_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::V_z_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5s1_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::s1_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5s2_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::s2_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4S_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::S_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters8compact1E"><code class="docutils literal notranslate"><span class="pre">source_parameters::compact1</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters8compact2E"><code class="docutils literal notranslate"><span class="pre">source_parameters::compact2</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters17alpha_ppE_2T_0_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::alpha_ppE_2T_0_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6gb1_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::gb1_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6abL_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::abL_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6gX1_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::gX1_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters10include_l1E"><code class="docutils literal notranslate"><span class="pre">source_parameters::include_l1</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters20EA_nan_error_messageE"><code class="docutils literal notranslate"><span class="pre">source_parameters::EA_nan_error_message</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters11alpha_paramE"><code class="docutils literal notranslate"><span class="pre">source_parameters::alpha_param</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters10EA_region1E"><code class="docutils literal notranslate"><span class="pre">source_parameters::EA_region1</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters15delta_ctheta_EAE"><code class="docutils literal notranslate"><span class="pre">source_parameters::delta_ctheta_EA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters30populate_source_parameters_oldE1T1T1TP1TP1T1T1Tb"><code class="docutils literal notranslate"><span class="pre">source_parameters::populate_source_parameters_old()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters26populate_source_parametersEP15gen_params_baseI1TE"><code class="docutils literal notranslate"><span class="pre">populate_source_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5mass1E"><code class="docutils literal notranslate"><span class="pre">mass1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5mass2E"><code class="docutils literal notranslate"><span class="pre">mass2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters1ME"><code class="docutils literal notranslate"><span class="pre">M</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters1qE"><code class="docutils literal notranslate"><span class="pre">q</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6spin1zE"><code class="docutils literal notranslate"><span class="pre">spin1z</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6spin2zE"><code class="docutils literal notranslate"><span class="pre">spin2z</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6spin1xE"><code class="docutils literal notranslate"><span class="pre">spin1x</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6spin2xE"><code class="docutils literal notranslate"><span class="pre">spin2x</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6spin1yE"><code class="docutils literal notranslate"><span class="pre">spin1y</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6spin2yE"><code class="docutils literal notranslate"><span class="pre">spin2y</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters9chirpmassE"><code class="docutils literal notranslate"><span class="pre">chirpmass</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters3etaE"><code class="docutils literal notranslate"><span class="pre">eta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5chi_sE"><code class="docutils literal notranslate"><span class="pre">chi_s</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5chi_aE"><code class="docutils literal notranslate"><span class="pre">chi_a</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters7chi_effE"><code class="docutils literal notranslate"><span class="pre">chi_eff</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6chi_pnE"><code class="docutils literal notranslate"><span class="pre">chi_pn</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters2DLE"><code class="docutils literal notranslate"><span class="pre">DL</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters10delta_massE"><code class="docutils literal notranslate"><span class="pre">delta_mass</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters3fRDE"><code class="docutils literal notranslate"><span class="pre">fRD</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5fdampE"><code class="docutils literal notranslate"><span class="pre">fdamp</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters2f1E"><code class="docutils literal notranslate"><span class="pre">f1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters2f3E"><code class="docutils literal notranslate"><span class="pre">f3</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters8f1_phaseE"><code class="docutils literal notranslate"><span class="pre">f1_phase</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters8f2_phaseE"><code class="docutils literal notranslate"><span class="pre">f2_phase</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters2tcE"><code class="docutils literal notranslate"><span class="pre">tc</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters2A0E"><code class="docutils literal notranslate"><span class="pre">A0</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters11shift_phaseE"><code class="docutils literal notranslate"><span class="pre">shift_phase</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters14dep_postmergerE"><code class="docutils literal notranslate"><span class="pre">dep_postmerger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters7NSflag1E"><code class="docutils literal notranslate"><span class="pre">NSflag1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters7NSflag2E"><code class="docutils literal notranslate"><span class="pre">NSflag2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters1sE"><code class="docutils literal notranslate"><span class="pre">s</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4chilE"><code class="docutils literal notranslate"><span class="pre">chil</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4chipE"><code class="docutils literal notranslate"><span class="pre">chip</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4phipE"><code class="docutils literal notranslate"><span class="pre">phip</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5f_refE"><code class="docutils literal notranslate"><span class="pre">f_ref</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters11phi_alignedE"><code class="docutils literal notranslate"><span class="pre">phi_aligned</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters10incl_angleE"><code class="docutils literal notranslate"><span class="pre">incl_angle</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6phiRefE"><code class="docutils literal notranslate"><span class="pre">phiRef</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6alpha0E"><code class="docutils literal notranslate"><span class="pre">alpha0</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters7thetaJNE"><code class="docutils literal notranslate"><span class="pre">thetaJN</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters12zeta_polarizE"><code class="docutils literal notranslate"><span class="pre">zeta_polariz</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters2x0E"><code class="docutils literal notranslate"><span class="pre">x0</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters7PNorderE"><code class="docutils literal notranslate"><span class="pre">PNorder</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6chi1_pE"><code class="docutils literal notranslate"><span class="pre">chi1_p</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6chi2_pE"><code class="docutils literal notranslate"><span class="pre">chi2_p</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6chi1_lE"><code class="docutils literal notranslate"><span class="pre">chi1_l</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6chi2_lE"><code class="docutils literal notranslate"><span class="pre">chi2_l</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5phiJLE"><code class="docutils literal notranslate"><span class="pre">phiJL</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters7thetaJLE"><code class="docutils literal notranslate"><span class="pre">thetaJL</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6tidal1E"><code class="docutils literal notranslate"><span class="pre">tidal1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6tidal2E"><code class="docutils literal notranslate"><span class="pre">tidal2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters14tidal_weightedE"><code class="docutils literal notranslate"><span class="pre">tidal_weighted</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters20delta_tidal_weightedE"><code class="docutils literal notranslate"><span class="pre">delta_tidal_weighted</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters15NRT_phase_coeffE"><code class="docutils literal notranslate"><span class="pre">NRT_phase_coeff</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5quad1E"><code class="docutils literal notranslate"><span class="pre">quad1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5quad2E"><code class="docutils literal notranslate"><span class="pre">quad2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4oct1E"><code class="docutils literal notranslate"><span class="pre">oct1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4oct2E"><code class="docutils literal notranslate"><span class="pre">oct2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters14ss_3p5PN_coeffE"><code class="docutils literal notranslate"><span class="pre">ss_3p5PN_coeff</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters19NRT_amp_coefficientE"><code class="docutils literal notranslate"><span class="pre">NRT_amp_coefficient</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters11diss_tidal1E"><code class="docutils literal notranslate"><span class="pre">diss_tidal1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters11diss_tidal2E"><code class="docutils literal notranslate"><span class="pre">diss_tidal2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters19diss_tidal_weightedE"><code class="docutils literal notranslate"><span class="pre">diss_tidal_weighted</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters25delta_diss_tidal_weightedE"><code class="docutils literal notranslate"><span class="pre">delta_diss_tidal_weighted</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters7betappeE"><code class="docutils literal notranslate"><span class="pre">betappe</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4bppeE"><code class="docutils literal notranslate"><span class="pre">bppe</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4appeE"><code class="docutils literal notranslate"><span class="pre">appe</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters8alphappeE"><code class="docutils literal notranslate"><span class="pre">alphappe</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4NmodE"><code class="docutils literal notranslate"><span class="pre">Nmod</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters3phiE"><code class="docutils literal notranslate"><span class="pre">phi</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5thetaE"><code class="docutils literal notranslate"><span class="pre">theta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters2SPE"><code class="docutils literal notranslate"><span class="pre">SP</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters2SLE"><code class="docutils literal notranslate"><span class="pre">SL</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters11sky_averageE"><code class="docutils literal notranslate"><span class="pre">sky_average</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters10shift_timeE"><code class="docutils literal notranslate"><span class="pre">shift_time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters15Z_DL_spline_ptrE"><code class="docutils literal notranslate"><span class="pre">Z_DL_spline_ptr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters14Z_DL_accel_ptrE"><code class="docutils literal notranslate"><span class="pre">Z_DL_accel_ptr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters9cosmologyE"><code class="docutils literal notranslate"><span class="pre">cosmology</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters9Nmod_betaE"><code class="docutils literal notranslate"><span class="pre">Nmod_beta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters10Nmod_alphaE"><code class="docutils literal notranslate"><span class="pre">Nmod_alpha</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters10Nmod_sigmaE"><code class="docutils literal notranslate"><span class="pre">Nmod_sigma</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters8Nmod_phiE"><code class="docutils literal notranslate"><span class="pre">Nmod_phi</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5betaiE"><code class="docutils literal notranslate"><span class="pre">betai</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6alphaiE"><code class="docutils literal notranslate"><span class="pre">alphai</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6sigmaiE"><code class="docutils literal notranslate"><span class="pre">sigmai</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4phiiE"><code class="docutils literal notranslate"><span class="pre">phii</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters10delta_betaE"><code class="docutils literal notranslate"><span class="pre">delta_beta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters11delta_alphaE"><code class="docutils literal notranslate"><span class="pre">delta_alpha</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters11delta_sigmaE"><code class="docutils literal notranslate"><span class="pre">delta_sigma</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters9delta_phiE"><code class="docutils literal notranslate"><span class="pre">delta_phi</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters9kappa3_EAE"><code class="docutils literal notranslate"><span class="pre">kappa3_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters12epsilon_x_EAE"><code class="docutils literal notranslate"><span class="pre">epsilon_x_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5ca_EAE"><code class="docutils literal notranslate"><span class="pre">ca_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters9ctheta_EAE"><code class="docutils literal notranslate"><span class="pre">ctheta_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5cw_EAE"><code class="docutils literal notranslate"><span class="pre">cw_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters9csigma_EAE"><code class="docutils literal notranslate"><span class="pre">csigma_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5c1_EAE"><code class="docutils literal notranslate"><span class="pre">c1_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5c2_EAE"><code class="docutils literal notranslate"><span class="pre">c2_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5c3_EAE"><code class="docutils literal notranslate"><span class="pre">c3_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5c4_EAE"><code class="docutils literal notranslate"><span class="pre">c4_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6c13_EAE"><code class="docutils literal notranslate"><span class="pre">c13_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6c14_EAE"><code class="docutils literal notranslate"><span class="pre">c14_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters9cminus_EAE"><code class="docutils literal notranslate"><span class="pre">cminus_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters7cTsq_EAE"><code class="docutils literal notranslate"><span class="pre">cTsq_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters7cVsq_EAE"><code class="docutils literal notranslate"><span class="pre">cVsq_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters7cSsq_EAE"><code class="docutils literal notranslate"><span class="pre">cSsq_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5cT_EAE"><code class="docutils literal notranslate"><span class="pre">cT_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5cV_EAE"><code class="docutils literal notranslate"><span class="pre">cV_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5cS_EAE"><code class="docutils literal notranslate"><span class="pre">cS_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters9alpha1_EAE"><code class="docutils literal notranslate"><span class="pre">alpha1_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters9alpha2_EAE"><code class="docutils literal notranslate"><span class="pre">alpha2_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters8cbarw_EAE"><code class="docutils literal notranslate"><span class="pre">cbarw_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters8beta1_EAE"><code class="docutils literal notranslate"><span class="pre">beta1_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters8beta2_EAE"><code class="docutils literal notranslate"><span class="pre">beta2_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4Z_EAE"><code class="docutils literal notranslate"><span class="pre">Z_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5A1_EAE"><code class="docutils literal notranslate"><span class="pre">A1_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5A2_EAE"><code class="docutils literal notranslate"><span class="pre">A2_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5A3_EAE"><code class="docutils literal notranslate"><span class="pre">A3_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5B3_EAE"><code class="docutils literal notranslate"><span class="pre">B3_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4C_EAE"><code class="docutils literal notranslate"><span class="pre">C_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4D_EAE"><code class="docutils literal notranslate"><span class="pre">D_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6V_x_EAE"><code class="docutils literal notranslate"><span class="pre">V_x_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6V_y_EAE"><code class="docutils literal notranslate"><span class="pre">V_y_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6V_z_EAE"><code class="docutils literal notranslate"><span class="pre">V_z_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5s1_EAE"><code class="docutils literal notranslate"><span class="pre">s1_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters5s2_EAE"><code class="docutils literal notranslate"><span class="pre">s2_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters4S_EAE"><code class="docutils literal notranslate"><span class="pre">S_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters8compact1E"><code class="docutils literal notranslate"><span class="pre">compact1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters8compact2E"><code class="docutils literal notranslate"><span class="pre">compact2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters17alpha_ppE_2T_0_EAE"><code class="docutils literal notranslate"><span class="pre">alpha_ppE_2T_0_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6gb1_EAE"><code class="docutils literal notranslate"><span class="pre">gb1_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6abL_EAE"><code class="docutils literal notranslate"><span class="pre">abL_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters6gX1_EAE"><code class="docutils literal notranslate"><span class="pre">gX1_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters10include_l1E"><code class="docutils literal notranslate"><span class="pre">include_l1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters20EA_nan_error_messageE"><code class="docutils literal notranslate"><span class="pre">EA_nan_error_message</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters11alpha_paramE"><code class="docutils literal notranslate"><span class="pre">alpha_param</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters10EA_region1E"><code class="docutils literal notranslate"><span class="pre">EA_region1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters15delta_ctheta_EAE"><code class="docutils literal notranslate"><span class="pre">delta_ctheta_EA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N17source_parameters30populate_source_parameters_oldE1T1T1TP1TP1T1T1Tb"><code class="docutils literal notranslate"><span class="pre">populate_source_parameters_old()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -1333,6 +1340,7 @@
 <span id="_CPPv3I0E8sph_harm"></span><span id="_CPPv2I0E8sph_harm"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="structsph__harm"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">sph_harm</span></span></span><a class="headerlink" href="#_CPPv4I0E8sph_harm" title="Link to this definition"></a><br /></dt>
 <dd><div class="docutils container">
 <em>#include &lt;util.h&gt;</em></div>
+<p>Container for set of spin weighted spherical harmonics (all spins are -2) </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
 <dl class="cpp var">
@@ -1368,6 +1376,9 @@
 <span id="_CPPv3I0E15gen_params_base"></span><span id="_CPPv2I0E15gen_params_base"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classgen__params__base"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">gen_params_base</span></span></span><a class="headerlink" href="#_CPPv4I0E15gen_params_base" title="Link to this definition"></a><br /></dt>
 <dd><div class="docutils container">
 <em>#include &lt;util.h&gt;</em></div>
+<p>Structure for interfacing with the libraries. </p>
+<p>Structure to interface with the libraries - Units are in solar masses and mpc contains the generation parameters including source parameters and theory parameters</p>
+<p><em>NOTE</em> not all the members of this structure need to be assigned for usage. In fact, some are reduntant. It’s up to the user to determine what fields require an assignment. (Sorry) </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
 <dl class="cpp function">
@@ -1981,6 +1992,8 @@
 <span id="_CPPv3I0E17source_parameters"></span><span id="_CPPv2I0E17source_parameters"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="structsource__parameters"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">source_parameters</span></span></span><a class="headerlink" href="#_CPPv4I0E17source_parameters" title="Link to this definition"></a><br /></dt>
 <dd><div class="docutils container">
 <em>#include &lt;util.h&gt;</em></div>
+<p>For internal data transfers. </p>
+<p>Structure to facililate parameter tranfers - All dimensionful quantities are in seconds </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
 <dl class="cpp function">

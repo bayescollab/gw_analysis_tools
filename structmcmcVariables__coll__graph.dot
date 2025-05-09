@@ -9,8 +9,15 @@ digraph "mcmcVariables"
   Node2 [id="Node000002",label="fftw_outline",height=0.2,width=0.4,color="gray40", fillcolor="white", style="filled",URL="$structfftw__outline.html",tooltip=" "];
   Node3 -> Node1 [id="edge2_Node000001_Node000003",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" mcmc_mod_struct",fontcolor="grey" ];
   Node3 [id="Node000003",label="MCMC_modification_struct",height=0.2,width=0.4,color="gray40", fillcolor="white", style="filled",URL="$structMCMC__modification__struct.html",tooltip=" "];
-  Node4 -> Node1 [id="edge3_Node000001_Node000004",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" user_parameters",fontcolor="grey" ];
-  Node4 [id="Node000004",label="MCMC_user_param",height=0.2,width=0.4,color="gray40", fillcolor="white", style="filled",URL="$structMCMC__user__param.html",tooltip=" "];
-  Node2 -> Node4 [id="edge4_Node000004_Node000002",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" burn_plans",fontcolor="grey" ];
-  Node3 -> Node4 [id="edge5_Node000004_Node000003",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" mod_struct",fontcolor="grey" ];
+  Node4 -> Node3 [id="edge3_Node000003_Node000004",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" QuadMethod",fontcolor="grey" ];
+  Node4 [id="Node000004",label="Quadrature",height=0.2,width=0.4,color="gray40", fillcolor="white", style="filled",URL="$classQuadrature.html",tooltip="Class to evaluate integrals with established spacing and weights."];
+  Node5 -> Node3 [id="edge4_Node000003_Node000005",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" adaptivell",fontcolor="grey" ];
+  Node5 [id="Node000005",label="AdaptiveLikelihood",height=0.2,width=0.4,color="gray40", fillcolor="white", style="filled",URL="$classAdaptiveLikelihood.html",tooltip=" "];
+  Node6 -> Node1 [id="edge5_Node000001_Node000006",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" user_parameters",fontcolor="grey" ];
+  Node6 [id="Node000006",label="MCMC_user_param",height=0.2,width=0.4,color="gray40", fillcolor="white", style="filled",URL="$structMCMC__user__param.html",tooltip=" "];
+  Node2 -> Node6 [id="edge6_Node000006_Node000002",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" burn_plans",fontcolor="grey" ];
+  Node4 -> Node6 [id="edge7_Node000006_Node000004",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" QuadMethod",fontcolor="grey" ];
+  Node3 -> Node6 [id="edge8_Node000006_Node000003",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" mod_struct",fontcolor="grey" ];
+  Node5 -> Node1 [id="edge9_Node000001_Node000005",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" adaptivell",fontcolor="grey" ];
+  Node4 -> Node1 [id="edge10_Node000001_Node000004",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" QuadMethod",fontcolor="grey" ];
 }

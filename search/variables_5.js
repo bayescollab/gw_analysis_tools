@@ -13,7 +13,7 @@ var searchData=
   ['fdamp_10',['fdamp',['../structsource__parameters.html#adf9f63901b2a77eb0b89bba6ff68239e',1,'source_parameters']]],
   ['file_5ftrim_5flengths_11',['file_trim_lengths',['../structdump__file__struct.html#ac9b23dacfee8da896b101d1cb35a428d',1,'dump_file_struct::file_trim_lengths'],['../classmcmc__sampler__output.html#adcf959ab3e2cbca54fbc56024bd63c82',1,'mcmc_sampler_output::file_trim_lengths']]],
   ['filename_12',['filename',['../structdump__file__struct.html#ad7b11ac89e42bbba187b3469548eee1a',1,'dump_file_struct']]],
-  ['fish_13',['fish',['../classsampler.html#ac57df81c469116546452cafdb1471e4d',1,'sampler']]],
+  ['fish_13',['fish',['../classsampler.html#aa1299587bc35b3466a5e33fd1b09a406',1,'sampler']]],
   ['fish_5faccept_5fct_14',['fish_accept_ct',['../classsampler.html#a30af5faec6c465a22f57326ea1eb03f8',1,'sampler']]],
   ['fish_5flast_5faccept_5fct_15',['fish_last_accept_ct',['../classsampler.html#ab2198c1496f90189a165aa4471bfdddd',1,'sampler']]],
   ['fish_5flast_5freject_5fct_16',['fish_last_reject_ct',['../classsampler.html#a9b2cbb8f29358160bbc16bbddb640e57',1,'sampler']]],
@@ -42,7 +42,7 @@ var searchData=
   ['fplus_39',['Fplus',['../structdet__res__pat.html#a4293dc2be250f3f8d28f12cd5c84bb82',1,'det_res_pat']]],
   ['frd_40',['fRD',['../structsource__parameters.html#ad221b8f66ef2d9fd878b1c70461b60db',1,'source_parameters']]],
   ['freq_5fboundaries_41',['freq_boundaries',['../structgsl__subroutine.html#a237d86fd52747febdafb2f88d5b6ebfd',1,'gsl_subroutine']]],
-  ['freqs_42',['freqs',['../classppEFisherRJVariables.html#a939212de90df9ba4b03e95856a4c5f9b',1,'ppEFisherRJVariables']]],
+  ['freqs_42',['freqs',['../structifo__data__struct.html#afe0960c8d92ebab9a249d0fef1cfc7bd',1,'ifo_data_struct::freqs'],['../classppEFisherRJVariables.html#a939212de90df9ba4b03e95856a4c5f9b',1,'ppEFisherRJVariables::freqs']]],
   ['fx_43',['Fx',['../structdet__res__pat.html#adad86d31d66a9bb39bb86ff45c17d708',1,'det_res_pat']]],
   ['fy_44',['Fy',['../structdet__res__pat.html#a16db5d1fc5ce0d56578adf125aafc6a4',1,'det_res_pat']]]
 ];

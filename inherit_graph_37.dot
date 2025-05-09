@@ -5,5 +5,5 @@ digraph "Graphical Class Hierarchy"
   edge [fontname=Helvetica,fontsize=10,labelfontname=Helvetica,labelfontsize=10];
   node [fontname=Helvetica,fontsize=10,shape=box,height=0.2,width=0.4];
   rankdir="LR";
-  Node0 [id="Node000000",label="threaded_ac_jobs_fft",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$classthreaded__ac__jobs__fft.html",tooltip="Class to contain spectral method jobs."];
+  Node0 [id="Node000000",label="swap_struct",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$structswap__struct.html",tooltip=" "];
 }

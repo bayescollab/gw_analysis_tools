@@ -8,6 +8,7 @@
 #include <cmath>
 #include <complex>
 #include "util.h"
+#include "io_util.h"
 #include <gsl/gsl_randist.h> 
 
 /*! \file 
@@ -56,30 +57,67 @@ template class IMRPhenomD_NRT_EOS<adouble>;
 
 // *********************** QLIMR TOV and λ̄ FUNCTIONALITY ***********************
 
-EOSinterpolation EOS::EoS;
-EOS::EOS(){}; // Default EOS constructor
+// ----------------------------------------------------------------------------
 
-// ----------------------- Parametric EOS constructor -------------------------
-EOS::EOS(gsl_interp_type *type) {
+Input_params Input_QLIMR::params;
+Input_QLIMR::Input_QLIMR() {}
 
-  // Interpolate p(ε): initialize GSL interpolation spline
-  EoS.p_of_e.initialize(type, epsilon_col1, pressure_col2);
+// ------------------------- Input_QLIMR: Read yaml params --------------------
 
-  // Compute interpolated ε(h) and p(h) 
-  calculate_eos_of_h(&epsilon_col1, type);
+Input_QLIMR::Input_QLIMR(string filename, double R_start, double single_epsilon) {
+    params.R_start = adimensionalize(R_start, "km");
+    params.single_epsilon = adimensionalize(single_epsilon, "MeV/fm^3");
 
+    vector<vector<double>> fileoutput;
+    read_file<double>(filename, fileoutput, ',');
+
+    for(int i = 0; i < fileoutput[0].size(); i++)
+    {
+        double e_value = fileoutput[0][i];
+        double p_value = fileoutput[1][i];
+
+        params.epsilon_col1.push_back(adimensionalize(e_value, "MeV/fm^3"));
+        params.pressure_col2.push_back(adimensionalize(p_value, "MeV/fm^3"));
+    }
 }
 // ----------------------------------------------------------------------------
 
+// --------------- Adimensionalize conversion function ------------------------
+double Input_QLIMR::adimensionalize(double value, string unit) {
+    double factor;
+  
+    if (unit == "MeV/fm^3") {
+      factor = 1.0 / 346933.783551;
+    } else if (unit == "km") {
+      factor = 1.0 / 1.47663;
+    } else if (unit == "g/cm^3") {
+      factor = 1.0 / 6.17625e+17;
+    } else if (unit == "MeV"){
+      factor = 8.96162e-61;   
+    } else if (unit == "1/fm^3"){
+      factor = 3.216297e54;  
+    } else if (unit == "-") {
+      factor = 1.0;
+    } else {
+      std::cout << "no unit match to adimensionalize" << std::endl;
+      exit(0);
+    }
+    
+    return factor * value;
+  }
+
 // ---------------------- Interpolation class methods -------------------------
-void Interpolation::initialize(gsl_interp_type *interp_type, vector<double> x,
-                               vector<double> y) {
+void Interpolation::initialize(gsl_interp_type *interp_type, vector<double> x, vector<double> y) {
   type = interp_type;
   // Size of the independent variable vector                            
   size = x.size();    
 
   // Allocating GSL interpolation accelerator
   acc = gsl_interp_accel_alloc();
+  if (!acc) {
+    std::cerr << "Error: Failed to allocate memory for accelerator." << std::endl;
+    exit(EXIT_FAILURE);
+  }
 
   // Allocating GSL spline of specified type and size
   spline = gsl_spline_alloc(type, size);
@@ -125,6 +163,24 @@ double enthalpy_integrand(double epsilon, void *params) {
 
   return cs2 / (p + epsilon);
 }
+// ----------------------------------------------------------------------------
+
+// -------------------------- Default EOS constructor --------------------------
+EOSinterpolation EOS::EoS;
+EOS::EOS(){}; // Default EOS constructor
+// ----------------------------------------------------------------------------
+
+// ----------------------- Parametric EOS constructor -------------------------
+EOS::EOS(gsl_interp_type *type) {
+
+  // Interpolate p(ε): initialize GSL interpolation spline
+  EoS.p_of_e.initialize(type, params.epsilon_col1, params.pressure_col2);
+
+  // Compute interpolated ε(h) and p(h) 
+  calculate_eos_of_h(&params.epsilon_col1, type);
+
+}
+
 // ----------------------------------------------------------------------------
 
 //------------------- Integration: Finding ε(h) and p(h) ----------------------
@@ -219,7 +275,7 @@ TOV::Initial_conditions_TOV TOV::IC_TOV(double epsilon_c)
 
   // ################## Asymptotic solutions ###################
 
-  double R = R_start;
+  double R = params.R_start;
 
   double M = (4.0 / 3.0) * M_PI * epsilon_c * pow(R, 3);
 
@@ -238,7 +294,7 @@ TOV::Initial_conditions_TOV TOV::IC_TOV(double epsilon_c)
   double dMdh = 4.0 * M_PI * e * pow(R, 2) * dRdh;
 
   // Filling initial conditions and initial step size into structure
-  IC_tov.R_start = R_start;
+  IC_tov.R_start = params.R_start;
   IC_tov.M_start = M;
   IC_tov.h_start = hc - (2.0 / 3.0) * M_PI * pow(R, 2) * (epsilon_c + 3.0 * p);
   IC_tov.h_istep = 0.1 * std::min(abs(R / dRdh), std::abs(M / dMdh));
@@ -344,29 +400,6 @@ void TOV::TOV_Integrator(double epsilon_c, EOSinterpolation *eos) {
   fun.nu_of_R.initialize((gsl_interp_type *)gsl_interp_steffen, R_sol, nu_sol);
 };
 
-double TOV::adimensionalize(double value, string unit) {
-    double factor;
-  
-    if (unit == "MeV/fm^3") {
-      factor = 1.0 / 346933.783551;
-    } else if (unit == "km") {
-      factor = 1.0 / 1.47663;
-    } else if (unit == "g/cm^3") {
-      factor = 1.0 / 6.17625e+17;
-    } else if (unit == "MeV"){
-      factor = 8.96162e-61;   
-    } else if (unit == "1/fm^3"){
-      factor = 3.216297e54;  
-    } else if (unit == "-") {
-      factor = 1.0;
-    } else {
-      std::cout << "no unit match to adimensionalize" << std::endl;
-      exit(0);
-    }
-    
-    return factor * value;
-  }
-
 // Chemical potential as a function of radius µ(R)
 double TOV::mu_of_R(double R){
 
@@ -436,7 +469,7 @@ int TidalLove_equation(double R, const double y[], double f[], void *params_ptr)
 Second_Order::Initial_conditions_Y Second_Order::IC_Y()
 {
 
-  double R = R_start;
+  double R = params.R_start;
 
   // Defining initial step size for adaptative method
   IC_y.R_istep = R/100;
@@ -459,7 +492,7 @@ void Second_Order::TidalLove_Integrator(Local_functions *fun)
   IC_Y();
 
   double y[1] = {IC_y.Y_start};
-  double R = R_start;
+  double R = params.R_start;
   double R_istep = IC_y.R_istep;
 
   // Defining step and solution vectors

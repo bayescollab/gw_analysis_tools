@@ -80,8 +80,12 @@ void read_file(std::string filename, /**< input filename, relative to execution 
 			std::vector<T> row;	// Initializes a row vector to store values
 			std::stringstream lineStream(line);
 			T item;	// Initializes to read an item of value type T (based on the vector that is passed in)
-			while(lineStream >> item >> delimiter){	// Parses for first an item, then the delimiter used to separate items until a new line is read
+			while(lineStream >> item){	// Parses for itmes until a new line is read
 				row.push_back(item);	// Adds the currently parsed item to the row vector
+				if(lineStream.peek() == delimiter) // If the next item is the delimiter, ignore it
+				{
+					lineStream.ignore();
+				}
 			}
 			output.push_back(row);	// Adds the row vector to the output table
 		}

@@ -38,6 +38,9 @@ public:
   // Function to calculate observable variables from the EOS
   virtual void get_m_love(); // Empty for now, "master function" that will be loaded with QLIMR functionality
 
+  // Function to interface with
+
+
   /* Leaving this here for now in case we need it for future development - PLEASE DELETE LATER IF NOT USED!
   
   // Inherited from IMRPhenomD_NRT which inherited from IMRPhenomD
@@ -47,7 +50,7 @@ public:
 };
 
 // ****************************************************************************
-// Structure to store user input parameters given in config_validated.yaml
+// Structure to store input parameters
 struct Input_params {
     double R_start;
     double single_epsilon;
@@ -62,10 +65,13 @@ class Input_QLIMR {
     
     // Default and parametric constructors
     Input_QLIMR();
-    Input_QLIMR(string filename, double R_start, double single_epsilon);
+
+    // Initialize object to read source EOS file
+    void input(vector<double> epsilon, vector<double> pressure, double R_start, double single_epsilon);
     
     // Unit conversion functions
     double adimensionalize(double value, string unit);
+    double dimensionalize(double value, string unit);
     
 };
 
@@ -122,7 +128,7 @@ public:
   EOS();
 
   // Parametric constructor: 
-  EOS(gsl_interp_type *type);
+  void initialize_eos(gsl_interp_type *type);
 
   // Method function to compute EoS in terms of pseudo-enthalpy (h)
   void calculate_eos_of_h(vector<double> *epsilon, gsl_interp_type *type);

@@ -46,10 +46,36 @@ void IMRPhenomD_NRT_EOS<T>::cs2_to_eos_convert()
 }
 
  template<class T> 
-void IMRPhenomD_NRT_EOS<T>::get_m_love()
+std::array<double, 3> IMRPhenomD_NRT_EOS<T>::get_m_love(vector<double> epsilon, vector<double> pressure)
 {
+    // Specifies the starting radius for integration.
+    double R_start = 0.0004;
+    // Specifices the central epsilon to integrate at
+    double single_epsilon = epsilon.back();
 
+    // Initialize MRLevaluator that is based on QLIMR architecture
+    Second_Order MRLevaluator;
+    // Load in the starting values (epsilon and pressure rom the EOS and a starting radius value for integration)
+    // Be careful to make sure the single epsilon input is FROM the epsilon vector!
+    MRLevaluator.input(epsilon, pressure, R_start, single_epsilon);
+    // Interpolates the EoS in terms of the pseudo-enthalpy variable (h) 
+    MRLevaluator.initialize_eos((gsl_interp_type *)gsl_interp_steffen);
+
+    // Runs the TOV integrator
+    MRLevaluator.TOV_Integrator(MRLevaluator.params.single_epsilon, &MRLevaluator.EoS);
+    // Runs the TidalLove integrator
+    MRLevaluator.TidalLove_Integrator(&MRLevaluator.fun);
+
+    // NOTE THAT THE TIDAL LOVE NUMBER OUTPUT IS *DIMENSIONLESS*. I need to add functionality to redimensionalize it still!
+    // Please see the QLIMR docs for more information: https://ce.musesframework.io/docs/modules/qlimr/contents/2_Physics_Overview.html.
+
+    double M = MRLevaluator.NS_M;  // This is given in solar masses!
+    double R = MRLevaluator.dimensionalize(MRLevaluator.NS_R, "km");  // This is given in km!
+    double L = MRLevaluator.NS_Lbar;   // This has NO DIMENSIONS!!!
+    
+    return {M, R, L};
 }
+
 
 
 template class IMRPhenomD_NRT_EOS<double>;
@@ -64,20 +90,25 @@ Input_QLIMR::Input_QLIMR() {}
 
 // ------------------------- Input_QLIMR: Read yaml params --------------------
 
-Input_QLIMR::Input_QLIMR(string filename, double R_start, double single_epsilon) {
+void Input_QLIMR::input(vector<double> epsilon, vector<double> pressure, double R_start, double single_epsilon) {
     params.R_start = adimensionalize(R_start, "km");
-    params.single_epsilon = adimensionalize(single_epsilon, "MeV/fm^3");
 
-    vector<vector<double>> fileoutput;
-    read_file<double>(filename, fileoutput, ',');
-
-    for(int i = 0; i < fileoutput[0].size(); i++)
+    // Check that the pressure and epsilon vectors are the same size
+    if(pressure.size() == epsilon.size())
     {
-        double e_value = fileoutput[0][i];
-        double p_value = fileoutput[1][i];
+      // Adimensionalize the pressure and epsilon
+      for(int i = 0; i < epsilon.size(); i++) {
+        epsilon[i] = adimensionalize(epsilon[i], "MeV/fm^3");
+        pressure[i] = adimensionalize(pressure[i], "MeV/fm^3");
+      }
 
-        params.epsilon_col1.push_back(adimensionalize(e_value, "MeV/fm^3"));
-        params.pressure_col2.push_back(adimensionalize(p_value, "MeV/fm^3"));
+      params.epsilon_col1 = epsilon;
+      params.pressure_col2 = pressure;
+
+      params.single_epsilon = adimensionalize(single_epsilon, "MeV/fm^3");
+    }
+    else{
+      std::cout<<"Error: Epsilon and pressure vectors passed to LMR structure are not the same size. Check read EOS file."<<std::endl;
     }
 }
 // ----------------------------------------------------------------------------
@@ -106,8 +137,35 @@ double Input_QLIMR::adimensionalize(double value, string unit) {
     return factor * value;
   }
 
+// --------------- Dimensionalize conversion function ------------------------
+double Input_QLIMR::dimensionalize(double value, string unit) {
+  double factor;
+
+  if (unit == "MeV/fm^3") {
+    factor = 346933.783551;
+  } else if (unit == "km") {
+    factor = 1.47663;
+  } else if (unit == "g/cm^3") {
+    factor = 6.17625e+17;
+  } else if (unit == "MeV"){
+    factor = 1.0/8.96162e-61;  
+  } else if (unit == "1/fm^3"){
+    factor = 1.0 / 3.216297e54;  
+  } else if (unit == "Hz") {
+    factor = (299792/1.47663); // c [km/s] / lsun [km]
+  } else if (unit == "-") { 
+    factor = 1.0;
+  } else {
+    std::cout << "no unit match to dimensionalize" << std::endl;
+    exit(0);
+  }
+
+  return factor * value;
+}
+
 // ---------------------- Interpolation class methods -------------------------
-void Interpolation::initialize(gsl_interp_type *interp_type, vector<double> x, vector<double> y) {
+void Interpolation::initialize(gsl_interp_type *interp_type, vector<double> x,
+                               vector<double> y) {
   type = interp_type;
   // Size of the independent variable vector                            
   size = x.size();    
@@ -171,7 +229,7 @@ EOS::EOS(){}; // Default EOS constructor
 // ----------------------------------------------------------------------------
 
 // ----------------------- Parametric EOS constructor -------------------------
-EOS::EOS(gsl_interp_type *type) {
+void EOS::initialize_eos(gsl_interp_type *type) {
 
   // Interpolate p(ε): initialize GSL interpolation spline
   EoS.p_of_e.initialize(type, params.epsilon_col1, params.pressure_col2);
@@ -362,11 +420,16 @@ void TOV::TOV_Integrator(double epsilon_c, EOSinterpolation *eos) {
     // Store enclosed mass (M) after each step
     M_sol.push_back(y[1]);
 
-    // Store pressure (p) after each step
-    p_sol.push_back(eos->p_of_e.yofx((eos->e_of_h.yofx(h))));
-
     // Store energy density (ε) after each step
     e_sol.push_back(eos->e_of_h.yofx(h));
+
+    if(e_sol.back() <= 0) {
+      p_sol.push_back(0);
+    }
+    else {
+      // Store pressure (p) after each step
+    p_sol.push_back(eos->p_of_e.yofx((eos->e_of_h.yofx(h))));
+    }
   }
 
   // // Check that integration indeed goes up to h = 0 where p = 0. 

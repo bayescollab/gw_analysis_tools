@@ -212,22 +212,23 @@ void calculate_derivatives(std::complex<double>  **response_deriv,
 			}
 			param_p[i] = parameters_vec[i] + epsilon;
 			param_m[i] = parameters_vec[i] - epsilon;
-			if(i==8 && parameters_vec[i] >.25-epsilon){
-			  param_p[i] = parameters_vec[i]; //instead of parameters_vec[i] + epsilon
-			  // std::cout<<"eta close to boundary, using backward difference approximation to differentiate. See line "<<__LINE__<<" in "<<__FILE__<<" for more information."<<std::endl;
-			}
-			if(order>=4){
-				for( int j =0;j<dimension;j++){
-					param_pp[j] = parameters_vec[j] ;
-					param_mm[j] = parameters_vec[j] ;
-				}
-				param_pp[i] = parameters_vec[i] + 2*epsilon;
-				param_mm[i] = parameters_vec[i] - 2*epsilon;
-				if(i==8 && parameters_vec[i] >.25-epsilon){
-				  param_pp[i] = parameters_vec[i];
-				  //std::cout<<"eta close to boundary, using backward difference approximation to differentiate. See line "<<__LINE__<<" in "<<__FILE__<<" for more information."<<std::endl;
-				}
-
+			if(local_gen_method.find("EOS") == std::string::npos){ // the following code assumes parameter[8] = eta which is not true for the IMRPhenomD_NRT_EOS template
+			  if(i==8 && parameters_vec[i] >.25-epsilon){
+			    param_p[i] = parameters_vec[i]; //instead of parameters_vec[i] + epsilon
+			    // std::cout<<"eta close to boundary, using backward difference approximation to differentiate. See line "<<__LINE__<<" in "<<__FILE__<<" for more information."<<std::endl;
+			  }
+			  if(order>=4){
+			    for( int j =0;j<dimension;j++){
+			      param_pp[j] = parameters_vec[j] ;
+			      param_mm[j] = parameters_vec[j] ;
+			    }
+			    param_pp[i] = parameters_vec[i] + 2*epsilon;
+			    param_mm[i] = parameters_vec[i] - 2*epsilon;
+			    if(i==8 && parameters_vec[i] >.25-epsilon){
+			      param_pp[i] = parameters_vec[i];
+			      //std::cout<<"eta close to boundary, using backward difference approximation to differentiate. See line "<<__LINE__<<" in "<<__FILE__<<" for more information."<<std::endl;
+			    }
+			  }
 			}
 			repack_parameters(param_p, &waveform_params, gen_method, dimension, parameters);
 			fourier_amplitude(frequencies, 
@@ -285,9 +286,11 @@ void calculate_derivatives(std::complex<double>  **response_deriv,
 			if(order==2){
 				for (int l =0;l<length;l++)
 				{
-				  if(i==8 && parameters_vec[i] > .25-epsilon){
-				    amplitude_deriv = (amplitude_plus[l] -amplitude_minus[l])/(epsilon);
-				    phase_deriv = (phase_plus[l] -phase_minus[l])/(epsilon);
+				  if(local_gen_method.find("EOS") == std::string::npos){
+				    if(i==8 && parameters_vec[i] > .25-epsilon){
+				      amplitude_deriv = (amplitude_plus[l] -amplitude_minus[l])/(epsilon);
+				      phase_deriv = (phase_plus[l] -phase_minus[l])/(epsilon);
+				    }
 				  }
 				  else{
 				    amplitude_deriv = (amplitude_plus[l] -amplitude_minus[l])/(2*epsilon);
@@ -299,11 +302,13 @@ void calculate_derivatives(std::complex<double>  **response_deriv,
 			}
 			else if(order==4){
 				for (int l =0;l<length;l++)
-				{
-				  if(i==8 && parameters_vec[i] > .25-epsilon){
-				    amplitude_deriv = (-amplitude_plus_plus[l]+8.*amplitude_plus[l] -8.*amplitude_minus[l]+amplitude_minus_minus[l])/(6.*epsilon);
-				    phase_deriv = (-phase_plus_plus[l]+8.*phase_plus[l] -8.*phase_minus[l]+phase_minus_minus[l])/(6.*epsilon);
-				  }
+				  {
+				    if(local_gen_method.find("EOS") == std::string::npos){
+				      if(i==8 && parameters_vec[i] > .25-epsilon){
+					amplitude_deriv = (-amplitude_plus_plus[l]+8.*amplitude_plus[l] -8.*amplitude_minus[l]+amplitude_minus_minus[l])/(6.*epsilon);
+					phase_deriv = (-phase_plus_plus[l]+8.*phase_plus[l] -8.*phase_minus[l]+phase_minus_minus[l])/(6.*epsilon);
+				      }
+				    }
 				  else{
 				    amplitude_deriv = (-amplitude_plus_plus[l]+8.*amplitude_plus[l] -8.*amplitude_minus[l]+amplitude_minus_minus[l])/(12.*epsilon);
 				    phase_deriv = (-phase_plus_plus[l]+8.*phase_plus[l] -8.*phase_minus[l]+phase_minus_minus[l])/(12.*epsilon);
@@ -1876,6 +1881,36 @@ void unpack_parameters(double *parameters, gen_params_base<double> *input_params
 				parameters[10]=input_params->spin2[2];
 
 			}
+			else if(generation_method.find("EOS") != std::string::npos){
+			  for(int i = 0 ; i<dimension; i++){
+					log_factors[i] = false;
+				}
+
+				parameters[0]=input_params->RA;
+				parameters[1]=input_params->DEC;
+				if(input_params->equatorial_orientation){
+					parameters[2]=input_params->theta_l;
+					parameters[3]=input_params->phi_l;
+				}
+				else{
+					parameters[2]=input_params->psi;
+					parameters[3]=input_params->incl_angle;
+				}
+				parameters[4]=input_params->phiRef;
+				parameters[5]=input_params->tc;
+				parameters[6]=input_params->Luminosity_Distance;
+				parameters[7]=input_params->nbc1; 
+				parameters[8]=input_params->nbc2;
+				parameters[9]=input_params->spin1[2];
+				parameters[10]=input_params->spin2[2];
+				parameters[11]=input_params->bump_mag;
+				parameters[12]=input_params->bump_width;
+				parameters[13]=input_params->bump_offset;
+				if(input_params->EOS_plat_flag)
+				  {
+				    parameters[14]=input_params->plat;
+				  }
+			}
 			else{
 				for(int i = 0 ; i<dimension; i++){
 					log_factors[i] = false;
@@ -1956,6 +1991,10 @@ void unpack_parameters(double *parameters, gen_params_base<double> *input_params
 				parameters[3]=input_params->spin2[2];
 
 			}
+			else if(generation_method.find("EOS") != std::string::npos)
+			  {
+			    std::cout<<"Sky averaged IMRPhenomD_NRT_EOS is not supported for regular fishers."<<std::endl;
+			  }
 			else{
 				for(int i = 0 ; i<dimension; i++){
 					log_factors[i] = false;
@@ -1979,7 +2018,7 @@ void unpack_parameters(double *parameters, gen_params_base<double> *input_params
 		
 		}
 	}
-	if(generation_method.find("NRT") != std::string::npos){
+	if(generation_method.find("NRT") != std::string::npos && (generation_method.find("EOS")) == std::string::npos){
 	  //debugger_print(__FILE__,__LINE__,generation_method);
 		if(!input_params->sky_average){
 			if(generation_method.find("PhenomD") != std::string::npos ){
@@ -2199,7 +2238,33 @@ void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params, std::st
 				a_params->phip = avec_parameters[12];
 
 			}	
-		}	
+		}
+		else if(generation_method.find("EOS") != std::string::npos){
+		                a_params->RA=avec_parameters[0];
+				a_params->DEC=avec_parameters[1];
+				if(a_params->equatorial_orientation){
+					a_params->theta_l=avec_parameters[2];
+					a_params->phi_l=avec_parameters[3];
+				}
+				else{
+					a_params->psi=avec_parameters[2];
+					a_params->incl_angle=avec_parameters[3];
+				}
+				a_params->phiRef=avec_parameters[4];
+				a_params->tc=avec_parameters[5];
+				a_params->Luminosity_Distance=avec_parameters[6];
+				a_params->nbc1=avec_parameters[7]; 
+				a_params->nbc2=avec_parameters[8];
+				a_params->spin1[2]=avec_parameters[9];
+			        a_params->spin2[2]=avec_parameters[10];
+			        a_params->bump_mag=avec_parameters[11];
+			        a_params->bump_width=avec_parameters[12];
+			        a_params->bump_offset=avec_parameters[13];
+				if(a_params->EOS_plat_flag)
+				  {
+				    a_params->plat=avec_parameters[14];
+				  }
+			}
 		else if(generation_method.find("IMRPhenomD") != std::string::npos){
 			if(generation_method.find("MCMC")!=std::string::npos){
 				a_params->mass1 = calculate_mass1(exp(avec_parameters[7]),
@@ -2340,7 +2405,7 @@ void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params, std::st
 		}	
 
 	}
-	if(generation_method.find("NRT") != std::string::npos){
+	if(generation_method.find("NRT") != std::string::npos && generation_method.find("EOS") == std::string::npos){
 		if(!a_params->sky_average){
 			if(generation_method.find("PhenomD") != std::string::npos){
 				if( (a_params->tidal_love)){
@@ -2460,6 +2525,7 @@ void repack_non_parameter_options(gen_params_base<T> *waveform_params, gen_param
 	waveform_params->sky_average = input_params->sky_average;
 	waveform_params->tidal_love = input_params->tidal_love;
 	waveform_params->tidal_love_error = input_params->tidal_love_error;
+	waveform_params->EOS_plat_flag = input_params->EOS_plat_flag; 
 	waveform_params->alpha_param = input_params->alpha_param;
 	waveform_params->EA_region1 = input_params->EA_region1;
 	waveform_params->f_ref = input_params->f_ref;

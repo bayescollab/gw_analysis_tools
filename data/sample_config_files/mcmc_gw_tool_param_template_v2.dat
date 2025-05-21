@@ -124,6 +124,28 @@
 [bool] Jeffreys prior = false
 
 #############################################################
+#bumpy EOS specific options
+#############################################################
+#Determine whether plateau is set by user 
+[bool] EOS plateau flag = false
+#If yes, set prior for the plateau
+[dbl] plateau minimum = 0.
+[dbl] plateau maximum = 1. 
+#Priors for the central baryon number (in place of mass for this waveform template)
+[dbl] central baryon number1 minimum = .5 //These are fake priors for now TODO: update with realistic values
+[dbl] central baryon number1 maximum = 3.
+[dbl] central baryon number2 minimum = .5 //These are fake priors for now TODO: update with realistic values
+[dbl] central baryon number2 maximum = 3.
+#Priors for the 3 parameters to make a bump in the EOS.
+#If not specified, default values used.
+[dbl] bump magnitude minimum = 0.
+[dbl] bump magnitude maximum = 1.
+[dbl] bump width minimum = 0.
+[dbl] bump width maximum = 4.
+[dbl] bump offset minimum = 1.
+[dbl] bump offset  maximum = 6.
+
+#############################################################
 #Testing GR options
 #############################################################
 

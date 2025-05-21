@@ -1789,24 +1789,45 @@ void RJPTMCMC_method_specific_prep_v2(std::string generation_method, int dimensi
 		std::cout<<std::endl;
 		*intrinsic=false;
 	} 
-	else if(generation_method.find("PhenomD_NRT") != std::string::npos && (dimension - totalmod) == 13)
+	else if(generation_method.find("PhenomD_NRT") != std::string::npos)
 	{
-		std::cout<<"Sampling in parameters: RA, sin  DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2, ln tidal1, ln tidal2"<<std::endl;
-		for(int i =0; i<totalmod; i++){
-			std::cout<<", mod_"<<i;
-		}
-		std::cout<<std::endl;
-		*intrinsic=false;
-	} 
-	else if(generation_method.find("PhenomD_NRT") != std::string::npos && (dimension - totalmod) == 12)
-	{
-		std::cout<<"Sampling in parameters: RA, sin  DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2, ln tidal_s"<<std::endl;
-		for(int i =0; i<totalmod; i++){
-			std::cout<<", mod_"<<i;
-		}
-		std::cout<<std::endl;
-		mcmc_intrinsic=false;
-	} 
+	  if((dimension - totalmod) == 13)
+	    {
+	      std::cout<<"Sampling in parameters: RA, sin  DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2, ln tidal1, ln tidal2"<<std::endl;
+	      for(int i =0; i<totalmod; i++){
+		std::cout<<", mod_"<<i;
+	      }
+	      std::cout<<std::endl;
+	      *intrinsic=false;
+	    } 
+	  else if((dimension - totalmod) == 12)
+	    {
+	      std::cout<<"Sampling in parameters: RA, sin  DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2, ln tidal_s"<<std::endl;
+	      for(int i =0; i<totalmod; i++){
+		std::cout<<", mod_"<<i;
+	      }
+	      std::cout<<std::endl;
+	      mcmc_intrinsic=false;
+	    }
+	  else if(generation_method.find("EOS") != std::string::npos && (dimension - totalmod) == 14)
+	    {
+	      std::cout<<"Sampling in parameters: RA, sin  DEC, psi, cos iota, phi_ref, tc,  ln DL, nbc1, nbc2, chi1, chi2, bump_mag, bump_width, bump_offset"<<std::endl;
+	      for(int i =0; i<totalmod; i++){
+		std::cout<<", mod_"<<i;
+	      }
+	      std::cout<<std::endl;
+	      *intrinsic=false;
+	    }
+	  else if(generation_method.find("EOS") != std::string::npos && (dimension - totalmod) == 15)
+	    {
+	      std::cout<<"Sampling in parameters: RA, sin  DEC, psi, cos iota, phi_ref, tc,  ln DL, nbc1, nbc2, chi1, chi2, bump_mag, bump_width, bump_offset, plat"<<std::endl;
+	      for(int i =0; i<totalmod; i++){
+		std::cout<<", mod_"<<i;
+	      }
+	      std::cout<<std::endl;
+	      *intrinsic=false;
+	    }
+	}
 	else if(generation_method.find("PhenomPv2") != std::string::npos && (dimension - totalmod) == 15)
 	{
 		std::cout<<"Sampling in parameters: RA, sin DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, a1, a2,cos tilt1, cos tilt2, phi1, phi2"<<std::endl;
@@ -1867,25 +1888,46 @@ void PTMCMC_method_specific_prep_v2(std::string generation_method, int dimension
 		}
 		std::cout<<std::endl;
 		*intrinsic=false;
-	} 
-	else if(generation_method.find("PhenomD_NRT") != std::string::npos && (dimension - totalmod) == 13)
+	}
+		else if(generation_method.find("PhenomD_NRT") != std::string::npos)
 	{
-		std::cout<<"Sampling in parameters: RA, sin  DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2, ln tidal1, ln tidal2"<<std::endl;
-		for(int i =0; i<totalmod; i++){
-			std::cout<<", mod_"<<i;
-		}
-		std::cout<<std::endl;
-		*intrinsic=false;
-	} 
-	else if(generation_method.find("PhenomD_NRT") != std::string::npos && (dimension - totalmod) == 12)
-	{
-		std::cout<<"Sampling in parameters: RA, sin  DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2, ln tidal_s"<<std::endl;
-		for(int i =0; i<totalmod; i++){
-			std::cout<<", mod_"<<i;
-		}
-		std::cout<<std::endl;
-		mcmc_intrinsic=false;
-	} 
+	  if((dimension - totalmod) == 13)
+	    {
+	      std::cout<<"Sampling in parameters: RA, sin  DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2, ln tidal1, ln tidal2"<<std::endl;
+	      for(int i =0; i<totalmod; i++){
+		std::cout<<", mod_"<<i;
+	      }
+	      std::cout<<std::endl;
+	      *intrinsic=false;
+	    } 
+	  else if((dimension - totalmod) == 12)
+	    {
+	      std::cout<<"Sampling in parameters: RA, sin  DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2, ln tidal_s"<<std::endl;
+	      for(int i =0; i<totalmod; i++){
+		std::cout<<", mod_"<<i;
+	      }
+	      std::cout<<std::endl;
+	      mcmc_intrinsic=false;
+	    }
+	  else if(generation_method.find("EOS") != std::string::npos && (dimension - totalmod) == 14)
+	    {
+	      std::cout<<"Sampling in parameters: RA, sin  DEC, psi, cos iota, phi_ref, tc,  ln DL, nbc1, nbc2, chi1, chi2, bump_mag, bump_width, bump_offset"<<std::endl;
+	      for(int i =0; i<totalmod; i++){
+		std::cout<<", mod_"<<i;
+	      }
+	      std::cout<<std::endl;
+	      *intrinsic=false;
+	    }
+	  else if(generation_method.find("EOS") != std::string::npos && (dimension - totalmod) == 15)
+	    {
+	      std::cout<<"Sampling in parameters: RA, sin  DEC, psi, cos iota, phi_ref, tc,  ln DL, nbc1, nbc2, chi1, chi2, bump_mag, bump_width, bump_offset, plat"<<std::endl;
+	      for(int i =0; i<totalmod; i++){
+		std::cout<<", mod_"<<i;
+	      }
+	      std::cout<<std::endl;
+	      *intrinsic=false;
+	    }
+	}
 	else if(generation_method.find("PhenomPv2") != std::string::npos && (dimension - totalmod) == 15)
 	{
 		std::cout<<"Sampling in parameters: RA, sin DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, a1, a2,cos tilt1, cos tilt2, phi1, phi2"<<std::endl;

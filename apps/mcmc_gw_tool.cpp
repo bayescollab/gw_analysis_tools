@@ -262,7 +262,7 @@ int main(int argc, char *argv[])
 	{
 		tidal_love_error = bool_dict["Tidal love error marginalization"];
 	}
-	if(generation_method.find("NRT") != std::string::npos){
+	if(generation_method.find("NRT") != std::string::npos && generation_method.find("EOS") == std::string::npos){
 		std::cout<<"Range of tidal1: "<<tidal1_prior[0]<<" - "<<tidal1_prior[1]<<std::endl;
 		std::cout<<"Range of tidal2: "<<tidal2_prior[0]<<" - "<<tidal2_prior[1]<<std::endl;
 		std::cout<<"Range of tidal_s: "<<tidal_s_prior[0]<<" - "<<tidal_s_prior[1]<<std::endl;
@@ -275,6 +275,66 @@ int main(int argc, char *argv[])
 	{
 		jeff_prior = bool_dict["Jeffreys prior"];
 	}
+	
+	//EOS parameters
+	EOS_plat_flag = false;
+	if(bool_dict.find("EOS plateau flag") != bool_dict.end())
+	  {
+	    EOS_plat_flag = bool_dict["EOS plateau flag"]; 
+	  }
+	if(generation_method.find("EOS") != std::string::npos){
+	  if(dbl_dict.find("central baryon number1 minimum") == dbl_dict.end()){
+	    nbc1_prior[0] = .5;
+	    nbc1_prior[1] = 3;
+	  }
+	  else{
+	    nbc1_prior[0] = dbl_dict["central baryon number1 minimum"];
+	    nbc1_prior[1] = dbl_dict["central baryon number1 maximum"];
+	  }
+	  if(dbl_dict.find("central baryon number2 minimum") == dbl_dict.end()){
+	    nbc1_prior[0] = .5;
+	    nbc1_prior[1] = 3;
+	  }
+	  else{
+	    nbc1_prior[0] = dbl_dict["central baryon number2 minimum"];
+	    nbc1_prior[1] = dbl_dict["central baryon number2 maximum"];
+	  }
+	  if(dbl_dict.find("bump magnitude minimum") == dbl_dict.end()){
+	    EOS_prior[0] = 0.;
+	    EOS_prior[1] = 1.;
+	  }
+	  else{
+	    EOS_prior[0] = dbl_dict["bump magnitude minimum"];
+	    EOS_prior[1] = dbl_dict["bump magnitude maximum"];
+	  }
+	  if(dbl_dict.find("bump width minimum") == dbl_dict.end()){
+	    EOS_prior[2] = 0.;
+	    EOS_prior[3] = 4.;
+	  }
+	  else{
+	    EOS_prior[2] = dbl_dict["bump width minimum"];
+	    EOS_prior[3] = dbl_dict["bump width maximum"];
+	  }
+	  if(dbl_dict.find("bump offset minimum") == dbl_dict.end()){
+	    EOS_prior[4] = 0.;
+	    EOS_prior[5] = 6.;
+	  }
+	  else{
+	    EOS_prior[4] = dbl_dict["bump offset minimum"];
+	    EOS_prior[5] = dbl_dict["bump offset maximum"];
+	  }
+	  if(EOS_plat_flag){
+	    if(dbl_dict.find("plateau minimum") == dbl_dict.end()){
+	      EOS_prior[6] = 0.;
+	      EOS_prior[7] = 1.;
+	    }
+	    else{
+	      EOS_prior[6] = dbl_dict["plateau minimum"];
+	      EOS_prior[7] = dbl_dict["plateau maximum"];
+	    }
+	  }
+	}
+
 	//Einstein AEther parameterization
        	alpha_param = true;
 	if(bool_dict.find("alpha parameterization") != bool_dict.end())

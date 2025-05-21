@@ -10,6 +10,8 @@ struct priorData
 	double **mod_priors;
 	double mass1_prior[2];
 	double mass2_prior[2];
+        double nbc1_prior[2];
+        double nbc2_prior[2];
 	double spin1_prior[2];
 	double spin2_prior[2];
 	double tidal1_prior[2];
@@ -20,6 +22,8 @@ struct priorData
 	double sinDEC_bounds[2];
 	bool tidal_love=true;
 	bool tidal_love_error;
+        double EOS_prior[8]; 
+        bool EOS_plat_flag; 
 	bool alpha_param; 
 	double DL_prior[2];
 	double T_mcmc_gw_tool;
@@ -79,5 +83,12 @@ public:
 	virtual double eval(bayesship::positionInfo *position, int chainID);
 };
 
+class logPriorStandard_D_NRT_EOS: public bayesship::probabilityFn
+{
+public:
+	priorData *PD=nullptr;
+	logPriorStandard_D_NRT_EOS(priorData *PD){this->PD = PD;};
+	virtual double eval(bayesship::positionInfo *position, int chainID);
+};
 
 #endif

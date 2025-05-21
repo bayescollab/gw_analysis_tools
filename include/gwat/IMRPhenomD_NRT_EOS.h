@@ -36,7 +36,7 @@ public:
   virtual void cs2_to_eos_convert(); // Empty for now, "master function" that will be loaded with C++ conversion of Jaki's code
 
   // Function to calculate observable variables from the EOS
-  virtual void get_m_love(); // Empty for now, "master function" that will be loaded with QLIMR functionality
+  virtual void get_m_love(gen_params* params); // Empty for now, "master function" that will be loaded with QLIMR functionality
 
   // Function to interface with
 
@@ -51,6 +51,7 @@ public:
 
 // ****************************************************************************
 // Structure to store input parameters
+// PLEASE GIVE MORE CREATIVE NAME: the odds of this getting confused with gwat's input params seems high
 struct Input_params {
     double R_start;
     double single_epsilon;

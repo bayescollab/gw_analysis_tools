@@ -46,6 +46,19 @@ void IMRPhenomD_NRT_EOS<T>::cs2_to_eos_convert()
 }
 
  template<class T> 
+void IMRPhenomD_NRT_EOS<T>::get_m_love(gen_params* params)
+{
+  // A dummy function only for code infrastructure testing!!
+  // If you edit what variables this takes, you'll need to update the EOS_testing.cpp script in the injections directory. 
+  //TODO replace with something that is physically accurate.
+  params->mass1 = params->nbc1; //As a dummy function, I just input nbc1 as mass. 
+  params->mass2 = params->nbc2; //Same
+  params->tidal1 = params->nbc1*100; //Gives a tidal deformability that depends on mass and has the right order of magnitude. This will be changed later. 
+  params->tidal2 = params->nbc2*100; 
+
+}
+/*
+ template<class T> 
 std::array<double, 3> IMRPhenomD_NRT_EOS<T>::get_m_love(vector<double> epsilon, vector<double> pressure)
 {
     // Specifies the starting radius for integration.
@@ -75,6 +88,7 @@ std::array<double, 3> IMRPhenomD_NRT_EOS<T>::get_m_love(vector<double> epsilon, 
     
     return {M, R, L};
 }
+*/
 
 
 

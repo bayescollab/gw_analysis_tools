@@ -45,6 +45,9 @@ double tidal1_prior[2];
 double tidal2_prior[2];
 double tidal_s_prior[2];
 double EA_prior[6];
+double nbc1_prior[2];
+double nbc2_prior[2];
+double EOS_prior[8]; 
 double RA_bounds[2];
 double sinDEC_bounds[2];
 bool tidal_love=true;
@@ -1401,6 +1404,45 @@ double standard_log_prior_D_intrinsic_mod(double *pos, mcmc_data_interface *inte
 
 
 }
+
+/*double logPriorStandard_D_NRT_EOS::eval(bayesship::positionInfo *position, int chainID)
+{
+	int dim =  position->dimension;
+
+	double a = -std::numeric_limits<double>::infinity();
+	double *pos = position->parameters;
+	//###########
+	//double chirp = exp(pos[7]);
+	//double eta = pos[8];
+	//if (eta<.0 || eta>.25){return a;}//eta
+	//double m1 = calculate_mass1(chirp,eta );
+	//double m2 = calculate_mass2(chirp,eta );
+	if(pos[7]<PD->nbc1_prior[0] || pos[7]>PD->nbc1_prior[1]){return a;}
+	if(pos[8]<PD->nbc2_prior[0] || pos[8]>PD->nbc2_prior[1]){return a;}
+	//###########
+	if ((pos[0])<PD->RA_bounds[0] || (pos[0])>PD->RA_bounds[1]){ return a;}//RA
+	if ((pos[1])<PD->sinDEC_bounds[0] || (pos[1])>PD->sinDEC_bounds[1]){return a;}//sinDEC
+	if ((pos[2])<0 || (pos[2])>M_PI){return a;}//PSI
+	if ((pos[3])<-1 || (pos[3])>1){return a;}//cos \iota
+	if ((pos[4])<0 || (pos[4])>2*M_PI){return a;}//phiRef
+	if( pos[5] < (PD->T_merger - .1) || pos[5] > (PD->T_merger + .1)) { return a; }
+	if (std::exp(pos[6])<PD->DL_prior[0] || std::exp(pos[6])>PD->DL_prior[1]){return a;}//DL
+	if ((pos[9])<PD->spin1_prior[0] || (pos[9])>PD->spin1_prior[1]){return a;}//chi1
+	if ((pos[10])<PD->spin2_prior[0] || (pos[10])>PD->spin2_prior[1]){return a;}//chi2
+	//###########
+	if ((pos[11])<PD->EOS_prior[0] || (pos[11])>PD->EOS_prior[1]){return a;}//bump_mag
+	if ((pos[12])<PD->EOS_prior[2] || (pos[12])>PD->EOS_prior[3]){return a;}//bump_width
+	if ((pos[13])<PD->EOS_prior[4] || (pos[13])>PD->EOS_prior[5]){return a;}//bump_offset
+	if(PD->EOS_plat_flag){
+	  if ((pos[14])<PD->EOS_prior[6] || (pos[14])>PD->EOS_prior[7]){return a;}//plat
+	}
+	//###########
+	//return log(chirpmass_eta_jac(chirp,eta))+3*pos[6] ;
+	return log(aligned_spin_prior(pos[9]))+log(aligned_spin_prior(pos[10])) +3*pos[6] ;
+
+}
+*/
+
 double standard_log_prior_Pv2_intrinsic(double *pos, mcmc_data_interface *interface ,void *parameters)
 {
 	int dim = interface->max_dim;

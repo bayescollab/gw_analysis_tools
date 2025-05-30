@@ -23,6 +23,15 @@ void create_coherent_GW_detection(
 	gen_params_base<T> *gen_params,
 	std::string generation_method,
 	std::complex<T> **responses);
+template <class T>
+void create_single_GW_detection(
+	std::complex<T> *response,	//< [out] Detector response \tilde{h}. Should be pre-allocated array of same length of frequencies
+	std::string detector,	//< Detector string name
+	T *frequencies,					//< Frequency array
+	int length,						//< Length of data (frequnecies and response)
+	gen_params_base<T> *gen_params,	//< Waveform parameters
+	std::string generation_method	//< Waveform generation method
+);
 template<class T>
 void create_coherent_GW_detection_reuse_WF(
 	std::string *detectors,

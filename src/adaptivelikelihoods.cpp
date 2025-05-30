@@ -393,16 +393,30 @@ double RelativeBinningLikelihood::log_likelihood(
     }
 
     // Time shift
-    // TODO: How important is shifting tc as in MCMC_likelihood_extrinsic?
+    // TODO: How important is shifting tc as in MCMC_likelihood_extrinsic? If not, delete this block.
     //double T = duration;
     //double tc_ref = T - params->tc;
     //params->tc = tc_ref;
 
     // Obtain the data
-    create_coherent_GW_detection(
-        detectors, num_detectors, frequencies, data_lengths, reuse_WF,
-        params, generation_method, responses
-    );
+    if (num_detectors == 1)
+    {
+        create_single_GW_detection(
+            responses[0],
+            detectors[0],
+            frequencies[0],
+            data_lengths[0],
+            params,
+            generation_method
+        );
+    }
+    else
+    {
+        create_coherent_GW_detection(
+            detectors, num_detectors, frequencies, data_lengths, reuse_WF,
+            params, generation_method, responses
+        );
+    }
 
     // Calculate likelihood
     double logL = 0.;

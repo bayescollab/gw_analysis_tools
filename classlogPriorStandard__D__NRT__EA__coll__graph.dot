@@ -11,6 +11,7 @@ digraph "logPriorStandard_D_NRT_EA"
   Node3 [id="Node000003",label="logPriorStandard_D",height=0.2,width=0.4,color="gray40", fillcolor="white", style="filled",URL="$classlogPriorStandard__D.html",tooltip=" "];
   Node4 -> Node3 [id="edge3_Node000003_Node000004",dir="back",color="steelblue1",style="solid",tooltip=" "];
   Node4 [id="Node000004",label="bayesship::probabilityFn",height=0.2,width=0.4,color="gray40", fillcolor="white", style="filled",tooltip=" "];
-  Node5 -> Node3 [id="edge4_Node000003_Node000005",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=" PD",fontcolor="grey" ];
+  Node5 -> Node3 [id="edge4_Node000003_Node000005",dir="back",color="darkorchid3",style="dashed",tooltip=" ",label=<<TABLE CELLBORDER="0" BORDER="0"><TR><TD VALIGN="top" ALIGN="LEFT" CELLPADDING="1" CELLSPACING="0">PD</TD></TR>
+</TABLE>> ,fontcolor="grey" ];
   Node5 [id="Node000005",label="priorData",height=0.2,width=0.4,color="gray40", fillcolor="white", style="filled",URL="$structpriorData.html",tooltip=" "];
 }

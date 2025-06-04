@@ -99,7 +99,7 @@ template class IMRPhenomD_NRT_EOS<adouble>;
 
 // ----------------------------------------------------------------------------
 
-Input_params Input_QLIMR::params;
+QLIMR_params Input_QLIMR::params;
 Input_QLIMR::Input_QLIMR() {}
 
 // ------------------------- Input_QLIMR: Read yaml params --------------------

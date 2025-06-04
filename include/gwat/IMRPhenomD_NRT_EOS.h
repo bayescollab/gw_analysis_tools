@@ -51,8 +51,7 @@ public:
 
 // ****************************************************************************
 // Structure to store input parameters
-// PLEASE GIVE MORE CREATIVE NAME: the odds of this getting confused with gwat's input params seems high
-struct Input_params {
+struct QLIMR_params {
     double R_start;
     double single_epsilon;
     vector<double> epsilon_col1;
@@ -62,7 +61,7 @@ struct Input_params {
 class Input_QLIMR {
     public:
     // Static structure input parameters to be passed by inheritance
-    static Input_params params;
+    static QLIMR_params params;
     
     // Default and parametric constructors
     Input_QLIMR();

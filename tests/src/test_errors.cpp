@@ -236,14 +236,13 @@ int test_error(int argc, char *argv[])
 	//params.tidal2 = 0; 
 	
 
-	double beta = 2.e-7;
+	double beta = 0.005;
 	//int b = 5.;
 	int b = -7.;
 	std::cout<<"Beta: "<<beta<<std::endl;
 	std::cout<<"b: "<<b<<std::endl;
 
-	//sky_avg test
-	params.sky_average = true;
+	
 	
 	params.Nmod = 1;
 	params.bppe = new double[1];
@@ -264,7 +263,7 @@ int test_error(int argc, char *argv[])
 	params.psi = 2.;
 	double gps = 1187008882.4;
 	params.gmst = gps_to_GMST_radian(gps);
-	//params.sky_average = false;
+	params.sky_average = false;
 
 	
 
@@ -291,7 +290,7 @@ int test_error(int argc, char *argv[])
 	int length = (int)((fmax-fmin)/deltaF);
 	params.tc=Tsignal-T_merger;
 	double *frequency = new double[length];
-	int Ndetect = 1;
+	int Ndetect = 3;
 	double **psd = new double*[Ndetect];
 	
 	bool AD = false;
@@ -324,13 +323,14 @@ int test_error(int argc, char *argv[])
 	
 	std::cout<<"frequency[10]:"<<frequency[10]<<std::endl;
 
-	int dim = 7;	
+	//Dimensionality is taken from the model waveform
+	int dim = 12;	
 	double* output = new double[dim];
 
-	std::string method = "IMRPhenomD";
-	std::string true_method = "ppE_IMRPhenomD_IMR";
+	std::string method = "IMRPhenomD_NRT";
+	//std::string true_method = "IMRPhenomD_NRT";
 
-	//std::string true_method = "ppE_IMRPhenomD_NRT_Inspiral";
+	std::string true_method = "ppE_IMRPhenomD_NRT_Inspiral";
 
 	std::string detectors[3] = {"Hanford","Livingston","Virgo"};
 	//std::string detector = "Hanford";
@@ -382,6 +382,16 @@ int test_error(int argc, char *argv[])
 		}
 	}
 	std::cout<<"Total SNR: "<<sqrt(total_snr)<<std::endl;
+	/*
+	std::cout<<"----------AD Fisher:------------------"<<std::endl;
+	for(int i = 0 ; i<dim; i++){
+		std::cout<<i<<" ";
+		for(int j = 0 ; j<dim; j++){
+		  std::cout<<std::setprecision(5)<<output_AD[i][j]<<" ";
+		}
+		std::cout<<std::endl;
+	}
+*/
 
 	//Get Waveforms
 	
@@ -405,11 +415,10 @@ int test_error(int argc, char *argv[])
 
 	std::cout<<"Computed fourier_waveform, file: "<<__FILE__<<" line: "<<__LINE__<<std::endl; 
 
-	fourier_detector_response(frequency, length, h_true, detectors[0], true_method, &params);
-	fourier_detector_response(frequency, length, h_model, detectors[0], method, &params);
+	//fourier_detector_response(frequency, length, h_true, detectors[0], true_method, &params);
+	//fourier_detector_response(frequency, length, h_model, detectors[0], method, &params);
 	std::cout<<"Computed detector response, file: "<<__FILE__<<" line: "<<__LINE__<<std::endl; 
 
-	//exit(1); 
 	double* output_sys = new double[dim];
 	double* output_stat = new double[dim];
 
@@ -428,6 +437,10 @@ int test_error(int argc, char *argv[])
 	int no_of_DL_steps = 20;
 	int DL_step_size = 10.5;
 	int DLeval = 40;
+
+	int no_of_beta_steps = 20;
+	float beta_step_size = 0.025;
+	float betaeval = 0;
 
 	double total_snr_temp = 0;
 
@@ -452,13 +465,13 @@ int test_error(int argc, char *argv[])
 		  //std::arg(hcppE[i])
 		phase_EA_unwrap[i]
 		<<std::endl;
-		noise_curve_file<<frequency[i]<<","<<psd[0][i]<<std::endl;
+		noise_curve_file<<frequency[i]<<","<<psd[1][i]<<std::endl;
 	}
-	
 
 	
 	for(int a = 0; a < no_of_DL_steps; a++){
 	params.Luminosity_Distance = DLeval;
+	//params.betappe[0] = betaeval;
 	total_snr_temp = 0;
 
 	for(int i = 0 ; i<dim; i++){
@@ -478,8 +491,8 @@ int test_error(int argc, char *argv[])
 
 	
 
-	calculate_systematic_error(frequency, hcg, hcppE, length, method, detectors, detectors[0], output_sys, dim, &params, 2, psd[0], Ndetect);
-	calculate_statistical_error(frequency, length, method, detectors, detectors[0], output_stat, dim, &params, 2, psd, Ndetect);
+	calculate_systematic_error(frequency, hcg, hcppE, length, method, detectors, detectors[0], output_sys, dim, &params, 2, psd[1]);
+	calculate_statistical_error(frequency, length, method, detectors, detectors[0], output_stat, dim, &params, 2, psd);
 
 	output_file<<sqrt(total_snr_temp)<< ",";
 	stat_output_file<<sqrt(total_snr_temp)<< ",";
@@ -491,10 +504,13 @@ int test_error(int argc, char *argv[])
 	stat_output_file<<output_stat[dim-1]<<std::endl;
 
 	DLeval+= DL_step_size;
+	betaeval += beta_step_size;
 
 	}
 	output_file.close();
-	std::vector<std::string> param_info = {"ln A0", "phic", "tc", "ln chirpmass", "ln eta", "chi_symm", "chi_antisymm", "betas"};
+
+	//Parameter space for non-sky-averaged NRT waveform
+	std::vector<std::string> param_info = {"RA", "DEC", "psi", "phiRef", "tc", "iota_L", "ln DL", "ln chirpmass", "eta", "chi1", "chi2", "lambda_s"};
 
 	
 
@@ -503,7 +519,7 @@ int test_error(int argc, char *argv[])
 	}
 	
 
-	//calculate_statistical_error(frequency, length, method, detectors, detectors[0], output_stat, dim, &params, 2, psd, Ndetect);
+	calculate_statistical_error(frequency, length, method, detectors, detectors[0], output_stat, dim, &params, 2, psd);
 	//std::cout<<"SNR: "<<sqrt(output[0])<<std::endl;
 
 	for(int i = 0; i < dim; i++){

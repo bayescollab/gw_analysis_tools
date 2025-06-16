@@ -80,3 +80,7 @@ CMakeFiles/Progress/9
 CMakeFiles/Progress/count.txt
 src/CMakeFiles/OBJS.dir/CXX.includecache
 src/CMakeFiles/OBJS.dir/depend.internal
+
+.vscode/*
+.vscode/settings.json
+tests/data/error/*

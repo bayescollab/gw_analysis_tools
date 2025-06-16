@@ -22,7 +22,7 @@ void calculate_systematic_error(
 	int order,/**< Order of the numerical derivative (2 or 4)**/
 	//double *parameters,
 	double *noise,
-	int Ndetect
+	int Ndetect=3
 );
 
 double calculate_sys_err_elements(
@@ -52,7 +52,7 @@ void calculate_statistical_error(
 	int order,/**< Order of the numerical derivative (2 or 4)**/
 	//double *parameters,
 	double **noise,
-	int Ndetect
+	int Ndetect=3
 );
 
 

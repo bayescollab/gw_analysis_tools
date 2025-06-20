@@ -91,6 +91,11 @@ struct MCMC_modification_struct
 	// (unless an AdaptiveLikelihood is being used for the latter).
 	Quadrature *QuadMethod = NULL;
 	AdaptiveLikelihood *adaptivell = NULL;
+
+	// Refererence frequency for waveform generation.
+	// Not as trivial as you might think!
+	// Default: 20 Hz.
+	double f_ref = 20.;
 };
 
 static MCMC_modification_struct *mcmc_mod_struct;

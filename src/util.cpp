@@ -1502,7 +1502,16 @@ adouble calculate_chirpmass(adouble mass1, adouble mass2)
  */
 double calculate_eta(double mass1, double mass2)
 {
-	return (mass1 * mass2) / pow(mass1 + mass2 ,2);
+	double eta = (mass1 * mass2) / pow(mass1 + mass2 ,2);
+	// Check that eta is physical.
+	// Numerical round-off sometimes causes it to not be,
+	// and causes nan later.
+	if (eta > 0.25)
+	{
+		eta = 0.25;
+	}
+
+	return eta;
 }
 adouble calculate_eta(adouble mass1, adouble mass2)
 {

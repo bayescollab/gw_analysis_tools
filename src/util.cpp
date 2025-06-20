@@ -1884,10 +1884,18 @@ void transform_cart_sph(T *cartvec, T *sphvec)
 	sphvec[0]  = sqrt(cartvec[0]*cartvec[0] +
 			cartvec[2]*cartvec[2] +
 			cartvec[1] * cartvec[1]) ;
-	sphvec[1] = acos(cartvec[2]/sphvec[0]);
-	sphvec[2] = atan2(cartvec[1], cartvec[0]);
-	if(sphvec[2]<0){sphvec[2]+=2*M_PI;}
 
+	if (sphvec[0] == 0.)
+	{
+		sphvec[1] = 0.;
+		sphvec[2] = 0.;
+	}
+	else
+	{
+		sphvec[1] = acos(cartvec[2]/sphvec[0]);
+		sphvec[2] = atan2(cartvec[1], cartvec[0]);
+		if(sphvec[2]<0){sphvec[2]+=2*M_PI;}
+	}
 }
 template void transform_cart_sph<double>(double*, double*);
 template void transform_cart_sph<adouble>(adouble*, adouble*);

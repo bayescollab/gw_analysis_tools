@@ -22,6 +22,7 @@ int find_datatype(std::string type);
 std::string trim(std::string str);
 void read_file(std::string filename,double **output, int rows, int cols );
 void read_file(std::string filename,int **output, int rows, int cols );
+void read_file(std::string filename, std::vector<std::vector<double>>& output, char delimiter );
 void read_file(std::string filename, double *output );
 void read_file(std::string filename, int *output );
 void write_file(std::string filename, double **input, int rows, int cols);
@@ -62,12 +63,13 @@ int count_lines_LOSC_PSD_file(std::string file, int *count);
 int count_lines_LOSC_data_file(std::string file, int *count);
 
 
-/*!\brief Utility to read in a table of data (two dimensionsal vector)
-*
-* Takes filename and delimiter of data and assigns to output
-*
-* File can be of arbitrary type and size
-*/
+/*!\brief Utility to read in data
+ *
+ * Takes filename and delimiter of file, and assigns to ROW MAJOR 2D output vector
+ *
+ * File must be delimiter separated entries of the same type as passed in
+ *
+ */
 template<typename T>
 void read_file(std::string filename, /**< input filename, relative to execution directory */
 	std::vector<std::vector<T>>& output, /*< output to store file read-in, passed in by reference*/

@@ -236,8 +236,8 @@ void read_file(std::string filename, /**< input filename, relative to execution 
  * double version
  */
 void read_file(std::string filename, /**< input filename, relative to execution directory*/
-		char delimiter, /**< input delimiter based on data file*/
-		std::vector<std::vector<double>>& output /**<[out] vector to store output, dynamic dimensions to store full table*/
+		std::vector<std::vector<double>>& output, /**<[out] vector to store output, dynamic dimensions to store full table*/
+		char delimiter /**< input delimiter based on data file*/
 	)
 {
 	std::fstream file_in;

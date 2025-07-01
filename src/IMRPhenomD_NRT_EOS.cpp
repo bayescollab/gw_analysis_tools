@@ -10,6 +10,8 @@
 #include "util.h"
 #include "io_util.h"
 #include <gsl/gsl_randist.h>
+#include <algorithm>
+#include <iterator>
 
 /*! \file
  * File for the generation of equations of state with features in the speed of
@@ -22,11 +24,66 @@
  * Also included in this file ...
  */
 
-template <class T>
-void IMRPhenomD_NRT_EOS<T>::build_cs2_one_bump(source_parameters<T> *sp)
-{
-	// Will need to add some sort of array/table/pointer thing to pass back and forth the values of cs2
+// TODO: As it stands, get_m_love and inject_cs2_bump are just evaluating for star 1 and star 2 separately
+// I need to look into making this process possibly more efficient... particularly for the cs2 bump injection
+// After all, the main difference for the cs2 bump injections is just the differing central baryon number density...
+// But leaving it like this is fine for BASIC TESTING.
 
+template <class T>
+void IMRPhenomD_NRT_EOS<T>::get_m_love(gen_params *params)
+{
+	// Inject bump into cs2 and retrieve new p(e) for star 1 and star 2
+
+	// Define new vectors to store values
+	std::vector<double> pressure1;
+	std::vector<double> pressure2;
+	std::vector<double> epsilon1;
+	std::vector<double> epsilon2;
+
+	// Inject bump
+	inject_cs2_bump(pressure1, pressure2, epsilon1, epsilon2, params);
+
+	// Start QLIMR routine
+
+	// Specifies the starting radius for integration.
+	double R_start = 0.0004;
+	// Specifices the central epsilon to integrate at
+	double single_epsilon1 = epsilon1.back();
+	// Specifices the central epsilon to integrate at
+	double single_epsilon2 = epsilon2.back();
+
+	// Initialize MRLevaluator that is based on QLIMR architecture
+	Second_Order MRLevaluator1;
+	Second_Order MRLevaluator2;
+
+	// Load in the starting values (epsilon and pressure rom the EOS and a starting radius value for integration)
+	MRLevaluator1.input(epsilon1, pressure1, R_start, single_epsilon1);
+	MRLevaluator2.input(epsilon2, pressure2, R_start, single_epsilon2);
+
+	// Interpolates the EoS in terms of the pseudo-enthalpy variable (h)
+	MRLevaluator1.initialize_eos((gsl_interp_type *)gsl_interp_steffen);
+	MRLevaluator2.initialize_eos((gsl_interp_type *)gsl_interp_steffen);
+
+	// Runs the TOV integrator
+	MRLevaluator1.TOV_Integrator(MRLevaluator1.params.single_epsilon, &MRLevaluator1.EoS);
+	MRLevaluator2.TOV_Integrator(MRLevaluator2.params.single_epsilon, &MRLevaluator2.EoS);
+
+	// Runs the TidalLove integrator
+	MRLevaluator1.TidalLove_Integrator(&MRLevaluator1.fun);
+	MRLevaluator2.TidalLove_Integrator(&MRLevaluator2.fun);
+
+	// Note that output is *tidal deformability* (dimensionless)
+	// Please see the QLIMR docs for more information: https://ce.musesframework.io/docs/modules/qlimr/contents/2_Physics_Overview.html.
+
+	params->mass1 = MRLevaluator1.NS_M;		// This is given in solar masses
+	params->mass2 = MRLevaluator2.NS_M;		// Same
+	params->tidal1 = MRLevaluator1.NS_Lbar; // This has no dimensionality
+	params->tidal2 = MRLevaluator2.NS_Lbar; // Same
+}
+
+template <class T>
+void IMRPhenomD_NRT_EOS<T>::inject_cs2_bump(std::vector<double> &pressure1, std::vector<double> &pressure2, std::vector<double> &epsilon1, std::vector<double> &epsilon2, gen_params *params)
+{
 	/* A function to construct cs^2 by stitching together an EOS in the crust,
 	 * a single feature (Gaussian bump), and a plateau.
 	 *
@@ -34,7 +91,150 @@ void IMRPhenomD_NRT_EOS<T>::build_cs2_one_bump(source_parameters<T> *sp)
 	 * the width (bump_width), and the location (bump_offset).
 	 */
 
-	std::cout << "Calling build_cs2_one_bump" << std::endl;
+	// Specifies the filepath to read the EOS data file
+	string filename = "../data/eos.csv";
+	// Initializes a vector to read EOS file data.
+	vector<vector<double>> fileRead;
+
+	// Reads the EOS file in **row-major order** (this is the default for how files are read in C++)
+	read_file(filename, fileRead, ',');
+
+	// Initialize column-major vector
+	vector<vector<double>> EOSvectors;
+
+	// Transpose the row-major data to column-major
+	transpose_data_to_column_major(fileRead, EOSvectors);
+
+	// Grab the epsilon and pressure vectors from the column-major vector
+	vector<double> epsilon = EOSvectors[7];
+	vector<double> pressure = EOSvectors[8];
+	// Grab baryon number density
+	vector<double> nb = EOSvectors[4];
+
+	// Initialize interpolator function to get energy density as a function of nb
+	Interpolation e_of_nb;
+	e_of_nb.initialize((gsl_interp_type *)gsl_interp_steffen, nb, epsilon);
+
+	// Initialize interpolator function to get pressure as a function of nb
+	Interpolation p_of_nb;
+	p_of_nb.initialize((gsl_interp_type *)gsl_interp_steffen, nb, pressure);
+
+	// The SLy EOS table does not interpolate well for values below 0.5 nsat.
+	// As such, we define a cutoff point at 0.5 nsat and interpolate values above (since the nb values are sparse)
+	double nsat = 0.16;				  // Defining nsat in fm^-3
+	double nb_split_val = 0.5 * nsat; // Defining cut-off value
+	double nb_end1 = params->nbc1;	  // Getting upper limit of nb values for star 1
+	double nb_end2 = params->nbc2;	  // Getting upper limit of nb values for star 2
+	double steps = 0.005;			  // Defining step-size for interpolation in fm^-3 units
+
+	// Defining vectors to store new split values for star 1 and star 2
+	std::vector<double> nb_split1;
+	std::vector<double> nb_split2;
+	std::vector<double> pressure_split1;
+	std::vector<double> pressure_split2;
+	std::vector<double> epsilon_split1;
+	std::vector<double> epsilon_split2;
+
+	// Get greater of the two nbc values, and use this to initialize star 1 and star 2 vectors simultaneously
+	double split_limit = std::max(nb_end1, nb_end2);
+
+	// Defining new nb vector and getting the interpolated values for epsilon and pressure
+	// Also converting each of the new vectors to MeV units since this is a convenient place to do so
+	for (double i = nb_split_val; i <= split_limit; i += steps)
+	{
+		// For star 1
+		if (i <= nb_end1) // If statement prevents exiting limits
+		{
+			nb_split1.push_back(conversion_fm3_to_MeV(i));
+			epsilon_split1.push_back(conversion_fm3_to_MeV(e_of_nb.yofx(i)));
+			pressure_split1.push_back(conversion_fm3_to_MeV(p_of_nb.yofx(i)));
+		}
+
+		// For star 2
+		if (i <= nb_end2) // If statement prevents exiting limits
+		{
+			nb_split2.push_back(conversion_fm3_to_MeV(i));
+			epsilon_split2.push_back(conversion_fm3_to_MeV(e_of_nb.yofx(i)));
+			pressure_split2.push_back(conversion_fm3_to_MeV(p_of_nb.yofx(i)));
+		}
+	}
+
+	// Get original cs2 values without bump
+	vector<double> cs2_star1 = eos_to_cs2_convert(pressure_split1, epsilon_split1);
+	vector<double> cs2_star2 = eos_to_cs2_convert(pressure_split2, epsilon_split2);
+
+	//  Get bump parameters from gen_params structure
+	//	!!!! IMPORTANT: Bump parameters are presumed to be given in fm^-3 units!
+	double offset = conversion_fm3_to_MeV(params->bump_offset);
+	double magnitude = params->bump_mag;
+	double width = conversion_fm3_to_MeV(params->bump_width);
+	double plateau = params->plat;
+
+	// Get new full cs2 curve with bump
+	build_cs2_one_quad_bump(nb_split1, cs2_star1, width, magnitude, offset, plateau);
+	build_cs2_one_quad_bump(nb_split2, cs2_star2, width, magnitude, offset, plateau);
+
+	// Get new bumpy EoS
+	vector<double> p_bump1;
+	vector<double> p_bump2;
+	vector<double> e_bump1;
+	vector<double> e_bump2;
+
+	cs2_to_eos_convert(pressure_split1, epsilon_split1, nb_split1, cs2_star1, p_bump1, e_bump1);
+	cs2_to_eos_convert(pressure_split2, epsilon_split2, nb_split2, cs2_star2, p_bump2, e_bump2);
+
+	// Stitch new bumpy EoS onto where I cut-off the original crust EoS
+
+	// Finding location in data table where prior cut-off occurred
+	auto iterator = std::upper_bound(nb.begin(), nb.end(), nb_split_val); // Get iterator object
+	auto split_index = std::distance(nb.begin(), iterator);				  // Convert to index to extract values for p and e
+
+	// Loop through original arrays to convert to MeV and add to final vector
+	for (int i; i < split_index; i++)
+	{
+		auto p_value = conversion_fm3_to_MeV(pressure[i]);
+		auto e_value = conversion_fm3_to_MeV(epsilon[i]);
+
+		// For star 1
+		pressure1.push_back(p_value);
+		epsilon1.push_back(e_value);
+
+		// For star 2
+		pressure2.push_back(p_value);
+		epsilon2.push_back(e_value);
+	}
+
+	// Copying bump elements to finalized p and e vectors
+	// For star 1
+	pressure1.insert(pressure1.end(), p_bump1.begin(), p_bump1.end());
+	epsilon1.insert(epsilon1.end(), e_bump1.begin(), e_bump1.end());
+
+	// For star 2
+	pressure2.insert(pressure2.end(), p_bump2.begin(), p_bump2.end());
+	epsilon2.insert(epsilon2.end(), e_bump2.begin(), e_bump2.end());
+}
+
+template <class T>
+void IMRPhenomD_NRT_EOS<T>::transpose_data_to_column_major(const std::vector<std::vector<double>> &row_major,
+														   std::vector<std::vector<double>> &column_major)
+{
+	if (row_major.empty())
+		return;
+
+	size_t num_rows = row_major.size();
+	size_t num_cols = row_major[0].size();
+
+	// Resize the column_major vector to have 'num_cols' columns and 'num_rows' rows
+	column_major.resize(num_cols, std::vector<double>(num_rows));
+
+	// Perform the transposition
+	for (size_t i = 0; i < num_rows; ++i)
+	{
+		for (size_t j = 0; j < num_cols; ++j)
+		{
+			column_major[j][i] = row_major[i][j];
+		}
+	}
 }
 
 template <class T>
@@ -59,7 +259,18 @@ std::vector<double> IMRPhenomD_NRT_EOS<T>::eos_to_cs2_convert(std::vector<double
 }
 
 template <class T>
-std::vector<double> IMRPhenomD_NRT_EOS<T>::build_cs2_one_quad_bump(std::vector<double> nb_list, std::vector<double> cs2_list, double bump_width, double bump_magnitude, double bump_offset, double plat_val)
+double IMRPhenomD_NRT_EOS<T>::conversion_fm3_to_MeV(double x)
+{
+
+	// Function that converts a value with units of 1/fm^3 to MeV
+
+	double x_new = x * pow(197.3, 3);
+
+	return x_new;
+}
+
+template <class T>
+void IMRPhenomD_NRT_EOS<T>::build_cs2_one_quad_bump(std::vector<double> nb_list, std::vector<double> &cs2_list, double bump_width, double bump_magnitude, double bump_offset, double plat_val)
 {
 
 	// Function that creates an entire cs2(nb) curve with a quadratic bump added to it.
@@ -71,42 +282,35 @@ std::vector<double> IMRPhenomD_NRT_EOS<T>::build_cs2_one_quad_bump(std::vector<d
 	// bump_offset: the value of baryon density where the peak occurs
 	// plat_val: the value of cs2 at the plateau
 
-	// Initialize vector to store full cs2 list with the bump.
-	std::vector<double> cs2_full;
-
 	// Initialize interpolator function to get cs2 as a function of nb
 	Interpolation cs2_of_nb;
 	cs2_of_nb.initialize((gsl_interp_type *)gsl_interp_steffen, nb_list, cs2_list);
 
 	double n1 = bump_offset - bump_width / 2; // number density at which the parabola begins
 	double n2 = bump_offset + bump_width / 2; // number density at which the parabola ends
-	double f1_n1 = cs2_of_nb.yofx(n1);				// value of the crust at the transition point n1
+	double f1_n1 = cs2_of_nb.yofx(n1);		  // value of the crust at the transition point n1
 
 	for (int i = 0; i < nb_list.size(); ++i)
 	{
 
 		double nb_temp = nb_list[i]; // getting the i-th term of the list nb_list. nb_temp is the value for which cs2_temp will be calculated.
-		double cs2_temp;						 // variable to store the current cs2(nb_temp)
 
 		// checking that nb_temp is smaller than the transition point n1
 		if (nb_temp < n1)
 		{
-			cs2_temp = cs2_of_nb.yofx(nb_temp); // before n1, use the crust
+			cs2_list[i] = cs2_of_nb.yofx(nb_temp); // before n1, use the crust
 		}
 		// checking that nb_temp is in the parabola region (between the two transition points)
 		else if (nb_temp >= n1 && nb_temp <= n2)
 		{
-			cs2_temp = f_quad(nb_temp, bump_width, bump_magnitude, bump_offset, plat_val, f1_n1); // the parabola region
+			cs2_list[i] = f_quad(nb_temp, bump_width, bump_magnitude, bump_offset, plat_val, f1_n1); // the parabola region
 		}
 		// after the parabola, cs2 should be in the plateau region
 		else
 		{
-			cs2_temp = plat_val; // after n2 use the plateau
+			cs2_list[i] = plat_val; // after n2 use the plateau
 		}
-		cs2_full.push_back(cs2_temp); // add the new cs2 value to the end of cs2_full list
 	}
-
-	return cs2_full;
 }
 
 template <class T>
@@ -125,30 +329,16 @@ double IMRPhenomD_NRT_EOS<T>::f_quad(double nb, double bump_width, double bump_m
 	double f3_n2 = plat; // value of the plateau
 
 	// Calculate the expected value of cs2
-	double cs2_val = -0.25 * ((8 * pow(bump_offset, 2) * (-1 + 6 * bump_magnitude - 3 * f1_n1)) / (3. * bump_width)
-														- (2 * bump_width * (-1 + 6 * bump_magnitude - 3 * f1_n1)) / 3.
-														- 4 * bump_offset * f1_n1 - 2 * bump_width * f1_n1 + 4 * bump_offset * f3_n2 - 2 * bump_width * f3_n2) / bump_width
-													-(((-4 * bump_offset * (-1 + 6 * bump_magnitude - 3 * f1_n1)) / (3. * bump_width) + f1_n1 - f3_n2) * nb) / bump_width -
-									 				(2 * (-1 + 6 * bump_magnitude - 3 * f1_n1) * pow(nb, 2)) / (3. * pow(bump_width, 2));
+	double cs2_val = -0.25 * ((8 * pow(bump_offset, 2) * (-1 + 6 * bump_magnitude - 3 * f1_n1)) / (3. * bump_width) - (2 * bump_width * (-1 + 6 * bump_magnitude - 3 * f1_n1)) / 3. - 4 * bump_offset * f1_n1 - 2 * bump_width * f1_n1 + 4 * bump_offset * f3_n2 - 2 * bump_width * f3_n2) / bump_width - (((-4 * bump_offset * (-1 + 6 * bump_magnitude - 3 * f1_n1)) / (3. * bump_width) + f1_n1 - f3_n2) * nb) / bump_width -
+					 (2 * (-1 + 6 * bump_magnitude - 3 * f1_n1) * pow(nb, 2)) / (3. * pow(bump_width, 2));
 
 	return cs2_val;
 }
 
 template <class T>
-double IMRPhenomD_NRT_EOS<T>::conversion_fm3_to_MeV(double x)
-{
-
-	// Function that converts a value with units of 1/fm^3 to MeV
-
-	double x_new = x * pow(197.3, 3);
-
-	return x_new;
-}
-
-template <class T>
 void IMRPhenomD_NRT_EOS<T>::cs2_to_eos_convert(std::vector<double> p_base, std::vector<double> epsilon_base,
-																							std::vector<double> nb_list, std::vector<double> cs2_bump,
-																							std::vector<double> &p_bump, std::vector<double> &epsilon_bump)
+											   std::vector<double> nb_list, std::vector<double> cs2_bump,
+											   std::vector<double> &p_bump, std::vector<double> &epsilon_bump)
 {
 	// Function to convert a relation between speed of sound squared and number density to a relation between pressure and energy density.
 
@@ -178,62 +368,17 @@ void IMRPhenomD_NRT_EOS<T>::cs2_to_eos_convert(std::vector<double> p_base, std::
 	for (int i = 1; i < total_length; ++i)
 	{
 
-		double delta_nb = nb_list[i] - nb;							// Calculating the size of the current step
+		double delta_nb = nb_list[i] - nb;				// Calculating the size of the current step
 		double delta_e = delta_nb * (epsilon + p) / nb; // Calculating the delta in energy density at the current step
 
-		nb = nb_list[i];								// Taking a step in number density
-		epsilon += delta_e;							// Taking a step in energy density
+		nb = nb_list[i];				// Taking a step in number density
+		epsilon += delta_e;				// Taking a step in energy density
 		p += cs2_bump[i - 1] * delta_e; // Taking a step in pressure
 
-		p_bump.push_back(p);						 // Adding the pressure calculated at this step to the end of the pressure list
+		p_bump.push_back(p);			 // Adding the pressure calculated at this step to the end of the pressure list
 		epsilon_bump.push_back(epsilon); // Adding the energy density calculated at this step to the end of the pressure list
 	}
 }
-
-template <class T>
-void IMRPhenomD_NRT_EOS<T>::get_m_love(gen_params *params)
-{
-	// A dummy function only for code infrastructure testing!!
-	// If you edit what variables this takes, you'll need to update the EOS_testing.cpp script in the injections directory.
-	// TODO replace with something that is physically accurate.
-	params->mass1 = params->nbc1;				 // As a dummy function, I just input nbc1 as mass.
-	params->mass2 = params->nbc2;				 // Same
-	params->tidal1 = params->nbc1 * 100; // Gives a tidal deformability that depends on mass and has the right order of magnitude. This will be changed later.
-	params->tidal2 = params->nbc2 * 100;
-}
-
-/*
-template<class T>
-std::array<double, 3> IMRPhenomD_NRT_EOS<T>::get_m_love(vector<double> epsilon, vector<double> pressure)
-{
-		// Specifies the starting radius for integration.
-		double R_start = 0.0004;
-		// Specifices the central epsilon to integrate at
-		double single_epsilon = epsilon.back();
-
-		// Initialize MRLevaluator that is based on QLIMR architecture
-		Second_Order MRLevaluator;
-		// Load in the starting values (epsilon and pressure rom the EOS and a starting radius value for integration)
-		// Be careful to make sure the single epsilon input is FROM the epsilon vector!
-		MRLevaluator.input(epsilon, pressure, R_start, single_epsilon);
-		// Interpolates the EoS in terms of the pseudo-enthalpy variable (h)
-		MRLevaluator.initialize_eos((gsl_interp_type *)gsl_interp_steffen);
-
-		// Runs the TOV integrator
-		MRLevaluator.TOV_Integrator(MRLevaluator.params.single_epsilon, &MRLevaluator.EoS);
-		// Runs the TidalLove integrator
-		MRLevaluator.TidalLove_Integrator(&MRLevaluator.fun);
-
-		// NOTE THAT THE TIDAL LOVE NUMBER OUTPUT IS *DIMENSIONLESS*. I need to add functionality to redimensionalize it still!
-		// Please see the QLIMR docs for more information: https://ce.musesframework.io/docs/modules/qlimr/contents/2_Physics_Overview.html.
-
-		double M = MRLevaluator.NS_M;  // This is given in solar masses!
-		double R = MRLevaluator.dimensionalize(MRLevaluator.NS_R, "km");  // This is given in km!
-		double L = MRLevaluator.NS_Lbar;   // This has NO DIMENSIONS!!!
-
-		return {M, R, L};
-}
-*/
 
 template class IMRPhenomD_NRT_EOS<double>;
 template class IMRPhenomD_NRT_EOS<adouble>;

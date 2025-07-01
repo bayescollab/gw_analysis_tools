@@ -29,36 +29,33 @@ template <class T>
 class IMRPhenomD_NRT_EOS : public IMRPhenomD_NRT<T>
 {
 public:
+  // Functions are ordered by pattern of workflow!
+
+  // Function to calculate observable variables from the EOS
+  virtual void get_m_love(gen_params *params);
+
   // Function to build bump in cs2
-  virtual void build_cs2_one_bump(source_parameters<T> *sp);
+  virtual void inject_cs2_bump(std::vector<double> &pressure1, std::vector<double> &pressure2, std::vector<double> &epsilon1, std::vector<double> &epsilon2, gen_params *params);
+
+  // Function to convert read data to column-major order (necessary for csv EOS files...)
+  virtual void transpose_data_to_column_major(const std::vector<std::vector<double>> &row_major, std::vector<std::vector<double>> &column_major);
 
   // Function to convert p(epsilon) to cs2
   virtual std::vector<double> eos_to_cs2_convert(std::vector<double> pressure, std::vector<double> epsilon);
-
-  // Quadratic function required to build bump in cs2
-  virtual double f_quad(double nb, double bump_width, double bump_magnitude, double bump_offset, double plat, double f1_n1);
 
   // Function to convert values given in fm^3 to MeV
   virtual double conversion_fm3_to_MeV(double x);
 
   // Function to build quadratic bump in cs2 with given parameters
-  virtual std::vector<double> build_cs2_one_quad_bump(std::vector<double> nb_list, std::vector<double> cs2_list, double bump_width, double bump_magnitude, double bump_offset, double plat_val);
+  virtual void build_cs2_one_quad_bump(std::vector<double> nb_list, std::vector<double> &cs2_list, double bump_width, double bump_magnitude, double bump_offset, double plat_val);
+
+  // Quadratic function required to build bump in cs2
+  virtual double f_quad(double nb, double bump_width, double bump_magnitude, double bump_offset, double plat, double f1_n1);
 
   // Function to convert cs2 to p(epsilon)
   virtual void cs2_to_eos_convert(std::vector<double> p_base, std::vector<double> epsilon_base,
                                   std::vector<double> nb_list, std::vector<double> cs2_bump,
                                   std::vector<double> &p_bump, std::vector<double> &epsilon_bump);
-
-  // Function to calculate observable variables from the EOS
-  virtual void get_m_love(gen_params *params); // Empty for now, "master function" that will be loaded with QLIMR functionality
-
-  // Function to interface with
-
-  /* Leaving this here for now in case we need it for future development - PLEASE DELETE LATER IF NOT USED!
-
-  // Inherited from IMRPhenomD_NRT which inherited from IMRPhenomD
-  virtual int construct_waveform(T *frequences, int length, std::complex<T> *waveform, source)parameters<T> *params);
-  */
 };
 
 // ****************************************************************************

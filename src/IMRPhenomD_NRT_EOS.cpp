@@ -56,7 +56,7 @@ void IMRPhenomD_NRT_EOS<T>::get_m_love(gen_params *params)
 	Second_Order MRLevaluator1;
 	Second_Order MRLevaluator2;
 
-	// Load in the starting values (epsilon and pressure rom the EOS and a starting radius value for integration)
+	// Load in the starting values (epsilon and pressure from the EOS and a starting radius value for integration)
 	MRLevaluator1.input(epsilon1, pressure1, R_start, single_epsilon1);
 	MRLevaluator2.input(epsilon2, pressure2, R_start, single_epsilon2);
 
@@ -146,16 +146,16 @@ void IMRPhenomD_NRT_EOS<T>::inject_cs2_bump(std::vector<double> &pressure1, std:
 		if (i <= nb_end1) // If statement prevents exiting limits
 		{
 			nb_split1.push_back(conversion_fm3_to_MeV(i));
-			epsilon_split1.push_back(conversion_fm3_to_MeV(e_of_nb.yofx(i)));
-			pressure_split1.push_back(conversion_fm3_to_MeV(p_of_nb.yofx(i)));
+			epsilon_split1.push_back(e_of_nb.yofx(i));
+			pressure_split1.push_back(p_of_nb.yofx(i));
 		}
 
 		// For star 2
 		if (i <= nb_end2) // If statement prevents exiting limits
 		{
 			nb_split2.push_back(conversion_fm3_to_MeV(i));
-			epsilon_split2.push_back(conversion_fm3_to_MeV(e_of_nb.yofx(i)));
-			pressure_split2.push_back(conversion_fm3_to_MeV(p_of_nb.yofx(i)));
+			epsilon_split2.push_back(e_of_nb.yofx(i));
+			pressure_split2.push_back(p_of_nb.yofx(i));
 		}
 	}
 
@@ -192,8 +192,8 @@ void IMRPhenomD_NRT_EOS<T>::inject_cs2_bump(std::vector<double> &pressure1, std:
 	// Loop through original arrays to convert to MeV and add to final vector
 	for (int i; i < split_index; i++)
 	{
-		auto p_value = conversion_fm3_to_MeV(pressure[i]);
-		auto e_value = conversion_fm3_to_MeV(epsilon[i]);
+		auto p_value = pressure[i];
+		auto e_value = epsilon[i];
 
 		// For star 1
 		pressure1.push_back(p_value);
@@ -358,7 +358,6 @@ void IMRPhenomD_NRT_EOS<T>::cs2_to_eos_convert(std::vector<double> p_base, std::
 	double epsilon = epsilon_base[0];
 	double nb = nb_list[0];
 
-	// Starting the list for pressure and energy density of the EoS with the bump
 	p_bump.push_back(p);
 	epsilon_bump.push_back(epsilon);
 
@@ -387,11 +386,9 @@ template class IMRPhenomD_NRT_EOS<adouble>;
 
 // ----------------------------------------------------------------------------
 
-QLIMR_params Input_QLIMR::params;
 Input_QLIMR::Input_QLIMR() {}
 
 // ------------------------- Input_QLIMR: Read yaml params --------------------
-
 void Input_QLIMR::input(vector<double> epsilon, vector<double> pressure, double R_start, double single_epsilon)
 {
 	params.R_start = adimensionalize(R_start, "km");
@@ -499,8 +496,7 @@ double Input_QLIMR::dimensionalize(double value, string unit)
 }
 
 // ---------------------- Interpolation class methods -------------------------
-void Interpolation::initialize(gsl_interp_type *interp_type, vector<double> x,
-															vector<double> y)
+void Interpolation::initialize(gsl_interp_type *interp_type, vector<double> x, vector<double> y)
 {
 	type = interp_type;
 	// Size of the independent variable vector
@@ -571,14 +567,12 @@ double enthalpy_integrand(double epsilon, void *params)
 // ----------------------------------------------------------------------------
 
 // -------------------------- Default EOS constructor --------------------------
-EOSinterpolation EOS::EoS;
 EOS::EOS() {}; // Default EOS constructor
 // ----------------------------------------------------------------------------
 
 // ----------------------- Parametric EOS constructor -------------------------
 void EOS::initialize_eos(gsl_interp_type *type)
 {
-
 	// Interpolate p(ε): initialize GSL interpolation spline
 	EoS.p_of_e.initialize(type, params.epsilon_col1, params.pressure_col2);
 
@@ -589,8 +583,7 @@ void EOS::initialize_eos(gsl_interp_type *type)
 // ----------------------------------------------------------------------------
 
 //------------------- Integration: Finding ε(h) and p(h) ----------------------
-void EOS::calculate_eos_of_h(vector<double> *epsilon,
-														 gsl_interp_type *type)
+void EOS::calculate_eos_of_h(vector<double> *epsilon, gsl_interp_type *type)
 {
 	double delta_h;
 	double error;
@@ -617,20 +610,19 @@ void EOS::calculate_eos_of_h(vector<double> *epsilon,
 	{
 
 		// Allocate memory for GSL integration workspace
-		gsl_integration_workspace *w =
-				gsl_integration_workspace_alloc(integration_workspace_size);
+		gsl_integration_workspace *w = gsl_integration_workspace_alloc(integration_workspace_size);
 
 		// Perform adaptive quadrature integration using GSL library
 		gsl_integration_qag(&F,
-												(*epsilon)[i],		 // Lower integration limit
-												(*epsilon)[i + 1], // Upper integration limit
-												1e-9,							 // Absolute tolerance
-												1e-9,							 // Relative tolerance
-												1000,							 // Maximal number of subintervals
-												6,								 // Integration method (Gauss-Kronrod)
-												w,								 // Work space
-												&delta_h,					 // Estimated step size
-												&error						 // Estimated integration error
+							(*epsilon)[i],	   // Lower integration limit
+							(*epsilon)[i + 1], // Upper integration limit
+							1e-9,			   // Absolute tolerance
+							1e-9,			   // Relative tolerance
+							1000,			   // Maximal number of subintervals
+							6,				   // Integration method (Gauss-Kronrod)
+							w,				   // Work space
+							&delta_h,		   // Estimated step size
+							&error			   // Estimated integration error
 		);
 
 		h = h + delta_h;
@@ -688,11 +680,9 @@ TOV::Initial_conditions_TOV TOV::IC_TOV(double epsilon_c)
 
 	// -----------------------------------------------------------
 
-	double p = pc - (2.0 / 3.0) * M_PI * pow(R, 2) * (epsilon_c + 3.0 * pc) *
-											(epsilon_c + pc);
+	double p = pc - (2.0 / 3.0) * M_PI * pow(R, 2) * (epsilon_c + 3.0 * pc) * (epsilon_c + pc);
 
-	double e = epsilon_c - (2.0 / 3.0) * M_PI * pow(R, 2) *
-														 (epsilon_c + 3.0 * pc) * (epsilon_c + pc) / Cs2;
+	double e = epsilon_c - (2.0 / 3.0) * M_PI * pow(R, 2) * (epsilon_c + 3.0 * pc) * (epsilon_c + pc) / Cs2;
 
 	// ####################### dM/dh, dR/dh at R=Rε ########################
 
@@ -757,7 +747,7 @@ void TOV::TOV_Integrator(double epsilon_c, EOSinterpolation *eos)
 
 		// Solve the ODE system using GSL with rkf45 method at each step
 		int status = gsl_odeiv2_evolve_apply(e, c, s,
-																				&sys, &h, h_stop, &h_istep, y);
+											 &sys, &h, h_stop, &h_istep, y);
 
 		// Stop solving if something's wrong with the numerical integration
 		if (status != GSL_SUCCESS)
@@ -817,40 +807,6 @@ void TOV::TOV_Integrator(double epsilon_c, EOSinterpolation *eos)
 	// Initialize GSL interpolation spline for nu(r) solution
 	fun.nu_of_R.initialize((gsl_interp_type *)gsl_interp_steffen, R_sol, nu_sol);
 };
-
-// Chemical potential as a function of radius µ(R)
-double TOV::mu_of_R(double R)
-{
-
-	double mu_Fe;
-	double nu = fun.nu_of_R.yofx(R);
-	double mu_of_R;
-
-	// See Input_QLIMR::adimensionalize in A_Input.cpp
-	mu_Fe = adimensionalize(930.54, "MeV");
-	mu_of_R = mu_Fe * sqrt((1.0 - 2.0 * (NS_M / NS_R))) * exp(-nu);
-
-	return mu_of_R;
-}
-
-// Baryon number density as a function of radius n(R)
-double TOV::n_of_R(double R)
-{
-
-	double mu_Fe;
-	double p = fun.p_of_R.yofx(R);
-	double e = fun.e_of_R.yofx(R);
-	double nu = fun.nu_of_R.yofx(R);
-	double mu_of_R;
-	double n_of_R;
-
-	mu_Fe = adimensionalize(930.54, "MeV");
-	mu_of_R = mu_Fe * sqrt((1.0 - 2.0 * (NS_M / NS_R))) * exp(-nu);
-
-	n_of_R = (p + e) / mu_of_R;
-
-	return n_of_R;
-}
 
 // ############################################################################
 // ################################ λ̄ (l=2) ###################################

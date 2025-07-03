@@ -71,8 +71,8 @@ struct QLIMR_params
 class Input_QLIMR
 {
 public:
-  // Static structure input parameters to be passed by inheritance
-  static QLIMR_params params;
+  // Parameters to pass into QLIMR
+  QLIMR_params params;
 
   // Default and parametric constructors
   Input_QLIMR();
@@ -133,8 +133,8 @@ struct EOSinterpolation
 class EOS : public Interpolation
 {
 public:
-  // Static structure for EoS to be used along the code
-  static EOSinterpolation EoS;
+  // Object to store interpolated EOS
+  EOSinterpolation EoS;
 
   // Default constructor
   EOS();
@@ -191,12 +191,6 @@ public:
 
   // TOV integrator method using pseudo-enthalpy (h) formulation
   void TOV_Integrator(double epsilon_c, EOSinterpolation *eos);
-
-  // Method to calculate chemical potential as a function of radius µ(R)
-  double mu_of_R(double r);
-
-  // Method to calculate baryon number density as a function of radius n(R)
-  double n_of_R(double r);
 };
 //-----------------------------------------------------------------------------
 

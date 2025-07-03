@@ -25,11 +25,12 @@ using std::vector;
  * equation of state (EOS) parameters.
  */
 
+ // ****************************************************************************
 template <class T>
 class IMRPhenomD_NRT_EOS : public IMRPhenomD_NRT<T>
 {
 public:
-  // Functions are ordered by pattern of workflow!
+  // Functions are organized by the order they are called in.
 
   // Function to calculate observable variables from the EOS
   virtual void get_m_love(gen_params *params);
@@ -53,9 +54,7 @@ public:
   virtual double f_quad(double nb, double bump_width, double bump_magnitude, double bump_offset, double plat, double f1_n1);
 
   // Function to convert cs2 to p(epsilon)
-  virtual void cs2_to_eos_convert(std::vector<double> p_base, std::vector<double> epsilon_base,
-                                  std::vector<double> nb_list, std::vector<double> cs2_bump,
-                                  std::vector<double> &p_bump, std::vector<double> &epsilon_bump);
+  virtual void cs2_to_eos_convert(double p_base, double epsilon_base, std::vector<double> nb_list, std::vector<double> cs2_bump, std::vector<double> &p_bump, std::vector<double> &epsilon_bump);
 };
 
 // ****************************************************************************

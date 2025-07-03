@@ -235,36 +235,40 @@ void read_file(std::string filename, /**< input filename, relative to execution 
  *
  * double version
  */
-void read_file(std::string filename, /**< input filename, relative to execution directory*/
-		std::vector<std::vector<double>>& output, /**<[out] vector to store output, dynamic dimensions to store full table*/
-		char delimiter /**< input delimiter based on data file*/
-	)
+void read_file(std::string filename,					 /**< input filename, relative to execution directory*/
+			   std::vector<std::vector<double>> &output, /**<[out] vector to store output, dynamic dimensions to store full table*/
+			   char delimiter							 /**< input delimiter based on data file*/)
 {
 	std::fstream file_in;
 	file_in.open(filename);
 
-	if(file_in.good()) {	// Checks if the file was read in successfully with no errors
+	if (file_in.good())
+	{ // Checks if the file was read in successfully with no errors
 		std::string line;
-		while(std::getline(file_in, line)){	// Runs until entire file is read
-			std::vector<double> row;	// Row vector to store values
+		while (std::getline(file_in, line))
+		{							 // Runs until entire file is read
+			std::vector<double> row; // Row vector to store values
 			std::stringstream lineStream(line);
-            std::string token;
-			while(std::getline(lineStream, token, delimiter))	// Reads items in line between delimiters
-            {
-                try {
-                    double item = std::stod(token);	// Attemps to convert the read item to a double
-                    row.push_back(item);
-                }
-                catch (...) {
-                    row.push_back(std::nan(""));	// If double conversion fails, inputs NaN
-                }
-            }
-            output.push_back(row); // Adds the row vector to the output table
-        }
-    }
-    
-	else {
-		std::cout<<"ERROR -- File "<<filename<<" not found"<<std::endl;
+			std::string token;
+			while (std::getline(lineStream, token, delimiter)) // Reads items in line between delimiters
+			{
+				try
+				{
+					double item = std::stod(token); // Attemps to convert the read item to a double
+					row.push_back(item);
+				}
+				catch (...)
+				{
+					row.push_back(std::nan("")); // If double conversion fails, inputs NaN
+				}
+			}
+			output.push_back(row); // Adds the row vector to the output table
+		}
+	}
+
+	else
+	{
+		std::cout << "ERROR -- File " << filename << " not found" << std::endl;
 		exit(1);
 	}
 }

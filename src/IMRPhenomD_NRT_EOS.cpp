@@ -17,18 +17,28 @@
  * File for the generation of equations of state with features in the speed of
  * sound squared as in arXiv:2106.03890 and related papers.
  *
- * Supported features: single Gaussian, ...[add more later]
+ * Supported features: single parabolic bump ... [more to be possibly added later]
  *
  * Supported crust types: SLy EOS
  *
  * Also included in this file ...
  */
 
-// TODO: As it stands, get_m_love and inject_cs2_bump are just evaluating for star 1 and star 2 separately
-// I need to look into making this process possibly more efficient... particularly for the cs2 bump injection
-// After all, the main difference for the cs2 bump injections is just the differing central baryon number density...
-// But leaving it like this is fine for BASIC TESTING.
+// TODO: cs^2 bump injection can be made more efficient. As it stands, a vector of cs^2 values is calculated for NS 1 and NS 2 separately. However, the only difference in calculation is the central baryon number density value.
+// There is a lot of overlap, and the calculation can undoubedtly be made more efficient if it proves to be necessary.
 
+//##############################################################################
+// ******************* CONVERSION FROM EOS TO GW PARAMETERS *******************
+//##############################################################################
+
+/****************************************************************************************************************
+ * !\brief Function to convert EOS parameters to masses and tidal deformability.
+ *
+ * gen_params object is passed in by reference and modified.
+ *
+ * Converts bump width, offset, magnitude, and central baryon number densities to masses and tidal deformabilities.
+ *
+ ****************************************************************************************************************/
 template <class T>
 void IMRPhenomD_NRT_EOS<T>::get_m_love(gen_params *params)
 {
@@ -74,36 +84,47 @@ void IMRPhenomD_NRT_EOS<T>::get_m_love(gen_params *params)
 
 	// Note that output is *tidal deformability* (dimensionless)
 	// Please see the QLIMR docs for more information: https://ce.musesframework.io/docs/modules/qlimr/contents/2_Physics_Overview.html.
-
 	params->mass1 = MRLevaluator1.NS_M;		// This is given in solar masses
 	params->mass2 = MRLevaluator2.NS_M;		// Same
 	params->tidal1 = MRLevaluator1.NS_Lbar; // This has no dimensionality
 	params->tidal2 = MRLevaluator2.NS_Lbar; // Same
 }
 
+/****************************************************************************************************************
+ * !\brief Function to inject a bump into cs2 and get the corresponding pressures and energy densities.
+ *
+ * Vectors to store the pressures and energy densities are passed in by reference. Assumed to be empty prior to pass-in.
+ *
+ * Assumes there is a SLy crust EOS data file stored in "/data" as "eos.csv" in MUSES EOS table convention.
+ * See https://ce.musesframework.io/docs/modules/qlimr/contents/5_Parameters.html for MUSES EOS table convention.
+ *
+ * Constructs cs^2 by stitching together the crust EOS, a single feature (parabolic bump), and a plateau.
+ *
+ * Modifies pressure and energy density vectors according to cs^2 after bump injection.
+ *
+ ****************************************************************************************************************/
 template <class T>
-void IMRPhenomD_NRT_EOS<T>::inject_cs2_bump(std::vector<double> &pressure1, std::vector<double> &pressure2, std::vector<double> &epsilon1, std::vector<double> &epsilon2, gen_params *params)
+void IMRPhenomD_NRT_EOS<T>::inject_cs2_bump(std::vector<double> &pressure1, /**< vector of pressures for star 1 */
+											std::vector<double> &pressure2, /**< vector of pressures for star 2 */
+											std::vector<double> &epsilon1,	/**< vector of energy densities for star 1 */
+											std::vector<double> &epsilon2,	/**< vector of energy densities for star 2 */
+											gen_params *params 				/**< object to store EOS parameters */)
 {
-	/* A function to construct cs^2 by stitching together an EOS in the crust,
-	 * a single feature (Gaussian bump), and a plateau.
-	 *
-	 * The bump is described by the height/magnitude (bump_mag),
-	 * the width (bump_width), and the location (bump_offset).
-	 */
-
 	// Specifies the filepath to read the EOS data file
 	string filename = "../data/eos.csv";
 	// Initializes a vector to read EOS file data.
 	vector<vector<double>> fileRead;
 
-	// Reads the EOS file in **row-major order** (this is the default for how files are read in C++)
+	// Reads the EOS file in **ROW-MAJOR ORDER** (this is the default for how CSV files are read in C++)
 	read_file(filename, fileRead, ',');
 
-	// Initialize column-major vector
+	// Initialize vector to store EOS data in **COLUMN-MAJOR ORDER**
 	vector<vector<double>> EOSvectors;
 
 	// Transpose the row-major data to column-major
 	transpose_data_to_column_major(fileRead, EOSvectors);
+
+	// IMPORTANT: The following lines assume MUSES EOS table convention!
 
 	// Grab the epsilon and pressure vectors from the column-major vector
 	vector<double> epsilon = EOSvectors[7];
@@ -111,16 +132,19 @@ void IMRPhenomD_NRT_EOS<T>::inject_cs2_bump(std::vector<double> &pressure1, std:
 	// Grab baryon number density
 	vector<double> nb = EOSvectors[4];
 
-	// Initialize interpolator function to get energy density as a function of nb
+	// Initialize interpolator object to get energy density as a function of nb
 	Interpolation e_of_nb;
 	e_of_nb.initialize((gsl_interp_type *)gsl_interp_steffen, nb, epsilon);
 
-	// Initialize interpolator function to get pressure as a function of nb
+	// Initialize interpolator object to get pressure as a function of nb
 	Interpolation p_of_nb;
 	p_of_nb.initialize((gsl_interp_type *)gsl_interp_steffen, nb, pressure);
 
+	// IMPORTANT: The following assumes a SLy EOS. This would need to be updated if the EOS used is ever changed.
+
 	// The SLy EOS table does not interpolate well for values below 0.5 nsat.
-	// As such, we define a cutoff point at 0.5 nsat and interpolate values above (since the nb values are sparse)
+	// As such, we define a cutoff point at 0.5 nsat in baryon number density and interpolate values above (since the nb values are sparse)
+
 	double nsat = 0.16;				  // Defining nsat in fm^-3
 	double nb_split_val = 0.5 * nsat; // Defining cut-off value
 	double nb_end1 = params->nbc1;	  // Getting upper limit of nb values for star 1
@@ -128,10 +152,14 @@ void IMRPhenomD_NRT_EOS<T>::inject_cs2_bump(std::vector<double> &pressure1, std:
 	double steps = 0.005;			  // Defining step-size for interpolation in fm^-3 units
 
 	// Defining vectors to store new split values for star 1 and star 2
+
+	// Baryon number density
 	std::vector<double> nb_split1;
 	std::vector<double> nb_split2;
+	// Pressure
 	std::vector<double> pressure_split1;
 	std::vector<double> pressure_split2;
+	// Energy density
 	std::vector<double> epsilon_split1;
 	std::vector<double> epsilon_split2;
 
@@ -139,7 +167,8 @@ void IMRPhenomD_NRT_EOS<T>::inject_cs2_bump(std::vector<double> &pressure1, std:
 	double split_limit = std::max(nb_end1, nb_end2);
 
 	// Defining new nb vector and getting the interpolated values for epsilon and pressure
-	// Also converting each of the new vectors to MeV units since this is a convenient place to do so
+	// IMPORTANT: Baryon number density values are converted to MeV, based on assumptions of cs2_to_eos_convert
+
 	for (double i = nb_split_val; i <= split_limit; i += steps)
 	{
 		// For star 1
@@ -163,68 +192,84 @@ void IMRPhenomD_NRT_EOS<T>::inject_cs2_bump(std::vector<double> &pressure1, std:
 	vector<double> cs2_star1 = eos_to_cs2_convert(pressure_split1, epsilon_split1);
 	vector<double> cs2_star2 = eos_to_cs2_convert(pressure_split2, epsilon_split2);
 
-	//  Get bump parameters from gen_params structure
-	//	!!!! IMPORTANT: Bump parameters are presumed to be given in fm^-3 units!
+	// Get bump parameters from gen_params structure
+	// IMPORTANT: Bump parameters based on baryon number density values are assumed to be given in units of fm^-3
 	double offset = conversion_fm3_to_MeV(params->bump_offset);
 	double magnitude = params->bump_mag;
 	double width = conversion_fm3_to_MeV(params->bump_width);
 	double plateau = params->plat;
 
-	// Get new full cs2 curve with bump
+	// Get new cs2 curve with bump
 	build_cs2_one_quad_bump(nb_split1, cs2_star1, width, magnitude, offset, plateau);
 	build_cs2_one_quad_bump(nb_split2, cs2_star2, width, magnitude, offset, plateau);
 
-	// Get new bumpy EoS
+	// Define vectors to store the pressure and energy density values with the bump
 	vector<double> p_bump1;
 	vector<double> p_bump2;
 	vector<double> e_bump1;
 	vector<double> e_bump2;
 
-	cs2_to_eos_convert(pressure_split1, epsilon_split1, nb_split1, cs2_star1, p_bump1, e_bump1);
-	cs2_to_eos_convert(pressure_split2, epsilon_split2, nb_split2, cs2_star2, p_bump2, e_bump2);
+	// Get new bumpy EoS
+	cs2_to_eos_convert(pressure_split1.begin(), epsilon_split1.begin(), nb_split1, cs2_star1, p_bump1, e_bump1);
+	cs2_to_eos_convert(pressure_split2.begin(), epsilon_split2.begin(), nb_split2, cs2_star2, p_bump2, e_bump2);
 
-	// Stitch new bumpy EoS onto where I cut-off the original crust EoS
+	// Stitch new bumpy EoS onto the original crust EOS
 
 	// Finding location in data table where prior cut-off occurred
 	auto iterator = std::upper_bound(nb.begin(), nb.end(), nb_split_val); // Get iterator object
 	auto split_index = std::distance(nb.begin(), iterator);				  // Convert to index to extract values for p and e
 
-	// Loop through original arrays to convert to MeV and add to final vector
+	// Grab elements from the EOS table and add them to the pressure and epsilon vectors passed in
+
 	for (int i; i < split_index; i++)
 	{
+		// Get pressure and epsilon values from EOS table
 		auto p_value = pressure[i];
 		auto e_value = epsilon[i];
 
-		// For star 1
+		// Add values for star 1
 		pressure1.push_back(p_value);
 		epsilon1.push_back(e_value);
 
-		// For star 2
+		// Add values for star 2
 		pressure2.push_back(p_value);
 		epsilon2.push_back(e_value);
 	}
 
-	// Copying bump elements to finalized p and e vectors
+	// Copying bump elements to the final pressure and epsilon vectors
+
 	// For star 1
 	pressure1.insert(pressure1.end(), p_bump1.begin(), p_bump1.end());
 	epsilon1.insert(epsilon1.end(), e_bump1.begin(), e_bump1.end());
-
 	// For star 2
 	pressure2.insert(pressure2.end(), p_bump2.begin(), p_bump2.end());
 	epsilon2.insert(epsilon2.end(), e_bump2.begin(), e_bump2.end());
 }
 
+/****************************************************************************************************************
+ * !\brief Function to convert a row-major 2D vector of doubles to column-major order
+ *
+ * Row-major vector and column-major vector as passed in by reference.
+ *
+ * This is intended primarly for converting read-in CSV file data to column-major order, 
+ * since default for file-read in is row-major order.
+ *
+ ****************************************************************************************************************/
 template <class T>
-void IMRPhenomD_NRT_EOS<T>::transpose_data_to_column_major(const std::vector<std::vector<double>> &row_major,
-														   std::vector<std::vector<double>> &column_major)
+void IMRPhenomD_NRT_EOS<T>::transpose_data_to_column_major(const std::vector<std::vector<double>> &row_major, /**< 2D vector of data in row-major order */
+														   std::vector<std::vector<double>> &column_major 	  /**< 2D vector to store data converted into column-major order */)
 {
+	// If the row-major vector passed in is empty, exits the function
 	if (row_major.empty())
+	{
 		return;
+	}
 
+	// Grabs the number of rows and columns
 	size_t num_rows = row_major.size();
 	size_t num_cols = row_major[0].size();
 
-	// Resize the column_major vector to have 'num_cols' columns and 'num_rows' rows
+	// Resize the column_major vector to table size in column-major order
 	column_major.resize(num_cols, std::vector<double>(num_rows));
 
 	// Perform the transposition
@@ -237,15 +282,23 @@ void IMRPhenomD_NRT_EOS<T>::transpose_data_to_column_major(const std::vector<std
 	}
 }
 
+/****************************************************************************************************************
+ * !\brief Function to calculate the speed of sound squared from pressure and energy density
+ *
+ * Takes in double vectors of pressure and energy density, assumed to be in same units.
+ *
+ * Outputs a vector of doubles storing the cs^2 values in light speed units.
+ *
+ ****************************************************************************************************************/
 template <class T>
-std::vector<double> IMRPhenomD_NRT_EOS<T>::eos_to_cs2_convert(std::vector<double> pressure, std::vector<double> epsilon)
+std::vector<double> IMRPhenomD_NRT_EOS<T>::eos_to_cs2_convert(std::vector<double> pressure, /**< Vector of pressure values */
+															  std::vector<double> epsilon 	/**< Vector of energy density values */)
 {
-	// Function to take derivative of p(e) to get the speed of sound squared
-
-	// Uses QLIMR-defined interpolation class, which utilizes GSL (see https://www.gnu.org/software/gsl/doc/html/interp.html#c.gsl_spline)
+	// Initialize interpolator object to get derivative of pressure as a function of energy density
 	Interpolation p_of_e;
 	p_of_e.initialize((gsl_interp_type *)gsl_interp_steffen, epsilon, pressure);
 
+	// Initialize vector of doubles to store cs^2
 	std::vector<double> cs2;
 
 	// Loops through each energy density point and takes the derivative, adds to cs2 vector
@@ -255,118 +308,134 @@ std::vector<double> IMRPhenomD_NRT_EOS<T>::eos_to_cs2_convert(std::vector<double
 		cs2.push_back(cs2_val);
 	}
 
+	// Returns vector of cs^2 values
 	return cs2;
 }
 
+/*!\brief Function to convert value from units of fm^-3 to MeV
+ *
+ * Takes in double value, outputs double value.
+ */
 template <class T>
 double IMRPhenomD_NRT_EOS<T>::conversion_fm3_to_MeV(double x)
 {
-
-	// Function that converts a value with units of 1/fm^3 to MeV
-
 	double x_new = x * pow(197.3, 3);
-
 	return x_new;
 }
 
+/****************************************************************************************************************
+ * !\brief Function to create a speed of sound squared curve with a parabolic bump added to it
+ *
+ * Takes in a vector of baryon number density values, a vector of cs^2 values from a crust EOS, and bump parameters.
+ *
+ * Takes in parameters to define the bump width, magnitude, peak location (offset), and plateau value after the bump.
+ *
+ * cs^2 vector is passed in by reference and loaded with the bump injection values.
+ *
+ * Assumes list of cs^2 values and list of nb values are the same size.
+ *
+ ****************************************************************************************************************/
 template <class T>
-void IMRPhenomD_NRT_EOS<T>::build_cs2_one_quad_bump(std::vector<double> nb_list, std::vector<double> &cs2_list, double bump_width, double bump_magnitude, double bump_offset, double plat_val)
+void IMRPhenomD_NRT_EOS<T>::build_cs2_one_quad_bump(std::vector<double> nb_list,   /**< Vector storing baryon number density values */
+													std::vector<double> &cs2_list, /**< Vector containing speed of sound squared values to write over */
+													double bump_width,			   /**< Width of the injected bump peak */
+													double bump_magnitude,		   /**< Magnitude/"height" of the injected bump */
+													double bump_offset,			   /**< Value in baryon number density where the bump peak occurs */
+													double bump_plat 			   /**< Plateau to set speed of sound squared to after bump injection */)
 {
-
-	// Function that creates an entire cs2(nb) curve with a quadratic bump added to it.
-
-	// nb_list: vector with the values of number density for which this list will be created
-	// cs2_list: vector of cs2 values from SLy pressure and energy density
-	// bump_width: the width of the peak
-	// bump_magnitude: the magnitude or "height" of the peak
-	// bump_offset: the value of baryon density where the peak occurs
-	// plat_val: the value of cs2 at the plateau
-
 	// Initialize interpolator function to get cs2 as a function of nb
 	Interpolation cs2_of_nb;
 	cs2_of_nb.initialize((gsl_interp_type *)gsl_interp_steffen, nb_list, cs2_list);
 
-	double n1 = bump_offset - bump_width / 2; // number density at which the parabola begins
-	double n2 = bump_offset + bump_width / 2; // number density at which the parabola ends
-	double f1_n1 = cs2_of_nb.yofx(n1);		  // value of the crust at the transition point n1
+	// Obtain parameters for the parabola.
+	double n1 = bump_offset - bump_width / 2; // Number density at which the parabola begins
+	double n2 = bump_offset + bump_width / 2; // Number density at which the parabola ends
+	double f1_n1 = cs2_of_nb.yofx(n1);		  // Value of the crust at the transition point n1
+
+	// Loop through baryon number density values to build cs^2
 
 	for (int i = 0; i < nb_list.size(); ++i)
 	{
+		// Obtain the baryon number density at point i
+		double nb_temp = nb_list[i];
 
-		double nb_temp = nb_list[i]; // getting the i-th term of the list nb_list. nb_temp is the value for which cs2_temp will be calculated.
-
-		// checking that nb_temp is smaller than the transition point n1
+		// Check if the baryon number density is smaller than the transition point
 		if (nb_temp < n1)
 		{
-			cs2_list[i] = cs2_of_nb.yofx(nb_temp); // before n1, use the crust
+			cs2_list[i] = cs2_of_nb.yofx(nb_temp); // Before transition point, use the crust values
 		}
-		// checking that nb_temp is in the parabola region (between the two transition points)
+		// Check if the baryon number density is in the parabolic region (between transition points)
 		else if (nb_temp >= n1 && nb_temp <= n2)
 		{
-			cs2_list[i] = f_quad(nb_temp, bump_width, bump_magnitude, bump_offset, plat_val, f1_n1); // the parabola region
+			cs2_list[i] = f_quad(nb_temp, bump_width, bump_magnitude, bump_offset, bump_plat, f1_n1); // Calculate the value for the parabola
 		}
-		// after the parabola, cs2 should be in the plateau region
+		// After the parabola, cs^2 is in the plateau region
 		else
 		{
-			cs2_list[i] = plat_val; // after n2 use the plateau
+			cs2_list[i] = bump_plat; // After parabola, use plateau value
 		}
 	}
 }
 
+/****************************************************************************************************************
+ * !\brief Function to calculate values for parabolic bump in the speed of sound squared
+ *
+ * Takes in baryon number density value, bump parameters, and the starting baryon number density value for the bump.
+ *
+ * Parameters to define the bump are width, magnitude, peak location (offset), and plateau value after the bump.
+ *
+ ****************************************************************************************************************/
 template <class T>
-double IMRPhenomD_NRT_EOS<T>::f_quad(double nb, double bump_width, double bump_magnitude, double bump_offset, double plat, double f1_n1)
+double IMRPhenomD_NRT_EOS<T>::f_quad(double nb,				/**< Baryon number density value to evaluate bump at */
+									 double bump_width,		/**< Width of the injected bump peak */
+									 double bump_magnitude, /**< Magnitude/"height" of the injected bump */
+									 double bump_offset,	/**< Value in baryon number density where the bump peak occurs */
+									 double bump_plat,		/**< Plateau to set speed of sound squared to after bump injection */
+									 double f1_n1 			/**< Baryon number density value at start of bump */)
 {
-
-	// Function to create a quadratic bump at the cs2(nb) curve; the parabola will be added to a plateau, which is 1/3 in this case.
-
-	// nb: the baryon density at which this is being evaluated
-	// bump_width: the width of the peak
-	// bump_magnitude: the magnitude or "height" of the peak
-	// bump_offset: the value of baryon density where the peak occurs
-	// plat: the value of cs2 at the plateau
-	// f1_n1: the value of cs2 at the start of the parabola
-
-	double f3_n2 = plat; // value of the plateau
-
 	// Calculate the expected value of cs2
-	double cs2_val = -0.25 * ((8 * pow(bump_offset, 2) * (-1 + 6 * bump_magnitude - 3 * f1_n1)) / (3. * bump_width) - (2 * bump_width * (-1 + 6 * bump_magnitude - 3 * f1_n1)) / 3. - 4 * bump_offset * f1_n1 - 2 * bump_width * f1_n1 + 4 * bump_offset * f3_n2 - 2 * bump_width * f3_n2) / bump_width - (((-4 * bump_offset * (-1 + 6 * bump_magnitude - 3 * f1_n1)) / (3. * bump_width) + f1_n1 - f3_n2) * nb) / bump_width -
-					 (2 * (-1 + 6 * bump_magnitude - 3 * f1_n1) * pow(nb, 2)) / (3. * pow(bump_width, 2));
-
+	double cs2_val = -0.25 * ((8 * pow(bump_offset, 2) * (-1 + 6 * bump_magnitude - 3 * f1_n1)) / (3. * bump_width) - 
+							  (2 * bump_width * (-1 + 6 * bump_magnitude - 3 * f1_n1)) / 3. - 
+							   4 * bump_offset * f1_n1 - 2 * bump_width * f1_n1 + 4 * bump_offset * bump_plat - 2 * bump_width * bump_plat) / bump_width - 
+					(((-4 * bump_offset * (-1 + 6 * bump_magnitude - 3 * f1_n1)) / (3. * bump_width) + f1_n1 - bump_plat) * nb) / bump_width -
+					(2 * (-1 + 6 * bump_magnitude - 3 * f1_n1) * pow(nb, 2)) / (3. * pow(bump_width, 2));
 	return cs2_val;
 }
 
+/****************************************************************************************************************
+ * !\brief Function to convert speed of sound squared values to pressure and energy density values
+ *
+ * Takes in the pressure and energy density to start calculating for 
+ * and a list of the baryon number density and cs^2 values.
+ * 
+ * Vectors to store the new calculated pressure and and energy density are passed in by reference. 
+ * Assumed to be empty prior to pass-in.
+ *
+ * Algorithm assumes that p_base, epsilon_base, and nb_list are all given in units of MeV.
+ * All inputs must start at the same baryon number density value.
+ *
+ ****************************************************************************************************************/
 template <class T>
-void IMRPhenomD_NRT_EOS<T>::cs2_to_eos_convert(std::vector<double> p_base, std::vector<double> epsilon_base,
-											   std::vector<double> nb_list, std::vector<double> cs2_bump,
-											   std::vector<double> &p_bump, std::vector<double> &epsilon_bump)
+void IMRPhenomD_NRT_EOS<T>::cs2_to_eos_convert(double p_base,				 	 /**< Pressure at the start of bump (in MeV) */
+											   double epsilon_base,			 	 /**< Energy density at the start of bump (in MeV) */
+											   std::vector<double> nb_list,	 	 /**< List of baryon number density values (in MeV) */
+											   std::vector<double> cs2_bump, 	 /**< List of speed of sound squared values (in c) */
+											   std::vector<double> &p_bump,	 	 /**< Vector to store new pressure values (in MeV) */
+											   std::vector<double> &epsilon_bump /**< Vector to store new energy density values (in MeV) */)
 {
-	// Function to convert a relation between speed of sound squared and number density to a relation between pressure and energy density.
+	// Get starting points for integration
+	double p = p_base;			   // Pressure
+	double epsilon = epsilon_base; // Energy density
+	double nb = nb_list[0];		   // Baryon number density
 
-	// WARNING //
-	// This  algorithm assumes a few things:
-	// 1 - That p_base, epsilon_base, nb_list are all in units of MeV
-	// 2 - That all the input lists start at the same value of nb
-	// 3 - Idk what else cause I don't remember (KP note: it's probably fine?)
-
-	// p_base: list with crust values of pressure
-	// epsilon_base: list with crust values of energy density
-	// nb_list: list with values of number density for the full eos with the bump
-	// cs2_bump: list with values of speed of sound for the full eos with the bump
-
-	// Starting points for the integration
-	double p = p_base[0];
-	double epsilon = epsilon_base[0];
-	double nb = nb_list[0];
-
+	// Add starting pressure and energy density values to bump vectors
 	p_bump.push_back(p);
 	epsilon_bump.push_back(epsilon);
 
-	// Determining the amount of points we will integrate over
-	int total_length = nb_list.size();
+	// Loop through all baryon number density values and perform integration
 
-	for (int i = 1; i < total_length; ++i)
+	for (int i = 1; i < nb_list.size();; ++i)
 	{
-
 		double delta_nb = nb_list[i] - nb;				// Calculating the size of the current step
 		double delta_e = delta_nb * (epsilon + p) / nb; // Calculating the delta in energy density at the current step
 
@@ -374,15 +443,21 @@ void IMRPhenomD_NRT_EOS<T>::cs2_to_eos_convert(std::vector<double> p_base, std::
 		epsilon += delta_e;				// Taking a step in energy density
 		p += cs2_bump[i - 1] * delta_e; // Taking a step in pressure
 
-		p_bump.push_back(p);			 // Adding the pressure calculated at this step to the end of the pressure list
-		epsilon_bump.push_back(epsilon); // Adding the energy density calculated at this step to the end of the pressure list
+		p_bump.push_back(p);			 // Add the pressure calculated at this step to the end of the pressure list
+		epsilon_bump.push_back(epsilon); // Add the energy density calculated at this step to the end of the pressure list
 	}
 }
+
+// IMPORTANT: GWAT has issues with the difference between C++'s *normal* double value and ADOL-C's *adouble* value. This is to prevent conflict and make sure everything compiles normally.
+// All new functions added to the IMRPhenomD_NRT_EOS class should be templated with "template <class T>" at the top (see above functions). This is not necessary for the QLIMR related classes.
+// Don't ask me how this even became an issue in the first place; I just work here.
 
 template class IMRPhenomD_NRT_EOS<double>;
 template class IMRPhenomD_NRT_EOS<adouble>;
 
+//##############################################################################
 // *********************** QLIMR TOV and λ̄ FUNCTIONALITY ***********************
+//##############################################################################
 
 // ----------------------------------------------------------------------------
 
@@ -579,7 +654,6 @@ void EOS::initialize_eos(gsl_interp_type *type)
 	// Compute interpolated ε(h) and p(h)
 	calculate_eos_of_h(&params.epsilon_col1, type);
 }
-
 // ----------------------------------------------------------------------------
 
 //------------------- Integration: Finding ε(h) and p(h) ----------------------

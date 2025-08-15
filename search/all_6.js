@@ -10,7 +10,7 @@ var searchData=
   ['f_5f0pn_5fpy_7',['f_0PN_py',['../gwatpy__wrapping_8h.html#acd677b0c3d3d9152dc899594b89bb12c',1,'f_0PN_py(double t, double chirpmass):&#160;gwatpy_wrapping.cpp'],['../gwatpy__wrapping_8cpp.html#acd677b0c3d3d9152dc899594b89bb12c',1,'f_0PN_py(double t, double chirpmass):&#160;gwatpy_wrapping.cpp']]],
   ['f_5fmax_8',['f_max',['../structPhenomPv3Storage.html#ab130f0a1ddb7a5ff079c6a1d723eb9ce',1,'PhenomPv3Storage']]],
   ['f_5fmin_9',['f_min',['../structPhenomPv3Storage.html#a9b5c0ab6936a689e23735275a0ce3b3d',1,'PhenomPv3Storage']]],
-  ['f_5fref_10',['f_ref',['../structPhenomPv3Storage.html#a4e7273f609d1a52206d4c94799516af4',1,'PhenomPv3Storage::f_ref'],['../classgen__params__base.html#a8aafd6ccd8331c201bc0f301898d5606',1,'gen_params_base::f_ref'],['../structsource__parameters.html#ab8f0e9795b3a39a788c7ff07ea15f370',1,'source_parameters::f_ref']]],
+  ['f_5fref_10',['f_ref',['../structPhenomPv3Storage.html#a4e7273f609d1a52206d4c94799516af4',1,'PhenomPv3Storage::f_ref'],['../structMCMC__modification__struct.html#ae7a16ae067e8dc8b00d8fa6335a70006',1,'MCMC_modification_struct::f_ref'],['../classgen__params__base.html#a8aafd6ccd8331c201bc0f301898d5606',1,'gen_params_base::f_ref'],['../structsource__parameters.html#ab8f0e9795b3a39a788c7ff07ea15f370',1,'source_parameters::f_ref']]],
   ['f_5fref_5forb_5fhz_11',['f_ref_Orb_Hz',['../structPhenomPv3Storage.html#adea10e496712894de57ced3c304f0a36',1,'PhenomPv3Storage']]],
   ['factorial_12',['factorial',['../util_8h.html#ae40cc3f267c33745a8a2485638d5db55',1,'factorial(long num):&#160;util.cpp'],['../util_8cpp.html#ae40cc3f267c33745a8a2485638d5db55',1,'factorial(long num):&#160;util.cpp']]],
   ['fb_13',['Fb',['../structdet__res__pat.html#ad650ebc7ff15a2c7f33d80b3022b6dca',1,'det_res_pat']]],

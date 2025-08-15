@@ -1183,9 +1183,18 @@ template <>
 void IMRPhenomD<double>::calc_fring( source_parameters<double> *source_param)
 {
 	double eta = source_param->eta;
+	// Check that eta is physical.
+	// Numerical round-off sometimes causes it to not be,
+	// and causes nan in Erad
+	// (also in final_spin, but that is checked inside of it).
+	if (eta > 0.25)
+	{
+		eta = 0.25;
+	}
 	double chi1 = source_param->spin1z;
 	double chi2 = source_param->spin2z;
-    	double finspin = final_spin(source_param);
+	double finspin = final_spin(source_param);
+	
 	double Erad = EradRational0815(eta,chi1,chi2);
 	gsl_interp_accel *acc = gsl_interp_accel_alloc();
   	gsl_spline *iFring = gsl_spline_alloc(gsl_interp_cspline, QNMData_length);
@@ -1260,7 +1269,19 @@ T IMRPhenomD<T>::FinalSpin0815_s(T eta, T s) {
 template< class T>
 T IMRPhenomD<T>::FinalSpin0815(T eta, T chi1, T chi2) {
   // Convention m1 >= m2
-  T Seta = sqrt(1.0 - 4.0*eta);
+  // Check that eta is physical.
+  // Numerical issues sometimes cause it to not be,
+  // and Seta is returned as nan.
+  T eta_max = 1/4;
+  T Seta;
+  if (eta >= eta_max)
+  {
+	Seta = 0;
+  }
+  else
+  {
+	Seta = sqrt(1.0 - 4.0*eta);
+  }
   T m1 = 0.5 * (1.0 + Seta);
   T m2 = 0.5 * (1.0 - Seta);
   T m1s = m1*m1;

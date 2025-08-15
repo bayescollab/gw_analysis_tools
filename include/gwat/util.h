@@ -291,7 +291,7 @@ public:
 	{
 		std::cout<<"Source Properties: "<<std::endl;
 		std::cout<<"mass1 | mass2 | DL: "<<this->mass1<<" | "<<this->mass2<<" | "<<this->Luminosity_Distance<<std::endl;
-		std::cout<<"spin1 | spin2: "<<"["<<this->spin1[0]<<", "<< this->spin1[1]<<", "<<this->spin1[2]<< "]"<<" | "<<"["<<this->spin1[0]<<", "<< this->spin1[1]<<", "<<this->spin1[2]<< "]"<<std::endl;
+		std::cout<<"spin1 | spin2: "<<"["<<this->spin1[0]<<", "<< this->spin1[1]<<", "<<this->spin1[2]<< "]"<<" | "<<"["<<this->spin2[0]<<", "<< this->spin2[1]<<", "<<this->spin2[2]<< "]"<<std::endl;
 		std::cout<<"psi | iota | RA | DEC | gmst: "<<this->psi<<" | "<<this->incl_angle<<" | "<<this->RA<<" | "<<this->DEC<<" | "<<this->gmst<<std::endl;
 		std::cout<<"f_ref | shift_time | shift_phase: " <<this->f_ref<<" | "<<this->shift_time<<" | "<<this->shift_phase<<std::endl;
 		std::cout<<"tc | phiRef: " <<this->tc<<" | "<<this->phiRef<<std::endl;

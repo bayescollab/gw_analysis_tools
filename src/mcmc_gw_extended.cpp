@@ -1958,7 +1958,7 @@ std::string MCMC_prep_params_v2(double *param, double *temp_params, gen_params_b
 {
 	if(intrinsic) gen_params->sky_average = true;
 	else gen_params->sky_average = false;
-	gen_params->f_ref = 20;
+	gen_params->f_ref = mod_struct->f_ref;
 	gen_params->shift_time = true;
 	gen_params->shift_phase = true;
 	//gen_params->shift_time = false;

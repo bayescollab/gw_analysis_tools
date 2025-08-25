@@ -788,7 +788,7 @@ template <> adouble ellint_F<adouble>(adouble phi, adouble k)
  *
  * Adapted from LALSimIMRPhenomPv3HM
  */
-template <class T> void InitializePrecession(sysprecquant<T>* system, /** [out] Pointer to sysprecquant struct */
+template <class T> int InitializePrecession(sysprecquant<T>* system, /** [out] Pointer to sysprecquant struct */
     const T m1,  /**< Primary mass in SI (kg) */
     const T m2,  /**< Secondary mass in SI (kg) */
     const T mul, /**< Cosine of Polar angle of orbital angular momentum */
@@ -1006,19 +1006,20 @@ template <class T> void InitializePrecession(sysprecquant<T>* system, /** [out] 
     cases where we think the precession model is breaking down */
     // Commented out as it isn't really significant.
     // TODO: Activate the check with a flag.
-    //try
-    //{
-    //    checkOmegaz5(Omegaz5);
-    //}
-    //catch(const std::exception& e)
-    //{
-    //    std::cerr << e.what() << '\n';
-    //    std::cerr << "f0 = " << f_0 << std::endl;
-    //    std::cerr << "(m1, cos(s1z), chi1) = ";
-    //    std::cerr << "(" << (m1/GWAT_MSUN_SI) << ", " << mu1 << ", " << ch1 << ")\n";
-    //    std::cerr << "(m2, cos(s2z), chi2) = ";
-    //    std::cerr << "(" << (m2/GWAT_MSUN_SI) << ", " << mu2 << ", " << ch2 << ")\n";
-    //}
+    try
+    {
+       checkOmegaz5(Omegaz5);
+    }
+    catch(const std::exception& e)
+    {
+       std::cerr << e.what() << '\n';
+       std::cerr << "f0 = " << f_0 << std::endl;
+       std::cerr << "(m1, cos(s1z), chi1) = ";
+       std::cerr << "(" << (m1/GWAT_MSUN_SI) << ", " << mu1 << ", " << ch1 << ")\n";
+       std::cerr << "(m2, cos(s2z), chi2) = ";
+       std::cerr << "(" << (m2/GWAT_MSUN_SI) << ", " << mu2 << ", " << ch2 << ")\n";
+       return 0;
+    }
     
     //eq.D16 (1703.03967), note that "c0" in the code is "$g_0$" in the paper and likewise for the other "c's" and "g's"
     system->constants_phiz[0] = 3.*Omegaz0*c0;
@@ -1152,6 +1153,8 @@ template <class T> void InitializePrecession(sysprecquant<T>* system, /** [out] 
     system->phiz_0 = - phiz_of_xi(xi_0,xi0_2,J_0_norm,system) - MScorrections.x;
     system->zeta_0 = 0.;
     system->zeta_0 = - zeta_of_xi(xi_0,xi0_2,system) - MScorrections.y;
+
+    return 1;
 }
 
 /**
@@ -1394,7 +1397,7 @@ template <class T> void PhenomP_ParametersFromSourceFrame(
  * PhenomPv3Storage and sysprecquant (for precession angles) structs.
  * Converts from GWAT seconds to SI.
  */
-template <class T> void init_PhenomPv3_Storage(
+template <class T> int init_PhenomPv3_Storage(
     PhenomPv3Storage<T> *p,   /**< [out] PhenomPv3Storage struct */
     sysprecquant<T> *pAngles,           /**< [out] precession angle pre-computations struct */
     T m1,             /**< mass of primary in solar masses */
@@ -1485,6 +1488,8 @@ template <class T> void init_PhenomPv3_Storage(
     CartesianToPolar(&(p->chi1_theta), &(p->chi1_phi), &(p->chi1_mag), p->chi1x, p->chi1y, p->chi1z);
     CartesianToPolar(&(p->chi2_theta), &(p->chi2_phi), &(p->chi2_mag), p->chi2x, p->chi2y, p->chi2z);
 
+    int status = 1; // Success flag
+
     if (p->PRECESSING != 1) // precessing case. compute angles
     {
         T one = 1.0;
@@ -1500,13 +1505,22 @@ template <class T> void init_PhenomPv3_Storage(
         int ExpansionOrder = 5;
         T coschi1 = cos(p->chi1_theta);
         T coschi2 = cos(p->chi2_theta);
-        InitializePrecession(
+        status = InitializePrecession(
             pAngles,
             p->m1_SI, p->m2_SI,
             one, zero,
             coschi1, p->chi1_phi, p->chi1_mag,
             coschi2, p->chi2_phi, p->chi2_mag,
             p->f_ref, ExpansionOrder);
+    }
+
+    if (status)
+    {
+        return 1; // Success
+    }
+    else
+    {
+        return 0;
     }
 }
 
@@ -1668,25 +1682,25 @@ template void PhenomP_ParametersFromSourceFrame<adouble>(
 template void PhenomPv3_Param_Transform<double>(source_parameters<double> *out, gen_params_base<double> *in);
 template void PhenomPv3_Param_Transform<adouble>(source_parameters<adouble> *out, gen_params_base<adouble> *in);
 
-template void InitializePrecession<double>(
+template int InitializePrecession<double>(
     sysprecquant<double>* system,
     const double m1, const double m2, const double mul, const double phl, const double mu1, const double ph1,
     const double ch1, const double mu2, const double ph2, const double ch2, const double f_0,
     const int ExpansionOrder);
-template void InitializePrecession<adouble>(
+template int InitializePrecession<adouble>(
     sysprecquant<adouble>* system,
     const adouble m1, const adouble m2, const adouble mul, const adouble phl, const adouble mu1, const adouble ph1,
     const adouble ch1, const adouble mu2, const adouble ph2, const adouble ch2, const adouble f_0,
     const int ExpansionOrder);
 
-template void init_PhenomPv3_Storage<double>(PhenomPv3Storage<double> *p,  sysprecquant<double> *pAngles,
+template int init_PhenomPv3_Storage<double>(PhenomPv3Storage<double> *p,  sysprecquant<double> *pAngles,
     double m1, double m2,
     double S1x, double S1y, double S1z,
     double S2x, double S2y, double S2z,
     const double distance, const double inclination,
     const double phiRef, const double deltaF, const double f_min, const double f_max, const double f_ref
 );
-template void init_PhenomPv3_Storage<adouble>(PhenomPv3Storage<adouble> *p,  sysprecquant<adouble> *pAngles,
+template int init_PhenomPv3_Storage<adouble>(PhenomPv3Storage<adouble> *p,  sysprecquant<adouble> *pAngles,
     adouble m1, adouble m2,
     adouble S1x, adouble S1y, adouble S1z,
     adouble S2x, adouble S2y, adouble S2z,

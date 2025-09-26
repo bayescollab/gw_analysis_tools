@@ -25,18 +25,40 @@ using std::vector;
  * equation of state (EOS) parameters.
  */
 
- // ****************************************************************************
+// This only exists because for some reason GWAT has both gen_params and source_params and I need to be able to access and process data from *both*. Instead of doubling all my functions I'm just keeping an internal structure.
+struct EOS_Waveform_internal_params
+{
+  double bump_mag;
+  double bump_width;
+  double bump_offset;
+  double plat;
+  double nbc1;
+  double nbc2;
+
+  double mass1;
+  double mass2;
+  double tidal1;
+  double tidal2;
+};
+
+// ****************************************************************************
 template <class T>
 class IMRPhenomD_NRT_EOS : public IMRPhenomD_NRT<T>
 {
 public:
   // Functions are organized by the order they are called in.
 
+  // Functions to process parameters from a parameters structure
+  virtual void store_EOS_params(gen_params_base<T> *params);
+  virtual void store_EOS_params(source_parameters<T> *params);
+  virtual void get_observable_params(gen_params_base<T> *params);
+  virtual void get_observable_params(source_parameters<T> *params);
+
   // Function to calculate observable variables from the EOS
-  virtual void get_m_love(gen_params *params);
+  virtual void get_m_love();
 
   // Function to build bump in cs2
-  virtual void inject_cs2_bump(std::vector<double> &pressure1, std::vector<double> &pressure2, std::vector<double> &epsilon1, std::vector<double> &epsilon2, gen_params *params);
+  virtual void inject_cs2_bump(std::vector<double> &pressure1, std::vector<double> &pressure2, std::vector<double> &epsilon1, std::vector<double> &epsilon2);
 
   // Function to convert read data to column-major order (necessary for csv EOS files...)
   virtual void transpose_data_to_column_major(const std::vector<std::vector<double>> &row_major, std::vector<std::vector<double>> &column_major);
@@ -55,6 +77,12 @@ public:
 
   // Function to convert cs2 to p(epsilon)
   virtual void cs2_to_eos_convert(double p_base, double epsilon_base, std::vector<double> nb_list, std::vector<double> cs2_bump, std::vector<double> &p_bump, std::vector<double> &epsilon_bump);
+
+  // Override of IMRPhenomD_NRT's waveform construction, to force recalculation of observable params
+  virtual int construct_waveform(T *frequencies, int length, std::complex<T> *waveform, source_parameters<T> *params) override; // Technically only override is needed: I've kept virtual for clarity
+
+private:
+  EOS_Waveform_internal_params eos_params;
 };
 
 // ****************************************************************************

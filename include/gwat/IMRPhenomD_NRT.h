@@ -20,6 +20,10 @@ public:
   //This is NOT overloaded anymore -- completely different function than phase_ins
   virtual T phase_ins_NRT(T f,useful_powers<T> *powers, source_parameters<T> *param);
 
+  //Adds the dissipative tidal correction. There is no IMRPhenom correction--just the PN correction.
+  // See 2306.15633 
+  virtual T phase_ins_NRT_D(T f, useful_powers<T> *powers, source_parameters<T> *param);
+
   //virtual T spin_spin(source_parameters<T> *param, double PNorder, int body); 
   virtual T phase_spin_NRT(T f, useful_powers<T> *powers,source_parameters<T> *param);
     

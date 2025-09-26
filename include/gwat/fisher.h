@@ -1,6 +1,7 @@
 #ifndef FISHER_H
 #define FISHER_H
 #include "util.h"
+#include "quadrature.h"
 #include <string>
 
 /*! \file 
@@ -44,7 +45,8 @@ void fisher_numerical(double *frequency,
 	int order,
 	int *amp_tapes = NULL,
 	int *phase_tapes = NULL,
-	double *noise = NULL
+	double *noise = NULL,
+	Quadrature *quadMethod = NULL
 	);
 void calculate_fisher_elements(double *frequency, 
 	int length, 
@@ -55,6 +57,14 @@ void calculate_fisher_elements(double *frequency,
 	std::string integration_method, 
 	double *weights, 
 	bool log10_f);
+
+void calculate_fisher_elements(
+	double **output,
+	std::complex<double> **response_deriv,
+	double *psd,
+	int dimension,
+	Quadrature *quadMethod
+);
 
 void calculate_fisher_elements_batch(double *frequency, 
 	int length, 

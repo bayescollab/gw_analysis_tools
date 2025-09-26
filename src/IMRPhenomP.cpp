@@ -18,21 +18,7 @@
  * Verified against LALsuite 2019_09_25
  */
 
-//Shamelessly stolen from lalsuite
-/* Macro functions to rotate the components of a vector about an axis */
-#define ROTATEZ(angle, vx, vy, vz)\
-tmp1 = vx*cos(angle) - vy*sin(angle);\
-tmp2 = vx*sin(angle) + vy*cos(angle);\
-vx = tmp1;\
-vy = tmp2
 
-#define ROTATEY(angle, vx, vy, vz)\
-tmp1 = vx*cos(angle) + vz*sin(angle);\
-tmp2 = - vx*sin(angle) + vz*cos(angle);\
-vx = tmp1;\
-vz = tmp2
-
-const double sqrt_6 = 2.44948974278317788;
 
 template<class T>
 T IMRPhenomPv2<T>::alpha(T omega, T q,T chi2l, T chi2){

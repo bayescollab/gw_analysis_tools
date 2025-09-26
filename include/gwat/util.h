@@ -14,20 +14,48 @@
  *General utilities (functions and structures) independent of modelling method
  */
 
+/*! natural log of 2*/
+#define GWAT_LN2 0.693147180559945309417232121458176568
+/*! Gravitational constant in SI */
+#define GWAT_G_SI 6.67430e-11
+/*! 2*PI*/
+#define GWAT_TWOPI 6.283185307179586476925286766559005768
+
+/**
+ *! Nominal solar mass, kg
+ */
+#define GWAT_MSUN_SI 1.988409870698050731911960804878414216e30
+
+/**
+ *! \brief Geometrized nominal solar mass, s
+ *! \details
+ * GWAT_MTSUN_SI = GWAT_GMSUN_SI / c^3
+ */
+#define GWAT_MTSUN_SI 4.925490947641266978197229498498379006e-6
+
+/**
+ *! \brief Geometrized nominal solar mass, m
+ *! \details
+ * GWAT_MRSUN_SI = GWAT_GMSUN_SI / c^3
+ */
+#define GWAT_MRSUN_SI 1.476625038050124729627979840144936351e3
+
 /*! Euler number*/
 const double gamma_E = 0.5772156649015328606065120900824024310421;
 /*!Speed of light m/s*/
 const double c = 299792458.;
 /*!Gravitational constant in m**3/(s**2 SolMass)*/
 //const double G =6.67430e-11*(1.98855e30);
-const double G =6.67430e-11*(1.988409902147041637325262574352366540e30);
+const double G = GWAT_G_SI*(1.988409902147041637325262574352366540e30);
 /*! G/c**3 seconds per solar mass*/
 //const double MSOL_SEC =492549095.e-14;
 //const double MSOL_SEC =492549095.e-14;
 const double MSOL_SEC =4.925491025543575903411922162094833998e-6 ;
+/*! Meters in a megaparsec */
+const double GWAT_MPC_SI = 3.085677581491367278913937957796471611e22;
 /*!consts.kpc.to('m')*1000/c Mpc in sec*/
 //const double MPC_SEC = 3085677581.e13/c;
-const double MPC_SEC = 3.085677581491367278913937957796471611e22/c;
+const double MPC_SEC = GWAT_MPC_SI/c;
 /*!1 year in seconds -- ie seconds/year */
 const double T_year = 31557600.;
 /*!1 day in seconds*/
@@ -50,6 +78,8 @@ const double LOG10=std::log(10.);
 #define PBWIDTH 60
 
 const double DOUBLE_COMP_THRESH = 1e-10;
+
+#define MAX_TOL_ATAN 1.0e-15
 //GSL versions of the constants, but G seems off..
 //const double gamma_E = M_EULER;
 //const double c = GSL_CONST_MKSA_SPEED_OF_LIGHT;
@@ -122,6 +152,16 @@ public:
         */
         bool tidal_love_error = false; 
 	T delta_tidal_weighted=-1;
+
+	/*! dissipative tidal deformability of the larger component*/
+        T diss_tidal1=-1;
+        /*! dissipative tidal deformability of the smaller component*/
+        T diss_tidal2=-1;
+	/*! symmetric dissipative tidal deformability*/
+	T diss_tidal_s=-1;
+	/*! antisymmetric dissipative tidal deformability*/
+	T diss_tidal_a=-1;
+	T diss_tidal_weighted=-1;
 
 	//Polarization angle
 	T psi =0 ;
@@ -259,7 +299,7 @@ public:
 	{
 		std::cout<<"Source Properties: "<<std::endl;
 		std::cout<<"mass1 | mass2 | DL: "<<this->mass1<<" | "<<this->mass2<<" | "<<this->Luminosity_Distance<<std::endl;
-		std::cout<<"spin1 | spin2: "<<"["<<this->spin1[0]<<", "<< this->spin1[1]<<", "<<this->spin1[2]<< "]"<<" | "<<"["<<this->spin1[0]<<", "<< this->spin1[1]<<", "<<this->spin1[2]<< "]"<<std::endl;
+		std::cout<<"spin1 | spin2: "<<"["<<this->spin1[0]<<", "<< this->spin1[1]<<", "<<this->spin1[2]<< "]"<<" | "<<"["<<this->spin2[0]<<", "<< this->spin2[1]<<", "<<this->spin2[2]<< "]"<<std::endl;
 		std::cout<<"psi | iota | RA | DEC | gmst: "<<this->psi<<" | "<<this->incl_angle<<" | "<<this->RA<<" | "<<this->DEC<<" | "<<this->gmst<<std::endl;
 		std::cout<<"f_ref | shift_time | shift_phase: " <<this->f_ref<<" | "<<this->shift_time<<" | "<<this->shift_phase<<std::endl;
 		std::cout<<"tc | phiRef: " <<this->tc<<" | "<<this->phiRef<<std::endl;
@@ -504,6 +544,15 @@ struct source_parameters
 	T oct2;
 	T ss_3p5PN_coeff;
 	T NRT_amp_coefficient;
+	
+        //######## Dissipative tidal deformability ###############
+	/*! dissipative tidal deformability of the larger component*/
+        T diss_tidal1=-1;
+        /*! dissipative tidal deformability of the smaller component*/
+        T diss_tidal2=-1;
+	/*! mass-weighted dissipative tidal deformability*/
+	T diss_tidal_weighted=-1;
+	T delta_diss_tidal_weighted=-1;
 
   	//########## bumpy EOS parameters #######
         T bump_mag; 	/*! Magnitude of feature */

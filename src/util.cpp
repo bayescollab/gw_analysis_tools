@@ -1502,7 +1502,16 @@ adouble calculate_chirpmass(adouble mass1, adouble mass2)
  */
 double calculate_eta(double mass1, double mass2)
 {
-	return (mass1 * mass2) / pow(mass1 + mass2 ,2);
+	double eta = (mass1 * mass2) / pow(mass1 + mass2 ,2);
+	// Check that eta is physical.
+	// Numerical round-off sometimes causes it to not be,
+	// and causes nan later.
+	if (eta > 0.25)
+	{
+		eta = 0.25;
+	}
+
+	return eta;
 }
 adouble calculate_eta(adouble mass1, adouble mass2)
 {
@@ -1884,10 +1893,18 @@ void transform_cart_sph(T *cartvec, T *sphvec)
 	sphvec[0]  = sqrt(cartvec[0]*cartvec[0] +
 			cartvec[2]*cartvec[2] +
 			cartvec[1] * cartvec[1]) ;
-	sphvec[1] = acos(cartvec[2]/sphvec[0]);
-	sphvec[2] = atan2(cartvec[1], cartvec[0]);
-	if(sphvec[2]<0){sphvec[2]+=2*M_PI;}
 
+	if (sphvec[0] == 0.)
+	{
+		sphvec[1] = 0.;
+		sphvec[2] = 0.;
+	}
+	else
+	{
+		sphvec[1] = acos(cartvec[2]/sphvec[0]);
+		sphvec[2] = atan2(cartvec[1], cartvec[0]);
+		if(sphvec[2]<0){sphvec[2]+=2*M_PI;}
+	}
 }
 template void transform_cart_sph<double>(double*, double*);
 template void transform_cart_sph<adouble>(adouble*, adouble*);

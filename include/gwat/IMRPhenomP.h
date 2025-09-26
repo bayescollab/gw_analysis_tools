@@ -11,6 +11,31 @@
  * Wrapped around IMRPhenomD
  */
 
+
+//Shamelessly stolen from lalsuite
+/* Macro functions to rotate the components of a vector about an axis */
+#define ROTATEZ(angle, vx, vy, vz)\
+tmp1 = vx*cos(angle) - vy*sin(angle);\
+tmp2 = vx*sin(angle) + vy*cos(angle);\
+vx = tmp1;\
+vy = tmp2
+
+#define ROTATEY(angle, vx, vy, vz)\
+tmp1 = vx*cos(angle) + vz*sin(angle);\
+tmp2 = - vx*sin(angle) + vz*cos(angle);\
+vx = tmp1;\
+vz = tmp2
+
+
+typedef enum tagIMRPhenomP_version_type {
+ IMRPhenomPv1_V, /**< version 1: based on IMRPhenomC */
+ IMRPhenomPv2_V,  /**< version 2: based on IMRPhenomD */
+ IMRPhenomPv2NRTidal_V, /**< version Pv2_NRTidal: based on IMRPhenomPv2; NRTides added before precession; can be used with both NRTidal versions defined below */
+ IMRPhenomPv3_V  /**< version 3: based on IMRPhenomD and the precession angles from Katerina Chatziioannou PhysRevD.95.104004 (arxiv:1703.03967) */
+} IMRPhenomP_version_type;
+
+const double sqrt_6 = 2.44948974278317788;
+
 template<class T>
 struct alpha_coeffs
 {

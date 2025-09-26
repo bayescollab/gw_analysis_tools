@@ -1,4 +1,11 @@
+# Contributing to the documentation 
 
+To documentation is generated with sphinx. 
+The source code to these webpages is a set of markdown documents that can be found under
+`gw_analysis_tools/docs_sphinx`
+(on the github repo, they are [here](https://github.com/scottperkins/gw_analysis_tools/tree/master/docs_sphinx)). 
+If you ever have an issue you had to hack your way through (e.g. getting the code to work on windows), 
+please consider adding your solution to the documentation! 
 
 # Contributing to the project
 

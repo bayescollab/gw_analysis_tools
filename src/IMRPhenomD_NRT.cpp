@@ -17,8 +17,10 @@
  * NRTidal model of arXiv:1905.06011v2. Specifically, equations 17, 18, 19, 20, 21, 24
  * and 25 were used. A Planck taper was added to the waveform following arXiv:1003.2939.
  * 
- * Also included in this file, binary love relations and error marginalization 
- * over different equations of state. 
+ * Also included in this file
+ *  1. Binary love relations 
+ *  2. Error marginalization over different equations of state
+ *  3. Dissipative tidal response (see arXiv:2306.15633, equations 12b, 13b, 42)  
  */
 
 double tidal_error(double tidal_s, double tidal_a, double q){
@@ -239,6 +241,24 @@ T IMRPhenomD_NRT<T>::phase_ins_NRT(T f, useful_powers<T> *powers,source_paramete
 
   //phaseout = - ((3./16.) * param->tidal_weighted * (39./(16. * param->eta)) * Pade(f, param, powers,deriv));
   phaseout = param->NRT_phase_coeff * Pade(f, param, powers,deriv);
+  
+  return phaseout;
+}
+
+/* This adds the dissipative tidal correction. There is no IMRPhenom correction--just the PN correction.
+ * See 2306.15633 
+ */
+template<class T> 
+T IMRPhenomD_NRT<T>::phase_ins_NRT_D(T f, useful_powers<T> *powers, source_parameters<T> *param)
+{
+  
+  /*Note that this is just the NRT part now*/
+  T phaseout;
+  
+  T piMf = M_PI * param->M * f;
+
+  //phaseout = - ((3./16.) * param->diss_tidal_weighted * (39./(16. * param->eta)) * Pade(f, param, powers,deriv));
+  phaseout = - (75./512.) * (1.0/param->eta) * param->diss_tidal_weighted * piMf * log(piMf) ;
   
   return phaseout;
 }
@@ -707,6 +727,10 @@ int IMRPhenomD_NRT<T>::construct_waveform(T *frequencies, int length, std::compl
 		//I don't know why this would be minus instead of plus, but it seems to get closer to LAL's result if it's minus phaseSpinNRT
 		T ampNRT = (A0*this->amp_ins_NRT(f,&pows, params));
 		amp +=ampNRT;
+               
+                // Dissipative tidal contribution to the phase 
+                T phaseNRT_D = this->phase_ins_NRT_D(f,&pows,params);
+                phase += phaseNRT_D;	
 	}
 	//phase +=   (T)(tc*(f-f_ref) - phic);
 	phase -=   (T)(tc*(f-f_ref) + phic);

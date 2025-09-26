@@ -8,7 +8,6 @@
 ///*! \file 
 // * Header file for utilities
 // */
-//
 ///*! \struct
 // * Structure to facilitate IMRPhenomD parameter transfers
 // */
@@ -34,6 +33,8 @@ template <class T>
 class IMRPhenomD
 {
 public:
+
+virtual ~IMRPhenomD() = default;
 
 virtual void fisher_calculation_sky_averaged(double *frequency, 
 			int length, 

@@ -3,6 +3,7 @@
 #include "TaylorT2.h"
 #include "IMRPhenomD.h"
 #include "IMRPhenomP.h"
+#include "IMRPhenomPv3.h"
 #include "ppE_IMRPhenomD.h"
 #include "ppE_IMRPhenomD_NRT.h"
 #include "ppE_IMRPhenomP.h"
@@ -271,6 +272,15 @@ int fourier_waveform(T *frequencies, /**< double array of frequencies for the wa
 			wp->hcross[i] = c2z*tempCross-s2z*tempPlus;
 		}
 	}
+	else if(local_method.find("IMRPhenomPv3")!=std::string::npos)
+	{
+		if (local_method == "IMRPhenomPv3")
+		{
+			IMRPhenomPv3<T> model;
+			status = model.construct_waveform(frequencies, length, wp->hplus, wp->hcross, &params);
+		}
+	}
+
 	//Catch all for any modifications not captured in ppE formalism like extra polarizations
 	extra_modifications(generation_method, parameters,&params, wp,frequencies,length);
 
@@ -1303,6 +1313,18 @@ std::string prep_source_parameters(source_parameters<T> *out, gen_params_base<T>
 			model.PhenomPv2_Param_Transform(out);
 		}
 	}
+	else if(generation_method.find("Pv3")!=std::string::npos)
+	{
+		if (in->mass1 < in->mass2)
+		{
+			PhenomPrecessingSpinEnforcePrimary(&(in->mass1), &(in->mass2),
+			&(in->spin1[0]), &(in->spin1[1]), &(in->spin1[2]),
+			&(in->spin2[0]), &(in->spin2[1]), &(in->spin2[2]));
+			out->populate_source_parameters(in);
+		}
+
+		PhenomPv3_Param_Transform(out, in);
+	}
 	if(generation_method.find("ppE") != std::string::npos){
 		out->Nmod = in->Nmod;
 		out->betappe = in->betappe;
@@ -1341,7 +1363,7 @@ std::string prep_source_parameters(source_parameters<T> *out, gen_params_base<T>
 	  else if((in->tidal1 >= 0 && in->tidal2>=0) ) {
 	    out->tidal1 = in->tidal1;
 	    out->tidal2 = in->tidal2;
-	    //arXiv 1402.5156
+	    //arXiv 1402.5156, Eqs (5) (tidal_weighted) and (6) (delta_tidal_weighted)
 	    out->tidal_weighted = 8./13. * ( (1. + 7.*out->eta - 31.*out->eta*out->eta)*(out->tidal1 + out->tidal2)
 					     + sqrt( 1. - 4.*out->eta ) * ( 1. + 9.*out->eta - 11. * out->eta*out->eta) * (out->tidal1 - out->tidal2) ) ;
 
@@ -1350,6 +1372,21 @@ std::string prep_source_parameters(source_parameters<T> *out, gen_params_base<T>
 										  * out->eta *out->eta*out->eta)*(out->tidal1-out->tidal2));
 		//debugger_print(__FILE__,__LINE__,out->tidal_weighted);
 		}
+	  // Dissipative tidal deformability
+          if((in->diss_tidal1 < 0 || in->diss_tidal2<0) && in->diss_tidal_weighted >= 0) {
+	    out->diss_tidal_weighted = in->diss_tidal_weighted;
+	  }
+	  else if((in->diss_tidal1 >= 0 && in->diss_tidal2>=0) ) {
+	    out->diss_tidal1 = in->diss_tidal1;
+	    out->diss_tidal2 = in->diss_tidal2;
+	    //arXiv 2306.15633, Eqs (13b) 
+	    out->diss_tidal_weighted =  
+               (2.0*pow(out->eta,2) - 4.0*out->eta + 1.0)*0.5*(out->diss_tidal1 + out->diss_tidal2) 
+               -
+               sqrt(1.0 - 4.0*out->eta)*(1.0 - 2.0*out->eta)*0.5*(out->diss_tidal1 - out->diss_tidal2) 
+                ;
+
+	  }
 	}
 	if(generation_method.find("EOS") != std::string::npos){
 	  out->bump_mag = in->bump_mag;

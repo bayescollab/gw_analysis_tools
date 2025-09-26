@@ -2,6 +2,7 @@
 #define WAVEFORM_UTIL_H
 #include "waveform_generator.h"
 #include "util.h"
+#include "quadrature.h"
 #include <string>
 #include <gsl/gsl_integration.h>
 
@@ -22,6 +23,15 @@ void create_coherent_GW_detection(
 	gen_params_base<T> *gen_params,
 	std::string generation_method,
 	std::complex<T> **responses);
+template <class T>
+void create_single_GW_detection(
+	std::complex<T> *response,	//< [out] Detector response \tilde{h}. Should be pre-allocated array of same length of frequencies
+	std::string detector,	//< Detector string name
+	T *frequencies,					//< Frequency array
+	int length,						//< Length of data (frequnecies and response)
+	gen_params_base<T> *gen_params,	//< Waveform parameters
+	std::string generation_method	//< Waveform generation method
+);
 template<class T>
 void create_coherent_GW_detection_reuse_WF(
 	std::string *detectors,
@@ -70,6 +80,14 @@ double calculate_snr_internal(double *psd,
 	std::string integration_method="SIMPSONS",
 	double *weights=NULL,
 	bool log10_freq=false);
+
+// SNR calculator with Quadrature method
+double calculate_snr_internal(
+	double *psd,
+	std::complex<double> *waveform,
+	const Quadrature *QuadMethod
+);
+
 double calculate_snr(std::string sensitivity_curve,
 	std::string detector,
 	std::string generation_method,
@@ -324,5 +342,17 @@ int threshold_times_full_gsl(gen_params_base<double> *params,
 	gsl_integration_workspace *w,
 	int np
 	);
-#endif
 
+// Time to merger in seconds, for circular binaries
+// Adapted from XLALSimInspiralTaylorF2ReducedSpinChirpTime
+double TaylorF2ReducedSpinChirpTime(
+	const double fStart,	//< Starting GW frequency in Hertz
+	const double m1,	//< Primary mass in solar units
+	const double m2,	//< Secondary mass in solar units
+	const double s1z,	//< Dimension-less primary aligned spin component
+	const double s2z,	//< Dimension-less secondary aligned spin component
+	const int PNO		//< Twice the PN phase order
+);
+
+
+#endif

@@ -11,6 +11,8 @@
 #include <gsl/gsl_errno.h>
 #include <mutex>
 #include "mcmc_sampler.h"
+#include "quadrature.h"
+#include "adaptivelikelihoods.h"
 /*! \file 
  *
  * Header file for the Graviational Wave specific MCMC routines
@@ -86,6 +88,15 @@ struct MCMC_modification_struct
 	int *fisher_length =NULL;
 	bool fisher_log10F = false;
 
+	// Quadrature method to be used for Fisher and likelihood calculations
+	// (unless an AdaptiveLikelihood is being used for the latter).
+	Quadrature *QuadMethod = NULL;
+	AdaptiveLikelihood *adaptivell = NULL;
+
+	// Refererence frequency for waveform generation.
+	// Not as trivial as you might think!
+	// Default: 20 Hz.
+	double f_ref = 20.;
 };
 
 static MCMC_modification_struct *mcmc_mod_struct;
@@ -110,6 +121,8 @@ struct MCMC_user_param
 	bool fisher_GAUSS_QUAD=false;
 	int *fisher_length =NULL;
 	bool fisher_log10F = false;
+
+	Quadrature *QuadMethod = NULL;
 		
 	//RJ stuff
 	double **mod_prior_ranges=NULL;
@@ -283,6 +296,11 @@ double Log_Likelihood_internal(std::complex<double> *data,
 			bool log10F,
 			std::string integration_method
 			);
+double Log_Likelihood_internal(std::complex<double> *data,
+	double *psd,
+	std::complex<double> *detector_response,
+	Quadrature *QuadMethod
+);
 
 double MCMC_likelihood_wrapper_SKYSEARCH(double *param, mcmc_data_interface *interface,void *parameters);
 void SkySearch_PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(mcmc_sampler_output *sampler_output,
@@ -482,7 +500,8 @@ double MCMC_likelihood_extrinsic(bool save_waveform,
 	std::string integration_method, 
 	bool log10F,
 	std::string *detectors, 
-	int num_detectors
+	int num_detectors,
+	Quadrature *QuadMethod = NULL
 	);
 
 void MCMC_fisher_wrapper(double *param,  double **output, mcmc_data_interface *interface ,void *parameters) ;

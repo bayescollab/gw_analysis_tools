@@ -17,6 +17,8 @@ struct priorData
 	double tidal1_prior[2];
 	double tidal2_prior[2];
 	double tidal_s_prior[2];
+	double diss_tidal1_prior[2];
+	double diss_tidal2_prior[2];
 	double EA_prior[6];
 	double RA_bounds[2];
 	double sinDEC_bounds[2];
@@ -28,7 +30,12 @@ struct priorData
 	double DL_prior[2];
 	double T_mcmc_gw_tool;
 	double T_merger; 
-	
+	double a1_prior[2];
+	double a2_prior[2];
+	double ctheta1_prior[2];
+	double ctheta2_prior[2];
+	double phi1_prior[2];
+	double phi2_prior[2];	
 };
 
 bool tidal_love_boundary_violation(double q,double lambda_s);
@@ -55,6 +62,14 @@ public:
 	virtual double eval(bayesship::positionInfo *position, int chainID);
 };
 
+class logPriorStandard_P: public bayesship::probabilityFn
+{
+public:
+	priorData *PD=nullptr;
+	logPriorStandard_P(priorData *PD){this->PD = PD;};
+	virtual double eval(bayesship::positionInfo *position, int chainID);
+};
+
 class logPriorStandard_D_NRT: public logPriorStandard_D
 {
 public:
@@ -76,10 +91,31 @@ public:
 	virtual double eval(bayesship::positionInfo *position, int chainID);
 };
 
+class logPriorStandard_P_mod: public logPriorStandard_P
+{
+public:
+	logPriorStandard_P_mod(priorData *PD): logPriorStandard_P(PD){this->PD = PD;};
+	virtual double eval(bayesship::positionInfo *position, int chainID);
+};
+
 class logPriorStandard_D_NRT_mod: public logPriorStandard_D_NRT
 {
 public:
 	logPriorStandard_D_NRT_mod(priorData *PD): logPriorStandard_D_NRT(PD){this->PD = PD;};
+	virtual double eval(bayesship::positionInfo *position, int chainID);
+};
+
+class logPriorStandard_P_NRT: public logPriorStandard_P
+{
+public:
+	logPriorStandard_P_NRT(priorData *PD): logPriorStandard_P(PD){this->PD = PD;};
+	virtual double eval(bayesship::positionInfo *position, int chainID);
+};
+
+class logPriorStandard_P_NRT_mod: public logPriorStandard_P_NRT
+{
+public:
+	logPriorStandard_P_NRT_mod(priorData *PD): logPriorStandard_P_NRT(PD){this->PD = PD;};
 	virtual double eval(bayesship::positionInfo *position, int chainID);
 };
 

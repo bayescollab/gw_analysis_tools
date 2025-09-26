@@ -1059,7 +1059,6 @@ void detector_response_functions_equatorial(std::string detector,/**< Detector *
 		//RA is azimuthal angle in equatorial
 		ecl_from_eq((T)( M_PI/2. - dec), ra, &theta_s, &phi_s);
 		for(int i =0 ; i<length; i++){
-
 			r_pat->Fplus[i]  = LISA_response_plus_time(theta_s,phi_s, theta_j_ecl,phi_j_ecl,LISA_alpha0,LISA_phi0, times[i]);
 			r_pat->Fcross[i]  = LISA_response_cross_time(theta_s,phi_s, theta_j_ecl,phi_j_ecl,LISA_alpha0,LISA_phi0, times[i]);
 		}
@@ -1078,6 +1077,34 @@ void detector_response_functions_equatorial(std::string detector,/**< Detector *
 		}	
 	}
 	//Time independent response functions
+	else if (detector=="static") // Generic static detector
+	{
+		// See Eqs. (B9)-(B10) of 10.1103/PhysRevD.63.042003
+		// Pre-compute common factors
+		T theta = M_PI_2 - dec;
+		T phi = ra - gmst;
+		T cosTheta = cos(theta);
+		T cosTwoPsi = cos(2*psi);
+		T sinTwoPsi = sin(2*psi);
+		// 1/2*(1+cos(\theta)^2)*cos(2\phi)
+		T fact1 = 0.5*(1+cosTheta*cosTheta)*cos(2*phi);
+		// -cos(\theta)*sin(2\phi)
+		T fact2 = -cosTheta*sin(2*phi);
+		// Compute the antenna patterns
+		*(r_pat->Fplus) = -fact1*cosTwoPsi + fact2*sinTwoPsi;
+		*(r_pat->Fcross) = fact1*sinTwoPsi + fact2*cosTwoPsi;
+
+		// Extra polarizations not yet implemented
+		if (r_pat->active_polarizations[2]\
+			|| r_pat->active_polarizations[3]\
+			|| r_pat->active_polarizations[4] \
+			|| r_pat->active_polarizations[5])
+		{
+			std::cerr << "ERROR: Extra polarizations not available for this detector.\n";
+			exit(1);
+		}
+		
+	}
 	else{
 		double responseM[3][3];
 		if(detector =="Hanford" || detector=="hanford"){

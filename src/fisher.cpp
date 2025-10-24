@@ -1934,7 +1934,8 @@ void unpack_parameters(double *parameters, gen_params_base<double> *input_params
 
 		}
 		else if(generation_method.find("IMRPhenomD") != std::string::npos){
-			if(generation_method.find("MCMC") != std::string::npos){
+			if ((generation_method.find("MCMC") != std::string::npos) && !(generation_method.find("EOS") != std::string::npos))
+			{
 				for(int i = 0 ; i<dimension; i++){
 					log_factors[i] = false;
 				}
@@ -1958,7 +1959,6 @@ void unpack_parameters(double *parameters, gen_params_base<double> *input_params
 					input_params->mass2);
 				parameters[9]=input_params->spin1[2];
 				parameters[10]=input_params->spin2[2];
-
 			}
 			else if(generation_method.find("EOS") != std::string::npos){
 			  for(int i = 0 ; i<dimension; i++){

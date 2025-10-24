@@ -1764,50 +1764,56 @@ bayesship::bayesshipSampler *  PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
 
 void RJPTMCMC_method_specific_prep_v2(std::string generation_method, int dimension, bool *intrinsic,MCMC_modification_struct *mod_struct)
 {
-	int totalmod = (mod_struct->gIMR_Nmod_phi + mod_struct->gIMR_Nmod_sigma + mod_struct->gIMR_Nmod_beta + mod_struct->gIMR_Nmod_alpha  + mod_struct->ppE_Nmod);
-	if(generation_method.find("EA") != std::string::npos){totalmod+=3;}
-	debugger_print(__FILE__,__LINE__,totalmod);
-	if(generation_method.find("PhenomD") != std::string::npos && (dimension - totalmod) == 4)
+	int totalmod = (mod_struct->gIMR_Nmod_phi + mod_struct->gIMR_Nmod_sigma + mod_struct->gIMR_Nmod_beta + mod_struct->gIMR_Nmod_alpha + mod_struct->ppE_Nmod);
+	if (generation_method.find("EA") != std::string::npos)
 	{
-		std::cout<<"Sampling in parameters: ln chirpmass, eta, chi1, chi2";
-		for(int i =0; i<totalmod; i++){
-			std::cout<<", mod_"<<i;
+		totalmod += 3;
+	}
+	debugger_print(__FILE__, __LINE__, totalmod);
+	if (generation_method.find("PhenomD") != std::string::npos && (dimension - totalmod) == 4)
+	{
+		std::cout << "Sampling in parameters: ln chirpmass, eta, chi1, chi2";
+		for (int i = 0; i < totalmod; i++)
+		{
+			std::cout << ", mod_" << i;
 		}
-		std::cout<<std::endl;
-		*intrinsic=true;
-	} 
-	else if(generation_method.find("PhenomD_NRT") != std::string::npos && (dimension - totalmod) == 6)
+		std::cout << std::endl;
+		*intrinsic = true;
+	}
+	else if (generation_method.find("PhenomD_NRT") != std::string::npos && (dimension - totalmod) == 6)
 	{
-		std::cout<<"Sampling in parameters: ln chirpmass, eta, chi1, chi2, ln tidal1,  ln tidal2";
-		for(int i =0; i<totalmod; i++){
-			std::cout<<", mod_"<<i;
+		std::cout << "Sampling in parameters: ln chirpmass, eta, chi1, chi2, ln tidal1,  ln tidal2";
+		for (int i = 0; i < totalmod; i++)
+		{
+			std::cout << ", mod_" << i;
 		}
-		std::cout<<std::endl;
-		*intrinsic=true;
-	} 
-	else if((generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos)
-		&& (dimension - totalmod) == 8)
+		std::cout << std::endl;
+		*intrinsic = true;
+	}
+	else if ((generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos) && (dimension - totalmod) == 8)
 	{
-		std::cout<<"Sampling in parameters: ln chirpmass, eta, a1, a2, tilt1, tilt2, phi1, phi2";
-		for(int i =0; i<totalmod; i++){
-			std::cout<<", mod_"<<i;
+		std::cout << "Sampling in parameters: ln chirpmass, eta, a1, a2, tilt1, tilt2, phi1, phi2";
+		for (int i = 0; i < totalmod; i++)
+		{
+			std::cout << ", mod_" << i;
 		}
-		std::cout<<std::endl;
-		*intrinsic=true;
-	} 
-	else if(generation_method.find("PhenomD") != std::string::npos && (dimension - totalmod) == 11)
+		std::cout << std::endl;
+		*intrinsic = true;
+	}
+	else if (generation_method.find("PhenomD") != std::string::npos && (dimension - totalmod) == 11)
 	{
-		std::cout<<"Sampling in parameters: RA, sin DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2"<<std::endl;
-		for(int i =0; i<totalmod; i++){
-			std::cout<<", mod_"<<i;
+		std::cout << "Sampling in parameters: RA, sin DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2" << std::endl;
+		for (int i = 0; i < totalmod; i++)
+		{
+			std::cout << ", mod_" << i;
 		}
-		std::cout<<std::endl;
-		*intrinsic=false;
-	} 
-	else if(generation_method.find("PhenomD_NRT") != std::string::npos)
+		std::cout << std::endl;
+		*intrinsic = false;
+	}
+	else if (generation_method.find("PhenomD_NRT") != std::string::npos)
 	{
-	  if((dimension - totalmod) == 13)
-	    {
+		if ((dimension - totalmod) == 13)
+		{
 			std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2, ln tidal1, ln tidal2" << std::endl;
 			for (int i = 0; i < totalmod; i++)
 			{
@@ -1816,50 +1822,50 @@ void RJPTMCMC_method_specific_prep_v2(std::string generation_method, int dimensi
 			std::cout << std::endl;
 			*intrinsic = false;
 		}
-		} 
-	  else if((dimension - totalmod) == 12)
-	    {
-			std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2, ln tidal_s" << std::endl;
-			for (int i = 0; i < totalmod; i++)
-			{
-				std::cout << ", mod_" << i;
-			}
-			std::cout << std::endl;
-			mcmc_intrinsic = false;
-		}
-		else if (generation_method.find("EOS") != std::string::npos && (dimension - totalmod) == 14)
+	}
+	else if ((dimension - totalmod) == 12)
+	{
+		std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2, ln tidal_s" << std::endl;
+		for (int i = 0; i < totalmod; i++)
 		{
-			std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota, phi_ref, tc,  ln DL, nbc1, nbc2, chi1, chi2, bump_mag, bump_width, bump_offset" << std::endl;
-			for (int i = 0; i < totalmod; i++)
-			{
-				std::cout << ", mod_" << i;
-			}
-			std::cout << std::endl;
-			*intrinsic = false;
+			std::cout << ", mod_" << i;
 		}
-		else if (generation_method.find("EOS") != std::string::npos && (dimension - totalmod) == 15)
+		std::cout << std::endl;
+		mcmc_intrinsic = false;
+	}
+	else if (generation_method.find("EOS") != std::string::npos && (dimension - totalmod) == 14)
+	{
+		std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota, phi_ref, tc,  ln DL, nbc1, nbc2, chi1, chi2, bump_mag, bump_width, bump_offset" << std::endl;
+		for (int i = 0; i < totalmod; i++)
 		{
-			std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota, phi_ref, tc,  ln DL, nbc1, nbc2, chi1, chi2, bump_mag, bump_width, bump_offset, plat" << std::endl;
-			for (int i = 0; i < totalmod; i++)
-			{
-				std::cout << ", mod_" << i;
-			}
-			std::cout << std::endl;
-			*intrinsic = false;
+			std::cout << ", mod_" << i;
 		}
+		std::cout << std::endl;
+		*intrinsic = false;
+	}
+	else if (generation_method.find("EOS") != std::string::npos && (dimension - totalmod) == 15)
+	{
+		std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota, phi_ref, tc,  ln DL, nbc1, nbc2, chi1, chi2, bump_mag, bump_width, bump_offset, plat" << std::endl;
+		for (int i = 0; i < totalmod; i++)
+		{
+			std::cout << ", mod_" << i;
+		}
+		std::cout << std::endl;
+		*intrinsic = false;
 	}
 	else if ((generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos) && (dimension - totalmod) == 15)
 	{
-		std::cout<<"Sampling in parameters: RA, sin DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, a1, a2,cos tilt1, cos tilt2, phi1, phi2"<<std::endl;
-		for(int i =0; i<totalmod; i++){
-			std::cout<<", mod_"<<i;
+		std::cout << "Sampling in parameters: RA, sin DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, a1, a2,cos tilt1, cos tilt2, phi1, phi2" << std::endl;
+		for (int i = 0; i < totalmod; i++)
+		{
+			std::cout << ", mod_" << i;
 		}
-		std::cout<<std::endl;
-		*intrinsic=false;
-	} 
-	else{
-		std::cout<<
-			"Input parameters not valid, please check that input is compatible with the supported methods - dimension combinations"<<std::endl;
+		std::cout << std::endl;
+		*intrinsic = false;
+	}
+	else
+	{
+		std::cout << "Input parameters not valid, please check that input is compatible with the supported methods - dimension combinations" << std::endl;
 		exit(1);
 	}
 }
@@ -1919,25 +1925,50 @@ void PTMCMC_method_specific_prep_v2(std::string generation_method, int dimension
 		}
 		std::cout<<std::endl;
 		*intrinsic=false;
-	} 
-	else if(generation_method.find("PhenomD_NRT") != std::string::npos && (dimension - totalmod) == 13)
+	}
+	else if (generation_method.find("PhenomD_NRT") != std::string::npos)
 	{
-		std::cout<<"Sampling in parameters: RA, sin  DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2, ln tidal1, ln tidal2"<<std::endl;
-		for(int i =0; i<totalmod; i++){
-			std::cout<<", mod_"<<i;
+		if ((dimension - totalmod) == 13)
+		{
+			std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2, ln tidal1, ln tidal2" << std::endl;
+			for (int i = 0; i < totalmod; i++)
+			{
+				std::cout << ", mod_" << i;
+			}
+			std::cout << std::endl;
+			*intrinsic = false;
 		}
-		std::cout<<std::endl;
-		*intrinsic=false;
-	} 
-	else if(generation_method.find("PhenomD_NRT") != std::string::npos && (dimension - totalmod) == 12)
-	{
-		std::cout<<"Sampling in parameters: RA, sin  DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2, ln tidal_s"<<std::endl;
-		for(int i =0; i<totalmod; i++){
-			std::cout<<", mod_"<<i;
+		else if ((dimension - totalmod) == 12)
+		{
+			std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2, ln tidal_s" << std::endl;
+			for (int i = 0; i < totalmod; i++)
+			{
+				std::cout << ", mod_" << i;
+			}
+			std::cout << std::endl;
+			mcmc_intrinsic = false;
 		}
-		std::cout<<std::endl;
-		mcmc_intrinsic=false;
-	} 
+		else if (generation_method.find("EOS") != std::string::npos && (dimension - totalmod) == 14)
+		{
+			std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota, phi_ref, tc,  ln DL, nbc1, nbc2, chi1, chi2, bump_mag, bump_width, bump_offset" << std::endl;
+			for (int i = 0; i < totalmod; i++)
+			{
+				std::cout << ", mod_" << i;
+			}
+			std::cout << std::endl;
+			*intrinsic = false;
+		}
+		else if (generation_method.find("EOS") != std::string::npos && (dimension - totalmod) == 15)
+		{
+			std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota, phi_ref, tc,  ln DL, nbc1, nbc2, chi1, chi2, bump_mag, bump_width, bump_offset, plat" << std::endl;
+			for (int i = 0; i < totalmod; i++)
+			{
+				std::cout << ", mod_" << i;
+			}
+			std::cout << std::endl;
+			*intrinsic = false;
+		}
+	}
 	else if(generation_method.find("PhenomPv2") != std::string::npos && (dimension - totalmod) == 15)
 	{
 		std::cout<<"Sampling in parameters: RA, sin DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, a1, a2,cos tilt1, cos tilt2, phi1, phi2"<<std::endl;

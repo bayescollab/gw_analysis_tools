@@ -181,6 +181,7 @@ void IMRPhenomD_NRT_EOS<T>::inject_cs2_bump(
 {
 	// Specifies the filepath to read the EOS data file
 	string filename = "/opt/gw_analysis_tools/data/eos.csv";
+
 	// Initializes a vector to read EOS file data.
 	vector<vector<double>> fileRead;
 
@@ -208,11 +209,11 @@ void IMRPhenomD_NRT_EOS<T>::inject_cs2_bump(
 	// The SLy EOS table does not interpolate well for values below 0.5 nsat.
 	// As such, we define a cutoff point at 0.5 nsat in baryon number density and interpolate values above (since the nb values are sparse)
 
-	double nsat = 0.16;				  // Defining nsat in fm^-3
-	double nb_split_val = 0.5 * nsat; // Defining cut-off value
-	auto nb_end1 = eos_params.nbc1;	  // Getting upper limit of nb values for star 1
-	auto nb_end2 = eos_params.nbc2;	  // Getting upper limit of nb values for star 2
-	double steps = 0.005;			  // Defining step-size for interpolation in fm^-3 units
+	double nsat = 0.16;					   // Defining nsat in fm^-3
+	double nb_split_val = 0.5 * nsat;	   // Defining cut-off value
+	auto nb_end1 = eos_params.nbc1 * nsat; // Getting upper limit of nb values for star 1
+	auto nb_end2 = eos_params.nbc2 * nsat; // Getting upper limit of nb values for star 2
+	double steps = 0.0001;				   // Defining step-size for interpolation in fm^-3 units
 
 	// Defining vectors to store new split values for star 1 and star 2
 
@@ -228,6 +229,13 @@ void IMRPhenomD_NRT_EOS<T>::inject_cs2_bump(
 
 	// Get greater of the two nbc values, and use this to initialize star 1 and star 2 vectors simultaneously
 	auto split_limit = std::max(nb_end1, nb_end2);
+
+	// If end limit is greater than the end of the EOS table, set split limit to be max of the EOS table.
+	// NOTE: This is to prevent segmentation faults with interpolation! Be careful about changing this!
+	if(split_limit >= EOSvectors[4].back())
+	{
+		throw std::invalid_argument("In inject_cs2_bump in src/IMRPhenomD_NRT_EOS.cpp: Encountered central baryon number density greater than the max value given in the EOS table.");
+	}
 
 	// Defining new nb vector and getting the interpolated values for epsilon and pressure
 	// IMPORTANT: Baryon number density values are converted to MeV, based on assumptions of cs2_to_eos_convert
@@ -257,9 +265,9 @@ void IMRPhenomD_NRT_EOS<T>::inject_cs2_bump(
 
 	// Get bump parameters from gen_params structure
 	// IMPORTANT: Bump parameters based on baryon number density values are assumed to be given in units of fm^-3
-	double offset = conversion_fm3_to_MeV(eos_params.bump_offset);
+	double offset = conversion_fm3_to_MeV(eos_params.bump_offset * nsat);
 	double magnitude = eos_params.bump_mag;
-	double width = conversion_fm3_to_MeV(eos_params.bump_width);
+	double width = conversion_fm3_to_MeV(eos_params.bump_width * nsat);
 	double plateau = eos_params.plat;
 
 	// Get new cs2 curve with bump
@@ -686,6 +694,13 @@ void Interpolation::initialize(gsl_interp_type *interp_type, vector<double> x, v
 
 	// Initializing GSL spline with given data points (x, y) and size
 	gsl_spline_init(spline, x.data(), y.data(), size);
+
+	int status = gsl_spline_init(spline, x.data(), y.data(), size);
+	if (status != GSL_SUCCESS)
+	{
+		std::cerr << "gsl_spline_init failed: " << gsl_strerror(status) << "\n";
+		std::exit(EXIT_FAILURE);
+	}
 }
 
 // Function to calculate interpolated y value for a given x using GSL spline

@@ -117,20 +117,6 @@ void fisher_autodiff_gq_internal(double *frequency,
 	int *phase_tapes = NULL,
 	double *noise = NULL
 	);
-void fisher_autodiff_interp(double *frequency, 
-	int length,
-	string generation_method, 
-	string detector, 
-	string reference_detector, 
-	double **output,
-	int dimension, 
-	//double *parameters,
-	gen_params *parameters,
-	int downsampling_factor	,
-	int *amp_tapes = NULL,
-	int *phase_tapes = NULL,
-	double *noise = NULL
-	);
 
 void fisher_autodiff_batch_mod(double *frequency, 
 	int length,

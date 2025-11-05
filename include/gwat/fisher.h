@@ -171,14 +171,7 @@ void time_phase_corrected_derivative_autodiff_full_hess(double **dt,
 	std::string generation_method, 
 	int dimension, 
 	bool correct_time);
-template <class T>
-void time_phase_corrected_derivative_numerical(T **dt, 
-	int length, 
-	T *frequencies,
-	gen_params_base<T> *params, 
-	std::string generation_method, 
-	int dimension, 
-	bool correct_time);
+
 void time_phase_corrected_derivative_autodiff_numerical(double **dt, int length, double *frequencies,gen_params_base<double> *params, std::string generation_method, int dimension, bool correct_time);
 
 std::string local_generation_method(std::string generation_method);

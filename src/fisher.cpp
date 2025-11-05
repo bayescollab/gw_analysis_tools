@@ -362,17 +362,12 @@ void calculate_derivatives(std::complex<double>  **response_deriv,
 		std::complex<double> *response_minus= new std::complex<double>[length];
 		std::complex<double> *response_plus_plus;
 		std::complex<double> *response_minus_minus;
-		double *times=NULL;
-		double **dt=NULL;
-		bool corr_time;
+		double *times=NULL; // deprecated - assigned in previously used detector == "LISA" block
+		double **dt=NULL; // deprecated - assigned in previously used detecotr == "LISA" block
 		int local_dimension=dimension;
 		double DTOA = 0;
 		if(detector=="LISA"){
-			times = new double[length];
-			corr_time = false;
-			time_phase_corrected(times, length, frequencies,parameters, gen_method, false);
-			dt = allocate_2D_array(dimension, length);
-			time_phase_corrected_derivative_numerical(dt, length, frequencies,parameters, gen_method, dimension, corr_time);
+			std::cerr << "Detector == LISA but there is no LISA functionality.\n";
 		}
 		if(order >=4){
 			response_plus_plus= new std::complex<double>[length];
@@ -806,8 +801,7 @@ void calculate_derivatives_autodiff(double *frequency,
 		}
 		eval_times = new double[length];
 		time_phase_corrected_autodiff(eval_times, length, frequency, parameters, generation_method, false);
-		
-		std::cerr << "Detector == LISA but there is no LISA functionality.\n";	
+			
 	}
 	//calculate_derivative tapes
 	int tapes[boundary_num];
@@ -1133,219 +1127,6 @@ void time_phase_corrected_derivative_autodiff_full_hess(double **dt, int length,
 	}
 
 }
-/*! \brief Computes the derivative of the phase w.r.t. source parameters AS DEFINED BY FISHER FILE -- hessian of the phase -- numerical 
- *
- * IN PROGRESS -- DO NOT USE
- *
- * If specific derivatives need to taken, take this routine as a template and write it yourself.
- *
- * The dt array has shape [dimension+1][length] (dimension + 1 for the frequency derivative, so dimension should only include the (full) source parameters)
- *
- */
-template<class T>
-void time_phase_corrected_derivative_numerical(T **dt, int length, T *frequencies,gen_params_base<T> *params, std::string generation_method, int dimension, bool correct_time)
-{
-	//bool save_shift_time = params->shift_time;
-	//params->shift_time = false;
-	//std::string local_gen = "IMRPhenomD";
-	std::string local_gen=generation_method;
-	//################################################
-	T *phase_pp = new T[length];//source param plus
-	T *phase_cross = new T[length];
-	T *phase_pm = new T[length];//source param minus
-	bool log_factors[dimension];
-	T *parameters_vec = new T[dimension];
-	T *param_p = new T[dimension];
-	T *param_m = new T[dimension];
-	double epsilon = 1e-6;
-	T deltaf = frequencies[1]-frequencies[0];
-	lambda_parameters<T> lambda;
-	source_parameters<T> s_param;
-	//################################################
-	//
-	//################################################
-	//std::string local_gen_method = local_generation_method(gen_method);
-	unpack_parameters(parameters_vec, params, generation_method, dimension, log_factors);
-	//##########################################################
-	for (int k =0; k<dimension; k++){
-		for( int j =0;j<dimension;j++){
-			param_p[j] = parameters_vec[j] ;
-			param_m[j] = parameters_vec[j] ;
-		}
-		param_p[k] = parameters_vec[k] + epsilon;
-		param_m[k] = parameters_vec[k] - epsilon;
-		gen_params waveform_params;
-		repack_non_parameter_options(&waveform_params,params, generation_method);
-		repack_parameters(param_p, &waveform_params, generation_method, dimension, params);
-		fourier_phase(frequencies, length, phase_pp, phase_cross, local_gen, &waveform_params);
-
-		repack_parameters(param_m, &waveform_params, generation_method, dimension, params);
-		fourier_phase(frequencies, length, phase_pm, phase_cross, local_gen, &waveform_params);
-		//################################################
-		T fRD, fdamp,fpeak;
-		if(local_gen.find("IMRPhenomPv2")!=std::string::npos){
-			IMRPhenomPv2<T> modelp;
-			//s_param = source_parameters<T>::populate_source_parameters(params);
-			s_param.populate_source_parameters(params);
-			s_param.spin1z = params->spin1[2];
-			s_param.spin2z = params->spin2[2];
-			s_param.chip = params->chip;
-			s_param.phip = params->phip;
-			s_param.phiRef = params->phiRef;
-			s_param.f_ref = params->f_ref;
-			s_param.incl_angle = params->incl_angle;
-			modelp.PhenomPv2_Param_Transform_reduced(&s_param);
-			s_param.sky_average = params->sky_average;
-			s_param.cosmology=params->cosmology;
-			modelp.assign_lambda_param(&s_param,&lambda);	
-			modelp.post_merger_variables(&s_param);
-			fRD = s_param.fRD;
-			fdamp = s_param.fdamp;
-			fpeak = modelp.fpeak(&s_param , &lambda);
-		}
-		else if(local_gen.find("IMRPhenomPv3")!=std::string::npos)
-		{
-			IMRPhenomPv3<T> modelp;
-
-			if (params->mass1 < params->mass2)
-			{
-				PhenomPrecessingSpinEnforcePrimary(&(params->mass1), &(params->mass2),
-				&(params->spin1[0]), &(params->spin1[1]), &(params->spin1[2]),
-				&(params->spin2[0]), &(params->spin2[1]), &(params->spin2[2]));
-			}
-
-			s_param.populate_source_parameters(params);
-			s_param.spin1z = params->spin1[2];
-			s_param.spin2z = params->spin2[2];
-			s_param.chip = params->chip;
-			s_param.phip = params->phip;
-			s_param.phiRef = params->phiRef;
-			s_param.f_ref = params->f_ref;
-			s_param.incl_angle = params->incl_angle;
-			PhenomPv3_Param_Transform(&s_param, params);
-
-			s_param.sky_average = params->sky_average;
-			s_param.cosmology = params->cosmology;
-			modelp.assign_lambda_param(&s_param,&lambda);	
-			modelp.post_merger_variables(&s_param);
-			fRD = s_param.fRD;
-			fdamp = s_param.fdamp;
-			fpeak = modelp.fpeak(&s_param , &lambda);
-		}
-		else if(local_gen.find("IMRPhenomD")!=std::string::npos){
-			IMRPhenomD<T> model;
-			//s_param = source_parameters<T>::populate_source_parameters(params);
-			s_param.populate_source_parameters(params);
-			s_param.sky_average = params->sky_average;
-			s_param.f_ref = params->f_ref;
-			s_param.phiRef = params->phiRef;
-			s_param.cosmology=params->cosmology;
-			s_param.incl_angle=params->incl_angle;
-			model.assign_lambda_param(&s_param,&lambda);	
-			model.post_merger_variables(&s_param);
-			fRD = s_param.fRD;
-			fdamp = s_param.fdamp;
-			fpeak = model.fpeak(&s_param , &lambda);
-		}
-		//################################################
-		//Factor of 2 pi for the definition of time from frequency
-		//if(local_gen == "IMRPhenomD"){
-		if(local_gen.find("IMRPhenom")!=std::string::npos){
-			//Currently using Nico's fix
-			if(correct_time){
-				//T f = frequencies[0];
-				//bool check = true, check2=true;
-				//T pt1, pt2, f1,f2;
-				//int i = 0 ;
-				////One sided, to start it off
-				//dt[k][0] = (phase_plus[1]-phase_plus[0])/(2.*M_PI*deltaf);
-				//i++;
-				//while(f < .95*fRD && i<length-1)
-				//{
-				//	f = frequencies[i];
-				//	//central difference for the rest of the steps
-				//	dt[i] = (phase_plus[i+1]-phase_plus[i-1])/(4.*M_PI*deltaf);
-				//	if(check){
-				//		if(f>fpeak){
-				//			pt1 = dt[k][i];
-				//			f1 = f;
-				//			check=false;
-				//		}
-				//	}
-				//	else{
-				//		if(check2){
-				//			if(f>.9*fRD){
-				//				pt2 = dt[k][i];
-				//				f2 = f;
-				//				check2=false;
-				//			}
-				//		}
-				//	}
-				//	i++;
-				//}	
-				//T f_intercept = dt[k][i-1];
-				//T f_mr = f;
-				//T freq_slope_pm = (pt2-pt1)/(f2-f1);
-				//while(f<1.5*fRD && i<length-1)
-				//{
-				//	f = frequencies[i];
-				//	dt[k][i] =f_intercept+ (f-f_mr)*freq_slope_pm;
-				//	//Stop if observation goes past 20 years
-				//	i++;
-				//	if(dt[k][i-1]>(params->tc+630720000)){
-				//		break;
-				//	}
-
-				//}
-				//T time_transition = dt[k][i-1];
-				//T f_transition = f;
-				//while(i<length-1)
-				//{
-				//	f = frequencies[i];
-				//	dt[k][i] = time_transition +pow_int(f-f_transition,2);
-				//	//Stop if observation goes past 20 years
-				//	i++;
-				//	if(dt[k][i-1]>(params->tc+630720000)){
-				//		break;
-				//	}
-				//	
-				//}
-				////if stopped at 20 years, fill out with frozen time
-				//if(i != length){
-				//	while(i<length){
-				//		dt[k][i] = dt[k][i-1];
-				//		i++;
-				//	}
-				//}
-				//else{
-				//	dt[k][length-1] = (phase_plus[length-1] - phase_plus[length-2])/(2*M_PI*deltaf);
-				//}
-			}
-			else{
-				//dt[k][0] = (phase_pp[1]-phase_pm[1]-phase_pp[0] + phase_pm[0])/(8*M_PI*deltaf * epsilon);
-				if(length>2){
-					for(int i = 1  ;i<length-1; i++){
-						dt[k][i] = (phase_pp[i+1] - phase_pm[i+1] -phase_pp[i-1]+phase_pm[i-1])/(8*M_PI*deltaf*epsilon);
-					}
-				//dt[k][length-1] = (phase_pp[length-1]-phase_pm[length-1]-phase_pp[length-2]+phase_pm[length-2])/(4*M_PI*deltaf*epsilon);
-					//YES THIS IS WRONG
-					dt[k][length-1] = dt[k][length-2];
-					dt[k][0] = dt[k][1];
-				
-				}
-			}
-		}
-	}
-	//################################################
-	delete [] phase_pp;
-	delete [] phase_pm;
-	delete [] phase_cross;
-	delete [] param_p;
-	delete [] param_m;
-	delete [] parameters_vec;
-	//params->shift_time = save_shift_time;
-}
-template void time_phase_corrected_derivative_numerical<double>(double **, int, double *, gen_params_base<double> *, std::string, int, bool);
 /*! \brief Utility for mapping generation method string to one accepted by the waveform_generation routines
  *
  * Certain combinations of parameters are labeled by generation method strings not under the waveform_generation routines, so a transformation is needed

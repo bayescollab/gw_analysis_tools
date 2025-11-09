@@ -363,7 +363,6 @@ void calculate_derivatives(std::complex<double>  **response_deriv,
 		std::complex<double> *response_plus_plus;
 		std::complex<double> *response_minus_minus;
 		double *times=NULL; // deprecated - assigned in previously used detector == "LISA" block
-		double **dt=NULL; // deprecated - assigned in previously used detecotr == "LISA" block
 		int local_dimension=dimension;
 		double DTOA = 0;
 		if(detector=="LISA"){
@@ -501,55 +500,13 @@ void calculate_derivatives(std::complex<double>  **response_deriv,
 				
 		}
 		if (detector=="LISA"){
-		//if (false){
-			//Calculate derivative wrt time of waveform
-			repack_parameters(param_p, 
-				&waveform_params, 
-				gen_method, 
-				dimension, 
-				parameters);
-			fourier_detector_response(frequencies, 
-				length,
-				response_plus,
-				detector,
-				local_gen_method,
-				&waveform_params,
-				times);	
-			std::complex<double> *deriv_t = new std::complex<double>[length];
-			//deriv_t[0] = (response_plus[1] - response_plus[0])/(times[1]-times[0]);
-			//One sided difference for now, because the difference 
-			//in time is not constant 
-			//(central difference depends on symmetric spacing?
-			for(int i = 0 ; i<length-1; i++){
-				double dt = times[i+1]-times[i];
-				if(dt >0){
-					deriv_t[i] = 
-						(response_plus[i+1]-response_plus[i])/(times[i+1]-times[i]);
-				}
-				else{
-					deriv_t[i]=0;
-				}
-				
-				//std::cout<<deriv_t[i]<<std::endl;
-			}
-			deriv_t[length-1] = 
-				(response_plus[length-1]-response_plus[length-2])/(times[length-1]-times[length-2]);
-			for(int i = 0 ; i<dimension; i++){
-				for(int j = 0 ; j<length; j++){
-					response_deriv[i][j]+=deriv_t[j] * dt[i][j];
-					//response_deriv[i][j]+=deriv_t[j] * dt[i+1][j];
-				}
-			}
-			//do chain rule with dt above
-			
-			delete [] deriv_t;
+			std::cerr << "Detector == LISA but there is no LISA functionality.\n";
 		}
 
 		delete [] response_plus;
 		delete [] response_minus;
 		if(detector=="LISA"){
-			delete [] times;
-			deallocate_2D_array(dt, dimension, length);
+			std::cerr << "Detector == LISA but there is no LISA functionality.\n";
 		}
 		if(order>=4){
 			delete [] response_plus_plus;

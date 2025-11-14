@@ -80,7 +80,6 @@ void test40();
 void test41();
 void test42();
 void test43();
-//void test44(); reliant on mc_reject which is now no longer used
 void test45();
 void test46();
 void test47();
@@ -1047,23 +1046,7 @@ void test53()
 
 	double f_lower = 1e-4;
 	double f_upper = 1;
-	//int length = (f_upper-f_lower)*T_obs;
-	//double *freqs = new double[length];
-	//double *SN = new double[length];
-	//for(int i = 0 ; i<length; i++){
-	//	freqs[i] = f_lower + i / T_obs;
-	//}
-	//populate_noise(freqs, "LISA_SADC_CONF", SN, length,4*12);
-	//for(int i = 0 ; i<length; i++){
-	//	SN[i]=SN[i]*SN[i];	
-	//}
 
-	//clock_t start;
-	//std::cout<<"Calculating Threshold times: "<<std::endl;
-	//start = clock();
-	//threshold_times(&params, "IMRPhenomD", T_obs, T_wait, freqs, SN, length, SNR_thresh, times, tolerance);
-	//std::cout<<"TIME: "<<(double)(clock() - start)/CLOCKS_PER_SEC<<std::endl;
-	//std::cout<<"TIMES: "<<times[0]/T_year<<" "<<times[1]/T_year<<std::endl;
 
 	gsl_integration_workspace *w = gsl_integration_workspace_alloc(1000);
 	params.sky_average=true;	
@@ -1557,32 +1540,6 @@ void test45()
 	delete [] freqs;
 	delete [] psds;
 }
-// * reliant on mc_reject which is no longer used
-// void test44()
-// {
-// 	int dim = 3;
-// 	int threads = 4;
-// 	bool thread_safe = true;
-// 	double param_ranges_max[dim];
-// 	double param_ranges_min[dim];
-// 	param_ranges_max[0]=10;
-// 	param_ranges_max[1]=10;
-// 	param_ranges_max[2]=10;
-// 	param_ranges_min[0]=-10;
-// 	param_ranges_min[1]=-10;
-// 	param_ranges_min[2]=-10;
-// 	mcr_sampler sampler(test_prob, NULL,dim, param_ranges_max, param_ranges_min, threads, thread_safe);
-// 	int N_samples = 1e4-1;
-// 	double **output = allocate_2D_array(N_samples, dim);
-
-// 	sampler.sample_distribution(N_samples, (void **)output);
-// 	//for(int i = 0 ;i<10; i++){
-// 	//	std::cout<<output[i][0]<<" "<<output[i][1]<<" "<<output[i][2]<<std::endl;
-// 	//}
-// 	write_file("testing/data/mcr_sampling.dat",output, N_samples,dim);
-	
-// 	deallocate_2D_array(output, N_samples, dim);
-// }
 void test_prob(double *prob, void *param, int d, int thread_id)
 {
 	double *internal_param = (double *)param;

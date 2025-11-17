@@ -402,16 +402,6 @@ int main(int argc, char *argv[])
 	      EA_prior[5]=dbl_dict["EA c_w maximum"];
 	    }
 	  
-	    /*
-	      if(dbl_dict.find("EA c_sigma minimum") == dbl_dict.end()){
-	      EA_prior[6]=-pow(10,-15.);
-	      EA_prior[7]=pow(10,-15.);
-	      }
-	      else{
-	      EA_prior[6]=dbl_dict["EA c_sigma minimum"];
-	      EA_prior[7]=dbl_dict["EA c_sigma maximum"];
-	      }
-	    */
 	    std::cout<<"Range of EA c_a: "<<EA_prior[0]<<" - "<<EA_prior[1]<<std::endl;
 	    std::cout<<"Range of EA c_theta: "<<EA_prior[2]<<" - "<<EA_prior[3]<<std::endl;
 	    std::cout<<"Range of EA c_w: "<<EA_prior[4]<<" - "<<EA_prior[5]<<std::endl;
@@ -458,21 +448,7 @@ int main(int argc, char *argv[])
 	
 
 	allocate_LOSC_data(detector_files, psd_file, detector_N, psd_length, data_length, gps_time,post_merger_duration, data, psd, freqs);
-	//########################################################################
-	//TEST
-	//for(int i = 0 ; i<detector_N; i++){
-	//	for(int j =0 ; j<psd_length; j++){
-	//		psd[i][j]=unpack1[j][i+1];
-	//		data[i][j]=std::complex<double>(unpack2[j][2*i+1],unpack2[j][2*i+2]);
-	//		freqs[i][j]= unpack1[j][0];
-	//		//std::cout<<unpack1[j][1]<<std::endl;
-	//		//std::cout<<unpack2[j][4]<<std::endl;
-	//		//std::cout<<unpack1[1][j]<<std::endl;
-	//	}	
-	//}
-	//freqs[0][0]=.0001;
-	//freqs[1][0]=.0001;
-	//########################################################################
+
 	std::cout<<"DATA loaded"<<std::endl;
 
 	T_mcmc_gw_tool = 1./(freqs[0][2]-freqs[0][1]);
@@ -491,49 +467,6 @@ int main(int argc, char *argv[])
 		data_lengths[i] =psd_length;
 	}
 
-
-	//double **output_test = allocate_2D_array(psd_length, 10 );
-	//
-	//for(int i = 0 ; i<psd_length; i++)
-	//{
-	//	output_test[i][0] = freqs[0][i];	
-	//	output_test[i][1] = psd[0][i];	
-	//	output_test[i][2] = psd[1][i];	
-	//	output_test[i][3] = psd[2][i];	
-	//	output_test[i][4] =real( data[0][i]);	
-	//	output_test[i][5] =imag( data[0][i]);	
-	//	output_test[i][6] =real( data[1][i]);	
-	//	output_test[i][7] =imag( data[1][i]);	
-	//	output_test[i][8] =real( data[2][i]);	
-	//	output_test[i][9] =imag( data[2][i]);	
-	//}
-	//write_file("data/processed_data.csv",output_test,psd_length,10);
-	//deallocate_2D_array(output_test,psd_length,10);
-	
-
-	//#############################################################
-	//#############################################################
-	
-	//double **whitened = allocate_2D_array(data_lengths[0],10);
-	//for(int i = 0 ; i<data_lengths[0]; i++){
-	//	whitened[i][0]= freqs[0][i];
-	//	whitened[i][1]=psd[0][i];
-	//	whitened[i][2]=psd[1][i];
-	//	whitened[i][3]=psd[2][i];
-	//	whitened[i][4]=real(data[0][i])/std::pow(psd[0][i],.5);
-	//	whitened[i][5]=imag(data[0][i])/std::pow(psd[0][i],.5);
-	//	whitened[i][6]=real(data[1][i])/std::pow(psd[1][i],.5);
-	//	whitened[i][7]=imag(data[1][i])/std::pow(psd[1][i],.5);
-	//	whitened[i][8]=real(data[2][i])/std::pow(psd[2][i],.5);
-	//	whitened[i][9]=imag(data[2][i])/std::pow(psd[2][i],.5);
-	//}	
-	//write_file("data/whitened_data.csv",whitened,data_lengths[0],10);
-	//deallocate_2D_array(whitened, data_lengths[0],10);
-	
-	//#############################################################
-	//#############################################################
-
-	//########################################################################
 	double **output;
 	output = allocate_2D_array(samples, dimension );
 	double chain_temps[chain_N];
@@ -566,65 +499,7 @@ int main(int argc, char *argv[])
 		}
 		
 	}
-	//else if(generation_method.find("EA") != std::string::npos){
-	//	mod_priors = new double*[4];
-	//	mod_priors[0]= new double[2];
-	//	mod_priors[0][0] = dbl_dict["EA c_sigma minimum"];
-	//	mod_priors[0][1] = dbl_dict["EA c_sigma maximum"];
-	//	mod_priors[1]= new double[2];
-	//	mod_priors[1][0] = dbl_dict["EA c_theta minimum"];
-	//	mod_priors[1][1] = dbl_dict["EA c_theta maximum"];
-	//	mod_priors[2]= new double[2];
-	//	mod_priors[2][0] = dbl_dict["EA c_omega minimum"];
-	//	mod_priors[2][1] = dbl_dict["EA c_omega maximum"];
-	//	mod_priors[3]= new double[2];
-	//	mod_priors[3][0] = dbl_dict["EA c_a minimum"];
-	//	mod_priors[3][1] = dbl_dict["EA c_a maximum"];
-
-	//}
-	//if(generation_method.find("dCS") != std::string::npos
-	//|| generation_method.find("EdGB") != std::string::npos){
-	//	if(generation_method.find("EdGB_GHO") != std::string::npos){
-	//		Nmod = 2;
-	//		std::cout<<"Number of ppE modifications: "<<Nmod<<std::endl;
-	//		std::cout<<"ppE b parmeters: "<<Nmod<<std::endl;
-	//		bppe= new double[Nmod];
-	//		mod_priors = new double*[Nmod];
-	//		bppe[0] = -7;
-	//		bppe[1] = -5;
-	//		mod_priors[0]= new double[2];
-	//		mod_priors[1]= new double[2];
-	//		mod_priors[0][0] = dbl_dict["ppE beta "+std::to_string(0)+" minimum"];
-	//		mod_priors[0][1] = dbl_dict["ppE beta "+std::to_string(0)+" maximum"];
-	//		mod_priors[1][0] = dbl_dict["ppE beta "+std::to_string(1)+" minimum"];
-	//		mod_priors[1][1] = dbl_dict["ppE beta "+std::to_string(1)+" maximum"];
-	//		std::cout<<0<<" : "<<bppe[0]<<std::endl;
-	//		std::cout<<"Min"<<" : "<<mod_priors[0][0]<<std::endl;
-	//		std::cout<<"Max"<<" : "<<mod_priors[0][1]<<std::endl;
-	//		std::cout<<0<<" : "<<bppe[1]<<std::endl;
-	//		std::cout<<"Min"<<" : "<<mod_priors[1][0]<<std::endl;
-	//		std::cout<<"Max"<<" : "<<mod_priors[1][1]<<std::endl;
-	//	
-	//	}
-	//	else{
-	//		Nmod = 1;
-	//		std::cout<<"Number of ppE modifications: "<<Nmod<<std::endl;
-	//		std::cout<<"ppE b parmeters: "<<Nmod<<std::endl;
-	//		bppe= new double[Nmod];
-	//		mod_priors = new double*[Nmod];
-	//		if(generation_method.find("dCS") != std::string::npos){
-	//			bppe[0] = -1;
-	//		}
-	//		if(generation_method.find("EdGB") != std::string::npos){
-	//			bppe[0] = -7;
-	//		}
-	//		mod_priors[0]= new double[2];
-	//		std::cout<<0<<" : "<<bppe[0]<<std::endl;
-	//		mod_priors[0][0] = dbl_dict["ppE beta "+std::to_string(0)+" minimum"];
-	//		mod_priors[0][1] = dbl_dict["ppE beta "+std::to_string(0)+" maximum"];
-	//	}
-	//	
-	//}
+	
 	if(generation_method.find("gIMR") != std::string::npos){
 		gNmod_phi = int_dict["Number of phi modifications"];
 		gNmod_sigma = int_dict["Number of sigma modifications"];
@@ -833,63 +708,7 @@ int main(int argc, char *argv[])
 			std::cout<<"ERROR -- wrong detector/dimension combination for this tool -- Check mcmc_gw for general support"<<std::endl;
 			return 1;
 		}
-		//if(generation_method.find("IMRPhenomD") != std::string::npos && dimension == 11){
-		//	lp = &standard_log_prior_D;
-		//}
-		//else if(generation_method.find("IMRPhenomPv2") != std::string::npos && dimension == 15){
-		//	lp = &standard_log_prior_Pv2;
-		//}
-		//else if( (generation_method.find("ppE_IMRPhenomPv2") != std::string::npos  
-		//	|| generation_method.find("gIMRPhenomPv2") !=std::string::npos||
-		//	generation_method.find("PNSeries_ppE_IMRPhenomPv2") !=std::string::npos||
-		//	generation_method.find("dCS_IMRPhenomPv2") != std::string::npos || 
-		//	generation_method.find("EdGB_IMRPhenomPv2") != std::string::npos ||
-		//	generation_method.find("EdGB_GHOv1_IMRPhenomPv2") != std::string::npos|| 
-		//	generation_method.find("EdGB_GHOv2_IMRPhenomPv2") != std::string::npos|| 
-		//	generation_method.find("EdGB_GHOv3_IMRPhenomPv2") != std::string::npos)
-		//	&& dimension >= 16 ){
-		//	lp = &standard_log_prior_Pv2_mod;
-		//}
-		//else if( (generation_method.find("ppE_IMRPhenomD") != std::string::npos 
-		//	|| generation_method.find("gIMRPhenomD") != std::string::npos
-		//	|| generation_method.find("PNSeries_ppE_IMRPhenomD") != std::string::npos
-		//	|| generation_method.find("dCS_IMRPhenomD") != std::string::npos 
-		//	|| generation_method.find("EdGB_IMRPhenomD") != std::string::npos 
-		//	|| generation_method.find("EdGB_GHOv1_IMRPhenomD") != std::string::npos
-		//	|| generation_method.find("EdGB_GHOv2_IMRPhenomD") != std::string::npos
-		//	|| generation_method.find("EdGB_GHOv3_IMRPhenomD") != std::string::npos)
-		//	&& dimension >= 11){
-		//	lp = &standard_log_prior_D_mod;
-		//}
-		//else if(generation_method.find("IMRPhenomPv2") != std::string::npos && dimension == 8){
-		//	lp = &standard_log_prior_Pv2_intrinsic;
-		//}
-		//else if(generation_method.find("IMRPhenomD") != std::string::npos && dimension == 4){
-		//	lp = &standard_log_prior_D_intrinsic;
-		//}
-		//else if((generation_method.find("ppE_IMRPhenomD") != std::string::npos 
-		//	|| generation_method.find("gIMRPhenomD") != std::string::npos) 
-		//	&& dimension >= 4){
-		//	lp = &standard_log_prior_D_intrinsic_mod;
-		//}
-		//else if( (generation_method.find("ppE_IMRPhenomPv2") != std::string::npos  
-		//	|| generation_method.find("gIMRPhenomPv2") !=std::string::npos)
-		//	&& dimension >= 9 ){
-		//	lp = &standard_log_prior_Pv2_intrinsic_mod;
-		//}
-		//else if((generation_method.find("IMRPhenomD_NRT") != std::string::npos) && (dimension == 6)){
-		//	lp = &standard_log_prior_D_intrinsic_NRT;
-
-		//}
-		//else if((generation_method.find("IMRPhenomD_NRT") != std::string::npos) && (dimension == 13)){
-		//	lp = &standard_log_prior_D_NRT;
-
-		//}
-		//else{
-		//	std::cout<<"ERROR -- wrong detector/dimension combination for this tool -- Check mcmc_gw for general support"<<std::endl;
-		//	return 1;
-		//}
-
+	
 		if(continue_from_checkpoint){
 			mcmc_sampler_output sampler_output(chain_N, dimension);
 			continue_PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(initial_checkpoint_file,&sampler_output,output, samples,  
@@ -915,12 +734,6 @@ int main(int argc, char *argv[])
 					ensemble_initial_position[i] = new double[dimension];
 				}
 				read_file(initial_ensemble_position_file, ensemble_initial_position,chain_N,dimension);
-				//for(int i = 0 ; i<chain_N; i++){
-				//	for(int j = 0 ; j<dimension; j++){
-				//		std::cout<<ensemble_initial_position[i][j]<<" ";
-				//	}	
-				//	std::cout<<std::endl;
-				//}
 			}
 			std::cout<<"Running uncorrelated sampler "<<std::endl;
 			mcmc_sampler_output sampler_output(chain_N, dimension);
@@ -1133,17 +946,6 @@ double EA_current_constraints(double *pos, mcmc_data_interface *interface, void 
 	
 	    }
   } 
-
-  //std::cout<<"Made it to end of EA constraints"<<std::endl;
-  /*
-  //Enforcing gaussian prior on alpha1 from binary pulsar and triple systems. 
-  //arXiv:2104.04596
-  double sigma = 1.021*pow(10, -5.); 
-  double mu = -0.563*pow(10, -5.);
-  double prob;
-  
-  prob = exp(-(1./2.)*((sp.alpha1_EA - mu)*(sp.alpha1_EA - mu))/(sigma*sigma));
-  */
 
   sp.EA_nan_error_message = true;
   model.EA_check_nan(&sp);
@@ -1404,44 +1206,6 @@ double standard_log_prior_D_intrinsic_mod(double *pos, mcmc_data_interface *inte
 
 
 }
-
-/*double logPriorStandard_D_NRT_EOS::eval(bayesship::positionInfo *position, int chainID)
-{
-	int dim =  position->dimension;
-
-	double a = -std::numeric_limits<double>::infinity();
-	double *pos = position->parameters;
-	//###########
-	//double chirp = exp(pos[7]);
-	//double eta = pos[8];
-	//if (eta<.0 || eta>.25){return a;}//eta
-	//double m1 = calculate_mass1(chirp,eta );
-	//double m2 = calculate_mass2(chirp,eta );
-	if(pos[7]<PD->nbc1_prior[0] || pos[7]>PD->nbc1_prior[1]){return a;}
-	if(pos[8]<PD->nbc2_prior[0] || pos[8]>PD->nbc2_prior[1]){return a;}
-	//###########
-	if ((pos[0])<PD->RA_bounds[0] || (pos[0])>PD->RA_bounds[1]){ return a;}//RA
-	if ((pos[1])<PD->sinDEC_bounds[0] || (pos[1])>PD->sinDEC_bounds[1]){return a;}//sinDEC
-	if ((pos[2])<0 || (pos[2])>M_PI){return a;}//PSI
-	if ((pos[3])<-1 || (pos[3])>1){return a;}//cos \iota
-	if ((pos[4])<0 || (pos[4])>2*M_PI){return a;}//phiRef
-	if( pos[5] < (PD->T_merger - .1) || pos[5] > (PD->T_merger + .1)) { return a; }
-	if (std::exp(pos[6])<PD->DL_prior[0] || std::exp(pos[6])>PD->DL_prior[1]){return a;}//DL
-	if ((pos[9])<PD->spin1_prior[0] || (pos[9])>PD->spin1_prior[1]){return a;}//chi1
-	if ((pos[10])<PD->spin2_prior[0] || (pos[10])>PD->spin2_prior[1]){return a;}//chi2
-	//###########
-	if ((pos[11])<PD->EOS_prior[0] || (pos[11])>PD->EOS_prior[1]){return a;}//bump_mag
-	if ((pos[12])<PD->EOS_prior[2] || (pos[12])>PD->EOS_prior[3]){return a;}//bump_width
-	if ((pos[13])<PD->EOS_prior[4] || (pos[13])>PD->EOS_prior[5]){return a;}//bump_offset
-	if(PD->EOS_plat_flag){
-	  if ((pos[14])<PD->EOS_prior[6] || (pos[14])>PD->EOS_prior[7]){return a;}//plat
-	}
-	//###########
-	//return log(chirpmass_eta_jac(chirp,eta))+3*pos[6] ;
-	return log(aligned_spin_prior(pos[9]))+log(aligned_spin_prior(pos[10])) +3*pos[6] ;
-
-}
-*/
 
 double standard_log_prior_Pv2_intrinsic(double *pos, mcmc_data_interface *interface ,void *parameters)
 {

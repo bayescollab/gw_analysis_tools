@@ -122,20 +122,7 @@ int main(int argc, char *argv[])
 	int psd_length ;
 	count_lines_LOSC_PSD_file(psd_file, &psd_length);
 	std::cout<<"Length of PSD: "<<psd_length<<std::endl;
-	//########################################################################
-	//########################################################################
-	//TESTING
-	//psd_length = 4096;
-	//double **unpack1 = new double*[psd_length];
-	//double **unpack2 = new double*[psd_length];
-	//for(int i =0 ; i<psd_length; i++){
-	//	unpack1[i]=new double[1+detector_N];
-	//	unpack2[i]=new double[1+2*detector_N];
-	//}
-	//read_file("data/testing_PSDs.dat",unpack1,psd_length, 1+detector_N);
-	//read_file("data/testing_data.dat",unpack2, psd_length,1+2*detector_N);
-	//########################################################################
-	//########################################################################
+
 
 
 	double **psd = allocate_2D_array(detector_N,psd_length);
@@ -146,31 +133,11 @@ int main(int argc, char *argv[])
 	}
 
 	allocate_LOSC_data(detector_files, psd_file, detector_N, psd_length, data_length, gps_time, data, psd, freqs);
-	//########################################################################
-	//TEST
-	//for(int i = 0 ; i<detector_N; i++){
-	//	for(int j =0 ; j<psd_length; j++){
-	//		psd[i][j]=unpack1[j][i+1];
-	//		data[i][j]=std::complex<double>(unpack2[j][2*i+1],unpack2[j][2*i+2]);
-	//		freqs[i][j]= unpack1[j][0];
-	//		//std::cout<<unpack1[j][1]<<std::endl;
-	//		//std::cout<<unpack2[j][4]<<std::endl;
-	//		//std::cout<<unpack1[1][j]<<std::endl;
-	//	}	
-	//}
-	//freqs[0][0]=.0001;
-	//freqs[1][0]=.0001;
-	//########################################################################
+
 	std::cout<<"DATA loaded"<<std::endl;
 
 	T_mcmc_gw_tool = 1./(freqs[0][2]-freqs[0][1]);
 	double df = 1./T_mcmc_gw_tool;
-	//std::cout<<df<<std::endl;
-	//for(int i = 0 ; i<detector_N; i++){
-	//	for(int j =0 ; j<psd_length; j++){
-	//		psd[i][j]*=df;
-	//	}	
-	//}
 
 	std::cout<<"Total time: "<<T_mcmc_gw_tool<<std::endl;
 	int *data_lengths= (int*)malloc(sizeof(int)*detector_N);
@@ -178,22 +145,6 @@ int main(int argc, char *argv[])
 		data_lengths[i] =psd_length;
 	}
 
-
-	//double **output_test = allocate_2D_array(psd_length, 7 );
-	//
-	//for(int i = 0 ; i<psd_length; i++)
-	//{
-	//	output_test[i][0] = freqs[0][i];	
-	//	output_test[i][1] = psd[0][i];	
-	//	output_test[i][2] = psd[1][i];	
-	//	output_test[i][3] =real( data[0][i]);	
-	//	output_test[i][4] =imag( data[0][i]);	
-	//	output_test[i][5] =real( data[1][i]);	
-	//	output_test[i][6] =imag( data[1][i]);	
-	//}
-	//write_file("testing/data/data_output.csv",output_test,psd_length,7);
-	//deallocate_2D_array(output_test,psd_length,7);
-	
 
 	//#############################################################
 	//#############################################################
@@ -405,18 +356,6 @@ double standard_log_prior_Pv2(double *pos, int dim, int chain_id,void *parameter
 	double a = -std::numeric_limits<double>::infinity();
 	double chirp = std::exp(pos[7]);
 	double eta = pos[8];
-	//double m1 = calculate_mass1(chirp,eta );
-	//double m2 = calculate_mass2(chirp,eta );
-	//double q =m1/m2;
-	//double W = (3*q +4)/ ( 4*q*q +3*q);
-	////Max values
-	//double chi1l = pos[9];
-	//double chi2l = pos[10];
-	//double chi1p = std::sqrt(1- chi1l*chi1l);
-	//double chi2p = std::sqrt(1- chi2l*chi2l);
-	//double chi_thresh=W*chi2p ;
-	//if(chi1p > W*chi2p){ chi_thresh =chi1p;}
-	//if(pos[11] > chi_thresh){ return a;}
 
 	//Flat priors across physical regions
 	if ((pos[0])<0 || (pos[0])>2*M_PI){return a;}//RA
@@ -442,18 +381,6 @@ double standard_log_prior_Pv2_ppE(double *pos, int dim, int chain_id,void *param
 	double a = -std::numeric_limits<double>::infinity();
 	double chirp = std::exp(pos[7]);
 	double eta = pos[8];
-	//double m1 = calculate_mass1(chirp,eta );
-	//double m2 = calculate_mass2(chirp,eta );
-	//double q =m1/m2;
-	//double W = (3*q +4)/ ( 4*q*q +3*q);
-	////Max values
-	//double chi1l = pos[9];
-	//double chi2l = pos[10];
-	//double chi1p = std::sqrt(1- chi1l*chi1l);
-	//double chi2p = std::sqrt(1- chi2l*chi2l);
-	//double chi_thresh=W*chi2p ;
-	//if(chi1p > W*chi2p){ chi_thresh =chi1p;}
-	//if(pos[11] > chi_thresh){ return a;}
 
 	//Flat priors across physical regions
 	if ((pos[0])<0 || (pos[0])>2*M_PI){return a;}//RA
@@ -529,11 +456,3 @@ double standard_log_prior_skysearch(double *pos, int dim, int chain_id, void *pa
 double chirpmass_eta_jac(double chirpmass, double eta){
 	return chirpmass*chirpmass/(sqrt(1. - 4.*eta)*pow(eta,1.2));
 }
-
-//Uniform in m1 and m2, transformed to lnM and eta
-//double chirpmass_eta_jac(double m1,double m2)
-//{
-//	//return ((m1 - m2)*pow(m1*m2,0.6))/pow(m1 + m2,3.2);
-//	return ((m1 - m2)*(5*m2*(m1 + m2)*log(m2) + (2*m1 + 3*m2)*log(pow(m1*m2,0.6)/pow(m1 + m2,0.2))))/(pow(m1 + m2,4)*(3*log(m1*m2) - log(m1 + m2)));
-//
-//}

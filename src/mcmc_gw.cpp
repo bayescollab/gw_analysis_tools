@@ -2668,13 +2668,6 @@ double MCMC_likelihood_wrapper(double *param, mcmc_data_interface *interface ,vo
   fftw_outline *local_plans = mcmc_fftw_plans;
   std::string local_integration_method="SIMPSONS";
   //if(interface->burn_phase && user_param->burn_data){
-  if(false){
-    local_data = user_param->burn_data;
-    local_freqs = user_param->burn_freqs;
-    local_noise = user_param->burn_noise;
-    local_lengths = user_param->burn_lengths;
-    local_plans = user_param->burn_plans;
-  }
   if(user_param->GAUSS_QUAD){
     local_integration_method="GAUSSLEG";
   }
@@ -2762,32 +2755,29 @@ double MCMC_likelihood_wrapper(double *param, mcmc_data_interface *interface ,vo
     }
     else if(mcmc_generation_method.find("IMRPhenomP")!=std::string::npos){
       //if(!mcmc_save_waveform){
-      if(false){
-      }
-      else{
-	gen_params.theta=0;	
-	gen_params.phi=0;	
-	gen_params.psi=0;	
-	gen_params.phiRef = 1;
-	gen_params.f_ref = 20;
-	gen_params.incl_angle=0;	
-	gen_params.tc =1;
-	waveform_polarizations<double> wp;
-	assign_polarizations(mcmc_generation_method,&wp);
-	wp.allocate_memory(local_lengths[0]);
-	fourier_waveform(local_freqs[0],local_lengths[0], &wp, local_gen, &gen_params);
-	for(int i=0; i < mcmc_num_detectors; i++){
-	  ll += maximized_Log_Likelihood_unaligned_spin_internal(local_data[i], 
-								 local_noise[i],
-								 local_freqs[i],
-								 wp.hplus,
-								 wp.hcross,
-								 (size_t) local_lengths[i],
-								 &local_plans[i]
-								 );
-	}
-	wp.deallocate_memory();
-      }
+
+			gen_params.theta=0;	
+			gen_params.phi=0;	
+			gen_params.psi=0;	
+			gen_params.phiRef = 1;
+			gen_params.f_ref = 20;
+			gen_params.incl_angle=0;	
+			gen_params.tc =1;
+			waveform_polarizations<double> wp;
+			assign_polarizations(mcmc_generation_method,&wp);
+			wp.allocate_memory(local_lengths[0]);
+			fourier_waveform(local_freqs[0],local_lengths[0], &wp, local_gen, &gen_params);
+			for(int i=0; i < mcmc_num_detectors; i++){
+				ll += maximized_Log_Likelihood_unaligned_spin_internal(local_data[i], 
+										local_noise[i],
+										local_freqs[i],
+										wp.hplus,
+										wp.hcross,
+										(size_t) local_lengths[i],
+										&local_plans[i]
+										);
+			}
+			wp.deallocate_memory();
       
     }
   }
@@ -3603,13 +3593,6 @@ double RJMCMC_2WF_likelihood_wrapper(
 	fftw_outline *local_plans = mcmc_fftw_plans;
 	std::string local_integration_method="SIMPSONS";
 	//if(interface->burn_phase && user_param->burn_data){
-	if(false){
-		local_data = user_param->burn_data;
-		local_freqs = user_param->burn_freqs;
-		local_noise = user_param->burn_noise;
-		local_lengths = user_param->burn_lengths;
-		local_plans = user_param->burn_plans;
-	}
 	if(user_param->GAUSS_QUAD){
 		local_integration_method="GAUSSLEG";
 	}
@@ -3663,33 +3646,29 @@ double RJMCMC_2WF_likelihood_wrapper(
 		}
 		else if(gen_meth.find("IMRPhenomP")!=std::string::npos){
 			//if(!mcmc_save_waveform){
-			if(false){
+			gen_params.theta=0;	
+			gen_params.phi=0;	
+			gen_params.psi=0;	
+			gen_params.phiRef = 1;
+			gen_params.f_ref = 20;
+			gen_params.incl_angle=0;	
+			gen_params.tc =1;
+			//fourier_waveform(local_freqs[0],local_lengths[0], hp,hc, local_gen, &gen_params);
+			waveform_polarizations<double> wp;
+			assign_polarizations(gen_meth, &wp);	
+			wp.allocate_memory(local_lengths[0]);	
+			fourier_waveform(local_freqs[0],local_lengths[0], &wp, local_gen, &gen_params);
+			for(int i=0; i < mcmc_num_detectors; i++){
+				ll += maximized_Log_Likelihood_unaligned_spin_internal(local_data[i], 
+						local_noise[i],
+						local_freqs[i],
+						wp.hplus,
+						wp.hcross,
+						(size_t) local_lengths[i],
+						&local_plans[i]
+						);
 			}
-			else{
-				gen_params.theta=0;	
-				gen_params.phi=0;	
-				gen_params.psi=0;	
-				gen_params.phiRef = 1;
-				gen_params.f_ref = 20;
-				gen_params.incl_angle=0;	
-				gen_params.tc =1;
-				//fourier_waveform(local_freqs[0],local_lengths[0], hp,hc, local_gen, &gen_params);
-				waveform_polarizations<double> wp;
-				assign_polarizations(gen_meth, &wp);	
-				wp.allocate_memory(local_lengths[0]);	
-				fourier_waveform(local_freqs[0],local_lengths[0], &wp, local_gen, &gen_params);
-				for(int i=0; i < mcmc_num_detectors; i++){
-					ll += maximized_Log_Likelihood_unaligned_spin_internal(local_data[i], 
-							local_noise[i],
-							local_freqs[i],
-							wp.hplus,
-							wp.hcross,
-							(size_t) local_lengths[i],
-							&local_plans[i]
-							);
-				}
-				wp.deallocate_memory();	
-			}
+			wp.deallocate_memory();	
 
 		}
 	}

@@ -66,11 +66,19 @@ std::string MCMC_prep_params_v2(double *param, double *temp_params, gen_params_b
 
 //double MCMC_likelihood_wrapper_v2(bayesship::positionInfo *pos, int chainID, bayesship::bayesshipSampler *sampler ,void *userParameters);
 
+struct temp_settings
+{
+	double Tmax = 100.;
+	double t0 = 0.;
+	double nu = 100.;
+} default_temp_set;
+
 bayesship::bayesshipSampler *  PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
 	int dimension,
 	int independentSamples,
 	int ensembleSize,
 	int ensembleN,
+	temp_settings* temp_set,
 	bayesship::positionInfo *initialPosition,
 	bayesship::positionInfo **initialEnsemble,
 	double swapProb,

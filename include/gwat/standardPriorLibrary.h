@@ -31,7 +31,13 @@ struct priorData
 	double ctheta1_prior[2];
 	double ctheta2_prior[2];
 	double phi1_prior[2];
-	double phi2_prior[2];	
+	double phi2_prior[2];
+	double ciota_bounds[2] {-1., 1.};
+	double PSI_bounds[2] {0, M_PI};
+	double phi_ref_bounds[2] {0, 2*M_PI};
+	// Bounds to the left and right of T_merger.
+	// The zeroth element is subtracted from T_merger, the first element is added.
+	double T_merger_bounds[2] {0.1, 0.1};
 };
 
 bool tidal_love_boundary_violation(double q,double lambda_s);

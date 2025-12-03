@@ -1221,6 +1221,7 @@ bayesship::bayesshipSampler *  PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
 	int independentSamples,
 	int ensembleSize,
 	int ensembleN,
+	temp_settings* temp_set,
 	bayesship::positionInfo *initialPosition,
 	bayesship::positionInfo **initialEnsemble,
 	double swapProb,
@@ -1438,6 +1439,9 @@ bayesship::bayesshipSampler *  PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
 	sampler->initialPositionEnsemble = initialEnsemble;
 	sampler->ignoreExistingCheckpoint = ignoreExistingCheckpoint;
 	sampler->restrictSwapTemperatures = restrictSwapTemperatures;
+	sampler->t0 = temp_set->t0;
+	sampler->nu = temp_set->nu;
+	sampler->Tmax = temp_set->Tmax;
 
 	//Testing
 	//sampler->coldOnlyStorage = false;

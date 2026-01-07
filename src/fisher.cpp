@@ -195,7 +195,7 @@ void calculate_derivatives(std::complex<double>  **response_deriv,
 	//	std::cout<<parameters_vec[i]<<std::endl;
 	//}
 
-	if(parameters->sky_average && local_gen_method.find("IMRPhenomD")!=std::string::npos)
+	if(parameters->sky_average && has_substring(local_gen_method, "IMRPhenomD"))
 	{
 		double *amplitude_plus = new double[length];
 		double *phase_plus = new double[length];
@@ -230,7 +230,7 @@ void calculate_derivatives(std::complex<double>  **response_deriv,
 			}
 			param_p[i] = parameters_vec[i] + epsilon;
 			param_m[i] = parameters_vec[i] - epsilon;
-			if(local_gen_method.find("EOS") == std::string::npos){ // the following code assumes parameter[8] = eta which is not true for the IMRPhenomD_NRT_EOS template
+			if(!has_substring(local_gen_method, "EOS")){ // the following code assumes parameter[8] = eta which is not true for the IMRPhenomD_NRT_EOS template
 			  if(i==8 && parameters_vec[i] >.25-epsilon){
 			    param_p[i] = parameters_vec[i]; //instead of parameters_vec[i] + epsilon
 			    // std::cout<<"eta close to boundary, using backward difference approximation to differentiate. See line "<<__LINE__<<" in "<<__FILE__<<" for more information."<<std::endl;
@@ -304,7 +304,7 @@ void calculate_derivatives(std::complex<double>  **response_deriv,
 			if(order==2){
 				for (int l =0;l<length;l++)
 				{
-				  if(local_gen_method.find("EOS") == std::string::npos){
+				  if(!has_substring(local_gen_method, "EOS")){
 				    if(i==8 && parameters_vec[i] > .25-epsilon){
 				      amplitude_deriv = (amplitude_plus[l] -amplitude_minus[l])/(epsilon);
 				      phase_deriv = (phase_plus[l] -phase_minus[l])/(epsilon);
@@ -321,7 +321,7 @@ void calculate_derivatives(std::complex<double>  **response_deriv,
 			else if(order==4){
 				for (int l =0;l<length;l++)
 				  {
-				    if(local_gen_method.find("EOS") == std::string::npos){
+				    if(!has_substring(local_gen_method, "EOS")){
 				      if(i==8 && parameters_vec[i] > .25-epsilon){
 					amplitude_deriv = (-amplitude_plus_plus[l]+8.*amplitude_plus[l] -8.*amplitude_minus[l]+amplitude_minus_minus[l])/(6.*epsilon);
 					phase_deriv = (-phase_plus_plus[l]+8.*phase_plus[l] -8.*phase_minus[l]+phase_minus_minus[l])/(6.*epsilon);
@@ -1091,12 +1091,12 @@ void time_phase_corrected_derivative_autodiff_full_hess(double **dt, int length,
 std::string local_generation_method(std::string generation_method)
 {
 	std::string local_gen_method = generation_method;
-	if(generation_method.find("MCMC") != std::string::npos && generation_method.find("Full") != std::string::npos)
+	if(has_substring(generation_method, "MCMC") && has_substring(generation_method, "Full"))
 	{
 		local_gen_method.erase(0,5);
 		local_gen_method.erase(local_gen_method.length()-5,5);
 	}
-	else if(generation_method.find("MCMC") != std::string::npos)
+	else if(has_substring(generation_method, "MCMC"))
 	{
 		local_gen_method.erase(0,5);
 	}
@@ -1110,7 +1110,7 @@ std::string local_generation_method(std::string generation_method)
 void detect_adjust_parameters( double *freq_boundaries,double *grad_freqs, int *boundary_num,gen_params_base<double> *input_params, std::string generation_method, std::string detector,int dim)
 {
 	if(detector == "LISA"){
-		if(generation_method.find("IMRPhenom") != std::string::npos){
+		if(has_substring(generation_method, "IMRPhenom")){
 			gen_params_base<adouble> internal_params;
 			transform_parameters(input_params, &internal_params);
 			source_parameters<adouble> s_param;
@@ -1124,7 +1124,7 @@ void detect_adjust_parameters( double *freq_boundaries,double *grad_freqs, int *
 			s_param.incl_angle=internal_params.incl_angle;
 			lambda_parameters<adouble> lambda;
 			double M, fRD, fpeak;
-			if(generation_method.find("IMRPhenomPv2") != std::string::npos){
+			if(has_substring(generation_method, "IMRPhenomPv2")){
 				IMRPhenomPv2<adouble> modelp;
 				s_param.spin1z = internal_params.spin1[2];
 				s_param.spin2z = internal_params.spin2[2];
@@ -1137,7 +1137,7 @@ void detect_adjust_parameters( double *freq_boundaries,double *grad_freqs, int *
 				fRD = s_param.fRD.value();
 				fpeak = modelp.fpeak(&s_param, &lambda).value();
 			}
-			else if(generation_method.find("IMRPhenomPv3")!=std::string::npos)
+			else if(has_substring(generation_method, "IMRPhenomPv3"))
 			{
 				IMRPhenomPv3<adouble> modelp;
 
@@ -1161,7 +1161,7 @@ void detect_adjust_parameters( double *freq_boundaries,double *grad_freqs, int *
 				fRD = s_param.fRD.value();
 				fpeak = modelp.fpeak(&s_param, &lambda).value();
 			}
-			else if(generation_method.find("IMRPhenomD")!=std::string::npos){
+			else if(has_substring(generation_method, "IMRPhenomD")){
 				IMRPhenomD<adouble> modeld;
 				modeld.assign_lambda_param(&s_param, &lambda);
 				modeld.post_merger_variables(&s_param);
@@ -1178,8 +1178,8 @@ void detect_adjust_parameters( double *freq_boundaries,double *grad_freqs, int *
 void unpack_parameters(double *parameters, gen_params_base<double> *input_params, std::string generation_method, int dimension, bool *log_factors)
 {
 	if(!input_params->sky_average){
-		if(generation_method.find("IMRPhenomPv2") != std::string::npos || generation_method.find("IMRPhenomPv3") != std::string::npos){
-			if(generation_method.find("MCMC") != std::string::npos){
+		if(has_substring(generation_method, "IMRPhenomPv2") || has_substring(generation_method, "IMRPhenomPv3")){
+			if(has_substring(generation_method, "MCMC")){
 				for(int i = 0 ; i<dimension; i++){
 					log_factors[i] = false;
 				}
@@ -1242,8 +1242,8 @@ void unpack_parameters(double *parameters, gen_params_base<double> *input_params
 			}
 
 		}
-		else if(generation_method.find("IMRPhenomD") != std::string::npos){
-			if ((generation_method.find("MCMC") != std::string::npos) && !(generation_method.find("EOS") != std::string::npos))
+		else if(has_substring(generation_method, "IMRPhenomD")){
+			if ((has_substring(generation_method, "MCMC")) && !(has_substring(generation_method, "EOS")))
 			{
 				for(int i = 0 ; i<dimension; i++){
 					log_factors[i] = false;
@@ -1269,7 +1269,7 @@ void unpack_parameters(double *parameters, gen_params_base<double> *input_params
 				parameters[9]=input_params->spin1[2];
 				parameters[10]=input_params->spin2[2];
 			}
-			else if(generation_method.find("EOS") != std::string::npos){
+			else if(has_substring(generation_method, "EOS")){
 			  for(int i = 0 ; i<dimension; i++){
 					log_factors[i] = false;
 				}
@@ -1332,9 +1332,9 @@ void unpack_parameters(double *parameters, gen_params_base<double> *input_params
 
 	}
 	else{
-		if(generation_method.find("IMRPhenomPv2") != std::string::npos || generation_method.find("IMRPhenomPv3") != std::string::npos){
+		if(has_substring(generation_method, "IMRPhenomPv2") || has_substring(generation_method, "IMRPhenomPv3")){
 			//Need to populate
-			if(generation_method.find("MCMC") != std::string::npos){
+			if(has_substring(generation_method, "MCMC")){
 				for(int i = 0 ; i<dimension; i++){
 					log_factors[i] = false;
 				}
@@ -1364,8 +1364,8 @@ void unpack_parameters(double *parameters, gen_params_base<double> *input_params
 			}
 	
 		}
-		else if(generation_method.find("IMRPhenomD") != std::string::npos){
-			if(generation_method.find("MCMC") != std::string::npos){
+		else if(has_substring(generation_method, "IMRPhenomD")){
+			if(has_substring(generation_method, "MCMC")){
 				for(int i = 0 ; i<dimension; i++){
 					log_factors[i] = false;
 				}
@@ -1379,7 +1379,7 @@ void unpack_parameters(double *parameters, gen_params_base<double> *input_params
 				parameters[3]=input_params->spin2[2];
 
 			}
-			else if(generation_method.find("EOS") != std::string::npos)
+			else if(has_substring(generation_method, "EOS"))
 			  {
 			    std::cout<<"Sky averaged IMRPhenomD_NRT_EOS is not supported for regular fishers."<<std::endl;
 			  }
@@ -1406,13 +1406,13 @@ void unpack_parameters(double *parameters, gen_params_base<double> *input_params
 		
 		}
 	}
-	if(generation_method.find("NRT") != std::string::npos && (generation_method.find("EOS")) == std::string::npos){
+	if(has_substring(generation_method, "NRT") && (!has_substring(generation_method, "EOS"))){
 	  //debugger_print(__FILE__,__LINE__,generation_method);
 		if(!input_params->sky_average){
-			if(generation_method.find("PhenomD") != std::string::npos ){
+			if(has_substring(generation_method, "PhenomD") ){
 				if( (input_params->tidal_love)){
 					log_factors[11] = false;
-					if(generation_method.find("MCMC") == std::string::npos){
+					if(!has_substring(generation_method, "MCMC")){
 						log_factors[11] = true;//tidal_s
 					}
 					parameters[11] = log(input_params->tidal_s);
@@ -1420,7 +1420,7 @@ void unpack_parameters(double *parameters, gen_params_base<double> *input_params
 				else{
 					log_factors[11] = false;
 					log_factors[12] = false;
-					if(generation_method.find("MCMC") == std::string::npos){
+					if(!has_substring(generation_method, "MCMC")){
 						log_factors[11] = true;//tidal_1
 						log_factors[12] = true;//tidal_2
 					}
@@ -1430,10 +1430,10 @@ void unpack_parameters(double *parameters, gen_params_base<double> *input_params
 			}
 		}
 		else{
-			if(generation_method.find("PhenomD") != std::string::npos){
+			if(has_substring(generation_method, "PhenomD")){
 				if( (input_params->tidal_love)){
 					log_factors[4] = false;
-					if(generation_method.find("MCMC") == std::string::npos){
+					if(!has_substring(generation_method, "MCMC")){
 						log_factors[4] = true;//tidal_s
 					}
 					parameters[4] = log(input_params->tidal_s);
@@ -1441,7 +1441,7 @@ void unpack_parameters(double *parameters, gen_params_base<double> *input_params
 				else{
 					log_factors[4] = false;
 					log_factors[5] = false;
-					if(generation_method.find("MCMC") == std::string::npos){
+					if(!has_substring(generation_method, "MCMC")){
 						log_factors[4] = true;//tidal_1
 						log_factors[5] = true;//tidal_2
 					}
@@ -1452,13 +1452,13 @@ void unpack_parameters(double *parameters, gen_params_base<double> *input_params
 		}
 	}
 	if( check_mod(generation_method)){
-		if(generation_method.find("ppE") != std::string::npos ){
+		if(has_substring(generation_method, "ppE") ){
 			int base = dimension-input_params->Nmod;
 			for(int i = 0 ;i<input_params->Nmod; i++){
 				parameters[base+i] = input_params->betappe[i];
 			}
 		}
-		else if(generation_method.find("EA") != std::string::npos ){
+		else if(has_substring(generation_method, "EA") ){
 			//parameters[dimension- 4 ] = input_params->ca_EA;
 			//parameters[dimension- 3 ] = input_params->ctheta_EA;
 			//parameters[dimension- 2 ] = input_params->cw_EA;
@@ -1481,22 +1481,22 @@ void unpack_parameters(double *parameters, gen_params_base<double> *input_params
 		    }
 		  }
 		}
-		//else if( generation_method.find("dCS") !=std::string::npos ||
-		//	generation_method.find("EdGB") != std::string::npos){
+		//else if( has_substring(generation_method, "dCS") ||
+		//	has_substring(generation_method, "EdGB")){
 		else if( check_theory_support(generation_method)){
 			int base = dimension-input_params->Nmod;
 			for(int i = 0 ; i<input_params->Nmod; i++){
 				parameters[i+base] = input_params->betappe[i];
 			}
 			//For MCMC, alpha is sampled in KM (alpha**2)**.25
-			//if(generation_method.find("MCMC")!=std::string::npos && 
-			//	(generation_method.find("dCS")!= std::string::npos ||
-			//	generation_method.find("EdGB")!=std::string::npos)){
+			//if(has_substring(generation_method, "MCMC") && 
+			//	(has_substring(generation_method, "dCS") ||
+			//	has_substring(generation_method, "EdGB"))){
 			//	parameters[base] = pow(input_params->betappe[0],.25)/(c*1000);
 			//}
 			
 		}
-		else if(generation_method.find("gIMR") != std::string::npos ){
+		else if(has_substring(generation_method, "gIMR") ){
 			int mods = input_params->Nmod_phi + 
 				input_params->Nmod_sigma +
 				input_params->Nmod_beta +
@@ -1539,8 +1539,8 @@ template<class T>
 void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params, std::string generation_method, int dim, gen_params_base<double> *original_params)
 {
 	if(!a_params->sky_average){
-		if(generation_method.find("IMRPhenomPv2") != std::string::npos || generation_method.find("IMRPhenomPv3") != std::string::npos){
-			if(generation_method.find("MCMC")!=std::string::npos){
+		if(has_substring(generation_method, "IMRPhenomPv2") || has_substring(generation_method, "IMRPhenomPv3")){
+			if(has_substring(generation_method, "MCMC")){
 				a_params->mass1 = calculate_mass1(exp(avec_parameters[7]),
 					avec_parameters[8]);
 				a_params->mass2 = calculate_mass2(exp(avec_parameters[7]),
@@ -1627,7 +1627,7 @@ void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params, std::st
 
 			}	
 		}
-		else if(generation_method.find("EOS") != std::string::npos){
+		else if(has_substring(generation_method, "EOS")){
 		                a_params->RA=avec_parameters[0];
 				a_params->DEC=avec_parameters[1];
 				if(a_params->equatorial_orientation){
@@ -1653,8 +1653,8 @@ void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params, std::st
 				    a_params->plat=avec_parameters[14];
 				  }
 			}
-		else if(generation_method.find("IMRPhenomD") != std::string::npos){
-			if(generation_method.find("MCMC")!=std::string::npos){
+		else if(has_substring(generation_method, "IMRPhenomD")){
+			if(has_substring(generation_method, "MCMC")){
 				a_params->mass1 = calculate_mass1(exp(avec_parameters[7]),
 					avec_parameters[8]);
 				a_params->mass2 = calculate_mass2(exp(avec_parameters[7]),
@@ -1704,8 +1704,8 @@ void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params, std::st
 		}	
 	}
 	else{
-		if(generation_method.find("IMRPhenomPv2") != std::string::npos || generation_method.find("IMRPhenomPv3") != std::string::npos){
-			if(generation_method.find("MCMC")!=std::string::npos){
+		if(has_substring(generation_method, "IMRPhenomPv2") || has_substring(generation_method, "IMRPhenomPv3")){
+			if(has_substring(generation_method, "MCMC")){
 
 				a_params->mass1 = calculate_mass1(exp(avec_parameters[0]),avec_parameters[1]);
 				a_params->mass2 = calculate_mass2(exp(avec_parameters[0]),avec_parameters[1]);
@@ -1759,8 +1759,8 @@ void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params, std::st
 
 			}	
 		}	
-		else if(generation_method.find("IMRPhenomD") != std::string::npos){
-			if(generation_method.find("MCMC")!=std::string::npos){
+		else if(has_substring(generation_method, "IMRPhenomD")){
+			if(has_substring(generation_method, "MCMC")){
 				a_params->mass1 = calculate_mass1(exp(avec_parameters[0]),
 					avec_parameters[1]);
 				a_params->mass2 = calculate_mass2(exp(avec_parameters[0]),
@@ -1793,9 +1793,9 @@ void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params, std::st
 		}	
 
 	}
-	if(generation_method.find("NRT") != std::string::npos && generation_method.find("EOS") == std::string::npos){
+	if(has_substring(generation_method, "NRT") && !has_substring(generation_method, "EOS")){
 		if(!a_params->sky_average){
-			if(generation_method.find("PhenomD") != std::string::npos){
+			if(has_substring(generation_method, "PhenomD")){
 				if( (a_params->tidal_love)){
 					a_params->tidal_s = exp(avec_parameters[11]);
 				}
@@ -1806,7 +1806,7 @@ void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params, std::st
 			}
 		}
 		else{
-			if(generation_method.find("PhenomD") != std::string::npos){
+			if(has_substring(generation_method, "PhenomD")){
 				if( (a_params->tidal_love)){
 					a_params->tidal_s = exp(avec_parameters[4]);
 				}
@@ -1819,15 +1819,15 @@ void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params, std::st
 	}
 	//debugger_print(__FILE__,__LINE__,generation_method);
 	if( check_mod(generation_method)){
-		if(generation_method.find("ppE") != std::string::npos ){
+		if(has_substring(generation_method, "ppE") ){
 			int base = dim - a_params->Nmod;
 			for(int i = 0 ;i<a_params->Nmod; i++){
 				a_params->betappe[i] = avec_parameters[base+i];
 			}
 		}
-		//if( generation_method.find("dCS") !=std::string::npos ||
-		//	generation_method.find("EdGB") != std::string::npos){
-		else if(generation_method.find("EA") != std::string::npos ){
+		//if( has_substring(generation_method, "dCS") ||
+		//	has_substring(generation_method, "EdGB")){
+		else if(has_substring(generation_method, "EA") ){
 		  //Remnant from running the code with 16 dimensions
 		  //a_params->ca_EA = avec_parameters[dim- 4 ] ;
 		  //a_params->ctheta_EA = avec_parameters[dim- 3 ] ;
@@ -1860,14 +1860,14 @@ void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params, std::st
 			}
 			//MCMC samples in root(alpha) in KM 
 			//but the dCS/EdGB waveform works with (seconds)^2
-			//if(generation_method.find("MCMC")!=std::string::npos &&
-			//	(generation_method.find("dCS")!= std::string::npos ||
-			//	generation_method.find("EdGB")!=std::string::npos)){
+			//if(has_substring(generation_method, "MCMC") &&
+			//	(has_substring(generation_method, "dCS") ||
+			//	has_substring(generation_method, "EdGB"))){
 			//	a_params->betappe[0] = 
 			//		pow_int(a_params->betappe[0]/(c/1000.) , 4);
 			//}
 		}
-		else if(generation_method.find("gIMR") != std::string::npos ){
+		else if(has_substring(generation_method, "gIMR") ){
 			int mods = a_params->Nmod_phi + 
 				a_params->Nmod_sigma +
 				a_params->Nmod_beta +
@@ -1933,16 +1933,16 @@ void repack_non_parameter_options(gen_params_base<T> *waveform_params, gen_param
 	//waveform_params->phip = input_params->phip;
 	
 	if( check_mod(gen_method)){
-		//if(gen_method.find("ppE") != std::string::npos || 
-		//	gen_method.find("dCS") !=std::string::npos ||
-		//	gen_method.find("EdGB") != std::string::npos){
-		if(gen_method.find("ppE") != std::string::npos || 
+		//if(has_substring(gen_method, "ppE") || 
+		//	has_substring(gen_method, "dCS") ||
+		//	has_substring(gen_method, "EdGB")){
+		if(has_substring(gen_method, "ppE") || 
 			check_theory_support(gen_method)){
 			waveform_params->bppe = input_params->bppe;
 			waveform_params->Nmod = input_params->Nmod;
 			waveform_params->betappe = new T[waveform_params->Nmod];
 		}
-		else if(gen_method.find("gIMR") != std::string::npos){
+		else if(has_substring(gen_method, "gIMR")){
 			waveform_params->phii = input_params->phii;
 			waveform_params->sigmai = input_params->sigmai;
 			waveform_params->betai = input_params->betai;
@@ -1975,14 +1975,14 @@ template<class T>
 void deallocate_non_param_options(gen_params_base<T> *waveform_params, gen_params_base<double> *input_params, std::string gen_method)
 {
 	if( check_mod(gen_method)){
-		//if(gen_method.find("ppE") != std::string::npos || 
-		//	gen_method.find("dCS") !=std::string::npos ||
-		//	gen_method.find("EdGB") != std::string::npos){
-		if(gen_method.find("ppE") != std::string::npos || 
+		//if(has_substring(gen_method, "ppE") || 
+		//	has_substring(gen_method, "dCS") ||
+		//	has_substring(gen_method, "EdGB")){
+		if(has_substring(gen_method, "ppE") || 
 			check_theory_support(gen_method)){
 			delete [] waveform_params->betappe	;
 		}
-		else if (gen_method.find("gIMR") != std::string::npos){
+		else if (has_substring(gen_method, "gIMR")){
 			if(waveform_params->Nmod_phi != 0 ){
 				delete [] waveform_params->delta_phi	;
 			}
@@ -2280,15 +2280,15 @@ void tape_phase_gsl_subroutine(gsl_subroutine * params_packed)
 		trace_off();
 	}
 	if(check_mod(generation_method)){
-		//if(generation_method.find("ppE") != std::string::npos || 
-		//	generation_method.find("dCS") !=std::string::npos ||
-		//	generation_method.find("EdGB") != std::string::npos){
-		if(generation_method.find("ppE") != std::string::npos || 
+		//if(has_substring(generation_method, "ppE") || 
+		//	has_substring(generation_method, "dCS") ||
+		//	has_substring(generation_method, "EdGB")){
+		if(has_substring(generation_method, "ppE") || 
 			check_theory_support(generation_method)){
 			delete [] aparams.betappe;
 			delete [] aparams.bppe;
 		}
-		else if (generation_method.find("gIMR") != std::string::npos){
+		else if (has_substring(generation_method, "gIMR")){
 			if(aparams.Nmod_phi != 0 ){
 				delete [] aparams.delta_phi	;
 				delete [] aparams.phii;
@@ -2966,7 +2966,7 @@ void ppE_theory_transformation_jac(
 {
 	//Figure out base dimension from generation method and sky_average flag
 	int base_dim;
-	if(new_method.find("PhenomPv2")!= std::string::npos){
+	if(has_substring(new_method, "PhenomPv2")){
 		if(param->sky_average){
 			base_dim = 7;
 		}
@@ -2974,7 +2974,7 @@ void ppE_theory_transformation_jac(
 			base_dim = 13;
 		}
 	}
-	else if(new_method.find("PhenomD")!= std::string::npos){
+	else if(has_substring(new_method, "PhenomD")){
 		if(param->sky_average){
 			base_dim = 7;
 		}
@@ -2982,7 +2982,7 @@ void ppE_theory_transformation_jac(
 			base_dim = 11;
 		}
 	}
-	if(new_method.find("NRT") != std::string::npos){
+	if(has_substring(new_method, "NRT")){
 		if(param->tidal_love){
 			base_dim+=1;
 		}

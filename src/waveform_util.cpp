@@ -355,7 +355,7 @@ double calculate_snr(std::string sensitivity_curve,
 		delete [] response;	
 	}
 	else{
-		if(sensitivity_curve.find("SADC") != std::string::npos && params->sky_average){
+		if(has_substring(sensitivity_curve, "SADC") && params->sky_average){
 			params->sky_average=false;//We don't want the sky averaging factor typically used for terrestrial detectors, so we need to turn this off
 		}
 		//fourier_waveform(frequencies, length, hp,hc, generation_method, params);
@@ -423,7 +423,7 @@ int calculate_snr_gsl(double *snr,
 	)
 {
 	bool SA_save=params->sky_average;
-	if(sensitivity_curve.find("SADC") != std::string::npos && params->sky_average){
+	if(has_substring(sensitivity_curve, "SADC") && params->sky_average){
 		params->sky_average=false;	
 	}
 	gsl_snr_struct helper_params;
@@ -1199,11 +1199,11 @@ int fourier_detector_amplitude_phase(double *frequencies,
 void time_phase_corrected_autodiff(double *times, int length, double *frequencies,gen_params_base<double> *params, std::string generation_method, bool correct_time, int *tapes_in,int order)
 {
 	std::string local_method = "IMRPhenomD";
-	if(generation_method.find("ppE") != std::string::npos){
-		if(generation_method.find("Inspiral") != std::string::npos){
+	if(has_substring(generation_method, "ppE")){
+		if(has_substring(generation_method, "Inspiral")){
 			local_method = "ppE_IMRPhenomD_Inspiral";
 		}
-		else if(generation_method.find("IMR") != std::string::npos){
+		else if(has_substring(generation_method, "IMR")){
 			local_method = "ppE_IMRPhenomD_IMR";
 		}
 	}
@@ -1317,12 +1317,12 @@ void time_phase_corrected_autodiff(double *times, int length, double *frequencie
 	if(!tapes_in){
 		delete [] tapes;
 		if(check_mod(generation_method)){
-			if(generation_method.find("ppE")!= std::string::npos ||
+			if(has_substring(generation_method, "ppE") ||
 			check_theory_support(generation_method)){
 				delete [] aparams.betappe;
 				delete [] aparams.bppe;
 			}
-			else if(generation_method.find("gIMR")!= std::string::npos){
+			else if(has_substring(generation_method, "gIMR")){
 				if(aparams.Nmod_phi !=0){
 					delete [] aparams.phii;
 					delete [] aparams.delta_phi;
@@ -1352,9 +1352,9 @@ void time_phase_corrected_autodiff(double *times, int length, double *frequencie
  */
 int boundary_number(std::string method)
 {
-	if(method.find("IMRPhenomP") != std::string::npos || 
-		method.find("IMRPhenomD")!=std::string::npos){
-		if(method.find("NRT") != std::string::npos){
+	if(has_substring(method, "IMRPhenomP") || 
+		has_substring(method, "IMRPhenomD")){
+		if(has_substring(method, "NRT")){
 			return 7;	
 		}
 		return 5;
@@ -1381,11 +1381,11 @@ template<class T>
 void time_phase_corrected(T *times, int length, T *frequencies,gen_params_base<T> *params, std::string generation_method, bool correct_time, int order)
 {
 	std::string local_method="IMRPhenomD";
-	if(generation_method.find("ppE") != std::string::npos){
-		if(generation_method.find("Inspiral") != std::string::npos){
+	if(has_substring(generation_method, "ppE")){
+		if(has_substring(generation_method, "Inspiral")){
 			local_method = "ppE_IMRPhenomD_Inspiral";
 		}
-		else if(generation_method.find("IMR") != std::string::npos){
+		else if(has_substring(generation_method, "IMR")){
 			local_method = "ppE_IMRPhenomD_IMR";
 		}
 	}
@@ -1434,7 +1434,7 @@ void time_phase_corrected(T *times, int length, T *frequencies,gen_params_base<T
 	fourier_phase(frequencies, length, phase_plus, phase_cross, local_method, params);
 	//################################################
 	T fdamp, fRD, fpeak, deltaf;
-	if(local_method.find("IMRPhenomD")!=std::string::npos){
+	if(has_substring(local_method, "IMRPhenomD")){
 		source_parameters<T> s_param;
 		//s_param = source_parameters<T>::populate_source_parameters(params);
 		s_param.populate_source_parameters(params);
@@ -1453,7 +1453,7 @@ void time_phase_corrected(T *times, int length, T *frequencies,gen_params_base<T
 		fpeak = model.fpeak(&s_param , &lambda);
 		deltaf = frequencies[1]-frequencies[0];
 	}
-	else if(local_method.find("IMRPhenomPv2")!=std::string::npos){
+	else if(has_substring(local_method, "IMRPhenomPv2")){
 		source_parameters<T> s_param;
 		//s_param = source_parameters<T>::populate_source_parameters(params);
 		s_param.populate_source_parameters(params);
@@ -1487,7 +1487,7 @@ void time_phase_corrected(T *times, int length, T *frequencies,gen_params_base<T
 	//################################################
 	//Factor of 2 pi for the definition of time from frequency
 	//IMRPhenomD returns (-) phase
-	if(local_method.find("IMRPhenom") !=std::string::npos){
+	if(has_substring(local_method, "IMRPhenom")){
 		//Currently using Nico's fix
 		if(correct_time){
 			T f = frequencies[0];
@@ -1581,7 +1581,7 @@ void time_phase_corrected(T *times, int length, T *frequencies,gen_params_base<T
 template<class T>
 void transform_orientation_coords(gen_params_base<T> *parameters,std::string generation_method,std::string detector)
 {
-	if(generation_method.find("IMRPhenomP") != std::string::npos){
+	if(has_substring(generation_method, "IMRPhenomP")){
 		T theta_s = M_PI/2. - parameters->DEC;
 		T phi_s = parameters->RA;
 		//N should point source to detector
@@ -1595,7 +1595,7 @@ void transform_orientation_coords(gen_params_base<T> *parameters,std::string gen
 		}
 		//Populate JSF here
 		T JSF[3];
-		if(generation_method.find("Pv2")!=std::string::npos){
+		if(has_substring(generation_method, "Pv2")){
 			IMRPhenomPv2<T> model;
 			model.PhenomPv2_JSF_from_params(parameters, JSF);
 		}
@@ -1675,7 +1675,7 @@ void assign_freq_boundaries(double *freq_boundaries,
 	s_param.cosmology=internal_params.cosmology;
 	s_param.incl_angle=internal_params.incl_angle;
 	s_param.shift_time = input_params->shift_time;
-	if(generation_method.find("NRT") != std::string::npos){
+	if(has_substring(generation_method, "NRT")){
 		//Copied directly from prep_source_parameters 
 		//Not ideal..
 		if(input_params->tidal_love){
@@ -1738,7 +1738,7 @@ void assign_freq_boundaries(double *freq_boundaries,
 	//IMRPhenomPv2<double> model;
 	//model.PhenomPv2_inplane_spin(input_params);
 	if(	(
-		generation_method.find("IMRPhenomPv2") != std::string::npos
+		has_substring(generation_method, "IMRPhenomPv2")
 		)
 		&& !input_params->sky_average){
 		s_param.shift_time = false;
@@ -1758,7 +1758,7 @@ void assign_freq_boundaries(double *freq_boundaries,
 			s_param.spin2y = internal_params.spin2[1];
 			modelp.PhenomPv2_Param_Transform(&s_param);
 		}
-		if(generation_method.find("gIMR") !=std::string::npos){
+		if(has_substring(generation_method, "gIMR")){
 			gIMRPhenomPv2<adouble> gmodelp;
 			gmodelp.assign_lambda_param(&s_param, &lambda);
 			gmodelp.post_merger_variables(&s_param);
@@ -1790,11 +1790,11 @@ void assign_freq_boundaries(double *freq_boundaries,
 		freq_boundaries[4] = .2/M;//End waveform
 	}
 	else if(
-		generation_method.find("IMRPhenomD") != std::string::npos
+		has_substring(generation_method, "IMRPhenomD")
 		){
 
 		double M, fRD, fpeak;
-		if(generation_method.find("gIMR") !=std::string::npos){
+		if(has_substring(generation_method, "gIMR")){
 			gIMRPhenomD<adouble> modeld;
 			modeld.assign_lambda_param(&s_param, &lambda);
 			modeld.post_merger_variables(&s_param);
@@ -1825,7 +1825,7 @@ void assign_freq_boundaries(double *freq_boundaries,
 		}
 		freq_boundaries[4] = .2/M;//End waveform
 	}
-	if(generation_method.find("NRT") != std::string::npos){
+	if(has_substring(generation_method, "NRT")){
 		adouble kappa_temp = (3./16.) * s_param.tidal_weighted;
 		double kappa = kappa_temp.value();
 
@@ -1862,12 +1862,12 @@ void assign_freq_boundaries(double *freq_boundaries,
 		intermediate_freqs[i] = freq_boundaries[i-1]+(double)(freq_boundaries[i]-freq_boundaries[i-1])/2.;
 	}
 	if(check_mod(generation_method)){
-		if(generation_method.find("ppE")!= std::string::npos ||
+		if(has_substring(generation_method, "ppE") ||
 		check_theory_support(generation_method)){
 			delete [] internal_params.betappe;
 			delete [] internal_params.bppe;
 		}
-		else if(generation_method.find("gIMR")!= std::string::npos){
+		else if(has_substring(generation_method, "gIMR")){
 			if(internal_params.Nmod_phi !=0){
 				delete [] internal_params.phii;
 				delete [] internal_params.delta_phi;
@@ -2217,7 +2217,7 @@ void postmerger_params(gen_params_base<T>*params,
 	T *fRD
 	)
 {
-	if(generation_method.find("IMRPhenomD")!=std::string::npos){
+	if(has_substring(generation_method, "IMRPhenomD")){
 		source_parameters<T> s_param;
 		//s_param = source_parameters<T>::populate_source_parameters(params);
 		s_param.populate_source_parameters(params);
@@ -2226,7 +2226,7 @@ void postmerger_params(gen_params_base<T>*params,
 		s_param.phiRef = params->phiRef;
 		s_param.cosmology=params->cosmology;
 		s_param.incl_angle=params->incl_angle;
-		if(generation_method.find("gIMR")!=std::string::npos){
+		if(has_substring(generation_method, "gIMR")){
 			gIMRPhenomD<T> model;
 			lambda_parameters<T> lambda;
 			model.assign_lambda_param(&s_param,&lambda);	
@@ -2246,7 +2246,7 @@ void postmerger_params(gen_params_base<T>*params,
 
 		}
 	}
-	else if(generation_method.find("IMRPhenomPv2")!=std::string::npos){
+	else if(has_substring(generation_method, "IMRPhenomPv2")){
 		source_parameters<T> s_param;
 		//s_param = source_parameters<T>::populate_source_parameters(params);
 		s_param.populate_source_parameters(params);
@@ -2257,7 +2257,7 @@ void postmerger_params(gen_params_base<T>*params,
 		s_param.incl_angle=params->incl_angle;
 		s_param.chip = params->chip;
 		s_param.phip = params->phip;
-		if(generation_method.find("gIMR")!=std::string::npos){
+		if(has_substring(generation_method, "gIMR")){
 			gIMRPhenomPv2<T> model;
 			lambda_parameters<T> lambda;
 			model.assign_lambda_param(&s_param,&lambda);	

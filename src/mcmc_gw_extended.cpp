@@ -34,7 +34,7 @@ void pack_local_mod_structure_v2(bayesship::bayesshipSampler *sampler,
 	MCMC_modification_struct *full_struct, 
 	MCMC_modification_struct *local_struct )	
 {
-	if(waveform_extended.find("gIMR") != std::string::npos){
+	if(has_substring(waveform_extended, "gIMR")){
 		int dimct = 0 ;
 		int dphi_boundary = full_struct->gIMR_Nmod_phi + sampler->minDim;
 		int dsigma_boundary = full_struct->gIMR_Nmod_sigma + dphi_boundary;
@@ -99,7 +99,7 @@ void pack_local_mod_structure_v2(bayesship::bayesshipSampler *sampler,
 			}
 		}
 	}
-	else if(waveform_extended.find("ppE") != std::string::npos){
+	else if(has_substring(waveform_extended, "ppE")){
 		int dimct = 0 ;
 		local_struct->ppE_Nmod=0;
 		for(int i = 0 ; i<sampler->maxDim; i++){
@@ -199,7 +199,7 @@ public:
 			local_integration_method="GAUSSLEG";
 		}
 		if(mcmcVarRJ->mcmc_intrinsic){
-			if(local_gen.find("IMRPhenomD") != std::string::npos){
+			if(has_substring(local_gen, "IMRPhenomD")){
 				if(!mcmcVarRJ->mcmc_save_waveform){
 					for(int i=0; i < mcmcVarRJ->mcmc_num_detectors; i++){
 						gen_params.theta=0;	
@@ -280,7 +280,7 @@ public:
 				}
 	
 			}
-			else if(local_gen.find("IMRPhenomP")!=std::string::npos){
+			else if(has_substring(local_gen, "IMRPhenomP")){
 				gen_params.theta=0;	
 				gen_params.phi=0;	
 				gen_params.psi=0;	
@@ -329,24 +329,24 @@ public:
 			//		);
 	
 			//}
-			//else if(mcmc_generation_method.find("IMRPhenomP")!=std::string::npos){
+			//else if(has_substring(mcmc_generation_method, "IMRPhenomP")){
 	
 			//}
 		}
 		//Cleanup
 		delete [] temp_params;
 		if(check_mod(local_gen)){
-			//if( local_gen.find("ppE") != std::string::npos ||
-			//	local_gen.find("dCS") != std::string::npos ||
-			//	local_gen.find("EdGB") != std::string::npos){
+			//if( has_substring(local_gen, "ppE") ||
+			//	has_substring(local_gen, "dCS") ||
+			//	has_substring(local_gen, "EdGB")){
 			//	delete [] gen_params.betappe;
 			//}
-			if( local_gen.find("ppE") != std::string::npos ||
+			if( has_substring(local_gen, "ppE") ||
 				check_theory_support(local_gen)){
 				delete [] gen_params.betappe;
 				delete [] mod_struct_local.bppe;
 			}
-			else if( local_gen.find("gIMR") != std::string::npos){
+			else if( has_substring(local_gen, "gIMR")){
 				if(mod_struct_local.gIMR_Nmod_phi !=0){
 					delete [] gen_params.delta_phi;
 					delete [] mod_struct_local.gIMR_phii;
@@ -676,23 +676,23 @@ public:
 			//		);
 	
 			//}
-			//else if(mcmc_generation_method.find("IMRPhenomP")!=std::string::npos){
+			//else if(has_substring(mcmc_generation_method, "IMRPhenomP")){
 	
 			//}
 		}
 		//Cleanup
 		delete [] temp_params;
 		if(check_mod(local_gen)){
-			//if( local_gen.find("ppE") != std::string::npos ||
-			//	local_gen.find("dCS") != std::string::npos ||
-			//	local_gen.find("EdGB") != std::string::npos){
+			//if( has_substring(local_gen, "ppE") ||
+			//	has_substring(local_gen, "dCS") ||
+			//	has_substring(local_gen, "EdGB")){
 			//	delete [] gen_params.betappe;
 			//}
-			if( local_gen.find("ppE") != std::string::npos ||
+			if( has_substring(local_gen, "ppE") ||
 				check_theory_support(local_gen)){
 				delete [] gen_params.betappe;
 			}
-			else if( local_gen.find("gIMR") != std::string::npos){
+			else if( has_substring(local_gen, "gIMR")){
 				if(mcmcVar->mcmc_mod_struct ->gIMR_Nmod_phi !=0){
 					delete [] gen_params.delta_phi;
 				}
@@ -1436,7 +1436,7 @@ bayesship::bayesshipSampler *  PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
 	if(mcmcVar.mcmc_intrinsic){
 		propArray[1] = new bayesship::differentialEvolutionProposal(sampler);
 	}
-	else if(generation_method.find("EA_IMRPhenomD_NRT") != std::string::npos ){
+	else if(has_substring(generation_method, "EA_IMRPhenomD_NRT") ){
 		std::vector<std::vector<int>> blocksDiff = std::vector<std::vector<int>>(4);	
 		for(int i = 0 ; i<7; i++){
 			blocksDiff[0].push_back(i);
@@ -1474,7 +1474,7 @@ bayesship::bayesshipSampler *  PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
 	if(mcmcVar.mcmc_intrinsic){
 		propArray[3] = new bayesship::fisherProposal(sampler->ensembleN*sampler->ensembleSize, sampler->maxDim, &MCMC_fisher_wrapper_v2,   sampler->userParameters,  100,sampler);
 	}
-	else if(generation_method.find("EA_IMRPhenomD_NRT") != std::string::npos ){
+	else if(has_substring(generation_method, "EA_IMRPhenomD_NRT") ){
 		std::vector<std::vector<int>> blocks = std::vector<std::vector<int>>(4);
 		for(int i = 0 ; i<7; i++){
 			blocks[0].push_back(i);
@@ -1742,12 +1742,12 @@ bayesship::bayesshipSampler *  PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
 void RJPTMCMC_method_specific_prep_v2(std::string generation_method, int dimension, bool *intrinsic,MCMC_modification_struct *mod_struct)
 {
 	int totalmod = (mod_struct->gIMR_Nmod_phi + mod_struct->gIMR_Nmod_sigma + mod_struct->gIMR_Nmod_beta + mod_struct->gIMR_Nmod_alpha + mod_struct->ppE_Nmod);
-	if (generation_method.find("EA") != std::string::npos)
+	if (has_substring(generation_method, "EA"))
 	{
 		totalmod += 3;
 	}
 	debugger_print(__FILE__, __LINE__, totalmod);
-	if (generation_method.find("PhenomD") != std::string::npos && (dimension - totalmod) == 4)
+	if (has_substring(generation_method, "PhenomD") && (dimension - totalmod) == 4)
 	{
 		std::cout << "Sampling in parameters: ln chirpmass, eta, chi1, chi2";
 		for (int i = 0; i < totalmod; i++)
@@ -1757,7 +1757,7 @@ void RJPTMCMC_method_specific_prep_v2(std::string generation_method, int dimensi
 		std::cout << std::endl;
 		*intrinsic = true;
 	}
-	else if (generation_method.find("PhenomD_NRT") != std::string::npos && (dimension - totalmod) == 6)
+	else if (has_substring(generation_method, "PhenomD_NRT") && (dimension - totalmod) == 6)
 	{
 		std::cout << "Sampling in parameters: ln chirpmass, eta, chi1, chi2, ln tidal1,  ln tidal2";
 		for (int i = 0; i < totalmod; i++)
@@ -1767,7 +1767,7 @@ void RJPTMCMC_method_specific_prep_v2(std::string generation_method, int dimensi
 		std::cout << std::endl;
 		*intrinsic = true;
 	}
-	else if ((generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos) && (dimension - totalmod) == 8)
+	else if ((has_substring(generation_method, "PhenomPv2") || has_substring(generation_method, "PhenomPv3")) && (dimension - totalmod) == 8)
 	{
 		std::cout << "Sampling in parameters: ln chirpmass, eta, a1, a2, tilt1, tilt2, phi1, phi2";
 		for (int i = 0; i < totalmod; i++)
@@ -1777,7 +1777,7 @@ void RJPTMCMC_method_specific_prep_v2(std::string generation_method, int dimensi
 		std::cout << std::endl;
 		*intrinsic = true;
 	}
-	else if (generation_method.find("PhenomD") != std::string::npos && (dimension - totalmod) == 11)
+	else if (has_substring(generation_method, "PhenomD") && (dimension - totalmod) == 11)
 	{
 		std::cout << "Sampling in parameters: RA, sin DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2" << std::endl;
 		for (int i = 0; i < totalmod; i++)
@@ -1787,7 +1787,7 @@ void RJPTMCMC_method_specific_prep_v2(std::string generation_method, int dimensi
 		std::cout << std::endl;
 		*intrinsic = false;
 	}
-	else if (generation_method.find("PhenomD_NRT") != std::string::npos)
+	else if (has_substring(generation_method, "PhenomD_NRT"))
 	{
 		if ((dimension - totalmod) == 13)
 		{
@@ -1810,7 +1810,7 @@ void RJPTMCMC_method_specific_prep_v2(std::string generation_method, int dimensi
 		std::cout << std::endl;
 		mcmc_intrinsic = false;
 	}
-	else if (generation_method.find("EOS") != std::string::npos && (dimension - totalmod) == 14)
+	else if (has_substring(generation_method, "EOS") && (dimension - totalmod) == 14)
 	{
 		std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota, phi_ref, tc,  ln DL, nbc1, nbc2, chi1, chi2, bump_mag, bump_width, bump_offset" << std::endl;
 		for (int i = 0; i < totalmod; i++)
@@ -1820,7 +1820,7 @@ void RJPTMCMC_method_specific_prep_v2(std::string generation_method, int dimensi
 		std::cout << std::endl;
 		*intrinsic = false;
 	}
-	else if (generation_method.find("EOS") != std::string::npos && (dimension - totalmod) == 15)
+	else if (has_substring(generation_method, "EOS") && (dimension - totalmod) == 15)
 	{
 		std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota, phi_ref, tc,  ln DL, nbc1, nbc2, chi1, chi2, bump_mag, bump_width, bump_offset, plat" << std::endl;
 		for (int i = 0; i < totalmod; i++)
@@ -1830,7 +1830,7 @@ void RJPTMCMC_method_specific_prep_v2(std::string generation_method, int dimensi
 		std::cout << std::endl;
 		*intrinsic = false;
 	}
-	else if ((generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos) && (dimension - totalmod) == 15)
+	else if ((has_substring(generation_method, "PhenomPv2") || has_substring(generation_method, "PhenomPv3")) && (dimension - totalmod) == 15)
 	{
 		std::cout << "Sampling in parameters: RA, sin DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, a1, a2,cos tilt1, cos tilt2, phi1, phi2" << std::endl;
 		for (int i = 0; i < totalmod; i++)
@@ -1854,10 +1854,10 @@ void RJPTMCMC_method_specific_prep_v2(std::string generation_method, int dimensi
 void PTMCMC_method_specific_prep_v2(std::string generation_method, int dimension, bool *intrinsic,MCMC_modification_struct *mod_struct)
 {
 	int totalmod = (mod_struct->gIMR_Nmod_phi + mod_struct->gIMR_Nmod_sigma + mod_struct->gIMR_Nmod_beta + mod_struct->gIMR_Nmod_alpha  + mod_struct->ppE_Nmod);
-	if(generation_method.find("EA") != std::string::npos){totalmod+=3;}
-	if(generation_method.find("EA") != std::string::npos){totalmod+=2;} // two dissipative tidal dissipation numbers
+	if(has_substring(generation_method, "EA")){totalmod+=3;}
+	if(has_substring(generation_method, "EA")){totalmod+=2;} // two dissipative tidal dissipation numbers
 	debugger_print(__FILE__,__LINE__,totalmod);
-	if(generation_method.find("PhenomD") != std::string::npos && (dimension - totalmod) == 4)
+	if(has_substring(generation_method, "PhenomD") && (dimension - totalmod) == 4)
 	{
 		std::cout<<"Sampling in parameters: ln chirpmass, eta, chi1, chi2";
 		for(int i =0; i<totalmod; i++){
@@ -1866,7 +1866,7 @@ void PTMCMC_method_specific_prep_v2(std::string generation_method, int dimension
 		std::cout<<std::endl;
 		*intrinsic=true;
 	} 
-	else if(generation_method.find("PhenomD_NRT") != std::string::npos && (dimension - totalmod) == 6)
+	else if(has_substring(generation_method, "PhenomD_NRT") && (dimension - totalmod) == 6)
 	{
 		std::cout<<"Sampling in parameters: ln chirpmass, eta, chi1, chi2, ln tidal1,  ln tidal2";
 		for(int i =0; i<totalmod; i++){
@@ -1875,7 +1875,7 @@ void PTMCMC_method_specific_prep_v2(std::string generation_method, int dimension
 		std::cout<<std::endl;
 		*intrinsic=true;
 	} 
-	else if(generation_method.find("PhenomD_NRT") != std::string::npos && (dimension - totalmod) == 8)
+	else if(has_substring(generation_method, "PhenomD_NRT") && (dimension - totalmod) == 8)
 	{
 		std::cout<<"Sampling in parameters: ln chirpmass, eta, chi1, chi2, ln tidal1,  ln tidal2, diss_tidal1, diss_tidal2";
 		for(int i =0; i<totalmod; i++){
@@ -1884,7 +1884,7 @@ void PTMCMC_method_specific_prep_v2(std::string generation_method, int dimension
 		std::cout<<std::endl;
 		*intrinsic=true;
 	} 
-	else if((generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos)
+	else if((has_substring(generation_method, "PhenomPv2") || has_substring(generation_method, "PhenomPv3"))
 		&& (dimension - totalmod) == 8)
 	{
 		std::cout<<"Sampling in parameters: ln chirpmass, eta, a1, a2, tilt1, tilt2, phi1, phi2";
@@ -1894,7 +1894,7 @@ void PTMCMC_method_specific_prep_v2(std::string generation_method, int dimension
 		std::cout<<std::endl;
 		*intrinsic=true;
 	} 
-	else if(generation_method.find("PhenomD") != std::string::npos && (dimension - totalmod) == 11)
+	else if(has_substring(generation_method, "PhenomD") && (dimension - totalmod) == 11)
 	{
 		std::cout<<"Sampling in parameters: RA, sin DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2"<<std::endl;
 		for(int i =0; i<totalmod; i++){
@@ -1903,7 +1903,7 @@ void PTMCMC_method_specific_prep_v2(std::string generation_method, int dimension
 		std::cout<<std::endl;
 		*intrinsic=false;
 	}
-	else if (generation_method.find("PhenomD_NRT") != std::string::npos)
+	else if (has_substring(generation_method, "PhenomD_NRT"))
 	{
 		if ((dimension - totalmod) == 13)
 		{
@@ -1925,7 +1925,7 @@ void PTMCMC_method_specific_prep_v2(std::string generation_method, int dimension
 			std::cout << std::endl;
 			mcmc_intrinsic = false;
 		}
-		else if (generation_method.find("EOS") != std::string::npos && (dimension - totalmod) == 14)
+		else if (has_substring(generation_method, "EOS") && (dimension - totalmod) == 14)
 		{
 			std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota, phi_ref, tc,  ln DL, nbc1, nbc2, chi1, chi2, bump_mag, bump_width, bump_offset" << std::endl;
 			for (int i = 0; i < totalmod; i++)
@@ -1935,7 +1935,7 @@ void PTMCMC_method_specific_prep_v2(std::string generation_method, int dimension
 			std::cout << std::endl;
 			*intrinsic = false;
 		}
-		else if (generation_method.find("EOS") != std::string::npos && (dimension - totalmod) == 15)
+		else if (has_substring(generation_method, "EOS") && (dimension - totalmod) == 15)
 		{
 			std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota, phi_ref, tc,  ln DL, nbc1, nbc2, chi1, chi2, bump_mag, bump_width, bump_offset, plat" << std::endl;
 			for (int i = 0; i < totalmod; i++)
@@ -1946,7 +1946,7 @@ void PTMCMC_method_specific_prep_v2(std::string generation_method, int dimension
 			*intrinsic = false;
 		}
 	}
-	else if(generation_method.find("PhenomPv2") != std::string::npos && (dimension - totalmod) == 15)
+	else if(has_substring(generation_method, "PhenomPv2") && (dimension - totalmod) == 15)
 	{
 		std::cout<<"Sampling in parameters: RA, sin DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, a1, a2,cos tilt1, cos tilt2, phi1, phi2"<<std::endl;
 		for(int i =0; i<totalmod; i++){
@@ -1995,21 +1995,21 @@ std::string MCMC_prep_params_v2(double *param, double *temp_params, gen_params_b
 	}
 	int base = dimension;
 	if(check_mod(generation_method)){
-		//if(generation_method.find("ppE") != std::string::npos ||
-		//	generation_method.find("dCS") !=std::string::npos||
-		//	generation_method.find("EdGB") != std::string::npos){
+		//if(has_substring(generation_method, "ppE") ||
+		//	has_substring(generation_method, "dCS")||
+		//	has_substring(generation_method, "EdGB")){
 		//	gen_params->bppe=mcmc_mod_struct->bppe;
 		//	gen_params->Nmod=mcmc_mod_struct->ppE_Nmod;
 		//	gen_params->betappe=new double[gen_params->Nmod];
 		//}
-		if(generation_method.find("ppE") != std::string::npos ||
+		if(has_substring(generation_method, "ppE") ||
 			check_theory_support(generation_method)){
 			gen_params->bppe=mod_struct->bppe;
 			gen_params->Nmod=mod_struct->ppE_Nmod;
 			gen_params->betappe=new double[gen_params->Nmod];
 			base = dimension - mod_struct->ppE_Nmod;
 		}
-		else if(generation_method.find("gIMR") != std::string::npos){
+		else if(has_substring(generation_method, "gIMR")){
 			gen_params->Nmod_phi=mod_struct->gIMR_Nmod_phi;
 			gen_params->phii=mod_struct->gIMR_phii;
 			if(gen_params->Nmod_phi !=0){
@@ -2036,8 +2036,8 @@ std::string MCMC_prep_params_v2(double *param, double *temp_params, gen_params_b
 				- mod_struct->gIMR_Nmod_beta 
 				- mod_struct->gIMR_Nmod_alpha; 
 		}
-		if((generation_method.find("dCS")!= std::string::npos ||
-			generation_method.find("EdGB")!=std::string::npos)){
+		if((has_substring(generation_method, "dCS") ||
+			has_substring(generation_method, "EdGB"))){
 			//temp_params[base] = pow(temp_params[base],.25)/(c*1000);
 			temp_params[base] = 
 				pow_int(temp_params[base]/(c/1000.) , 4);
@@ -2068,7 +2068,7 @@ void MCMC_fisher_transformations_v2(
 		fisher[8][8] += 1./.25;//eta
 		fisher[9][9] += 1./4;//spin1
 		fisher[10][10] += 1./4;//spin2
-		if(generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos){
+		if(has_substring(generation_method, "PhenomPv2") || has_substring(generation_method, "PhenomPv3")){
 			fisher[11][11] += 1./4;//cos theta1
 			fisher[12][12] += 1./4;//cos theta2
 			fisher[13][13] += 1./(4*M_PI*M_PI);//phi1
@@ -2076,7 +2076,7 @@ void MCMC_fisher_transformations_v2(
 		}
 	}
 	else{
-		if(generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos){
+		if(has_substring(generation_method, "PhenomPv2") || has_substring(generation_method, "PhenomPv3")){
 			fisher[1][1] =1./(.25) ;//eta
 			fisher[2][2] =1./(4);//spin1
 			fisher[3][3] =1./(4);//spin2
@@ -2085,7 +2085,7 @@ void MCMC_fisher_transformations_v2(
 			fisher[6][6] =1./(4*M_PI*M_PI) ;//phi1
 			fisher[7][7] =1./(4*M_PI*M_PI) ;//phi2
 		}
-		else if (generation_method.find("PhenomD")!=std::string::npos){
+		else if (has_substring(generation_method, "PhenomD")){
 			fisher[1][1] =1./(.25) ;//eta
 			fisher[2][2] =1./(4) ;//spin1
 			fisher[3][3] =1./(4) ;//spin2
@@ -2093,8 +2093,8 @@ void MCMC_fisher_transformations_v2(
 		}
 	}
 
-	if(generation_method.find("dCS") != std::string::npos ||
-		generation_method.find("EdGB") != std::string::npos){
+	if(has_substring(generation_method, "dCS") ||
+		has_substring(generation_method, "EdGB")){
 		int base = dimension - mod_struct->ppE_Nmod;
 		for(int i = 0 ; i<dimension; i++){
 			//Transform to root alpha from alpha^2
@@ -2106,7 +2106,7 @@ void MCMC_fisher_transformations_v2(
 		}
 	}
 
-	if(generation_method.find("EA") != std::string::npos){
+	if(has_substring(generation_method, "EA")){
 		fisher[dimension-3][dimension-3] += 1./pow(10, -2.);
 		fisher[dimension-2][dimension-2] += 1./pow(10, -4.);
 		fisher[dimension-1][dimension-1] += 1./pow(10, -1.);
@@ -2115,7 +2115,7 @@ void MCMC_fisher_transformations_v2(
 		//fisher[12][7] = -1.15341564e+05;
 	}
 
-	//if(generation_method.find("EA") != std::string::npos){
+	//if(has_substring(generation_method, "EA")){
 	//  //for(int i = 0 ; i <4; i++){
 	//    for(int i = 0 ; i <3; i++){
 	//      for(int j = 0 ; j<dimension; j++){
@@ -2281,7 +2281,7 @@ void MCMC_fisher_wrapper_v3(bayesship::positionInfo *pos,   double **output, std
 
 	std::string local_gen_method = mcmcVar->mcmc_generation_method;
 	int local_dimension = dimension;  
-	//if(local_gen_method.find("EA") != std::string::npos && ids.size() != 2)
+	//if(has_substring(local_gen_method, "EA") && ids.size() != 2)
 	//  {
 	//    	local_gen_method = "IMRPhenomD_NRT";
 	//    	local_dimension -= 3;
@@ -2322,7 +2322,7 @@ void MCMC_fisher_wrapper_v3(bayesship::positionInfo *pos,   double **output, std
 	//Add prior information to fisher
 	//if(mcmcVar->mcmc_generation_method.find("Pv2") && !mcmcVar->mcmc_intrinsic){
 	
-	//if(local_gen_method.find("EA") != std::string::npos && ids.size() == 2){
+	//if(has_substring(local_gen_method, "EA") && ids.size() == 2){
 
 	MCMC_fisher_transformations_v2(temp_params, tempOutput,dimension,local_gen,mcmcVar->mcmc_intrinsic,
 		mcmcVar->mcmc_mod_struct);
@@ -2338,7 +2338,7 @@ void MCMC_fisher_wrapper_v3(bayesship::positionInfo *pos,   double **output, std
 		}
 
 	}
-	//if(local_gen_method.find("EA") != std::string::npos && ids.size() == 2){
+	//if(has_substring(local_gen_method, "EA") && ids.size() == 2){
 	//	for(int j =0; j<ids.size(); j++){
 	//		for(int k =0; k<ids.size(); k++)
 	//		{
@@ -2413,16 +2413,16 @@ void MCMC_fisher_wrapper_v3(bayesship::positionInfo *pos,   double **output, std
 	deallocate_2D_array(tempOutput, dimension, dimension);
 	deallocate_2D_array(tempCov, dimension, dimension);
 	if(check_mod(local_gen)){
-		//if(local_gen.find("ppE") != std::string::npos ||
-		//	local_gen.find("dCS")!=std::string::npos||
-		//	local_gen.find("EdGB")!=std::string::npos){
+		//if(has_substring(local_gen, "ppE") ||
+		//	has_substring(local_gen, "dCS")||
+		//	has_substring(local_gen, "EdGB")){
 		//	delete [] params.betappe;
 		//}
-		if(local_gen.find("ppE") != std::string::npos ||
+		if(has_substring(local_gen, "ppE") ||
 			check_theory_support(local_gen)){
 			delete [] params.betappe;
 		}
-		else if( local_gen.find("gIMR") != std::string::npos){
+		else if( has_substring(local_gen, "gIMR")){
 			if(mcmcVar->mcmc_mod_struct ->gIMR_Nmod_phi !=0){
 				delete [] params.delta_phi;
 			}
@@ -2552,16 +2552,16 @@ void MCMC_fisher_wrapper_v2(bayesship::positionInfo *pos,   double **output, voi
 	//Cleanup
 	delete [] temp_params;
 	if(check_mod(local_gen)){
-		//if(local_gen.find("ppE") != std::string::npos ||
-		//	local_gen.find("dCS")!=std::string::npos||
-		//	local_gen.find("EdGB")!=std::string::npos){
+		//if(has_substring(local_gen, "ppE") ||
+		//	has_substring(local_gen, "dCS")||
+		//	has_substring(local_gen, "EdGB")){
 		//	delete [] params.betappe;
 		//}
-		if(local_gen.find("ppE") != std::string::npos ||
+		if(has_substring(local_gen, "ppE") ||
 			check_theory_support(local_gen)){
 			delete [] params.betappe;
 		}
-		else if( local_gen.find("gIMR") != std::string::npos){
+		else if( has_substring(local_gen, "gIMR")){
 			if(mcmcVar->mcmc_mod_struct ->gIMR_Nmod_phi !=0){
 				delete [] params.delta_phi;
 			}

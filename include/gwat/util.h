@@ -888,4 +888,8 @@ std::complex<T> XLALSpinWeightedSphericalHarmonic(
     );
 double cbrt_internal(double base);
 adouble cbrt_internal(adouble base);
+
+bool has_substring(const std::string& s, const std::string& target);
+
+
 #endif

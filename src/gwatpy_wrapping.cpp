@@ -160,10 +160,10 @@ double MCMC_likelihood_extrinsic_pyv2(bool save_waveform,
 
 	delete [] temp_params;
 	if(check_mod(local_gen)){
-		if(local_gen.find("ppE") != std::string::npos || check_theory_support(local_gen)){
+		if(has_substring(local_gen, "ppE") || check_theory_support(local_gen)){
 			delete [] gp.betappe;	
 		}
-		else if (local_gen.find("gIMR") != std::string::npos){
+		else if (has_substring(local_gen, "gIMR")){
 			if(mod_struct->gIMR_Nmod_phi !=0){
 				delete [] gp.delta_phi;
 			}	
@@ -743,8 +743,8 @@ void gen_params_base_py_destructor(gen_params_base<double> *p)
 int get_detector_parameters(char *detector, double *LAT,double *LON, double *location, double *response_tensor)
 {
 	std::string local_det(detector);
-	if(local_det.find("Hanford")!=std::string::npos ||
-		local_det.find("hanford")!=std::string::npos){
+	if(has_substring(local_det, "Hanford") ||
+		has_substring(local_det, "hanford")){
 		*LAT = H_LAT;
 		*LON = H_LONG;
 		for(int i= 0 ; i<3 ; i++){
@@ -754,8 +754,8 @@ int get_detector_parameters(char *detector, double *LAT,double *LON, double *loc
 			}
 		}
 	}
-	else if(local_det.find("Livingston")!=std::string::npos ||
-		local_det.find("livingston")!=std::string::npos){
+	else if(has_substring(local_det, "Livingston") ||
+		has_substring(local_det, "livingston")){
 		*LAT = L_LAT;
 		*LON = L_LONG;
 		for(int i= 0 ; i<3 ; i++){
@@ -765,8 +765,8 @@ int get_detector_parameters(char *detector, double *LAT,double *LON, double *loc
 			}
 		}
 	}
-	else if(local_det.find("Virgo")!=std::string::npos ||
-		local_det.find("virgo")!=std::string::npos){
+	else if(has_substring(local_det, "Virgo") ||
+		has_substring(local_det, "virgo")){
 		*LAT = V_LAT;
 		*LON = V_LONG;
 		for(int i= 0 ; i<3 ; i++){
@@ -776,8 +776,8 @@ int get_detector_parameters(char *detector, double *LAT,double *LON, double *loc
 			}
 		}
 	}
-	else if(local_det.find("Kagra")!=std::string::npos ||
-		local_det.find("kagra")!=std::string::npos){
+	else if(has_substring(local_det, "Kagra") ||
+		has_substring(local_det, "kagra")){
 		*LAT = K_LAT;
 		*LON = K_LONG;
 		for(int i= 0 ; i<3 ; i++){
@@ -787,8 +787,8 @@ int get_detector_parameters(char *detector, double *LAT,double *LON, double *loc
 			}
 		}
 	}
-	else if(local_det.find("Indigo")!=std::string::npos ||
-		local_det.find("indigo")!=std::string::npos){
+	else if(has_substring(local_det, "Indigo") ||
+		has_substring(local_det, "indigo")){
 		*LAT = I_LAT;
 		*LON = I_LONG;
 		for(int i= 0 ; i<3 ; i++){
@@ -798,9 +798,9 @@ int get_detector_parameters(char *detector, double *LAT,double *LON, double *loc
 			}
 		}
 	}
-	else if(local_det.find("CosmicExplorer")!=std::string::npos ||
-		local_det.find("cosmicexplorer")!=std::string::npos ||
-		local_det.find("CE")!=std::string::npos ){
+	else if(has_substring(local_det, "CosmicExplorer") ||
+		has_substring(local_det, "cosmicexplorer") ||
+		has_substring(local_det, "CE") ){
 		*LAT = CE_LAT;
 		*LON = CE_LONG;
 		for(int i= 0 ; i<3 ; i++){
@@ -810,9 +810,9 @@ int get_detector_parameters(char *detector, double *LAT,double *LON, double *loc
 			}
 		}
 	}
-	else if(local_det.find("Einstein Telescope 1")!=std::string::npos ||
-		local_det.find("einstein telescope 1")!=std::string::npos ||
-		local_det.find("ET1")!=std::string::npos ){
+	else if(has_substring(local_det, "Einstein Telescope 1") ||
+		has_substring(local_det, "einstein telescope 1") ||
+		has_substring(local_det, "ET1") ){
 		*LAT = ET1_LAT;
 		*LON = ET1_LONG;
 		for(int i= 0 ; i<3 ; i++){

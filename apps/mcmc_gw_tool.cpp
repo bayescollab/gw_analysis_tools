@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
 	std::cout<<"Range of Mass1: "<<mass1_prior[0]<<" - "<<mass1_prior[1]<<std::endl;
 	std::cout<<"Range of Mass2: "<<mass2_prior[0]<<" - "<<mass2_prior[1]<<std::endl;
 	std::cout<<"Range of DL: "<<DL_prior[0]<<" - "<<DL_prior[1]<<std::endl;
-	if(generation_method.find("IMRPhenomPv2") != std::string::npos ){
+	if(has_substring(generation_method, "IMRPhenomPv2") ){
 		std::cout<<"Range of Spin1: "<<0<<" - "<<spin1_prior[1]<<std::endl;
 		std::cout<<"Range of Spin2: "<<0<<" - "<<spin2_prior[1]<<std::endl;
 	}
@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
 	{
 		tidal_love_error = bool_dict["Tidal love error marginalization"];
 	}
-	if(generation_method.find("NRT") != std::string::npos && generation_method.find("EOS") == std::string::npos){
+	if(has_substring(generation_method, "NRT") && !has_substring(generation_method, "EOS")){
 		std::cout<<"Range of tidal1: "<<tidal1_prior[0]<<" - "<<tidal1_prior[1]<<std::endl;
 		std::cout<<"Range of tidal2: "<<tidal2_prior[0]<<" - "<<tidal2_prior[1]<<std::endl;
 		std::cout<<"Range of tidal_s: "<<tidal_s_prior[0]<<" - "<<tidal_s_prior[1]<<std::endl;
@@ -285,7 +285,7 @@ int main(int argc, char *argv[])
 	  {
 	    EOS_plat_flag = bool_dict["EOS plateau flag"]; 
 	  }
-	if(generation_method.find("EOS") != std::string::npos){
+	if(has_substring(generation_method, "EOS")){
 	  if(dbl_dict.find("central baryon number1 minimum") == dbl_dict.end()){
 	    nbc1_prior[0] = .5;
 	    nbc1_prior[1] = 3;
@@ -345,7 +345,7 @@ int main(int argc, char *argv[])
 	        alpha_param = bool_dict["alpha parameterization"];
 	}
 	//Einstein AEther priors
-	if(generation_method.find("EA") != std::string::npos){
+	if(has_substring(generation_method, "EA")){
 	  std::cout<<"Using alpha parameterization: "<<alpha_param<<std::endl;
 	  if(alpha_param){
 	    if(dbl_dict.find("EA alpha_1 minimum") ==dbl_dict.end()){
@@ -482,7 +482,7 @@ int main(int argc, char *argv[])
 	int *gIMR_alphai = NULL;
 	double *bppe = NULL;
 	std::cout<<"Generation method: "<<generation_method<<std::endl;
-	if(generation_method.find("ppE") != std::string::npos || check_theory_support(generation_method)){
+	if(has_substring(generation_method, "ppE") || check_theory_support(generation_method)){
 		Nmod = int_dict["Number of modifications"];
 		std::cout<<"Number of ppE modifications: "<<Nmod<<std::endl;
 		std::cout<<"ppE b parmeters: "<<Nmod<<std::endl;
@@ -500,7 +500,7 @@ int main(int argc, char *argv[])
 		
 	}
 	
-	if(generation_method.find("gIMR") != std::string::npos){
+	if(has_substring(generation_method, "gIMR")){
 		gNmod_phi = int_dict["Number of phi modifications"];
 		gNmod_sigma = int_dict["Number of sigma modifications"];
 		gNmod_beta = int_dict["Number of beta modifications"];
@@ -557,7 +557,7 @@ int main(int argc, char *argv[])
 		
 	}
 	int total_mods = Nmod+gNmod_phi+gNmod_sigma+gNmod_beta+gNmod_alpha;
-	if(generation_method.find("EA") != std::string::npos){total_mods+=3;}
+	if(has_substring(generation_method, "EA")){total_mods+=3;}
 	bool pool = true;
 	if(pool){
 		debugger_print(__FILE__,__LINE__,"POOLING");
@@ -595,7 +595,7 @@ int main(int argc, char *argv[])
 	}
 
 	//#########################################################
-	if(generation_method.find("SkySearch") != std::string::npos){
+	if(has_substring(generation_method, "SkySearch")){
 		std::complex<double> *hplus=new std::complex<double>[data_lengths[0]];
 		std::complex<double> *hcross=new std::complex<double>[data_lengths[0]];
 
@@ -646,7 +646,7 @@ int main(int argc, char *argv[])
 	else{
 	  std::cout<<"dimension - total_mods="<<dimension-total_mods<<std::endl;
 		double(*lp)(double *param, mcmc_data_interface *interface, void *parameters);
-		if(generation_method.find("IMRPhenomD") != std::string::npos && (dimension-total_mods) == 4){
+		if(has_substring(generation_method, "IMRPhenomD") && (dimension-total_mods) == 4){
 			if(total_mods == 0){
 				lp = &standard_log_prior_D_intrinsic;
 				if(jeff_prior){
@@ -657,19 +657,19 @@ int main(int argc, char *argv[])
 				lp = &standard_log_prior_D_intrinsic_mod;
 			}
 		}
-		else if(generation_method.find("IMRPhenomD_NRT") != std::string::npos && ( (dimension-total_mods) == 6 || (dimension-total_mods) == 5)){
+		else if(has_substring(generation_method, "IMRPhenomD_NRT") && ( (dimension-total_mods) == 6 || (dimension-total_mods) == 5)){
 			
 			if(total_mods == 0){
 				lp = &standard_log_prior_D_intrinsic_NRT;
 			}
-			else if(generation_method.find("EA") !=std::string::npos){
+			else if(has_substring(generation_method, "EA")){
 				lp = NULL;
 			}
 			else{
 				lp = &standard_log_prior_D_intrinsic_NRT_mod;
 			}
 		}
-		else if(generation_method.find("IMRPhenomD") != std::string::npos && (dimension-total_mods) == 11){
+		else if(has_substring(generation_method, "IMRPhenomD") && (dimension-total_mods) == 11){
 			if(total_mods == 0){
 				lp = &standard_log_prior_D;
 			}
@@ -677,18 +677,18 @@ int main(int argc, char *argv[])
 				lp = &standard_log_prior_D_mod;
 			}
 		}
-		else if(generation_method.find("IMRPhenomD_NRT") != std::string::npos && ( (dimension-total_mods) == 13 || (dimension-total_mods) == 12)){
+		else if(has_substring(generation_method, "IMRPhenomD_NRT") && ( (dimension-total_mods) == 13 || (dimension-total_mods) == 12)){
 			if(total_mods == 0){
 				lp = &standard_log_prior_D_NRT;
 			}
-			else if(generation_method.find("EA") !=std::string::npos){
+			else if(has_substring(generation_method, "EA")){
 				lp = &standard_log_prior_D_NRT_EA;
 			}
 			else{
 				lp = &standard_log_prior_D_NRT_mod;
 			}
 		}
-		else if(generation_method.find("IMRPhenomPv2") != std::string::npos && (dimension-total_mods) == 8){
+		else if(has_substring(generation_method, "IMRPhenomPv2") && (dimension-total_mods) == 8){
 			if(total_mods == 0){
 				lp = &standard_log_prior_Pv2_intrinsic;
 			}
@@ -696,7 +696,7 @@ int main(int argc, char *argv[])
 				lp = &standard_log_prior_Pv2_intrinsic_mod;
 			}
 		}
-		else if(generation_method.find("IMRPhenomPv2") != std::string::npos && (dimension-total_mods) == 15){
+		else if(has_substring(generation_method, "IMRPhenomPv2") && (dimension-total_mods) == 15){
 			if(total_mods == 0){
 				lp = &standard_log_prior_Pv2;
 			}
@@ -778,14 +778,14 @@ int main(int argc, char *argv[])
 	if(gNmod_alpha != 0){
 		delete [] gIMR_alphai;
 	}
-	if(generation_method.find("ppE") != std::string::npos){
+	if(has_substring(generation_method, "ppE")){
 		delete [] bppe;	
 		for(int i = 0 ; i<Nmod ; i++){
 			delete [] mod_priors[i] ;
 		}
 		delete [] mod_priors;
 	}
-	else if(generation_method.find("EA") !=std::string::npos){
+	else if(has_substring(generation_method, "EA")){
 		for(int i = 0 ; i<4 ; i++){
 			delete [] mod_priors[i] ;
 		}

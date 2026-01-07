@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
 	int Nmod = 0;
 	int *bppe = NULL;
 	std::cout<<"Generation method: "<<generation_method<<std::endl;
-	if(generation_method.find("ppE") != std::string::npos){
+	if(has_substring(generation_method, "ppE")){
 		Nmod = int_dict["Number of modifications"];
 		std::cout<<"Number of ppE modifications: "<<Nmod<<std::endl;
 		std::cout<<"ppE b parmeters: "<<Nmod<<std::endl;
@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
 	bool show_progress = true;
 
 	//#########################################################
-	if(generation_method.find("SkySearch") != std::string::npos){
+	if(has_substring(generation_method, "SkySearch")){
 		std::complex<double> *hplus=new std::complex<double>[data_lengths[0]];
 		std::complex<double> *hcross=new std::complex<double>[data_lengths[0]];
 
@@ -238,19 +238,19 @@ int main(int argc, char *argv[])
 	else{
 	
 		double(*lp)(double *param, int dimension, int chain_id, void *parameters);
-		if(generation_method.find("IMRPhenomD") != std::string::npos && dimension == 11){
+		if(has_substring(generation_method, "IMRPhenomD") && dimension == 11){
 			lp = &standard_log_prior_D;
 		}
-		else if(generation_method.find("IMRPhenomPv2") != std::string::npos && dimension == 14){
+		else if(has_substring(generation_method, "IMRPhenomPv2") && dimension == 14){
 			lp = &standard_log_prior_Pv2;
 		}
-		else if(generation_method.find("ppE_IMRPhenomPv2") != std::string::npos && dimension >= 14){
+		else if(has_substring(generation_method, "ppE_IMRPhenomPv2") && dimension >= 14){
 			lp = &standard_log_prior_Pv2_ppE;
 		}
-		else if(generation_method.find("IMRPhenomPv2") != std::string::npos && dimension == 7){
+		else if(has_substring(generation_method, "IMRPhenomPv2") && dimension == 7){
 			lp = &standard_log_prior_Pv2_intrinsic;
 		}
-		else if(generation_method.find("IMRPhenomD") != std::string::npos && dimension == 4){
+		else if(has_substring(generation_method, "IMRPhenomD") && dimension == 4){
 			lp = &standard_log_prior_D_intrinsic;
 		}
 		else{
@@ -310,7 +310,7 @@ int main(int argc, char *argv[])
 		free(data[i]);
 	free(data);
 
-	if(generation_method.find("ppE") != std::string::npos){
+	if(has_substring(generation_method, "ppE")){
 		delete [] bppe;	
 		for(int i = 0 ; i<Nmod ; i++){
 			delete [] beta_priors[i] ;

@@ -248,7 +248,7 @@ void calculate_derivatives(std::complex<double>  **response_deriv,
 			    }
 			  }
 			}
-			repack_parameters(param_p, &waveform_params, gen_method, dimension, parameters);
+			repack_parameters(param_p, &waveform_params, gen_method, dimension);
 			fourier_amplitude(frequencies, 
 				length,
 				amplitude_plus,
@@ -261,7 +261,7 @@ void calculate_derivatives(std::complex<double>  **response_deriv,
 				local_gen_method,
 				&waveform_params);	
 
-			repack_parameters(param_m, &waveform_params, gen_method, dimension, parameters);
+			repack_parameters(param_m, &waveform_params, gen_method, dimension);
 			fourier_amplitude(frequencies, 
 				length,
 				amplitude_minus,
@@ -274,7 +274,7 @@ void calculate_derivatives(std::complex<double>  **response_deriv,
 				local_gen_method,
 				&waveform_params);	
 			if(order>=4){
-				repack_parameters(param_pp, &waveform_params, gen_method, dimension, parameters);
+				repack_parameters(param_pp, &waveform_params, gen_method, dimension);
 				fourier_amplitude(frequencies, 
 					length,
 					amplitude_plus_plus,
@@ -287,7 +287,7 @@ void calculate_derivatives(std::complex<double>  **response_deriv,
 					local_gen_method,
 					&waveform_params);	
 
-				repack_parameters(param_mm, &waveform_params, gen_method, dimension, parameters);
+				repack_parameters(param_mm, &waveform_params, gen_method, dimension);
 				fourier_amplitude(frequencies, 
 					length,
 					amplitude_minus_minus,
@@ -396,7 +396,7 @@ void calculate_derivatives(std::complex<double>  **response_deriv,
 				  //std::cout<<"eta close to boundary, using backward difference approximation to differentiate. See line "<<__LINE__<<" in "<<__FILE__<<" for more information."<<std::endl;
 				}
 			}
-			repack_parameters(param_p, &waveform_params, gen_method, dimension, parameters);
+			repack_parameters(param_p, &waveform_params, gen_method, dimension);
 			//if(detector=="LISA"){
 			//	//correct time needs to stay false for now
 			//	//time_phase_corrected(times, length,frequencies,  &waveform_params, local_gen_method, corr_time);
@@ -421,7 +421,7 @@ void calculate_derivatives(std::complex<double>  **response_deriv,
 				}
 			}
 
-			repack_parameters(param_m, &waveform_params, gen_method, dimension, parameters);
+			repack_parameters(param_m, &waveform_params, gen_method, dimension);
 			//if(detector=="LISA"){
 			//	//map_extrinsic_angles(&waveform_params);
 			//}
@@ -443,7 +443,7 @@ void calculate_derivatives(std::complex<double>  **response_deriv,
 				}
 			}
 			if(order>=4){
-				repack_parameters(param_pp, &waveform_params, gen_method, dimension, parameters);
+				repack_parameters(param_pp, &waveform_params, gen_method, dimension);
 				if(detector=="LISA"){
 					//map_extrinsic_angles(&waveform_params);
 				}
@@ -458,7 +458,7 @@ void calculate_derivatives(std::complex<double>  **response_deriv,
 					&waveform_params,
 					times);	
 
-				repack_parameters(param_mm, &waveform_params, gen_method, dimension, parameters);
+				repack_parameters(param_mm, &waveform_params, gen_method, dimension);
 				if(detector=="LISA"){
 					//map_extrinsic_angles(&waveform_params);
 				}
@@ -779,7 +779,7 @@ void calculate_derivatives_autodiff(double *frequency,
 		//Non variable parameters
 		repack_non_parameter_options(&a_parameters,parameters,generation_method);
 		//############################################
-		repack_parameters(&avec_parameters[1],&a_parameters,generation_method, dimension, parameters);
+		repack_parameters(&avec_parameters[1],&a_parameters,generation_method, dimension);
 		adouble time;
 		if(detector == "LISA"){
 			time <<= grad_times[i];
@@ -930,7 +930,7 @@ void time_phase_corrected_derivative_autodiff_numerical(double **dt, int length,
 		//Non variable parameters
 		repack_non_parameter_options(&a_parameters,params,generation_method);
 		//############################################
-		repack_parameters(&avec_parameters[1],&a_parameters,generation_method, dimension,params);
+		repack_parameters(&avec_parameters[1],&a_parameters,generation_method, dimension);
 		if(params->equatorial_orientation){
 			transform_orientation_coords(&a_parameters, generation_method, "");
 		}
@@ -1035,7 +1035,7 @@ void time_phase_corrected_derivative_autodiff_full_hess(double **dt, int length,
 		//Non variable parameters
 		repack_non_parameter_options(&a_parameters,params,generation_method);
 		//############################################
-		repack_parameters(&avec_parameters[1],&a_parameters,generation_method, dimension,params);
+		repack_parameters(&avec_parameters[1],&a_parameters,generation_method, dimension);
 		if(params->equatorial_orientation){
 			transform_orientation_coords(&a_parameters, generation_method, "");
 		}
@@ -1536,7 +1536,7 @@ void unpack_parameters(double *parameters, gen_params_base<double> *input_params
  * This is one of the places where the generation-method/dimension/sky_average specific modifications should go
  */
 template<class T>
-void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params, std::string generation_method, int dim, gen_params_base<double> *original_params)
+void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params, std::string generation_method, int dim)
 {
 	if(!a_params->sky_average){
 		if(has_substring(generation_method, "IMRPhenomPv2") || has_substring(generation_method, "IMRPhenomPv3")){
@@ -2219,8 +2219,8 @@ void calculate_fisher_elements(
 	delete [] integrand;
 }
 //#################################################################
-template void repack_parameters<adouble>(adouble *, gen_params_base<adouble> *, std::string, int, gen_params_base<double> *);
-template void repack_parameters<double>(double *, gen_params_base<double> *, std::string, int, gen_params_base<double> *);
+template void repack_parameters<adouble>(adouble *, gen_params_base<adouble> *, std::string, int);
+template void repack_parameters<double>(double *, gen_params_base<double> *, std::string, int);
 
 void prep_gsl_subroutine(gsl_subroutine *params_packed)
 {
@@ -2351,7 +2351,7 @@ void tape_time_gsl_subroutine(gsl_subroutine * params_packed)
 		//Non variable parameters
 		repack_non_parameter_options(&a_parameters,params,generation_method);
 		//############################################
-		repack_parameters(&avec_parameters[1],&a_parameters,generation_method, dimension,params);
+		repack_parameters(&avec_parameters[1],&a_parameters,generation_method, dimension);
 		adouble phasep, phasec;
 		int status  = fourier_phase(&afreq, 1, &phasep,&phasec, local_gen_method, &a_parameters);
 		double phase;
@@ -2416,7 +2416,7 @@ void tape_waveform_gsl_subroutine(gsl_subroutine * params_packed)
 		//Non variable parameters
 		repack_non_parameter_options(&a_parameters,parameters,generation_method);
 		//############################################
-		repack_parameters(&avec_parameters[1],&a_parameters,generation_method, dimension, parameters);
+		repack_parameters(&avec_parameters[1],&a_parameters,generation_method, dimension);
 		adouble time;
 		if(detector == "LISA"){
 			time <<= grad_times[i];
@@ -2935,7 +2935,7 @@ void ppE_theory_transformation_calculate_derivatives(
 		//Non variable parameters
 		repack_non_parameter_options(&a_parameters,param,new_method);
 		//############################################
-		repack_parameters(avec_parameters,&a_parameters,new_method, dimension, param);
+		repack_parameters(avec_parameters,&a_parameters,new_method, dimension);
 		source_parameters<adouble> asource;
 		std::string local_method = prep_source_parameters(&asource,&a_parameters,new_method);
 		//theory_ppE_map<adouble> mapping;

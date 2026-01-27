@@ -143,7 +143,7 @@ double MCMC_likelihood_extrinsic_pyv2(bool save_waveform,
 	gen_params_base<double> gp;
 	double *temp_params = new double[dimension];
 	std::string local_gen = MCMC_prep_params(parameters, temp_params,&gp, dimension, std::string(generation_method), mod_struct);
-	repack_parameters(temp_params, &gp, "MCMC_"+std::string(generation_method), dimension,NULL);
+	repack_parameters(temp_params, &gp, "MCMC_"+std::string(generation_method), dimension);
 	//###############################
 	//parameters->print_properties();
 	double LL =  MCMC_likelihood_extrinsic(save_waveform, &gp, std::string(generation_method), data_length, FREQ, data,PSD, WEIGHTS, std::string(integration_method), log10F, DET, num_detectors);
@@ -382,7 +382,7 @@ char * MCMC_prep_params_py(
 
 void repack_parameters_py(double *parameters, gen_params_base<double> *gen_param, char * generation_method, int dim )
 {
-	repack_parameters(parameters, gen_param, std::string(generation_method), dim , (gen_params_base<double> *)NULL);
+	repack_parameters(parameters, gen_param, std::string(generation_method), dim);
 	return;
 }
 

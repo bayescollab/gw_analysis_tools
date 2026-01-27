@@ -2278,10 +2278,10 @@ void MCMC_fisher_wrapper(double *param,  double **output, mcmc_data_interface *i
 	//#########################################################################
 	//#########################################################################
 	repack_parameters(temp_params, &params, 
-		"MCMC_"+mcmc_generation_method, dimension, NULL);
+		"MCMC_"+mcmc_generation_method, dimension);
 	//std::cout<<temp_params[11]<<" "<<temp_params[12]<<std::endl;
 	//repack_parameters(mcmc_init_pos, &params, 
-	//	"MCMC_"+mcmc_generation_method, dimension, NULL);
+	//	"MCMC_"+mcmc_generation_method, dimension);
 	//#########################################################################
 	//#########################################################################
 	//std::cout<<"INCL angle fisher: "<<params.incl_angle<<std::endl;
@@ -2656,7 +2656,7 @@ double MCMC_likelihood_wrapper(double *param, mcmc_data_interface *interface ,vo
   //repack_non_parameters(temp_params, &gen_params, 
   //"MCMC_"+mcmc_generation_method, dimension, NULL);
   repack_parameters(temp_params, &gen_params, 
-		    "MCMC_"+mcmc_generation_method, dimension, NULL);
+		    "MCMC_"+mcmc_generation_method, dimension);
   //#########################################################################
   //#########################################################################
   //return 1;
@@ -3581,7 +3581,7 @@ double RJMCMC_2WF_likelihood_wrapper(
 	//repack_non_parameters(temp_params, &gen_params, 
 		//"MCMC_"+mcmc_generation_method, dimension, NULL);
 	repack_parameters(temp_params, &gen_params, 
-		"MCMC_"+gen_meth, dimct, NULL);
+		"MCMC_"+gen_meth, dimct);
 	//#########################################################################
 	//#########################################################################
 	//return 1;
@@ -3742,7 +3742,7 @@ void RJMCMC_2WF_fisher_wrapper(
 	//#########################################################################
 	//#########################################################################
 	repack_parameters(param, &gen_parameters, 
-		"MCMC_"+mcmc_generation_method_base, min_dimension, NULL);
+		"MCMC_"+mcmc_generation_method_base, min_dimension);
 	//#########################################################################
 	//#########################################################################
 	for(int j =0; j<min_dimension; j++){

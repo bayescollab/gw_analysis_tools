@@ -175,7 +175,7 @@ public:
 		//repack_non_parameters(temp_params, &gen_params, 
 			//"MCMC_"+mcmc_generation_method, dimension, NULL);
 		repack_parameters(temp_params, &gen_params, 
-			"MCMC_"+gen_meth, dim, NULL);
+			"MCMC_"+gen_meth, dim);
 		//if(gen_params.Nmod !=0){
 		//	std::cout<<gen_params.Nmod<<" "<<local_gen<<std::endl;
 		//	for(int i = 0 ; i<gen_params.Nmod; i++){
@@ -522,7 +522,7 @@ public:
 		//repack_non_parameters(temp_params, &gen_params, 
 			//"MCMC_"+mcmc_generation_method, dimension, NULL);
 		repack_parameters(temp_params, &gen_params, 
-			"MCMC_"+mcmcVar->mcmc_generation_method, dimension, NULL);
+			"MCMC_"+mcmcVar->mcmc_generation_method, dimension);
 		//#########################################################################
 		//#########################################################################
 		//return 1;
@@ -2244,10 +2244,10 @@ void MCMC_fisher_wrapper_v3(bayesship::positionInfo *pos,   double **output, std
 	//#########################################################################
 	//#########################################################################
 	repack_parameters(temp_params, &params, 
-		"MCMC_"+mcmcVar->mcmc_generation_method, dimension, NULL);
+		"MCMC_"+mcmcVar->mcmc_generation_method, dimension);
 	//std::cout<<temp_params[11]<<" "<<temp_params[12]<<std::endl;
 	//repack_parameters(mcmc_init_pos, &params, 
-	//	"MCMC_"+mcmc_generation_method, dimension, NULL);
+	//	"MCMC_"+mcmc_generation_method, dimension);
 	//#########################################################################
 	//#########################################################################
 	//std::cout<<"INCL angle fisher: "<<params.incl_angle<<std::endl;
@@ -2459,10 +2459,10 @@ void MCMC_fisher_wrapper_v2(bayesship::positionInfo *pos,   double **output, voi
 	//#########################################################################
 	//#########################################################################
 	repack_parameters(temp_params, &params, 
-		"MCMC_"+mcmcVar->mcmc_generation_method, dimension, NULL);
+		"MCMC_"+mcmcVar->mcmc_generation_method, dimension);
 	//std::cout<<temp_params[11]<<" "<<temp_params[12]<<std::endl;
 	//repack_parameters(mcmc_init_pos, &params, 
-	//	"MCMC_"+mcmc_generation_method, dimension, NULL);
+	//	"MCMC_"+mcmc_generation_method, dimension);
 	//#########################################################################
 	//#########################################################################
 	//std::cout<<"INCL angle fisher: "<<params.incl_angle<<std::endl;

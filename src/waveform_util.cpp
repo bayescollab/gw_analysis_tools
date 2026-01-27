@@ -1352,10 +1352,12 @@ void time_phase_corrected_autodiff(double *times, int length, double *frequencie
  */
 int boundary_number(std::string method)
 {
-	if(method.find("IMRPhenomP") != std::string::npos || 
-		method.find("IMRPhenomD")!=std::string::npos){
-		if(method.find("NRT") != std::string::npos){
-			return 7;	
+	if (method.find("IMRPhenomP") != std::string::npos ||
+		method.find("IMRPhenomD") != std::string::npos)
+	{
+		if (method.find("NRT") != std::string::npos)
+		{
+			return 7;
 		}
 		return 5;
 	}
@@ -1930,6 +1932,7 @@ void integration_bounds(gen_params_base<double> *params, /**< Parameters of the 
 	
 	//Check lowest frequency
 	eval_freq = fmin;	
+	//ISSUE: THIS BOOL IS ALWAYS FALSE. NONE OF THESE FUNCTIONS ARE *EVER CALLED*
 	if(autodiff){
 		time_phase_corrected_autodiff(&time, 1, &eval_freq, params, 
 			generation_method, false,(int *)NULL,1);
@@ -2233,6 +2236,7 @@ void observation_bounds_discrete(double sampling_freq, /**< Frequency at which t
 		frequencies[i] = fmin + i*delta_f;	
 	}
 	
+	//FIXME: This bool is ALWAYS FALSE.
 	bool autodiff=false;
 	double bounds_from_band[2];
 	integration_bounds( params, generation_method, detector, sensitivity_curve, fmin, fmax, .1, .01, bounds_from_band,autodiff);

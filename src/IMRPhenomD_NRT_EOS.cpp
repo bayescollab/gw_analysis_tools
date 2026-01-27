@@ -88,13 +88,27 @@ void IMRPhenomD_NRT_EOS<T>::get_observable_params(gen_params_base<T> *params)
 template <class T>
 void IMRPhenomD_NRT_EOS<T>::get_observable_params(source_parameters<T> *params)
 {
-	params->mass1 = eos_params.mass1;
-	params->mass2 = eos_params.mass2;
-	params->chirpmass = calculate_chirpmass(params->mass1, params->mass2);
-	params->eta = calculate_eta(params->mass1, params->mass2);
-	params->q = eos_params.mass2 / eos_params.mass1;
+	params->mass1 = eos_params.mass1 * MSOL_SEC;
+	params->mass2 = eos_params.mass2 * MSOL_SEC;
 	params->tidal1 = eos_params.tidal1;
 	params->tidal2 = eos_params.tidal2;
+
+	params->q = params->mass2 / params->mass1;
+	params->chirpmass = calculate_chirpmass(params->mass1, params->mass2);
+	params->eta = calculate_eta(params->mass1, params->mass2);
+	params->M = params->mass1 + params->mass2;
+	params->chi_eff = (params->mass1 * (params->spin1z) + params->mass2 * (params->spin2z)) / (params->M);
+	params->chi_pn = params->chi_eff - (38 * params->eta / 113) * (2 * params->chi_s);
+	params->delta_mass = sqrt(1. - 4 * params->eta);
+
+	if (params->sky_average)
+	{
+		params->A0 = sqrt(M_PI / 30) * params->chirpmass * params->chirpmass / params->DL * pow(M_PI * params->chirpmass, -7. / 6);
+	}
+	else
+	{
+		params->A0 = sqrt(M_PI * 40. / 192.) * params->chirpmass * params->chirpmass / params->DL * pow(M_PI * params->chirpmass, -7. / 6);
+	}
 }
 
 /**

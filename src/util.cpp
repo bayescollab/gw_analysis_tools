@@ -2355,3 +2355,7 @@ template std::complex<double> cpolar<double>(double, double);
 template std::complex<adouble> cpolar<adouble>(adouble,adouble);
 template class source_parameters<double>;
 template class source_parameters<adouble>;
+
+bool has_substring(const std::string& s, const std::string& target) {
+	return s.find(target) != std::string::npos;
+}

@@ -497,17 +497,7 @@ int EA_IMRPhenomD_NRT<T>::EA_construct_waveform(T *frequencies, int length, wave
     else {
       //if (f<params->f1_phase)
       //This is always needed for NRT
-      if (true) {
-        this->precalc_powers_ins(f, M, &pows);
-      }
-
-      else {
-        //pows.MFsixth= pow(M*f,1./6.);
-	      //pows.MF7sixth= pow_int(pows.MFsixth,7);//*pows.MFsixth*pows.MFsixth*pows.MFsixth*pows.MFsixth*pows.MFsixth*pows.MFsixth;
-	      //Needed for Pade function
-	      //pows.MFthird = pows.MFsixth*pows.MFsixth;
-	      //pows.MF2third = pows.MFthird*pows.MFthird;
-      }
+      this->precalc_powers_ins(f, M, &pows);
 
       amp = (A0 * this->build_amp(f,&lambda,params,&pows,pn_amp_coeffs,deltas));
       phase = (this->build_phase(f,&lambda,params,&pows,pn_phase_coeffs));

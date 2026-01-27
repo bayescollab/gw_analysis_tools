@@ -50,7 +50,7 @@ int unpack_input_io_file(std::string input_param_file,
 			if(line==""){continue;}
 			std::stringstream lineStream(line);
 			std::getline(lineStream,temp,'[');
-			if(temp.find("#") == std::string::npos){
+			if(!has_substring(temp, "#")){
 				ct++;
 				//std::cout<<line<<std::endl;
 				std::getline(lineStream,dtype,']');

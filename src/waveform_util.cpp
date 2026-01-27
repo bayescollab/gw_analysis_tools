@@ -355,7 +355,7 @@ double calculate_snr(std::string sensitivity_curve,
 		delete [] response;	
 	}
 	else{
-		if(sensitivity_curve.find("SADC") != std::string::npos && params->sky_average){
+		if(has_substring(sensitivity_curve, "SADC") && params->sky_average){
 			params->sky_average=false;//We don't want the sky averaging factor typically used for terrestrial detectors, so we need to turn this off
 		}
 		//fourier_waveform(frequencies, length, hp,hc, generation_method, params);
@@ -423,7 +423,7 @@ int calculate_snr_gsl(double *snr,
 	)
 {
 	bool SA_save=params->sky_average;
-	if(sensitivity_curve.find("SADC") != std::string::npos && params->sky_average){
+	if(has_substring(sensitivity_curve, "SADC") && params->sky_average){
 		params->sky_average=false;	
 	}
 	gsl_snr_struct helper_params;
@@ -1199,11 +1199,11 @@ int fourier_detector_amplitude_phase(double *frequencies,
 void time_phase_corrected_autodiff(double *times, int length, double *frequencies,gen_params_base<double> *params, std::string generation_method, bool correct_time, int *tapes_in,int order)
 {
 	std::string local_method = "IMRPhenomD";
-	if(generation_method.find("ppE") != std::string::npos){
-		if(generation_method.find("Inspiral") != std::string::npos){
+	if(has_substring(generation_method, "ppE")){
+		if(has_substring(generation_method, "Inspiral")){
 			local_method = "ppE_IMRPhenomD_Inspiral";
 		}
-		else if(generation_method.find("IMR") != std::string::npos){
+		else if(has_substring(generation_method, "IMR")){
 			local_method = "ppE_IMRPhenomD_IMR";
 		}
 	}
@@ -1317,12 +1317,12 @@ void time_phase_corrected_autodiff(double *times, int length, double *frequencie
 	if(!tapes_in){
 		delete [] tapes;
 		if(check_mod(generation_method)){
-			if(generation_method.find("ppE")!= std::string::npos ||
+			if(has_substring(generation_method, "ppE") ||
 			check_theory_support(generation_method)){
 				delete [] aparams.betappe;
 				delete [] aparams.bppe;
 			}
-			else if(generation_method.find("gIMR")!= std::string::npos){
+			else if(has_substring(generation_method, "gIMR")){
 				if(aparams.Nmod_phi !=0){
 					delete [] aparams.phii;
 					delete [] aparams.delta_phi;
@@ -1352,12 +1352,10 @@ void time_phase_corrected_autodiff(double *times, int length, double *frequencie
  */
 int boundary_number(std::string method)
 {
-	if (method.find("IMRPhenomP") != std::string::npos ||
-		method.find("IMRPhenomD") != std::string::npos)
-	{
-		if (method.find("NRT") != std::string::npos)
-		{
-			return 7;
+	if(has_substring(method, "IMRPhenomP") || 
+		has_substring(method, "IMRPhenomD")){
+		if(has_substring(method, "NRT")){
+			return 7;	
 		}
 		return 5;
 	}
@@ -1383,11 +1381,11 @@ template<class T>
 void time_phase_corrected(T *times, int length, T *frequencies,gen_params_base<T> *params, std::string generation_method, bool correct_time, int order)
 {
 	std::string local_method="IMRPhenomD";
-	if(generation_method.find("ppE") != std::string::npos){
-		if(generation_method.find("Inspiral") != std::string::npos){
+	if(has_substring(generation_method, "ppE")){
+		if(has_substring(generation_method, "Inspiral")){
 			local_method = "ppE_IMRPhenomD_Inspiral";
 		}
-		else if(generation_method.find("IMR") != std::string::npos){
+		else if(has_substring(generation_method, "IMR")){
 			local_method = "ppE_IMRPhenomD_IMR";
 		}
 	}
@@ -1436,7 +1434,7 @@ void time_phase_corrected(T *times, int length, T *frequencies,gen_params_base<T
 	fourier_phase(frequencies, length, phase_plus, phase_cross, local_method, params);
 	//################################################
 	T fdamp, fRD, fpeak, deltaf;
-	if(local_method.find("IMRPhenomD")!=std::string::npos){
+	if(has_substring(local_method, "IMRPhenomD")){
 		source_parameters<T> s_param;
 		//s_param = source_parameters<T>::populate_source_parameters(params);
 		s_param.populate_source_parameters(params);
@@ -1455,7 +1453,7 @@ void time_phase_corrected(T *times, int length, T *frequencies,gen_params_base<T
 		fpeak = model.fpeak(&s_param , &lambda);
 		deltaf = frequencies[1]-frequencies[0];
 	}
-	else if(local_method.find("IMRPhenomPv2")!=std::string::npos){
+	else if(has_substring(local_method, "IMRPhenomPv2")){
 		source_parameters<T> s_param;
 		//s_param = source_parameters<T>::populate_source_parameters(params);
 		s_param.populate_source_parameters(params);
@@ -1489,7 +1487,7 @@ void time_phase_corrected(T *times, int length, T *frequencies,gen_params_base<T
 	//################################################
 	//Factor of 2 pi for the definition of time from frequency
 	//IMRPhenomD returns (-) phase
-	if(local_method.find("IMRPhenom") !=std::string::npos){
+	if(has_substring(local_method, "IMRPhenom")){
 		//Currently using Nico's fix
 		if(correct_time){
 			T f = frequencies[0];
@@ -1583,7 +1581,7 @@ void time_phase_corrected(T *times, int length, T *frequencies,gen_params_base<T
 template<class T>
 void transform_orientation_coords(gen_params_base<T> *parameters,std::string generation_method,std::string detector)
 {
-	if(generation_method.find("IMRPhenomP") != std::string::npos){
+	if(has_substring(generation_method, "IMRPhenomP")){
 		T theta_s = M_PI/2. - parameters->DEC;
 		T phi_s = parameters->RA;
 		//N should point source to detector
@@ -1597,7 +1595,7 @@ void transform_orientation_coords(gen_params_base<T> *parameters,std::string gen
 		}
 		//Populate JSF here
 		T JSF[3];
-		if(generation_method.find("Pv2")!=std::string::npos){
+		if(has_substring(generation_method, "Pv2")){
 			IMRPhenomPv2<T> model;
 			model.PhenomPv2_JSF_from_params(parameters, JSF);
 		}
@@ -1677,7 +1675,7 @@ void assign_freq_boundaries(double *freq_boundaries,
 	s_param.cosmology=internal_params.cosmology;
 	s_param.incl_angle=internal_params.incl_angle;
 	s_param.shift_time = input_params->shift_time;
-	if(generation_method.find("NRT") != std::string::npos){
+	if(has_substring(generation_method, "NRT")){
 		//Copied directly from prep_source_parameters 
 		//Not ideal..
 		if(input_params->tidal_love){
@@ -1740,7 +1738,7 @@ void assign_freq_boundaries(double *freq_boundaries,
 	//IMRPhenomPv2<double> model;
 	//model.PhenomPv2_inplane_spin(input_params);
 	if(	(
-		generation_method.find("IMRPhenomPv2") != std::string::npos
+		has_substring(generation_method, "IMRPhenomPv2")
 		)
 		&& !input_params->sky_average){
 		s_param.shift_time = false;
@@ -1760,7 +1758,7 @@ void assign_freq_boundaries(double *freq_boundaries,
 			s_param.spin2y = internal_params.spin2[1];
 			modelp.PhenomPv2_Param_Transform(&s_param);
 		}
-		if(generation_method.find("gIMR") !=std::string::npos){
+		if(has_substring(generation_method, "gIMR")){
 			gIMRPhenomPv2<adouble> gmodelp;
 			gmodelp.assign_lambda_param(&s_param, &lambda);
 			gmodelp.post_merger_variables(&s_param);
@@ -1792,11 +1790,11 @@ void assign_freq_boundaries(double *freq_boundaries,
 		freq_boundaries[4] = .2/M;//End waveform
 	}
 	else if(
-		generation_method.find("IMRPhenomD") != std::string::npos
+		has_substring(generation_method, "IMRPhenomD")
 		){
 
 		double M, fRD, fpeak;
-		if(generation_method.find("gIMR") !=std::string::npos){
+		if(has_substring(generation_method, "gIMR")){
 			gIMRPhenomD<adouble> modeld;
 			modeld.assign_lambda_param(&s_param, &lambda);
 			modeld.post_merger_variables(&s_param);
@@ -1827,7 +1825,7 @@ void assign_freq_boundaries(double *freq_boundaries,
 		}
 		freq_boundaries[4] = .2/M;//End waveform
 	}
-	if(generation_method.find("NRT") != std::string::npos){
+	if(has_substring(generation_method, "NRT")){
 		adouble kappa_temp = (3./16.) * s_param.tidal_weighted;
 		double kappa = kappa_temp.value();
 
@@ -1864,12 +1862,12 @@ void assign_freq_boundaries(double *freq_boundaries,
 		intermediate_freqs[i] = freq_boundaries[i-1]+(double)(freq_boundaries[i]-freq_boundaries[i-1])/2.;
 	}
 	if(check_mod(generation_method)){
-		if(generation_method.find("ppE")!= std::string::npos ||
+		if(has_substring(generation_method, "ppE") ||
 		check_theory_support(generation_method)){
 			delete [] internal_params.betappe;
 			delete [] internal_params.bppe;
 		}
-		else if(generation_method.find("gIMR")!= std::string::npos){
+		else if(has_substring(generation_method, "gIMR")){
 			if(internal_params.Nmod_phi !=0){
 				delete [] internal_params.phii;
 				delete [] internal_params.delta_phi;
@@ -2208,104 +2206,6 @@ int observation_bounds(double sampling_freq, /**< Frequency at which the detecto
 	
 }
 
-/*! \brief ***DEPRECATED*** Determines the integration bounds for the log likelihood or fisher given some observation time, sampling frequency, detector, and sensitivity curve
- *
- * Sensitivity curve has to be one of the options in detector_util analytic options
- *
- * The current scheme is to use the frequency bounds determined by the SNR if the binary spends less than the integration time in band. If the merger spends more time in band than the integration time, the frequencies are determined to be (f_integration_time, f_high_band)
- */
-void observation_bounds_discrete(double sampling_freq, /**< Frequency at which the detector operates*/
-	double integration_time, /**< Time of observation in seconds*/
-	std::string detector, /**< Detector to use for the response function*/
-	std::string sensitivity_curve, /**< Sensitivity curve to use -- must match analytic choices in detector_util*/
-	std::string generation_method,/**< method to use for the waveform generation*/
-	gen_params_base<double> *params,/**< parameters of the source*/
-	double *freq_bounds/**< [out] Output bounds*/
-	)
-{
-	if(params->equatorial_orientation){
-		transform_orientation_coords(params,generation_method,detector);
-	}
-	double fmax = sampling_freq /2.; //Nyquist limit
-	//double fmin= 0; //DC component
-	double fmin= 1e-6; //DC component
-	double delta_f =  1./integration_time;
-	int N = (fmax-fmin)/(delta_f)+1;
-	double *frequencies = new double[N];
-	for(int i = 0 ; i<N; i++){
-		frequencies[i] = fmin + i*delta_f;	
-	}
-	
-	//FIXME: This bool is ALWAYS FALSE.
-	bool autodiff=false;
-	double bounds_from_band[2];
-	integration_bounds( params, generation_method, detector, sensitivity_curve, fmin, fmax, .1, .01, bounds_from_band,autodiff);
-	double times[2];
-	//time_phase_corrected_autodiff(times, 2, bounds_from_band, params, generation_method, true);
-	time_phase_corrected(times, 2, bounds_from_band, params, generation_method, true);
-	double T_band = -times[1]+times[0];
-	//std::cout<<T_band<<std::endl;
-
-	//Conform the output of the band calculation to the pre-set frequency grid
-	bool max_found=false, min_found=false;
-	int max_id , min_id ;
-	int i=0 ;
-
-	while((!max_found || !min_found) && i<N){
-		if(bounds_from_band[1] >= (frequencies[i]-delta_f/2. ) &&
-			bounds_from_band[1] <= (frequencies[i]+delta_f/2. )){
-			max_id = i;
-			max_found = true;
-		}
-		if(bounds_from_band[0] >= (frequencies[i]-delta_f/2. ) &&
-			bounds_from_band[0] <= (frequencies[i]+delta_f/2. )){
-			min_id = i;
-			min_found = true;
-		}
-		i++;
-	}
-
-	if(T_band < integration_time){
-		freq_bounds[0]=frequencies[min_id];	
-		freq_bounds[1]=frequencies[max_id];	
-	}
-	else{
-		freq_bounds[1] = frequencies[max_id];
-		bool continue_search=true;
-		double eval_freq, time;
-		int min_id_search=min_id, max_id_search=max_id, eval_id;
-		double tolerance = .1*integration_time;
-		
-		while(continue_search)
-		{
-			eval_id = (max_id_search +min_id_search)/2;
-			eval_freq = frequencies[eval_id];
-			//time_phase_corrected_autodiff(&time, 1, &eval_freq, params, 
-			//	generation_method, true);
-			time_phase_corrected(&time, 1, &eval_freq, params, 
-				generation_method, true);
-			if( 	( ( (-times[1] + time) > integration_time-tolerance )  && 
-				( (-times[1] + time) < integration_time+tolerance) )
-				||
-				(freq_bounds[1]-eval_freq < 100*delta_f) ) 
-			{
-
-				continue_search = false;
-				freq_bounds[0]=eval_freq;
-				//std::cout<<(times[1]-time)/T_year<<std::endl;
-			}
-			else if(( (-times[1] + time) < (integration_time-tolerance) )){
-				max_id_search = eval_id;
-			}
-			else if(( (-times[1] + time) > (integration_time+tolerance) )){
-				min_id_search = eval_id;
-			}
-
-		}
-	}
-	
-	delete [] frequencies;
-}
 /*! \brief Calculates the postmerger parameters for a parameter set
  *
  * calculates fpeak, fdamp, and fRD
@@ -2318,7 +2218,7 @@ void postmerger_params(gen_params_base<T>*params,
 	T *fRD
 	)
 {
-	if(generation_method.find("IMRPhenomD")!=std::string::npos){
+	if(has_substring(generation_method, "IMRPhenomD")){
 		source_parameters<T> s_param;
 		//s_param = source_parameters<T>::populate_source_parameters(params);
 		s_param.populate_source_parameters(params);
@@ -2327,7 +2227,7 @@ void postmerger_params(gen_params_base<T>*params,
 		s_param.phiRef = params->phiRef;
 		s_param.cosmology=params->cosmology;
 		s_param.incl_angle=params->incl_angle;
-		if(generation_method.find("gIMR")!=std::string::npos){
+		if(has_substring(generation_method, "gIMR")){
 			gIMRPhenomD<T> model;
 			lambda_parameters<T> lambda;
 			model.assign_lambda_param(&s_param,&lambda);	
@@ -2347,7 +2247,7 @@ void postmerger_params(gen_params_base<T>*params,
 
 		}
 	}
-	else if(generation_method.find("IMRPhenomPv2")!=std::string::npos){
+	else if(has_substring(generation_method, "IMRPhenomPv2")){
 		source_parameters<T> s_param;
 		//s_param = source_parameters<T>::populate_source_parameters(params);
 		s_param.populate_source_parameters(params);
@@ -2358,7 +2258,7 @@ void postmerger_params(gen_params_base<T>*params,
 		s_param.incl_angle=params->incl_angle;
 		s_param.chip = params->chip;
 		s_param.phip = params->phip;
-		if(generation_method.find("gIMR")!=std::string::npos){
+		if(has_substring(generation_method, "gIMR")){
 			gIMRPhenomPv2<T> model;
 			lambda_parameters<T> lambda;
 			model.assign_lambda_param(&s_param,&lambda);	
@@ -2575,288 +2475,6 @@ void _Tbm_to_freq(gen_params_base<double> *params,/**< Generation parameters of 
 			//std::cout<<T/T_year<<std::endl;
 		}
 	}
-}
-/*! \brief ***DEPRECATED*** Utility for calculating the threshold times before merger that result in an SNR>SNR_thresh
- *
- * See arXiv 1902.00021
- *
- * Binary must merge within time T_wait
- *
- * SNR is calculated with frequencies [f(t_mer),f(t_mer-T_obs)] or [f(t_mer),0] depending on whether the binary has merged or not
- *
- * Assumes sky average -- Only supports PhenomD for now
- *
- * If no time before merger satisfies the requirements, both are set to -1
- */
-void threshold_times(gen_params_base<double> *params,
-	std::string generation_method, /**<Generation method to use for the waveform*/
-	double T_obs, /**<Observation time -- also specifies the frequency spacing (\delta f = 1./T_obs)*/
-	double T_wait, /**<Wait time -- Maximum time for binaries to coalesce */
-	double f_lower,/**<Lower bound of search*/
-	double f_upper,/**<upper bound of search*/
-	std::string SN,/**< Noise curve name*/
-	double SNR_thresh, /**< Threshold SNR */
-	double *threshold_times_out,/**<[out] Output frequencies */
-	double tolerance /**< Percent tolerance on SNR search*/
-	)
-{
-	int length = (f_upper-f_lower)/T_obs;
-	double deltaf = 1./T_obs;
-	double *freqs = new double[length];
-	for(int i = 0 ; i<length; i++){
-		freqs[i]=f_lower +i*deltaf;
-	}
-	double *SN_curve = new double[length];
-	populate_noise(freqs, SN, SN_curve, length);
-	for(int i = 0 ; i<length; i++){
-		SN_curve[i] = SN_curve[i]*SN_curve[i];	
-	}
-	threshold_times(params, generation_method, T_obs, T_wait, freqs, SN_curve, length, SNR_thresh, threshold_times_out,tolerance);
-	delete [] freqs;
-	delete [] SN_curve;
-
-}
-
-/*! \brief Utility for calculating the threshold times before merger that result in an SNR>SNR_thresh
- *
- * See arXiv 1902.00021
- *
- * Binary must merge within time T_wait
- *
- * SNR is calculated with frequencies [f(t_mer),f(t_mer-T_obs)] or [f(t_mer),0] depending on whether the binary has merged or not
- *
- * Assumes sky average -- Only supports PhenomD for now -- No angular dependence used ( only uses plus polarization -- assumes iota = psi = 0 )
- *
- * Assumes this is for multiband -- ie stellar mass BHs -- Only uses pn approximation of time frequency relation
- *
- * If no time before merger satisfies the requirements, both are set to -1
- *
- * Only supports tensor polarizations !!!
- */
-void threshold_times(gen_params_base<double> *params,
-	std::string generation_method, /**<Generation method to use for the waveform*/
-	double T_obs, /**<Observation time -- also specifies the frequency spacing (\delta f = 1./T_obs)*/
-	double T_wait, /**<Wait time -- Maximum time for binaries to coalesce */
-	double *freqs,/**<Maximum frequency array*/
-	double *SN,/**< Noise curve array, should be prepopulated from f_lower to f_upper with spacing 1./T_obs*/
-	int length,/**< Length of maximum frequency array*/
-	double SNR_thresh, /**< Threshold SNR */
-	double *threshold_times_out,/**<[out] Output frequencies */
-	double tolerance /**< Percent tolerance on SNR search*/
-	)
-{
-	if(!params->sky_average){ std::cout<<"NOT sky averaged -- This is not supported by threshold_freqs"<<std::endl;}
-	
-	params->sky_average = false;
-	double bounds[2];
-	
-	//Max number of iterations -- safety net
-	int max_iter = 100;
-	int ct = 0;
-	double deltaf = freqs[1]-freqs[0];
-	double chirpmass = calculate_chirpmass(params->mass1, params->mass2)*MSOL_SEC;
-	std::complex<double> *hplus= new std::complex<double>[length];
-	std::complex<double> *hcross= new std::complex<double>[length];
-	bool not_found = true;
-	int bound_id_lower = 0, bound_id_upper = length-1;//Current ids
-	int bound_id_lower_prev = 0, bound_id_upper_prev = length-1;//Current ids
-	double t_mer=0; //Time before merger
-	double snr, snr_prev;
-	int precalc_wf_id;
-	//Determine if any t_mer between [0,T_wait] allows for an SNR>SNR_thresh 
-	
-	//Frequency T_obs before it leaves band
-	//Using PN f(t) instead of local, because its faster and simpler -- maybe upgrade later
-	//Shouldn't matter this far from merger
-	t_mer= t_0PN(freqs[bound_id_upper], chirpmass)+T_obs;
-	bound_id_lower = (f_0PN(t_mer, chirpmass)- freqs[0])/deltaf;
-
-	//fourier_waveform(&freqs[bound_id_lower], bound_id_upper-bound_id_lower, &hplus[bound_id_lower], &hcross[bound_id_lower], generation_method,params);
-	waveform_polarizations<double> wp;
-	wp.hplus = &hplus[bound_id_lower];
-	wp.hcross = &hcross[bound_id_lower];
-	fourier_waveform(&freqs[bound_id_lower], bound_id_upper-bound_id_lower, &wp, generation_method,params);
-	precalc_wf_id = bound_id_lower;
-	snr = std::sqrt(1.)*calculate_snr_internal(&SN[bound_id_lower], &hplus[bound_id_lower],&freqs[bound_id_lower],bound_id_upper-bound_id_lower);
-	snr_prev=snr;
-	bound_id_lower_prev = bound_id_lower;
-	bound_id_upper_prev = bound_id_lower;
-	double t1 = t_mer, t2=t_mer;
-	if(snr>SNR_thresh){not_found= false;}
-	else{
-		bool bound_search=true, t1_moved=true,t2_moved=true;
-		while(bound_search){
-			t_mer *=2.;
-			bound_id_lower = (f_0PN(t_mer, chirpmass)- freqs[0])/deltaf;
-			bound_id_upper = (f_0PN(t_mer-T_obs, chirpmass)- freqs[0])/deltaf;
-
-			//fourier_waveform(&freqs[bound_id_lower], bound_id_lower_prev-bound_id_lower, &hplus[bound_id_lower], &hcross[bound_id_lower], generation_method,params);
-			wp.hplus = &hplus[bound_id_lower];
-			wp.hcross = &hcross[bound_id_lower];
-			fourier_waveform(&freqs[bound_id_lower], bound_id_lower_prev-bound_id_lower, &wp, generation_method,params);
-			precalc_wf_id = bound_id_lower;
-			snr = std::sqrt(1.)*calculate_snr_internal(&SN[bound_id_lower], &hplus[bound_id_lower],&freqs[bound_id_lower],bound_id_upper-bound_id_lower);
-			if(snr<snr_prev){bound_search=false;}	
-		}	
-		snr_prev=snr;
-		t2 = t_mer;
-		while(not_found &&ct < max_iter && t_mer < T_wait && (t2-t1)>T_day){
-			t_mer = (t1+t2)/2.;
-			bound_id_lower = ( f_0PN(t_mer ,chirpmass) - freqs[0])/deltaf;
-			if(t_mer-T_obs > 0){
-				bound_id_upper = ( std::min( f_0PN(  t_mer - T_obs,chirpmass) , freqs[length-1] ) - freqs[0])/deltaf;
-			}
-			else{
-				bound_id_upper = (  freqs[length-1]  - freqs[0])/deltaf;
-
-			}
-			//Update waveform if using new frequencies
-			if(bound_id_lower < precalc_wf_id){
-				//fourier_waveform(&freqs[bound_id_lower], precalc_wf_id-bound_id_lower, &hplus[bound_id_lower], &hcross[bound_id_lower], generation_method,params);
-
-				wp.hplus = &hplus[bound_id_lower];
-				wp.hcross = &hcross[bound_id_lower];
-				fourier_waveform(&freqs[bound_id_lower], precalc_wf_id-bound_id_lower, &wp, generation_method,params);
-				precalc_wf_id = bound_id_lower;
-			}
-			bound_id_lower_prev= bound_id_lower;
-			bound_id_upper_prev= bound_id_upper;
-			snr =std::sqrt(1.)*calculate_snr_internal(&SN[bound_id_lower], &hplus[bound_id_lower],&freqs[bound_id_lower],bound_id_upper-bound_id_lower);
-			ct++;
-			if(snr>SNR_thresh){not_found=false;}
-			else{
-				if(t1_moved){
-					if(snr>snr_prev){t1=t_mer;t1_moved=true; t2_moved=false;}
-					else{t2=t_mer;t2_moved=true; t1_moved=false;;}
-				}
-				if(t2_moved){
-					if(snr>snr_prev){t2=t_mer;t2_moved=true; t1_moved=false;}
-					else{t1=t_mer;t1_moved=true; t2_moved=false;;}
-
-				}
-			}
-			snr_prev = snr;
-
-		}
-	}	
-	
-	//If no SNR is larger than threshold, return 
-	if(not_found){
-		threshold_times_out[0] = -1;
-		threshold_times_out[1] = -1;
-	}
-	//Find roots
-	else{
-		double t_save = t_mer;
-		ct=0;
-		bool found_lower_root=false;	
-		bool found_upper_root=false;	
-		t1=t_save, t2=t_save;//We know t_mer is over the threshold
-		//Find a lower bound for bisection search
-		while(snr>SNR_thresh){
-			t1/=2.;
-			bound_id_lower = ( f_0PN(t1 ,chirpmass) - freqs[0])/deltaf;
-			if(t1-T_obs > 0){
-				bound_id_upper = ( std::min( f_0PN(  t1 - T_obs,chirpmass) , freqs[length-1] ) - freqs[0])/deltaf;
-			}
-			else{
-				bound_id_upper = (  freqs[length-1]  - freqs[0])/deltaf;
-
-			}
-			snr =std::sqrt(1.)*calculate_snr_internal(&SN[bound_id_lower], &hplus[bound_id_lower],&freqs[bound_id_lower],bound_id_upper-bound_id_lower);
-		}
-		while(!found_lower_root){
-			
-			t_mer = (t1+t2)/2.;
-			//Find new frequency bound ids
-			bound_id_lower = ( f_0PN(t_mer ,chirpmass) - freqs[0])/deltaf;
-			if(t_mer-T_obs > 0){
-				bound_id_upper = ( std::min( f_0PN(  t_mer - T_obs,chirpmass) , freqs[length-1] ) - freqs[0])/deltaf;
-			}
-			else{
-				bound_id_upper = (  freqs[length-1]  - freqs[0])/deltaf;
-
-			}
-			//Update waveform if using new frequencies
-			if(bound_id_lower < precalc_wf_id){
-				//fourier_waveform(&freqs[bound_id_lower], precalc_wf_id-bound_id_lower, &hplus[bound_id_lower], &hcross[bound_id_lower], generation_method,params);
-				wp.hplus = &hplus[bound_id_lower];
-				wp.hcross = &hcross[bound_id_lower];
-				fourier_waveform(&freqs[bound_id_lower], precalc_wf_id-bound_id_lower, &wp, generation_method,params);
-				precalc_wf_id = bound_id_lower;
-			}
-			bound_id_lower_prev= bound_id_lower;
-			bound_id_upper_prev= bound_id_upper;
-			snr =std::sqrt(1.)*calculate_snr_internal(&SN[bound_id_lower], &hplus[bound_id_lower],&freqs[bound_id_lower],bound_id_upper-bound_id_lower);
-			ct++;
-			if(std::abs(snr-SNR_thresh)/SNR_thresh<tolerance ){found_lower_root=true;threshold_times_out[0]=t_mer;}
-			else{
-				if(snr>SNR_thresh){ t2 = t_mer;	}
-				else{ t1=t_mer;}
-			}
-			snr_prev=snr;
-			
-		}
-		ct=0;
-		t1=t_save; t2=t_save;
-		do{
-			t2*=2.;
-			if(t2>T_wait){t2=T_wait;}	
-			bound_id_lower = ( f_0PN(t2 ,chirpmass) - freqs[0])/deltaf;
-			if(t2-T_obs > 0){
-				bound_id_upper = ( std::min( f_0PN(  t2 - T_obs,chirpmass) , freqs[length-1] ) - freqs[0])/deltaf;
-			}
-			else{
-				bound_id_upper = (  freqs[length-1]  - freqs[0])/deltaf;
-
-			}
-			if(bound_id_lower < precalc_wf_id){
-				//fourier_waveform(&freqs[bound_id_lower], precalc_wf_id-bound_id_lower, &hplus[bound_id_lower], &hcross[bound_id_lower], generation_method,params);
-				wp.hplus = &hplus[bound_id_lower];
-				wp.hcross = &hcross[bound_id_lower];
-				fourier_waveform(&freqs[bound_id_lower], precalc_wf_id-bound_id_lower, &wp, generation_method,params);
-				precalc_wf_id = bound_id_lower;
-			}
-			snr =std::sqrt(1.)*calculate_snr_internal(&SN[bound_id_lower], &hplus[bound_id_lower],&freqs[bound_id_lower],bound_id_upper-bound_id_lower);
-			if(t2==T_wait && snr>SNR_thresh){ found_upper_root=true; threshold_times_out[1]=T_wait;break;}
-		}while(snr>SNR_thresh  );
-		while(!found_upper_root){
-			
-			t_mer = (t1+t2)/2.;
-			//Find new frequency bound ids
-			bound_id_lower = ( f_0PN(t_mer ,chirpmass) - freqs[0])/deltaf;
-			if(t_mer-T_obs > 0){
-				bound_id_upper = ( std::min( f_0PN(  t_mer - T_obs,chirpmass) , freqs[length-1] ) - freqs[0])/deltaf;
-			}
-			else{
-				bound_id_upper = (  freqs[length-1]  - freqs[0])/deltaf;
-
-			}
-			//Update waveform if using new frequencies
-			if(bound_id_lower < precalc_wf_id){
-				//fourier_waveform(&freqs[bound_id_lower], precalc_wf_id-bound_id_lower, &hplus[bound_id_lower], &hcross[bound_id_lower], generation_method,params);
-				waveform_polarizations<double> wp;
-				wp.hplus = &hplus[bound_id_lower];
-				wp.hcross = &hcross[bound_id_lower];
-				fourier_waveform(&freqs[bound_id_lower], precalc_wf_id-bound_id_lower, &wp, generation_method,params);
-				precalc_wf_id = bound_id_lower;
-			}
-			bound_id_lower_prev= bound_id_lower;
-			bound_id_upper_prev= bound_id_upper;
-			snr =std::sqrt(1.)*calculate_snr_internal(&SN[bound_id_lower], &hplus[bound_id_lower],&freqs[bound_id_lower],bound_id_upper-bound_id_lower);
-			ct++;
-			if(std::abs(snr-SNR_thresh)/SNR_thresh<tolerance ){found_upper_root=true;threshold_times_out[1]=t_mer;}
-			else{
-				if(snr>SNR_thresh){ t1 = t_mer;	}
-				else{ t2=t_mer;}
-			}
-			snr_prev=snr;
-			
-		}
-	}
-	//Cleanup
-	delete [] hplus;
-	delete [] hcross;
 }
 
 /*! \brief **NOT FINISHED -- DO NOT USE** Utility for calculating the threshold times before merger that result in an SNR>SNR_thresh --GSL quad integration implementation

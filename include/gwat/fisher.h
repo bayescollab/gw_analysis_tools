@@ -117,20 +117,6 @@ void fisher_autodiff_gq_internal(double *frequency,
 	int *phase_tapes = NULL,
 	double *noise = NULL
 	);
-void fisher_autodiff_interp(double *frequency, 
-	int length,
-	string generation_method, 
-	string detector, 
-	string reference_detector, 
-	double **output,
-	int dimension, 
-	//double *parameters,
-	gen_params *parameters,
-	int downsampling_factor	,
-	int *amp_tapes = NULL,
-	int *phase_tapes = NULL,
-	double *noise = NULL
-	);
 
 void fisher_autodiff_batch_mod(double *frequency, 
 	int length,
@@ -185,21 +171,7 @@ void time_phase_corrected_derivative_autodiff_full_hess(double **dt,
 	std::string generation_method, 
 	int dimension, 
 	bool correct_time);
-void time_phase_corrected_derivative_autodiff(double **dt, 
-	int length, 
-	double *frequencies,
-	gen_params_base<double> *params, 
-	std::string generation_method, 
-	int dimension, 
-	bool correct_time);
-template <class T>
-void time_phase_corrected_derivative_numerical(T **dt, 
-	int length, 
-	T *frequencies,
-	gen_params_base<T> *params, 
-	std::string generation_method, 
-	int dimension, 
-	bool correct_time);
+
 void time_phase_corrected_derivative_autodiff_numerical(double **dt, int length, double *frequencies,gen_params_base<double> *params, std::string generation_method, int dimension, bool correct_time);
 
 std::string local_generation_method(std::string generation_method);
@@ -222,7 +194,7 @@ void unpack_parameters(double *parameters,
 	bool *log_factors);
 
 template<class T>
-void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params, std::string generation_method, int dim, gen_params_base<double> *original_params);
+void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params, std::string generation_method, int dim);
 
 template<class T>
 void repack_non_parameter_options(gen_params_base<T> *waveform_params, gen_params_base<double> *input_params, std::string gen_method);

@@ -1297,7 +1297,7 @@ int dCS_EdGB(int argc, char *argv[])
 	else{
 		std::cout<<"Cutoff:"<<params.mass2*.5*1.5<<std::endl;
 	}
-	if(method.find("GHO") == std::string::npos){
+	if(!has_substring(method, "GHO")){
 		std::cout<<"(delta alpha^2)^(1/4) (KM) (90%): "<<1.64*pow(COV_AD[dim-1][dim-1],1./8.)*3.e5<<std::endl;
 		std::cout<<"(delta alpha^2)^(1/4) (KM): "<<pow(COV_AD[dim-1][dim-1],1./8.)*3.e5<<std::endl;
 	}
@@ -1347,7 +1347,7 @@ int dCS_EdGB(int argc, char *argv[])
 	else{
 		std::cout<<"Cutoff:"<<params.mass2*.5*1.5<<std::endl;
 	}
-	if(method.find("GHO") == std::string::npos){
+	if(!has_substring(method, "GHO")){
 		std::cout<<"(delta alpha^2)^(1/4) (KM) (90%): "<<1.64*pow(COV_AD[dim-5][dim-5],1./8.)*3.e5<<std::endl;
 		std::cout<<"(delta alpha^2)^(1/4) (KM): "<<pow(COV_AD[dim-5][dim-5],1./8.)*3.e5<<std::endl;
 	}
@@ -1403,7 +1403,7 @@ int dCS_EdGB(int argc, char *argv[])
 	else{
 		std::cout<<"Cutoff:"<<params.mass2*.5*1.5<<std::endl;
 	}
-	if(method.find("GHO") == std::string::npos){
+	if(!has_substring(method, "GHO")){
 		std::cout<<"(delta alpha^2)^(1/4) (KM): "<<1.64*pow(COV_AD2[dimD-1][dimD-1],1./8.)*3.e5<<std::endl;
 	}
 	else{
@@ -1455,7 +1455,7 @@ int dCS_EdGB(int argc, char *argv[])
 	else{
 		std::cout<<"Cutoff:"<<params.mass2*.5*1.5<<std::endl;
 	}
-	if(method.find("GHO") == std::string::npos){
+	if(!has_substringmethod, "GHO")){
 		std::cout<<"(delta alpha^2)^(1/4) (KM): "<<1.64*pow(COV_ADSA[dimDSA-1][dimDSA-1],1./8.)*3.e5<<std::endl;
 	}
 	else{

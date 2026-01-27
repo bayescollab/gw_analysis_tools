@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
 	double *bppe = NULL;
 	std::cout<<"Generation method base: "<<generation_method_base<<std::endl;
 	std::cout<<"Generation method extended: "<<generation_method_extended<<std::endl;
-	if(generation_method_extended.find("ppE") != std::string::npos){
+	if(has_substring(generation_method_extended, "ppE")){
 		Nmod = int_dict["Number of modifications"];
 		std::cout<<"Number of ppE modifications: "<<Nmod<<std::endl;
 		std::cout<<"ppE b parmeters: "<<Nmod<<std::endl;
@@ -221,9 +221,9 @@ int main(int argc, char *argv[])
 		}
 		
 	}
-	if(generation_method_extended.find("dCS") != std::string::npos
-	|| generation_method_extended.find("EdGB") != std::string::npos){
-		if(generation_method_extended.find("EdGB_GHO") != std::string::npos){
+	if(has_substring(generation_method_extended, "dCS")
+	|| has_substring(generation_method_extended, "EdGB")){
+		if(has_substring(generation_method_extended, "EdGB_GHO")){
 			Nmod = 2;
 			std::cout<<"Number of ppE modifications: "<<Nmod<<std::endl;
 			std::cout<<"ppE b parmeters: "<<Nmod<<std::endl;
@@ -251,10 +251,10 @@ int main(int argc, char *argv[])
 			std::cout<<"ppE b parmeters: "<<Nmod<<std::endl;
 			bppe= new double[Nmod];
 			mod_priors = new double*[Nmod];
-			if(generation_method_extended.find("dCS") != std::string::npos){
+			if(has_substring(generation_method_extended, "dCS")){
 				bppe[0] = -1;
 			}
-			if(generation_method_extended.find("EdGB") != std::string::npos){
+			if(has_substring(generation_method_extended, "EdGB")){
 				bppe[0] = -7;
 			}
 			mod_priors[0]= new double[2];
@@ -264,7 +264,7 @@ int main(int argc, char *argv[])
 		}
 		
 	}
-	if(generation_method_extended.find("gIMR") != std::string::npos){
+	if(has_substring(generation_method_extended, "gIMR")){
 		gNmod_phi = int_dict["Number of phi modifications"];
 		gNmod_sigma = int_dict["Number of sigma modifications"];
 		gNmod_beta = int_dict["Number of beta modifications"];
@@ -363,17 +363,17 @@ int main(int argc, char *argv[])
 	}
 
 	double(*lp)(double *param,int *status, int model_status, mcmc_data_interface *interface, void *parameters);
-	if(generation_method_base.find("IMRPhenomD") != std::string::npos && min_dimension == 11){
+	if(has_substring(generation_method_base, "IMRPhenomD") && min_dimension == 11){
 		lp = &standard_log_prior_D_mod;
 	}
-	else if(generation_method_base.find("IMRPhenomPv2") != std::string::npos && min_dimension == 15){
+	else if(has_substring(generation_method_base, "IMRPhenomPv2") && min_dimension == 15){
 		lp = &standard_log_prior_Pv2_mod;
 	}
-	else if(generation_method_base.find("IMRPhenomD") != std::string::npos 
+	else if(has_substring(generation_method_base, "IMRPhenomD") 
 		&& min_dimension == 4){
 		lp = &standard_log_prior_D_intrinsic_mod;
 	}
-	else if( generation_method_base.find("IMRPhenomPv2") != std::string::npos  
+	else if( has_substring(generation_method_base, "IMRPhenomPv2")  
 		&& min_dimension == 8 ){
 		lp = &standard_log_prior_Pv2_intrinsic_mod;
 	}
@@ -454,7 +454,7 @@ int main(int argc, char *argv[])
 		free(data[i]);
 	free(data);
 
-	if(generation_method_base.find("ppE") != std::string::npos){
+	if(has_substring(generation_method_base, "ppE")){
 		delete [] bppe;	
 		for(int i = 0 ; i<Nmod ; i++){
 			delete [] mod_priors[i] ;

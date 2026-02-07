@@ -1,19 +1,21 @@
 #ifndef IMRPHENOMD_NRT_EOS
 #define IMRPHENOMD_NRT_EOS
-#include "IMRPhenomD_NRT.h"
-#include "util.h"
+#include <gsl/gsl_errno.h>
 #include <gsl/gsl_integration.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_odeiv2.h>
 #include <gsl/gsl_spline.h>
-#include <iomanip>
+
+#include <cmath>
 #include <cstdlib>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <cmath>
-#include <gsl/gsl_errno.h>
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_odeiv2.h>
+
+#include "IMRPhenomD_NRT.h"
+#include "util.h"
 
 using std::string;
 using std::vector;
@@ -25,79 +27,119 @@ using std::vector;
  * equation of state (EOS) parameters.
  */
 
-// This only exists because for some reason GWAT has both gen_params and source_params and I need to be able to access and process data from *both*. Instead of doubling all my functions I'm just keeping an internal structure.
-struct EOS_Waveform_internal_params
-{
+// ****************************************************************************
+template <class T>
+class IMRPhenomD_NRT_EOS : public IMRPhenomD_NRT<T> {
+ public:
+ // Function to calculate observables variables from a given EOS
+ virtual void get_m_love(double &mass1, double &mass2, double &lambda);
+
+ //Override IMRPhenomD_NRT construct_waveform
+ virtual int construct_waveform(T* frequencies, int length, std::complex<T>* waveform, source_parameters<T>* params) override;
+};
+
+// Internal structure to store parameters defining the EOS
+struct Bumpy_EOS_Params_Internal {
+  // Single bump EOS parameters
   double bump_mag;
   double bump_width;
   double bump_offset;
   double plat;
   double nbc1;
   double nbc2;
-
-  double mass1;
-  double mass2;
-  double tidal1;
-  double tidal2;
 };
 
-// ****************************************************************************
-template <class T>
-class IMRPhenomD_NRT_EOS : public IMRPhenomD_NRT<T>
-{
-public:
-  // Functions are organized by the order they are called in.
+struct EOS_Vectors_Internal {
+  vector<double> pressure;
+  vector<double> epsilon;
+}
 
-  // Functions to process parameters from a parameters structure
-  virtual void store_EOS_params(gen_params_base<T> *params);
-  virtual void store_EOS_params(source_parameters<T> *params);
-  virtual void get_observable_params(gen_params_base<T> *params);
-  virtual void get_observable_params(source_parameters<T> *params);
-
-  // Function to calculate observable variables from the EOS
-  virtual void get_m_love();
+class EOS_Constructor {
+ public:
+  // Constructor for class (stores parameters for building bumpy EOS)
+  EOS_Constructor(string filepath, double bump_mag, double, double bump_width,
+                  double bump_offset, double plat, double nbc1, double nbc2);
 
   // Function to build bump in cs2
-  virtual void inject_cs2_bump(std::vector<double> &pressure1, std::vector<double> &pressure2, std::vector<double> &epsilon1, std::vector<double> &epsilon2);
+  virtual void inject_cs2_bump();
+  virtual void get_EOS(EOS_Vectors_Internal &star1, EOS_Vectors_Internal &star2);
 
-  // Function to convert read data to column-major order (necessary for csv EOS files...)
-  virtual void transpose_data_to_column_major(const std::vector<std::vector<double>> &row_major, std::vector<std::vector<double>> &column_major);
-
-  // Function to convert p(epsilon) to cs2
-  virtual std::vector<double> eos_to_cs2_convert(std::vector<double> pressure, std::vector<double> epsilon);
-
-  // Function to convert values given in fm^3 to MeV
-  virtual double conversion_fm3_to_MeV(double x);
+ protected:
+  // Filepath to base EOS (SLy, etc.)
+  string base_EOS_filepath;
+  // Struct to store bumpy EOS parameters
+  Bumpy_EOS_Params_Internal eos_params;
+  // Struct to store EOS for both stars
+  EOS_Vectors_Internal star1;
+  EOS_Vectors_Internal star2;
+  // Vectors to store the cs2 bump
+  vector<double> nb_list;
+  vector<double> cs2;
 
   // Function to build quadratic bump in cs2 with given parameters
-  virtual void build_cs2_one_quad_bump(std::vector<double> nb_list, std::vector<double> &cs2_list, double bump_width, double bump_magnitude, double bump_offset, double plat_val);
+  virtual void build_cs2_one_quad_bump();
 
   // Quadratic function required to build bump in cs2
-  virtual double f_quad(double nb, double bump_width, double bump_magnitude, double bump_offset, double plat, double f1_n1);
+  virtual double get_quadratic_bump_point(const double& nb,
+                                          const double& f1_n1);
+
+  // Function to convert p(epsilon) to cs2
+  virtual std::vector<double> convert_eos_to_cs2();
 
   // Function to convert cs2 to p(epsilon)
-  virtual void cs2_to_eos_convert(double p_base, double epsilon_base, std::vector<double> nb_list, std::vector<double> cs2_bump, std::vector<double> &p_bump, std::vector<double> &epsilon_bump);
+  virtual void cs2_to_eos_convert(const double& p_start, const double& e_start);
 
-  // Override of IMRPhenomD_NRT's waveform construction, to force recalculation of observable params
-  virtual int construct_waveform(T *frequencies, int length, std::complex<T> *waveform, source_parameters<T> *params) override; // Technically only override is needed: I've kept virtual for clarity
+  // Function to convert read data to column-major order (necessary for csv EOS
+  // files...)
+  virtual void transpose_data_to_column_major(
+      const std::vector<std::vector<double>>& row_major,
+      std::vector<std::vector<double>>& column_major);
 
-private:
-  EOS_Waveform_internal_params eos_params;
-};
+  // Function to convert values in n_sat to MeV
+  virtual void conversion_nsat_to_MeV(double& x);
+
+  // Function to convert values given in fm^3 to MeV
+  virtual void conversion_fm3_to_MeV(double& x);
+}
 
 // ****************************************************************************
 // Structure to store input parameters
-struct QLIMR_params
-{
+struct EOS_Integration_Params_Internal {
   double R_start;
   double single_epsilon;
   vector<double> epsilon_col1;
   vector<double> pressure_col2;
 };
 
-class Input_QLIMR
-{
-public:
+class EOS_Interpolator{
+  public:
+  EOS_Interpolator(vector<double> epsilon, vector<double> pressure, double R);
+  ~EOS_Interpolator();
+
+  protected:
+   // GSL-type variables for interpolation
+   gsl_interp_accel* acc;
+   gsl_spline* spline;
+   gsl_interp_type* type;
+
+   // Size of data to be interpolated
+   size_t size;
+
+   double adimensionalize(double value, string unit);
+
+   // Initializing GSL spline for interpolation
+   void initialize(gsl_interp_type* type, vector<double> x, vector<double> y);
+
+   // Evaluate interpolated function at point x
+   double yofx(double x);
+
+   // Evaluate derivative of interpolated function at point x
+   double dyofx(double x);
+
+}
+
+class Input_QLIMR {
+ public:
   // Parameters to pass into QLIMR
   QLIMR_params params;
 
@@ -105,7 +147,8 @@ public:
   Input_QLIMR();
 
   // Initialize object to read source EOS file
-  void input(vector<double> epsilon, vector<double> pressure, double R_start, double single_epsilon);
+  void input(vector<double> epsilon, vector<double> pressure, double R_start,
+             double single_epsilon);
 
   // Unit conversion functions
   double adimensionalize(double value, string unit);
@@ -113,19 +156,18 @@ public:
 };
 
 // ****************************************************************************
-class Interpolation : public Input_QLIMR
-{
-public:
+class Interpolation : public Input_QLIMR {
+ public:
   // GSL-type variables for interpolation
-  gsl_interp_accel *acc;
-  gsl_spline *spline;
-  gsl_interp_type *type;
+  gsl_interp_accel* acc;
+  gsl_spline* spline;
+  gsl_interp_type* type;
 
   // Size of data to be interpolated
   size_t size;
 
   // Initializing GSL spline for interpolation
-  void initialize(gsl_interp_type *type, vector<double> x, vector<double> y);
+  void initialize(gsl_interp_type* type, vector<double> x, vector<double> y);
 
   // Evaluate interpolated function at point x
   double yofx(double x);
@@ -138,28 +180,25 @@ public:
 };
 // ****************************************************************************
 
-struct EOSinterpolation
-{
-
+struct EOSinterpolation {
   // Interpolation type objects:
 
-  Interpolation p_of_e; // Pressure as a function of energy density
-  Interpolation h_of_e; // Pseudo-enthalpy as a function of energy density
-  Interpolation h_of_p; // Enthalpy as a function of pressure
-  Interpolation e_of_h; // Energy density as a function of pseudo-enthalpy
-  Interpolation p_of_h; // Pressure as a function of pseudo-enthalpy
+  Interpolation p_of_e;  // Pressure as a function of energy density
+  Interpolation h_of_e;  // Pseudo-enthalpy as a function of energy density
+  Interpolation h_of_p;  // Enthalpy as a function of pressure
+  Interpolation e_of_h;  // Energy density as a function of pseudo-enthalpy
+  Interpolation p_of_h;  // Pressure as a function of pseudo-enthalpy
 
   // Vectors to store EoS data columns
 
-  vector<double> e_vec; // Energy density vector
-  vector<double> p_vec; // Pressure vector
-  vector<double> h_vec; // Enthalpy vector
+  vector<double> e_vec;  // Energy density vector
+  vector<double> p_vec;  // Pressure vector
+  vector<double> h_vec;  // Enthalpy vector
 };
 
 // ****************************************************************************
-class EOS : public Interpolation
-{
-public:
+class EOS : public Interpolation {
+ public:
   // Object to store interpolated EOS
   EOSinterpolation EoS;
 
@@ -167,15 +206,14 @@ public:
   EOS();
 
   // Parametric constructor:
-  void initialize_eos(gsl_interp_type *type);
+  void initialize_eos(gsl_interp_type* type);
 
   // Method function to compute EoS in terms of pseudo-enthalpy (h)
-  void calculate_eos_of_h(vector<double> *epsilon, gsl_interp_type *type);
+  void calculate_eos_of_h(vector<double>* epsilon, gsl_interp_type* type);
 };
 // ****************************************************************************
 
-struct Local_functions
-{
+struct Local_functions {
   // Zeroth order local functions
   Interpolation M_of_R;
   Interpolation p_of_R;
@@ -191,9 +229,8 @@ struct Local_functions
 };
 
 //--------------------------------- CLASS TOV ---------------------------------
-class TOV : public EOS
-{
-public:
+class TOV : public EOS {
+ public:
   // Declaring structure variable fun of type Local_functions
   Local_functions fun;
 
@@ -202,8 +239,7 @@ public:
   double NS_M;
 
   // Structure to hold initial conditions for TOV integrator
-  struct Initial_conditions_TOV
-  {
+  struct Initial_conditions_TOV {
     double R_start;
     double M_start;
     double h_start;
@@ -217,20 +253,18 @@ public:
   Initial_conditions_TOV IC_TOV(double epsilon_c);
 
   // TOV integrator method using pseudo-enthalpy (h) formulation
-  void TOV_Integrator(double epsilon_c, EOSinterpolation *eos);
+  void TOV_Integrator(double epsilon_c, EOSinterpolation* eos);
 };
 //-----------------------------------------------------------------------------
 
-class Second_Order : public TOV
-{
-public:
+class Second_Order : public TOV {
+ public:
   double NS_k2;
   double NS_Lbar;
 
   // ########################### Tidal Love number λ̄ #########################
 
-  struct Initial_conditions_Y
-  {
+  struct Initial_conditions_Y {
     double Y_start;
     double R_istep;
   };
@@ -239,7 +273,7 @@ public:
   Initial_conditions_Y IC_Y();
 
   // Integrator to obtain tidal love number: λ̄
-  void TidalLove_Integrator(Local_functions *fun);
+  void TidalLove_Integrator(Local_functions* fun);
 };
 
 #endif

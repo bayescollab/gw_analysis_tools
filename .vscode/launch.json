@@ -1,0 +1,36 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug EOS_testing", // Name of the debug session type. This will appear in the debug menu and you can select it as your "run and debug" type, so make sure to pick a good name!
+      "type": "cppdbg", // Type of debugging session (in this case, CPP debugging)
+      "request": "launch", // There are two options: Launching a new debugging process ("launch"), or attaching to an existing one ("attach")
+      "program": "${workspaceFolder}/injections/bin/EOS_testing.exe",
+      // Path to the executable you want to debug WITHIN the container
+      "args": [], // Here is where you'd pass any arguments to the debugger!
+      "stopAtEntry": true, // Stops at the start of the program if true
+      "cwd": "${workspaceFolder}", // Current working directory IN the container
+      "environment": [], // Here is where you'd add environment arguments
+      "externalConsole": false, // Opens a separate console for program output if true
+      "MIMode": "gdb", // Indicates the type of console debugger you've installed. In this case, GDB.
+      "miDebuggerPath": "/usr/bin/gdb", // Filepath to where GDB is installed
+      "setupCommands": [
+        // These options just make outputs less ugly
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "sourceFileMap": {
+        "${workspaceFolder}": "${workspaceFolder}" // This is useful if you encounter issues relating to filepaths during debugging (i.e., the debugger tries to open the relevant .cpp during debugging, but looks for the wrong filepath!)
+      },
+      "logging": {
+        "engineLogging": true // Enables detailed logs for debugging, this is generally useful!
+      }
+    }
+  ]
+}

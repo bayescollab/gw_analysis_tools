@@ -111,6 +111,17 @@ void IMRPhenomD_NRT_EOS<T>::get_observable_params(source_parameters<T> *params)
 	}
 }
 
+//DEBUG: Remove in the future! Testing with dummy function.
+template <class T>
+void IMRPhenomD_NRT_EOS<T>::get_m_love()
+{
+	eos_params.mass1 = eos_params.nbc1;
+	eos_params.mass2 = eos_params.nbc2;
+
+	eos_params.tidal1 = eos_params.nbc1*100;
+	eos_params.tidal2 = eos_params.nbc2*100;
+}
+
 /**
  * @brief Convert EOS parameters to neutron star masses and tidal deformabilities.
  *
@@ -122,7 +133,7 @@ void IMRPhenomD_NRT_EOS<T>::get_observable_params(source_parameters<T> *params)
  * @param[in,out] params Pointer to a gen_params object. On output, its mass1, mass2, tidal1,
  * and tidal2 fields are set to the computed values.
  */
-template <class T>
+/* template <class T>
 void IMRPhenomD_NRT_EOS<T>::get_m_love()
 {
 	// Inject bump into cs2 and retrieve new p(e) for star 1 and star 2
@@ -172,7 +183,7 @@ void IMRPhenomD_NRT_EOS<T>::get_m_love()
 
 	eos_params.tidal1 = MRLevaluator1.NS_Lbar;
 	eos_params.tidal2 = MRLevaluator2.NS_Lbar;
-}
+} */
 
 /**
  * @brief Inject a bump into cs2 and get the corresponding pressures and energy densities.

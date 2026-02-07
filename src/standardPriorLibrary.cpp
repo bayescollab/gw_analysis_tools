@@ -321,7 +321,7 @@ double logPriorStandard_D_NRT_EOS::eval(bayesship::positionInfo *position, int c
 	if(PD->EOS_plat_flag){
 	  if ((pos[14])<PD->EOS_prior[6] || (pos[14])>PD->EOS_prior[7]){return bayesship::limitInf;}	//plat
 	}
-	if ((pos[13]-(pos[12]/2)) <= 0.500){return a;}
+	if ((pos[13]-(pos[12]/2)) <= 0.500){return bayesship::limitInf;}
 
 	return log(aligned_spin_prior(pos[9])) +
 		   log(aligned_spin_prior(pos[10])) + 3 * pos[6];

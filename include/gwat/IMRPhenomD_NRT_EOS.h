@@ -25,6 +25,8 @@ using std::vector;
 
 /*! Class that extends the IMRPhenomD_NRT waveform to sample directly on
  * equation of state (EOS) parameters.
+ *
+ * THIS FILE IS DYSFUNCTIONAL RIGHT NOW - DO NOT USE
  */
 
 // ****************************************************************************

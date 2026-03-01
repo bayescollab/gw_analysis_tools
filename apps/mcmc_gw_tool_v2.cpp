@@ -685,7 +685,7 @@ int main(int argc, char *argv[])
 	//bayesship::probabilityFn *logp = new logPriorStandard_D(&PD);
 	std::cout<<"Running uncorrelated sampler "<<std::endl;
 	bayesship::bayesshipSampler *sampler = PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2( 
-			dimension, samples, ensembleSize, ensembleN, &default_temp_set,
+			dimension, samples, ensembleSize, ensembleN,
 			 initialPosition,ensembleInitialPosition,swapProb, 
 			 burnIterations, burnPriorIterations,priorIterations, writePriorData,max_chunk_size, (double **)nullptr,
 			logp,threads, pool,detector_N, 

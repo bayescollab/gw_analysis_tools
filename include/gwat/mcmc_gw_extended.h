@@ -64,21 +64,12 @@ void RJPTMCMC_method_specific_prep_v2(std::string generation_method, int dimensi
 
 std::string MCMC_prep_params_v2(double *param, double *temp_params, gen_params_base<double> *gen_params, int dimension, std::string generation_method, MCMC_modification_struct *mod_struct, bool intrinsic, double gmst);
 
-//double MCMC_likelihood_wrapper_v2(bayesship::positionInfo *pos, int chainID, bayesship::bayesshipSampler *sampler ,void *userParameters);
-
-struct temp_settings
-{
-	double Tmax = 100.;
-	double t0 = 0.;
-	double nu = 100.;
-} default_temp_set;
 
 bayesship::bayesshipSampler *  PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
 	int dimension,
 	int independentSamples,
 	int ensembleSize,
 	int ensembleN,
-	temp_settings* temp_set,
 	bayesship::positionInfo *initialPosition,
 	bayesship::positionInfo **initialEnsemble,
 	double swapProb,
@@ -88,7 +79,6 @@ bayesship::bayesshipSampler *  PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
 	bool writePriorData,
 	int batchSize,
 	double **priorRanges,
-	//double(*log_prior)(bayesship::positionInfo *pos, int chainID,bayesship::bayesshipSampler *sampler, void *userParameters),
 	bayesship::probabilityFn *lp,
 	int numThreads,
 	bool pool,

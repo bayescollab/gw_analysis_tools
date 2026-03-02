@@ -1,13 +1,13 @@
 var searchData=
 [
-  ['lambda_5fparameters_0',['lambda_parameters',['../structlambda__parameters.html',1,'']]],
-  ['logpriorstandard_5fd_1',['logPriorStandard_D',['../classlogPriorStandard__D.html',1,'']]],
-  ['logpriorstandard_5fd_5fmod_2',['logPriorStandard_D_mod',['../classlogPriorStandard__D__mod.html',1,'']]],
-  ['logpriorstandard_5fd_5fnrt_3',['logPriorStandard_D_NRT',['../classlogPriorStandard__D__NRT.html',1,'']]],
-  ['logpriorstandard_5fd_5fnrt_5fea_4',['logPriorStandard_D_NRT_EA',['../classlogPriorStandard__D__NRT__EA.html',1,'']]],
-  ['logpriorstandard_5fd_5fnrt_5fmod_5',['logPriorStandard_D_NRT_mod',['../classlogPriorStandard__D__NRT__mod.html',1,'']]],
-  ['logpriorstandard_5fp_6',['logPriorStandard_P',['../classlogPriorStandard__P.html',1,'']]],
-  ['logpriorstandard_5fp_5fmod_7',['logPriorStandard_P_mod',['../classlogPriorStandard__P__mod.html',1,'']]],
-  ['logpriorstandard_5fp_5fnrt_8',['logPriorStandard_P_NRT',['../classlogPriorStandard__P__NRT.html',1,'']]],
-  ['logpriorstandard_5fp_5fnrt_5fmod_9',['logPriorStandard_P_NRT_mod',['../classlogPriorStandard__P__NRT__mod.html',1,'']]]
+  ['mcmc_5fdata_5finterface_0',['mcmc_data_interface',['../classmcmc__data__interface.html',1,'']]],
+  ['mcmc_5flikelihood_5fwrapper_5fv2_1',['MCMC_likelihood_wrapper_v2',['../classMCMC__likelihood__wrapper__v2.html',1,'']]],
+  ['mcmc_5flikelihood_5fwrapper_5fv2_5frj_2',['MCMC_likelihood_wrapper_v2_RJ',['../classMCMC__likelihood__wrapper__v2__RJ.html',1,'']]],
+  ['mcmc_5fmodification_5fstruct_3',['MCMC_modification_struct',['../structMCMC__modification__struct.html',1,'']]],
+  ['mcmc_5fsampler_5foutput_4',['mcmc_sampler_output',['../classmcmc__sampler__output.html',1,'']]],
+  ['mcmc_5fuser_5fparam_5',['MCMC_user_param',['../structMCMC__user__param.html',1,'']]],
+  ['mcmcvariables_6',['mcmcVariables',['../structmcmcVariables.html',1,'']]],
+  ['mcmcvariablesrj_7',['mcmcVariablesRJ',['../structmcmcVariablesRJ.html',1,'']]],
+  ['mcr_5fjob_8',['mcr_job',['../structmcr__job.html',1,'']]],
+  ['mcr_5fsampler_9',['mcr_sampler',['../classmcr__sampler.html',1,'']]]
 ];

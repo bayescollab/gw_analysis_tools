@@ -8,15 +8,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>mcmc_gw &mdash; GW Analysis Tools  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -158,6 +158,9 @@
 <li class="toctree-l4"><a class="reference internal" href="#_CPPv4N24MCMC_modification_struct10QuadMethodE"><code class="docutils literal notranslate"><span class="pre">QuadMethod</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#_CPPv4N24MCMC_modification_struct10adaptivellE"><code class="docutils literal notranslate"><span class="pre">adaptivell</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#_CPPv4N24MCMC_modification_struct5f_refE"><code class="docutils literal notranslate"><span class="pre">f_ref</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N24MCMC_modification_struct4TmaxE"><code class="docutils literal notranslate"><span class="pre">Tmax</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N24MCMC_modification_struct2t0E"><code class="docutils literal notranslate"><span class="pre">t0</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N24MCMC_modification_struct2nuE"><code class="docutils literal notranslate"><span class="pre">nu</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv415MCMC_user_param"><code class="docutils literal notranslate"><span class="pre">MCMC_user_param</span></code></a><ul>
@@ -440,7 +443,7 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv429RJPTMCMC_method_specific_prepNSt6stringEiiPdb">
 <span id="_CPPv329RJPTMCMC_method_specific_prepNSt6stringEiiPdb"></span><span id="_CPPv229RJPTMCMC_method_specific_prepNSt6stringEiiPdb"></span><span id="RJPTMCMC_method_specific_prep__ss.i.i.doubleP.b"></span><span class="target" id="mcmc__gw_8h_1a2e8407e705ac51ccc0e1685858ff946f"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">RJPTMCMC_method_specific_prep</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">generation_method</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">max_dim</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">min_dim</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">seeding_var</span></span>, <span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">local_seeding</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv429RJPTMCMC_method_specific_prepNSt6stringEiiPdb" title="Link to this definition"></a><br /></dt>
-<dd><p>Unpacks MCMC parameters for method specific initiation (RJ version) </p>
+<dd><p>Unpacks MCMC parameters for method specific initiation (RJ version). </p>
 <p>Populates seeding vector if non supplied, populates mcmc_Nmod, populates mcmc_log_beta, populates mcmc_intrinsic </p>
 </dd></dl>
 
@@ -792,6 +795,21 @@
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N24MCMC_modification_struct5f_refE">
 <span id="_CPPv3N24MCMC_modification_struct5f_refE"></span><span id="_CPPv2N24MCMC_modification_struct5f_refE"></span><span id="MCMC_modification_struct::f_ref__double"></span><span class="target" id="structMCMC__modification__struct_1ae7a16ae067e8dc8b00d8fa6335a70006"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">f_ref</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">20.</span></span><a class="headerlink" href="#_CPPv4N24MCMC_modification_struct5f_refE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N24MCMC_modification_struct4TmaxE">
+<span id="_CPPv3N24MCMC_modification_struct4TmaxE"></span><span id="_CPPv2N24MCMC_modification_struct4TmaxE"></span><span id="MCMC_modification_struct::Tmax__double"></span><span class="target" id="structMCMC__modification__struct_1aa7b337896a511f152a71f208435c9c8b"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Tmax</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">100.</span></span><a class="headerlink" href="#_CPPv4N24MCMC_modification_struct4TmaxE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N24MCMC_modification_struct2t0E">
+<span id="_CPPv3N24MCMC_modification_struct2t0E"></span><span id="_CPPv2N24MCMC_modification_struct2t0E"></span><span id="MCMC_modification_struct::t0__double"></span><span class="target" id="structMCMC__modification__struct_1a009e12cd66389c9bce0fb333328f711b"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">t0</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0.</span></span><a class="headerlink" href="#_CPPv4N24MCMC_modification_struct2t0E" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N24MCMC_modification_struct2nuE">
+<span id="_CPPv3N24MCMC_modification_struct2nuE"></span><span id="_CPPv2N24MCMC_modification_struct2nuE"></span><span id="MCMC_modification_struct::nu__double"></span><span class="target" id="structMCMC__modification__struct_1a310afa3de8ed17874ece84343d090355"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">nu</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">100.</span></span><a class="headerlink" href="#_CPPv4N24MCMC_modification_struct2nuE" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 </div>

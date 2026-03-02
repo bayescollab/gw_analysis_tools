@@ -8,15 +8,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>waveform_util &mdash; GW Analysis Tools  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -276,51 +276,20 @@
 <dt class="sig sig-object cpp" id="_CPPv413calculate_snrNSt6stringENSt6stringENSt6stringEP15gen_params_baseIdEPdiNSt6stringEPdb">
 <span id="_CPPv313calculate_snrNSt6stringENSt6stringENSt6stringEP15gen_params_baseIdEPdiNSt6stringEPdb"></span><span id="_CPPv213calculate_snrNSt6stringENSt6stringENSt6stringEP15gen_params_baseIdEPdiNSt6stringEPdb"></span><span id="calculate_snr__ss.ss.ss.gen_params_base:double:P.doubleP.i.ss.doubleP.b"></span><span class="target" id="waveform__util_8h_1a61ef9a5f55e645fb1d67f38e5ff02b19"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">calculate_snr</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">sensitivity_curve</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">detector</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">generation_method</span></span>, <a class="reference internal" href="util.html#_CPPv4I0E15gen_params_base" title="gen_params_base"><span class="n"><span class="pre">gen_params_base</span></span></a><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">double</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">params</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">frequencies</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">length</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">integration_method</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;SIMPSONS&quot;</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">weights</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">NULL</span></span>, <span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">log10_freq</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">false</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv413calculate_snrNSt6stringENSt6stringENSt6stringEP15gen_params_baseIdEPdiNSt6stringEPdb" title="Link to this definition"></a><br /></dt>
 <dd><p>Routine to calculate the SNR of a template with GSL quadrature integration. </p>
-<p>Sometimes, this is faster than the `grid’ style integration</p>
-<p>Supports sky-averaged templates, but this should only be used with non-precessing waveforms </p>
+<p>Sometimes, this is faster than the ``grid’’ style integration</p>
+<p>Supports sky-averaged templates, but this should only be used with non-precessing waveforms</p>
+<p>*/ int calculate_snr_gsl(double *snr,/**&lt; [out] SNR </p>
 </dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv417calculate_snr_gslPdNSt6stringENSt6stringENSt6stringEP15gen_params_baseIdEddd">
 <span id="_CPPv317calculate_snr_gslPdNSt6stringENSt6stringENSt6stringEP15gen_params_baseIdEddd"></span><span id="_CPPv217calculate_snr_gslPdNSt6stringENSt6stringENSt6stringEP15gen_params_baseIdEddd"></span><span id="calculate_snr_gsl__doubleP.ss.ss.ss.gen_params_base:double:P.double.double.double"></span><span class="target" id="waveform__util_8h_1ae457f376ac6868d88fa7c428a1cc0798"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">calculate_snr_gsl</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">snr</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">sensitivity_curve</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">detector</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">generation_method</span></span>, <a class="reference internal" href="util.html#_CPPv4I0E15gen_params_base" title="gen_params_base"><span class="n"><span class="pre">gen_params_base</span></span></a><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">double</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">params</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">f_min</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">f_max</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">relative_error</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv417calculate_snr_gslPdNSt6stringENSt6stringENSt6stringEP15gen_params_baseIdEddd" title="Link to this definition"></a><br /></dt>
-<dd><p>Routine to calculate the SNR of a template with GSL quadrature integration. </p>
-<p>Sometimes, this is faster than the `grid’ style integration</p>
-<p>Supports sky-averaged templates, but this should only be used with non-precessing waveforms </p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>snr</strong> – [out] SNR </p></li>
-<li><p><strong>sensitivity_curve</strong> – Noise curve </p></li>
-<li><p><strong>detector</strong> – Detector to compute response &amp;#8212; can be empty is SA </p></li>
-<li><p><strong>generation_method</strong> – Generation method </p></li>
-<li><p><strong>params</strong> – Source Parameters </p></li>
-<li><p><strong>f_min</strong> – Lower frequency bound </p></li>
-<li><p><strong>f_max</strong> – Upper frequency bound </p></li>
-<li><p><strong>relative_error</strong> – Relative error threshold </p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv417calculate_snr_gslPdNSt6stringENSt6stringENSt6stringEP15gen_params_baseIdEdddP25gsl_integration_workspacei">
 <span id="_CPPv317calculate_snr_gslPdNSt6stringENSt6stringENSt6stringEP15gen_params_baseIdEdddP25gsl_integration_workspacei"></span><span id="_CPPv217calculate_snr_gslPdNSt6stringENSt6stringENSt6stringEP15gen_params_baseIdEdddP25gsl_integration_workspacei"></span><span id="calculate_snr_gsl__doubleP.ss.ss.ss.gen_params_base:double:P.double.double.double.gsl_integration_workspaceP.i"></span><span class="target" id="waveform__util_8h_1a7a6b3d3d9c2f2fee67faef89f435f780"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">calculate_snr_gsl</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">snr</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">sensitivity_curve</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">detector</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">generation_method</span></span>, <a class="reference internal" href="util.html#_CPPv4I0E15gen_params_base" title="gen_params_base"><span class="n"><span class="pre">gen_params_base</span></span></a><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">double</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">params</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">f_min</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">f_max</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">relative_error</span></span>, <span class="n"><span class="pre">gsl_integration_workspace</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">w</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">np</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv417calculate_snr_gslPdNSt6stringENSt6stringENSt6stringEP15gen_params_baseIdEdddP25gsl_integration_workspacei" title="Link to this definition"></a><br /></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>sensitivity_curve</strong> – Noise curve </p></li>
-<li><p><strong>detector</strong> – Detector to compute response &amp;#8212; can be empty is SA </p></li>
-<li><p><strong>generation_method</strong> – Generation method </p></li>
-<li><p><strong>params</strong> – Source Parameters </p></li>
-<li><p><strong>f_min</strong> – Lower frequency bound </p></li>
-<li><p><strong>f_max</strong> – Upper frequency bound </p></li>
-<li><p><strong>relative_error</strong> – Relative error threshold </p></li>
-<li><p><strong>w</strong> – User-allocated gsl_integration_workspace </p></li>
-<li><p><strong>np</strong> – Size of gsl_integration_workspace allocation </p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv427integrand_snr_SA_subroutinedPv">

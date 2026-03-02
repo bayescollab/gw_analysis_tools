@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['quadrature_0',['Quadrature',['../classQuadrature.html',1,'']]]
+  ['relativebinninglikelihood_0',['RelativeBinningLikelihood',['../classRelativeBinningLikelihood.html',1,'']]]
 ];

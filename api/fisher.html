@@ -8,15 +8,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>fisher &mdash; GW Analysis Tools  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -328,7 +328,7 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv424detect_adjust_parametersPdPdPiP15gen_params_baseIdENSt6stringENSt6stringEi">
 <span id="_CPPv324detect_adjust_parametersPdPdPiP15gen_params_baseIdENSt6stringENSt6stringEi"></span><span id="_CPPv224detect_adjust_parametersPdPdPiP15gen_params_baseIdENSt6stringENSt6stringEi"></span><span id="detect_adjust_parameters__doubleP.doubleP.iP.gen_params_base:double:P.ss.ss.i"></span><span class="target" id="fisher_8h_1af071af4a0f6f8ab05c1cdc76a275cd49"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">detect_adjust_parameters</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">freq_boundaries</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">grad_freqs</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">boundary_num</span></span>, <a class="reference internal" href="util.html#_CPPv4I0E15gen_params_base" title="gen_params_base"><span class="n"><span class="pre">gen_params_base</span></span></a><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">double</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">input_params</span></span>, <a class="reference internal" href="#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">generation_method</span></span>, <a class="reference internal" href="#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">detector</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">dim</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv424detect_adjust_parametersPdPdPiP15gen_params_baseIdENSt6stringENSt6stringEi" title="Link to this definition"></a><br /></dt>
-<dd><p>Adjust parameters for detector specific configurations (namely, LISA introduces extra transitions that needs to be accounted for) </p>
+<dd><p>Adjust parameters for detector specific configurations (namely, LISA introduces extra transitions that needs to be accounted for). </p>
 <p>This is kept separate to improve the modularity of the code. Waveform specific parameters are taken care of in prep_fisher_calculation and detector specific parameters are taken care of here. </p>
 </dd></dl>
 
@@ -369,130 +369,22 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv431fisher_autodiff_gsl_integrationPd6string6string6string6stringPPdPPdiP10gen_paramsdd">
 <span id="_CPPv331fisher_autodiff_gsl_integrationPd6string6string6string6stringPPdPPdiP10gen_paramsdd"></span><span id="_CPPv231fisher_autodiff_gsl_integrationPd6string6string6string6stringPPdPPdiP10gen_paramsdd"></span><span id="fisher_autodiff_gsl_integration__doubleP.string.string.string.string.doublePP.doublePP.i.gen_paramsP.double.double"></span><span class="target" id="fisher_8h_1ae23818b708bd1961b9d9ed4ee12f2a0e"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">fisher_autodiff_gsl_integration</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">frequency_bounds</span></span>, <span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">generation_method</span></span>, <span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">sensitivity_curve</span></span>, <span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">detector</span></span>, <span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">reference_detector</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">output</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">error</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">dimension</span></span>, <a class="reference internal" href="util.html#_CPPv410gen_params" title="gen_params"><span class="n"><span class="pre">gen_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">parameters</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">abserr</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">relerr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv431fisher_autodiff_gsl_integrationPd6string6string6string6stringPPdPPdiP10gen_paramsdd" title="Link to this definition"></a><br /></dt>
-<dd><p>Routine that implements GSL numerical integration to calculate the Fishers. </p>
-<p>This can be faster than brute force calculations in fisher_autodiff, but that depends</p>
-<p>Trade offs:</p>
-<p>Every element is calculated independently, so no information is retained between elements. In the brute force calculation, there is information reused.</p>
-<p>However, time can be saved by spending less time on trivial elements (identically 0 elements, etc) and better spent on complicated elements</p>
-<p>Does not have a direct interpretation in terms of integration time, as the scheme is adaptative. Sampling frequency and integration time are `as good as they need to be’ to calculate the fisher</p>
-<p>Implements (GSL_INTEG_GAUSS15) </p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>frequency_bounds</strong> – Bounds of integration in fourier space </p></li>
-<li><p><strong>generation_method</strong> – Method of waveform generation </p></li>
-<li><p><strong>sensitivity_curve</strong> – Sensitivity curve to be used for the PSD &amp;#8212; MUST BE ANALYTIC </p></li>
-<li><p><strong>detector</strong> – Detector to use for the response function </p></li>
-<li><p><strong>reference_detector</strong> – Detector to use for the response function </p></li>
-<li><p><strong>output</strong> – [out] Output Fisher &amp;#8212; must be preallocated &amp;#8212; shape [dimension][dimension] </p></li>
-<li><p><strong>error</strong> – [out] Estimated error, as specified by GSL’s integration &amp;#8212; must be preallocated &amp;#8212; shape [dimension][dimension] </p></li>
-<li><p><strong>dimension</strong> – Dimension of the Fisher </p></li>
-<li><p><strong>parameters</strong> – Generation parameters specifying source parameters and waveform options </p></li>
-<li><p><strong>abserr</strong> – Target absolute error (0 if this should be ignored &amp;#8212; ONE type of error must be specified) </p></li>
-<li><p><strong>relerr</strong> – Target relative error (0 if this should be ignored &amp;#8212; ONE type of error must be specified) </p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv431fisher_autodiff_gsl_integrationPd6string6string6string6stringPPdPPdiP10gen_paramsddNSt6stringEb">
 <span id="_CPPv331fisher_autodiff_gsl_integrationPd6string6string6string6stringPPdPPdiP10gen_paramsddNSt6stringEb"></span><span id="_CPPv231fisher_autodiff_gsl_integrationPd6string6string6string6stringPPdPPdiP10gen_paramsddNSt6stringEb"></span><span id="fisher_autodiff_gsl_integration__doubleP.string.string.string.string.doublePP.doublePP.i.gen_paramsP.double.double.ss.b"></span><span class="target" id="fisher_8h_1ace3fac58dae5d96f60549e6633287998"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">fisher_autodiff_gsl_integration</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">frequency_bounds</span></span>, <span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">generation_method</span></span>, <span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">sensitivity_curve</span></span>, <span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">detector</span></span>, <span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">reference_detector</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">output</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">error</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">dimension</span></span>, <a class="reference internal" href="util.html#_CPPv410gen_params" title="gen_params"><span class="n"><span class="pre">gen_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">parameters</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">abserr</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">relerr</span></span>, <a class="reference internal" href="#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">error_log</span></span>, <span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">logerr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv431fisher_autodiff_gsl_integrationPd6string6string6string6stringPPdPPdiP10gen_paramsddNSt6stringEb" title="Link to this definition"></a><br /></dt>
-<dd><p>Routine that implements GSL numerical integration to calculate the Fishers. </p>
-<p>This can be faster than brute force calculations in fisher_autodiff, but that depends</p>
-<p>Trade offs:</p>
-<p>Every element is calculated independently, so no information is retained between elements. In the brute force calculation, there is information reused.</p>
-<p>However, time can be saved by spending less time on trivial elements (identically 0 elements, etc) and better spent on complicated elements</p>
-<p>Does not have a direct interpretation in terms of integration time, as the scheme is adaptative. Sampling frequency and integration time are `as good as they need to be’ to calculate the fisher</p>
-<p>Implements (GSL_INTEG_GAUSS15)</p>
-<p>Now includes option to log error instead of ending program for certain types of errors </p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>frequency_bounds</strong> – Bounds of integration in fourier space </p></li>
-<li><p><strong>generation_method</strong> – Method of waveform generation </p></li>
-<li><p><strong>sensitivity_curve</strong> – Sensitivity curve to be used for the PSD &amp;#8212; MUST BE ANALYTIC </p></li>
-<li><p><strong>detector</strong> – Detector to use for the response function </p></li>
-<li><p><strong>reference_detector</strong> – Detector to use for the response function </p></li>
-<li><p><strong>output</strong> – [out] Output Fisher &amp;#8212; must be preallocated &amp;#8212; shape [dimension][dimension] </p></li>
-<li><p><strong>error</strong> – [out] Estimated error, as specified by GSL’s integration &amp;#8212; must be preallocated &amp;#8212; shape [dimension][dimension] </p></li>
-<li><p><strong>dimension</strong> – Dimension of the Fisher </p></li>
-<li><p><strong>parameters</strong> – Generation parameters specifying source parameters and waveform options </p></li>
-<li><p><strong>abserr</strong> – Target absolute error (0 if this should be ignored &amp;#8212; ONE type of error must be specified) </p></li>
-<li><p><strong>relerr</strong> – Target relative error (0 if this should be ignored &amp;#8212; ONE type of error must be specified) </p></li>
-<li><p><strong>error_log</strong> – File to write non-critical error codes to (roundoff error) </p></li>
-<li><p><strong>logerr</strong> – Whether or not to end program with certain error codes, or to log them and continue </p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv441fisher_autodiff_gsl_integration_batch_modPd6string6string6string6stringPPdPPdiiP10gen_paramsdd">
 <span id="_CPPv341fisher_autodiff_gsl_integration_batch_modPd6string6string6string6stringPPdPPdiiP10gen_paramsdd"></span><span id="_CPPv241fisher_autodiff_gsl_integration_batch_modPd6string6string6string6stringPPdPPdiiP10gen_paramsdd"></span><span id="fisher_autodiff_gsl_integration_batch_mod__doubleP.string.string.string.string.doublePP.doublePP.i.i.gen_paramsP.double.double"></span><span class="target" id="fisher_8h_1a727aa66ee384240bfb2e4a468ead9aee"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">fisher_autodiff_gsl_integration_batch_mod</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">frequency_bounds</span></span>, <span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">generation_method</span></span>, <span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">sensitivity_curve</span></span>, <span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">detector</span></span>, <span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">reference_detector</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">output</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">error</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">base_dimension</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">full_dimension</span></span>, <a class="reference internal" href="util.html#_CPPv410gen_params" title="gen_params"><span class="n"><span class="pre">gen_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">parameters</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">abserr</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">relerr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv441fisher_autodiff_gsl_integration_batch_modPd6string6string6string6stringPPdPPdiiP10gen_paramsdd" title="Link to this definition"></a><br /></dt>
-<dd><p>Routine that implements GSL numerical integration to calculate the Fishers &amp;#8212; batch modifications version. </p>
-<p>Calculates Fisher for multiple modifications at a time, neglecting covariance between modifications (set to 0 in Fisher)</p>
-<p>Modifications MUST BE evaluated at 0 for this routine to calculate correct results</p>
-<p>This can be faster than brute force calculations in fisher_autodiff, but that depends</p>
-<p>Trade offs:</p>
-<p>Every element is calculated independently, so no information is retained between elements. In the brute force calculation, there is information reused.</p>
-<p>However, time can be saved by spending less time on trivial elements (identically 0 elements, etc) and better spent on complicated elements</p>
-<p>Does not have a direct interpretation in terms of integration time, as the scheme is adaptative. Sampling frequency and integration time are `as good as they need to be’ to calculate the fisher</p>
-<p>Implements (GSL_INTEG_GAUSS15) </p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>frequency_bounds</strong> – Bounds of integration in fourier space </p></li>
-<li><p><strong>generation_method</strong> – Method of waveform generation </p></li>
-<li><p><strong>sensitivity_curve</strong> – Sensitivity curve to be used for the PSD &amp;#8212; MUST BE ANALYTIC </p></li>
-<li><p><strong>detector</strong> – Detector to use for the response function </p></li>
-<li><p><strong>reference_detector</strong> – Detector to use for the response function </p></li>
-<li><p><strong>output</strong> – [out] Output Fisher &amp;#8212; must be preallocated &amp;#8212; shape [full_dimension][full_dimension] </p></li>
-<li><p><strong>error</strong> – [out] Estimated error, as specified by GSL’s integration &amp;#8212; must be preallocated &amp;#8212; shape [full_dimension][full_dimension] </p></li>
-<li><p><strong>base_dimension</strong> – Dimension of base model (ie GR dimension) </p></li>
-<li><p><strong>full_dimension</strong> – Full dimension (GR dimension + Nmod) </p></li>
-<li><p><strong>parameters</strong> – Generation parameters specifying source parameters and waveform options </p></li>
-<li><p><strong>abserr</strong> – Target absolute error (0 if this should be ignored &amp;#8212; ONE type of error must be specified) </p></li>
-<li><p><strong>relerr</strong> – Target relative error (0 if this should be ignored &amp;#8212; ONE type of error must be specified) </p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv441fisher_autodiff_gsl_integration_batch_modPd6string6string6string6stringPPdPPdiiP10gen_paramsddNSt6stringEb">
 <span id="_CPPv341fisher_autodiff_gsl_integration_batch_modPd6string6string6string6stringPPdPPdiiP10gen_paramsddNSt6stringEb"></span><span id="_CPPv241fisher_autodiff_gsl_integration_batch_modPd6string6string6string6stringPPdPPdiiP10gen_paramsddNSt6stringEb"></span><span id="fisher_autodiff_gsl_integration_batch_mod__doubleP.string.string.string.string.doublePP.doublePP.i.i.gen_paramsP.double.double.ss.b"></span><span class="target" id="fisher_8h_1ae4ad894f2812dba4ff39a142c66210d9"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">fisher_autodiff_gsl_integration_batch_mod</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">frequency_bounds</span></span>, <span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">generation_method</span></span>, <span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">sensitivity_curve</span></span>, <span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">detector</span></span>, <span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">reference_detector</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">output</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">error</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">base_dimension</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">full_dimension</span></span>, <a class="reference internal" href="util.html#_CPPv410gen_params" title="gen_params"><span class="n"><span class="pre">gen_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">parameters</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">abserr</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">relerr</span></span>, <a class="reference internal" href="#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">error_log</span></span>, <span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">logerr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv441fisher_autodiff_gsl_integration_batch_modPd6string6string6string6stringPPdPPdiiP10gen_paramsddNSt6stringEb" title="Link to this definition"></a><br /></dt>
-<dd><p>Routine that implements GSL numerical integration to calculate the Fishers &amp;#8212; batch modifications version. </p>
-<p>Calculates Fisher for multiple modifications at a time, neglecting covariance between modifications (set to 0 in Fisher)</p>
-<p>Modifications MUST BE evaluated at 0 for this routine to calculate correct results</p>
-<p>This can be faster than brute force calculations in fisher_autodiff, but that depends</p>
-<p>Trade offs:</p>
-<p>Every element is calculated independently, so no information is retained between elements. In the brute force calculation, there is information reused.</p>
-<p>However, time can be saved by spending less time on trivial elements (identically 0 elements, etc) and better spent on complicated elements</p>
-<p>Does not have a direct interpretation in terms of integration time, as the scheme is adaptative. Sampling frequency and integration time are `as good as they need to be’ to calculate the fisher</p>
-<p>Implements (GSL_INTEG_GAUSS15)</p>
-<p>Now includes option to log error instead of ending program for certain types of errors </p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>frequency_bounds</strong> – Bounds of integration in fourier space </p></li>
-<li><p><strong>generation_method</strong> – Method of waveform generation </p></li>
-<li><p><strong>sensitivity_curve</strong> – Sensitivity curve to be used for the PSD &amp;#8212; MUST BE ANALYTIC </p></li>
-<li><p><strong>detector</strong> – Detector to use for the response function </p></li>
-<li><p><strong>reference_detector</strong> – Detector to use for the response function </p></li>
-<li><p><strong>output</strong> – [out] Output Fisher &amp;#8212; must be preallocated &amp;#8212; shape [full_dimension][full_dimension] </p></li>
-<li><p><strong>error</strong> – [out] Estimated error, as specified by GSL’s integration &amp;#8212; must be preallocated &amp;#8212; shape [full_dimension][full_dimension] </p></li>
-<li><p><strong>base_dimension</strong> – Dimension of base model (ie GR dimension) </p></li>
-<li><p><strong>full_dimension</strong> – Full dimension (GR dimension + Nmod) </p></li>
-<li><p><strong>parameters</strong> – Generation parameters specifying source parameters and waveform options </p></li>
-<li><p><strong>abserr</strong> – Target absolute error (0 if this should be ignored &amp;#8212; ONE type of error must be specified) </p></li>
-<li><p><strong>relerr</strong> – Target relative error (0 if this should be ignored &amp;#8212; ONE type of error must be specified) </p></li>
-<li><p><strong>error_log</strong> – File to write non-critical error codes to (roundoff error) </p></li>
-<li><p><strong>logerr</strong> – Whether or not to end program with certain error codes, or to log them and continue </p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv432ppE_theory_fisher_transformationNSt6stringENSt6stringEiP15gen_params_baseIdEPPdPPd">

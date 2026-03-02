@@ -8,15 +8,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>mcmc_sampler_internals &mdash; GW Analysis Tools  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -462,78 +462,32 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv410chain_swapP7samplerPPPdPPPiPPiiPiPi">
 <span id="_CPPv310chain_swapP7samplerPPPdPPPiPPiiPiPi"></span><span id="_CPPv210chain_swapP7samplerPPPdPPPiPPiiPiPi"></span><span id="chain_swap__samplerP.doublePPP.iPPP.iPP.i.iP.iP"></span><span class="target" id="mcmc__sampler__internals_8h_1a69ecce233e33a549d03ee2c47fb5bbd7"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">chain_swap</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv410chain_swapP7samplerPPPdPPPiPPiiPiPi" title="chain_swap::sampler"><span class="n"><span class="pre">sampler</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">sampler</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">output</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">param_status</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">model_status</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">step_num</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">swp_accepted</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">swp_rejected</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv410chain_swapP7samplerPPPdPPPiPPiiPiPi" title="Link to this definition"></a><br /></dt>
-<dd><p>subroutine to perform chain comparison for parallel tempering </p>
-<p>The total output file is passed, and the chains are swapped sequentially</p>
-<p>This is the routine for `Deterministic’ sampling (parallel or sequential, but not pooled) </p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>sampler</strong> – sampler struct </p></li>
-<li><p><strong>output</strong> – output vector containing chains </p></li>
-<li><p><strong>param_status</strong> – Parameter status </p></li>
-<li><p><strong>model_status</strong> – Parameter status </p></li>
-<li><p><strong>step_num</strong> – current step number </p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv417single_chain_swapP7samplerPdPdPiPiPiPiii">
 <span id="_CPPv317single_chain_swapP7samplerPdPdPiPiPiPiii"></span><span id="_CPPv217single_chain_swapP7samplerPdPdPiPiPiPiii"></span><span id="single_chain_swap__samplerP.doubleP.doubleP.iP.iP.iP.iP.i.i"></span><span class="target" id="mcmc__sampler__internals_8h_1a8f40760f116532ca1f9a92a0c9f27518"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">single_chain_swap</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv417single_chain_swapP7samplerPdPdPiPiPiPiii" title="single_chain_swap::sampler"><span class="n"><span class="pre">sampler</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">sampler</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">chain1</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">chain2</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">chain1_status</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">chain2_status</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">chain1_model_status</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">chain2_model_status</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">T1_index</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">T2_index</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv417single_chain_swapP7samplerPdPdPiPiPiPiii" title="Link to this definition"></a><br /></dt>
-<dd><p>subroutine to actually swap two chains </p>
-<p>This is the more general subroutine, which just swaps the two chains passed to the function </p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>sampler</strong> – sampler structure </p></li>
-<li><p><strong>chain1</strong> – parameter position of chain that could be changed </p></li>
-<li><p><strong>chain2</strong> – chain that is not swapped, but provides parameters to be swapped by the other chain </p></li>
-<li><p><strong>chain1_status</strong> – Parameter status array for chain1 </p></li>
-<li><p><strong>chain2_status</strong> – Parameter status array for chain2 </p></li>
-<li><p><strong>chain1_model_status</strong> – Parameter status array for chain1 </p></li>
-<li><p><strong>chain2_model_status</strong> – Parameter status array for chain2 </p></li>
-<li><p><strong>T1_index</strong> – number of chain swappe in chain_temps </p></li>
-<li><p><strong>T2_index</strong> – number of chain swapper in chain_temps </p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv420assign_probabilitiesP7sampleri">
 <span id="_CPPv320assign_probabilitiesP7sampleri"></span><span id="_CPPv220assign_probabilitiesP7sampleri"></span><span id="assign_probabilities__samplerP.i"></span><span class="target" id="mcmc__sampler__internals_8h_1a01af82303a695ddfd66c3d493b8da408"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">assign_probabilities</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv420assign_probabilitiesP7sampleri" title="assign_probabilities::sampler"><span class="n"><span class="pre">sampler</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">sampler</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">chain_index</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv420assign_probabilitiesP7sampleri" title="Link to this definition"></a><br /></dt>
-<dd><p>update and initiate probabilities for each variety of step </p>
-<p>Type 0: Gaussian step</p>
-<p>Type 1: Differential Evolution step</p>
-<p>Type 2: MMALA step (currently not supported)</p>
-<p>Type 3: Fisher step </p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv414transfer_chainP7samplerP7sampleriib">
 <span id="_CPPv314transfer_chainP7samplerP7sampleriib"></span><span id="_CPPv214transfer_chainP7samplerP7sampleriib"></span><span id="transfer_chain__samplerP.samplerP.i.i.b"></span><span class="target" id="mcmc__sampler__internals_8h_1a8739a51814f6b9316fe243fdd158b285"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">transfer_chain</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv47sampler" title="sampler"><span class="n"><span class="pre">sampler</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">samplerptr_dest</span></span>, <a class="reference internal" href="#_CPPv47sampler" title="sampler"><span class="n"><span class="pre">sampler</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">samplerptr_source</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">id_destination</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">id_source</span></span>, <span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">transfer_output</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv414transfer_chainP7samplerP7sampleriib" title="Link to this definition"></a><br /></dt>
-<dd><p>Copies contents of one chain to another. </p>
-<p>Transfers id_source in samplerptr_source to id_dest samplerptr_dest</p>
-<p>NOTE: This copies the VALUE, not the reference. This could be expensive, so use with caution</p>
-<p>id_dest is ERASED</p>
-<p>samplerptr_dest and samplerptr_source MUST have the same dimension, the same sampling details (like having or not having a fisher) etc</p>
-<p>samplerptr_dest must be previously allocated properly</p>
-<p>As output is the largest transfer by far, the transfer_output flag can be used to allow the user to handle that manually. </p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv420check_sampler_statusP7sampler">
 <span id="_CPPv320check_sampler_statusP7sampler"></span><span id="_CPPv220check_sampler_statusP7sampler"></span><span id="check_sampler_status__samplerP"></span><span class="target" id="mcmc__sampler__internals_8h_1a00a4c2a3dcd245bd563ec73963553421"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">check_sampler_status</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv47sampler" title="sampler"><span class="n"><span class="pre">sampler</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">samplerptr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv420check_sampler_statusP7sampler" title="Link to this definition"></a><br /></dt>
-<dd><p>Checks the status of a sampler for the stochastic sampling. </p>
-<p>Just loops through the ref_chain_status variables </p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv418update_step_widthsP7sampleri">
 <span id="_CPPv318update_step_widthsP7sampleri"></span><span id="_CPPv218update_step_widthsP7sampleri"></span><span id="update_step_widths__samplerP.i"></span><span class="target" id="mcmc__sampler__internals_8h_1a9d87fd050fbed74c4b5deabbc806f9ed"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">update_step_widths</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv47sampler" title="sampler"><span class="n"><span class="pre">sampler</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">samplerptr</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">chain_id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv418update_step_widthsP7sampleri" title="Link to this definition"></a><br /></dt>
-<dd><p>Updates the step widths, shooting for 20% acceptance ratios for each type of step. </p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv420allocate_sampler_memP7sampler">
@@ -558,39 +512,27 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv421write_checkpoint_fileP7samplerNSt6stringE">
 <span id="_CPPv321write_checkpoint_fileP7samplerNSt6stringE"></span><span id="_CPPv221write_checkpoint_fileP7samplerNSt6stringE"></span><span id="write_checkpoint_file__samplerP.ss"></span><span class="target" id="mcmc__sampler__internals_8h_1a2207c4aeab89b5b985ac2fb297426ba5"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">write_checkpoint_file</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv421write_checkpoint_fileP7samplerNSt6stringE" title="write_checkpoint_file::sampler"><span class="n"><span class="pre">sampler</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">sampler</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">filename</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv421write_checkpoint_fileP7samplerNSt6stringE" title="Link to this definition"></a><br /></dt>
-<dd><p>Routine that writes metadata and final positions of a sampler to a checkpoint file. </p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv433chain_number_from_checkpoint_fileNSt6stringEPi">
 <span id="_CPPv333chain_number_from_checkpoint_fileNSt6stringEPi"></span><span id="_CPPv233chain_number_from_checkpoint_fileNSt6stringEPi"></span><span id="chain_number_from_checkpoint_file__ss.iP"></span><span class="target" id="mcmc__sampler__internals_8h_1aecfd6c1ef213a233c95a98ae87897123"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">chain_number_from_checkpoint_file</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">check_file</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">chain_N</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv433chain_number_from_checkpoint_fileNSt6stringEPi" title="Link to this definition"></a><br /></dt>
-<dd><p>Load chain number from checkpoint file. </p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv430dimension_from_checkpoint_fileNSt6stringEPiPi">
 <span id="_CPPv330dimension_from_checkpoint_fileNSt6stringEPiPi"></span><span id="_CPPv230dimension_from_checkpoint_fileNSt6stringEPiPi"></span><span id="dimension_from_checkpoint_file__ss.iP.iP"></span><span class="target" id="mcmc__sampler__internals_8h_1ac2b9f96c0359f9653c6b063b2f356b92"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">dimension_from_checkpoint_file</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">check_file</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">min_dimension</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">max_dimension</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv430dimension_from_checkpoint_fileNSt6stringEPiPi" title="Link to this definition"></a><br /></dt>
-<dd><p>Load dimension from checkpoint file. </p>
-<p>If RJ &amp;#8212; returns min_dimension and max_dimension</p>
-<p>If not RJ &amp;#8212; returns dimension in min_dimension and max_dimension </p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv420load_checkpoint_fileNSt6stringEP7sampler">
 <span id="_CPPv320load_checkpoint_fileNSt6stringEP7sampler"></span><span id="_CPPv220load_checkpoint_fileNSt6stringEP7sampler"></span><span id="load_checkpoint_file__ss.samplerP"></span><span class="target" id="mcmc__sampler__internals_8h_1ae9c3718752690cce3b37f41da7b2b938"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">load_checkpoint_file</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">check_file</span></span>, <a class="reference internal" href="#_CPPv420load_checkpoint_fileNSt6stringEP7sampler" title="load_checkpoint_file::sampler"><span class="n"><span class="pre">sampler</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">sampler</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv420load_checkpoint_fileNSt6stringEP7sampler" title="Link to this definition"></a><br /></dt>
-<dd><p>load checkpoint file into sampler struct </p>
-<p><em>NOTE</em> &amp;#8212; allocate_sampler called in function &amp;#8212; MUST deallocate manually</p>
-<p><em>NOTE</em> &amp;#8212; sampler-&gt;chain_temps allocated internally &amp;#8212; MUST free manually </p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv426load_temps_checkpoint_fileNSt6stringEPdi">
 <span id="_CPPv326load_temps_checkpoint_fileNSt6stringEPdi"></span><span id="_CPPv226load_temps_checkpoint_fileNSt6stringEPdi"></span><span id="load_temps_checkpoint_file__ss.doubleP.i"></span><span class="target" id="mcmc__sampler__internals_8h_1a6df174eb68b851e0ccd3b966e65f3a77"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">load_temps_checkpoint_file</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">check_file</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">temps</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">chain_N</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv426load_temps_checkpoint_fileNSt6stringEPdi" title="Link to this definition"></a><br /></dt>
-<dd><p>load temperatures from checkpoint file </p>
-<p>Assumed the temps array is already allocated in memory for the correct number of chains</p>
-<p>Just a utility routine to read temperatures from checkpoint file</p>
-<p>It would be easy to read in the chain number and allocate memory in the function, but I prefer to leave allocation/deallocation up to the client </p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv411assign_ct_pP7sampleriii">
@@ -610,18 +552,7 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv422PT_dynamical_timescaleiii">
 <span id="_CPPv322PT_dynamical_timescaleiii"></span><span id="_CPPv222PT_dynamical_timescaleiii"></span><span id="PT_dynamical_timescale__i.i.i"></span><span class="target" id="mcmc__sampler__internals_8h_1a1f07e7540a20f438aad42f569c2e22d2"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">PT_dynamical_timescale</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">t0</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">nu</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">t</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv422PT_dynamical_timescaleiii" title="Link to this definition"></a><br /></dt>
-<dd><p>Timescale of the PT dynamics. </p>
-<p>kappa in the the language of arXiv:1501.05823v3 </p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>t0</strong> – Timescale of the dyanmics </p></li>
-<li><p><strong>nu</strong> – Initial amplitude (number of steps to base dynamics on) </p></li>
-<li><p><strong>t</strong> – current time </p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv425update_temp_neighborhoodsP7sampler">
@@ -636,53 +567,22 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv419update_temperaturesP7sampleriii">
 <span id="_CPPv319update_temperaturesP7sampleriii"></span><span id="_CPPv219update_temperaturesP7sampleriii"></span><span id="update_temperatures__samplerP.i.i.i"></span><span class="target" id="mcmc__sampler__internals_8h_1ae0ec0745c85caad31c473a608aef5782"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">update_temperatures</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv47sampler" title="sampler"><span class="n"><span class="pre">sampler</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">samplerptr</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">t0</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">nu</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">t</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv419update_temperaturesP7sampleriii" title="Link to this definition"></a><br /></dt>
-<dd><p>updates the temperatures for a sampler such that all acceptance rates are equal </p>
-<p>Follows the algorithm outlined in arXiv:1501.05823v3</p>
-<p>Fixed temperatures for the first and last chain</p>
-<p>used in MCMC_MH_dynamic_PT_alloc_internal</p>
-<p>For defined results, this should be used while the sampler is using non-pooling methods </p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv421initiate_full_samplerP7samplerP7sampleriiNSt6stringENSt6stringE">
 <span id="_CPPv321initiate_full_samplerP7samplerP7sampleriiNSt6stringENSt6stringE"></span><span id="_CPPv221initiate_full_samplerP7samplerP7sampleriiNSt6stringENSt6stringE"></span><span id="initiate_full_sampler__samplerP.samplerP.i.i.ss.ss"></span><span class="target" id="mcmc__sampler__internals_8h_1af7d9266e3f9b69568a983b29e629ca98"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">initiate_full_sampler</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv47sampler" title="sampler"><span class="n"><span class="pre">sampler</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">sampler_new</span></span>, <a class="reference internal" href="#_CPPv47sampler" title="sampler"><span class="n"><span class="pre">sampler</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">sampler_old</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">chain_N_thermo_ensemble</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">chain_N</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">chain_allocation_scheme</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">checkpoint_file_start</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv421initiate_full_samplerP7samplerP7sampleriiNSt6stringENSt6stringE" title="Link to this definition"></a><br /></dt>
-<dd><p>For the dynamic PT sampler, this is the function that starts the full sampler with the max number of chains. </p>
-<p>The output file will be reused, but the positions are set back to zero (copying the current position to position zero)</p>
-<p>Assumes the output, chain_temps have been allocated in memory for the final number of chains chain_N and steps N_steps</p>
-<p>Allocates memory for the new sampler sampler_new -&gt; it’s the user’s responsibility to deallocate with deallocate_sampler_mem</p>
-<p>checkpoint_file_start is the file used for continue_PTMCMC like functions, and can be used if the user wants to maintain the approximate positions and histories of the ensemble of chains after the dynamic temperature allocation. If the rest of the chains should just be copies of the base ensemble, pass an empty string (“”). Since the chain distribution can change the number and distribution of chain temperatures (that’s kinda the point..), the transfer is not perfect. Cold chains are prioritized, then the rest of the chains are filled in as close as possible. </p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>sampler_old</strong> – Dynamic sampler </p></li>
-<li><p><strong>chain_N_thermo_ensemble</strong> – Number of chains used in the thermodynamic ensemble </p></li>
-<li><p><strong>chain_N</strong> – Number of chains to use in the static sampler </p></li>
-<li><p><strong>chain_allocation_scheme</strong> – Scheme to use to allocate any remaining chains </p></li>
-<li><p><strong>checkpoint_file_start</strong> – Base checkpoint file </p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv431copy_base_checkpoint_propertiesNSt6stringEP7sampler">
 <span id="_CPPv331copy_base_checkpoint_propertiesNSt6stringEP7sampler"></span><span id="_CPPv231copy_base_checkpoint_propertiesNSt6stringEP7sampler"></span><span id="copy_base_checkpoint_properties__ss.samplerP"></span><span class="target" id="mcmc__sampler__internals_8h_1a036d12e6378958e6b373866894a1081d"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">copy_base_checkpoint_properties</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">check_file</span></span>, <a class="reference internal" href="#_CPPv47sampler" title="sampler"><span class="n"><span class="pre">sampler</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">samplerptr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv431copy_base_checkpoint_propertiesNSt6stringEP7sampler" title="Link to this definition"></a><br /></dt>
-<dd><p>Copies positions and histories into chain ensemble, skipping the first set of temperatures. </p>
-<p><em>NOTE</em> &amp;#8212; allocate_sampler called in function &amp;#8212; MUST deallocate manually</p>
-<p><em>NOTE</em> &amp;#8212; sampler-&gt;chain_temps allocated internally &amp;#8212; MUST free manually</p>
-<p>!ASSUMPTIONS! &amp;#8212; <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">The</span><span class="w"> </span><span class="n">checkpoint</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">sampler</span><span class="w"> </span><span class="n">must</span><span class="w"> </span><span class="n">have</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">same</span><span class="w"> </span><span class="n">total</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">chains</span><span class="p">,</span><span class="w"> </span><span class="n">dimension</span><span class="p">,</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">histories</span><span class="w"> </span><span class="n">are</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">same</span><span class="w"> </span><span class="n">length</span>
-
-<span class="n">The</span><span class="w"> </span><span class="n">temperatures</span><span class="w"> </span><span class="n">are</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="n">ascending</span><span class="w"> </span><span class="n">order</span><span class="p">,</span><span class="w"> </span><span class="n">as</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="n">write_checkpoint</span>
-</pre></div>
-</div>
-</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv417write_output_fileNSt6stringEiiPPPdPPPiPPiiiPdb">
 <span id="_CPPv317write_output_fileNSt6stringEiiPPPdPPPiPPiiiPdb"></span><span id="_CPPv217write_output_fileNSt6stringEiiPPPdPPPiPPiiiPdb"></span><span id="write_output_file__ss.i.i.doublePPP.iPPP.iPP.i.i.doubleP.b"></span><span class="target" id="mcmc__sampler__internals_8h_1a8389f3269c39a562782ed68a0f2d5978"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">write_output_file</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">file</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">step_num</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">max_dimension</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">output</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">status</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">model_status</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">chain_N</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">nested_model_number</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">temps</span></span>, <span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">RJ</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv417write_output_fileNSt6stringEiiPPPdPPPiPPiiiPdb" title="Link to this definition"></a><br /></dt>
-<dd><p>Utility to write out the parameters and status of a sampler to a file. </p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv413reduce_outputiiPPPdPPPiPPiPPdPPiPPiiPdb">

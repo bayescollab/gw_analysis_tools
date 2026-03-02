@@ -13,7 +13,7 @@ var searchData=
   ['hann_5fwindow_10',['hann_window',['../util_8h.html#a5c7112c0647eba3f134d659cd97d4c97',1,'hann_window(double *window, int length):&#160;util.cpp'],['../util_8cpp.html#a5c7112c0647eba3f134d659cd97d4c97',1,'hann_window(double *window, int length):&#160;util.cpp']]],
   ['hb_11',['hb',['../classwaveform__polarizations.html#ad8b014592b0f0b79c3d4742957b25f33',1,'waveform_polarizations']]],
   ['hcross_12',['hcross',['../classwaveform__polarizations.html#a5dcc9910061db3a6a4b386e8ac51624d',1,'waveform_polarizations::hcross'],['../structskysearch__params.html#af4b639c6ab19772c5431e34498e5bca1',1,'skysearch_params::hcross']]],
-  ['helper_5fparams_13',['helper_params',['../structhelper__params.html',1,'']]],
+  ['helper_5fparams_13',['helper_params',['../waveform__util_8cpp.html#a261c8ce8fd9064ece20dd893b61c8aef',1,'waveform_util.cpp']]],
   ['history_14',['history',['../classsampler.html#aaf2d81b15fe8aae0a7a4c68074b70963',1,'sampler']]],
   ['history_5flength_15',['history_length',['../classsampler.html#a19172e2dd561a1d2d77fb4557f8dfff1',1,'sampler']]],
   ['history_5fstatus_16',['history_status',['../classsampler.html#aa5de645803117a47d82015b1e76e7674',1,'sampler']]],

@@ -8,15 +8,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>util &mdash; GW Analysis Tools  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -805,7 +805,7 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv413rm_fisher_dimPPdiPPdiPi">
 <span id="_CPPv313rm_fisher_dimPPdiPPdiPi"></span><span id="_CPPv213rm_fisher_dimPPdiPPdiPi"></span><span id="rm_fisher_dim__doublePP.i.doublePP.i.iP"></span><span class="target" id="util_8h_1aa3b3e1ddc0801e2dcfa09d5683936817"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">rm_fisher_dim</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">input</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">full_dim</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">output</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">reduced_dim</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">removed_dims</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv413rm_fisher_dimPPdiPPdiPi" title="Link to this definition"></a><br /></dt>
-<dd><p>Removes a dimension from a matrix (made with fishers in mind, but this is general) </p>
+<dd><p>Removes a dimension from a matrix (made with fishers in mind, but this is general). </p>
 <p>Note: the removed_dims list is indexed from 0 </p>
 </dd></dl>
 
@@ -937,7 +937,7 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4I0E28terr_pol_iota_from_equat_sphv1T1T1T1TP1TP1T">
 <span id="_CPPv3I0E28terr_pol_iota_from_equat_sph1T1T1T1TP1TP1T"></span><span id="_CPPv2I0E28terr_pol_iota_from_equat_sph1T1T1T1TP1TP1T"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="util_8h_1a969645fb30ec69bccd7848afe7ecef1f"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">terr_pol_iota_from_equat_sph</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0E28terr_pol_iota_from_equat_sphv1T1T1T1TP1TP1T" title="terr_pol_iota_from_equat_sph::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">RA</span></span>, <a class="reference internal" href="#_CPPv4I0E28terr_pol_iota_from_equat_sphv1T1T1T1TP1TP1T" title="terr_pol_iota_from_equat_sph::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">DEC</span></span>, <a class="reference internal" href="#_CPPv4I0E28terr_pol_iota_from_equat_sphv1T1T1T1TP1TP1T" title="terr_pol_iota_from_equat_sph::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">thetaj</span></span>, <a class="reference internal" href="#_CPPv4I0E28terr_pol_iota_from_equat_sphv1T1T1T1TP1TP1T" title="terr_pol_iota_from_equat_sph::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">phij</span></span>, <a class="reference internal" href="#_CPPv4I0E28terr_pol_iota_from_equat_sphv1T1T1T1TP1TP1T" title="terr_pol_iota_from_equat_sph::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">pol</span></span>, <a class="reference internal" href="#_CPPv4I0E28terr_pol_iota_from_equat_sphv1T1T1T1TP1TP1T" title="terr_pol_iota_from_equat_sph::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">iota</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0E28terr_pol_iota_from_equat_sphv1T1T1T1TP1TP1T" title="Link to this definition"></a><br /></dt>
-<dd><p>Routine to transform from the equatorial coordinate system spherical polar description of the total angular momentum to the detector specific polarization angle and inclination angle (of the total angular momentum) </p>
+<dd><p>Routine to transform from the equatorial coordinate system spherical polar description of the total angular momentum to the detector specific polarization angle and inclination angle (of the total angular momentum). </p>
 <p>For the terrestrial network, this calculates the polarization angle for a detector at the center of Earth in equatorial coordinates, which is the polarization angle used in the detector_response_equatorial functions</p>
 <p>Polarization angle is defined as:</p>
 <p>tan \psi = ( J.z - (J.N)(z.N) ) / (N.(Jxz))</p>

@@ -96,6 +96,14 @@ struct MCMC_modification_struct
 	// Not as trivial as you might think!
 	// Default: 20 Hz.
 	double f_ref = 20.;
+
+	// ---- Temperature ladder settings ----
+	// The maximum temperature below Inf
+	double Tmax = 100.;
+	// The dampening time. If left at 0, BayesShip sets it to burnIterations/8.
+	double t0 = 0.;
+	// Timescale of adjustments
+	double nu = 100.;
 };
 
 static MCMC_modification_struct *mcmc_mod_struct;

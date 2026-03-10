@@ -136,7 +136,7 @@ int IMRPhenomPv3<T>::construct_waveform(T *frequencies, /**< T array of frequenc
         std::complex<T> Ystar = conj(Y2m->Y2m2);
         hp_proj = Y + Ystar;
         hc_proj = Y - Ystar;
-        hc_proj *= I;
+        hc_proj *= -I;
 
         // Store the polarizations
         for (int j = 0; j<lengthCut; j++)
@@ -171,7 +171,7 @@ int IMRPhenomPv3<T>::construct_waveform(T *frequencies, /**< T array of frequenc
 
             // Store the polarizations
             waveform_plus[j] += half_amp_eps * hp_proj;
-            waveform_cross[j] += half_amp_eps * hc_proj;
+            waveform_cross[j] -= half_amp_eps * hc_proj;
         }
     }
     

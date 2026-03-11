@@ -22,7 +22,7 @@ IF( ADOLC_FOUND )
     MESSAGE(STATUS "package adolc ${ADOLC_VERSION} found")
   ENDIF()
 ELSE( ADOLC_FOUND )
-  string(REPLACE ":" ";" INC_SEARCH_LIST $ENV{CPATH})
+  string(REPLACE ":" ";" INC_SEARCH_LIST "$ENV{CPATH}")
   FIND_PATH(ADOLC_INCLUDE_DIRS NAMES adolc
             HINTS  
 		   "$ENV{ADOLC_HOME}/include"

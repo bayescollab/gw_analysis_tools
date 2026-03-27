@@ -304,12 +304,12 @@ void calculate_derivatives(std::complex<double>  **response_deriv,
 			if(order==2){
 				for (int l =0;l<length;l++)
 				{
-				  if(!has_substring(local_gen_method, "EOS")){
-				    if(i==8 && parameters_vec[i] > .25-epsilon){
-				      amplitude_deriv = (amplitude_plus[l] -amplitude_minus[l])/(epsilon);
-				      phase_deriv = (phase_plus[l] -phase_minus[l])/(epsilon);
-				    }
-				  }
+				  if(i==8 && !has_substring(local_gen_method, "EOS") &&
+						parameters_vec[i] > .25-epsilon)
+					{
+				    amplitude_deriv = (amplitude_plus[l] -amplitude_minus[l])/(epsilon);
+				    phase_deriv = (phase_plus[l] -phase_minus[l])/(epsilon);
+					}
 				  else{
 				    amplitude_deriv = (amplitude_plus[l] -amplitude_minus[l])/(2*epsilon);
 				    phase_deriv = (phase_plus[l] -phase_minus[l])/(2*epsilon);
@@ -318,19 +318,21 @@ void calculate_derivatives(std::complex<double>  **response_deriv,
 				    std::complex<double>(0,1)*phase_deriv*amplitude[l];
 				}
 			}
-			else if(order==4){
+			else if(order==4)
+			{
 				for (int l =0;l<length;l++)
-				  {
-				    if(!has_substring(local_gen_method, "EOS")){
-				      if(i==8 && parameters_vec[i] > .25-epsilon){
-					amplitude_deriv = (-amplitude_plus_plus[l]+8.*amplitude_plus[l] -8.*amplitude_minus[l]+amplitude_minus_minus[l])/(6.*epsilon);
-					phase_deriv = (-phase_plus_plus[l]+8.*phase_plus[l] -8.*phase_minus[l]+phase_minus_minus[l])/(6.*epsilon);
-				      }
-				    }
-				  else{
-				    amplitude_deriv = (-amplitude_plus_plus[l]+8.*amplitude_plus[l] -8.*amplitude_minus[l]+amplitude_minus_minus[l])/(12.*epsilon);
-				    phase_deriv = (-phase_plus_plus[l]+8.*phase_plus[l] -8.*phase_minus[l]+phase_minus_minus[l])/(12.*epsilon);
-				  }
+				{
+					if(i==8 && !has_substring(local_gen_method, "EOS") &&
+						parameters_vec[i] > .25-epsilon)
+					{
+						amplitude_deriv = (-amplitude_plus_plus[l]+8.*amplitude_plus[l] -8.*amplitude_minus[l]+amplitude_minus_minus[l])/(6.*epsilon);
+						phase_deriv = (-phase_plus_plus[l]+8.*phase_plus[l] -8.*phase_minus[l]+phase_minus_minus[l])/(6.*epsilon);
+					}
+					else
+					{
+						amplitude_deriv = (-amplitude_plus_plus[l]+8.*amplitude_plus[l] -8.*amplitude_minus[l]+amplitude_minus_minus[l])/(12.*epsilon);
+						phase_deriv = (-phase_plus_plus[l]+8.*phase_plus[l] -8.*phase_minus[l]+phase_minus_minus[l])/(12.*epsilon);
+					}
 				  response_deriv[i][l] = amplitude_deriv - 
 				    std::complex<double>(0,1)*phase_deriv*amplitude[l];
 				}

@@ -1002,10 +1002,9 @@ template <class T> int InitializePrecession(sysprecquant<T>* system, /** [out] P
     //eq.D15 (1703.03967)
     T Omegaz5 = -(adfd*fd - cdfd + cdhd_2 - 3*adfdhd_2 + adhd_4)*Seff + hd*(2*cdfd - 3*adfd*fd - cdhd_2 + 4*adfdhd_2 - adhd_4);
 
-    /* We check the size of the Omegaz5 coefficient to try and catch
-    cases where we think the precession model is breaking down */
-    // Commented out as it isn't really significant.
-    // TODO: Activate the check with a flag.
+    #ifdef ENABLE_PV3_INIT_ERROR
+    // We check the size of the Omegaz5 coefficient to try and catch
+    // cases where we think the precession model is breaking down
     try
     {
        checkOmegaz5(Omegaz5);
@@ -1020,6 +1019,7 @@ template <class T> int InitializePrecession(sysprecquant<T>* system, /** [out] P
        std::cerr << "(" << (m2/GWAT_MSUN_SI) << ", " << mu2 << ", " << ch2 << ")\n";
        return 0;
     }
+    #endif // ENABLE_PV3_INIT_ERROR
     
     //eq.D16 (1703.03967), note that "c0" in the code is "$g_0$" in the paper and likewise for the other "c's" and "g's"
     system->constants_phiz[0] = 3.*Omegaz0*c0;

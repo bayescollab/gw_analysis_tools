@@ -8,7 +8,9 @@ option(TEST_PROGRAMS "test-programs" OFF)
 option(DOCS "DOCS" OFF)
 option(IMPLEMENT_HDF5 "Implement HDF5 if available" ON)
 option(DEBUG "set debugger options" OFF)
-
+option(ENABLE_PV3_INIT_ERROR
+	"Allow for IMRPhenomPv3 initialization to throw error. STDERR will report the error, which can slow down inference."
+	OFF)
 
 #SET(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
 #SET(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")

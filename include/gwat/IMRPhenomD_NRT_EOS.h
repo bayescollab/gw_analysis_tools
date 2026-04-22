@@ -6,6 +6,7 @@
 #include <gsl/gsl_odeiv2.h>
 #include <gsl/gsl_spline.h>
 
+#include <armadillo>
 #include <cmath>
 #include <cstdlib>
 #include <string>
@@ -36,13 +37,15 @@ using std::vector;
 class Interpolation {
 public:
   // Calls initialize()
-  Interpolation(gsl_interp_type *type, vector<double> x, vector<double> y);
+  Interpolation(gsl_interp_type *interp_type, std::vector<double> x,
+                std::vector<double> y);
   Interpolation();
   // Calls free()
   ~Interpolation();
 
   // Initializes GSL splines for interpolation
-  void initialize(gsl_interp_type *type, vector<double> x, vector<double> y);
+  void initialize(gsl_interp_type *interp_type, std::vector<double> x,
+                  std::vector<double> y);
 
   // Frees GSL spline and accelerator memory
   void free();
@@ -69,10 +72,11 @@ protected:
 template <class T> class IMRPhenomD_NRT_EOS : public IMRPhenomD_NRT<T> {
 public:
   // Overrides IMRPhenomD_NRT construct_waveform
-  int construct_waveform(T *frequencies, int length, std::complex<T> *waveform,
-                         source_parameters<T> *params) override;
+  virtual int construct_waveform(T *frequencies, int length,
+                                 std::complex<T> *waveform,
+                                 source_parameters<T> *params) override;
 
-  void get_m_love(source_parameters<T> &params);
+  void get_m_love(source_parameters<T> *params);
 };
 
 /* -------------------------------------------------------------------------- */
@@ -96,20 +100,18 @@ protected:
     vector<double> cs2;
 
     // Central values to return
-    double eps_c_1;
-    double eps_c_2;
+    double eps_c1;
+    double eps_c2;
   };
 
   EoS_data eos;
 
-  void transpose_data_to_column_major(const vector<vector<double>> &row_major,
-                                      vector<vector<double>> &column_major);
+  void transpose_data_to_column_major(vector<vector<double>> &vector);
 
   // Conversion methods
-  void convert_eos_to_cs2();
   void convert_cs2_to_eos();
-  void convert_fm3_to_MeV(double &x);
-  void convert_nsat_to_MeV(double &x);
+  double convert_fm3_to_MeV(double x);
+  double convert_nsat_to_MeV(double x);
 };
 
 /* -------------------------------------------------------------------------- */
@@ -121,12 +123,17 @@ protected:
 /* ----- Defines a class to construct a bumpy EoS from given parameters. ---- */
 class Bumpy_EOS_Constructor : public EOS_Constructor {
 public:
-  Bumpy_EOS_Constructor(string EOS_filepath) : EOS_Constructor(EOS_filepath){};
+  // Constructor stores EOS table and converts units
+  Bumpy_EOS_Constructor(string EOS_filepath) : EOS_Constructor(EOS_filepath) {};
+
+  // Functions to store parameters
+  // Need this because of whatever is even happening with GWAT's parameter
+  // objects
+  void store_EOS_params(source_parameters<adouble> *params);
+  void store_EOS_params(source_parameters<double> *params);
 
   // Injects bump into the EOS
-  virtual void construct_EOS(double bump_mag, double bump_width,
-                             double bump_offset, double plat, double nbc1,
-                             double nbc2);
+  virtual void construct_EOS();
 
 protected:
   struct Bumpy_Params {
@@ -137,6 +144,10 @@ protected:
     double nbc;
     double n1;
     double n2;
+
+    double bump_start;
+    double bump_end;
+    double max_nb;
   };
 
   Bumpy_Params eos_params;
@@ -150,31 +161,40 @@ protected:
 /*                    TOV/Tidal Integrator Class Definition                   */
 /* -------------------------------------------------------------------------- */
 
-/* ------------------------------- WIP Section ------------------------------ */
-
 class ObservablesIntegrator {
 public:
-  ObservablesIntegrator(double epsilon_c1, double epsilon_c2,
-                        Interpolation eos);
+  ObservablesIntegrator(Interpolation &p_of_e, double ec_1, double ec_2);
 
-  void integrate_for_observables(double &m1, double &m2, double &tidal1,
-                                 double &tidal2, double step_size);
+  void integrate_for_observables(arma::vec::fixed<3> &first_observables,
+                                 arma::vec::fixed<3> &second_observables);
 
 protected:
-  Interpolation p_of_e;
+  // EoS Interpolations
   Interpolation p_of_h;
   Interpolation e_of_h;
 
-  double eps_c1;
-  double eps_c2;
+  // Central enthalpy values
+  double hc_1;
+  double hc_2;
 
-  double h_max1;
-  double h_max2;
+  struct common_constants {
+    double x1 = 4.0 * M_PI;
+  };
 
-  double calculate_dh_of_de(double epsilon);
-  void integrate_for_eos_of_h();
-  valarray<double> Observables_ODE(double h, const valarray<double> y);
-  void rk4(double h, valarray<double> &y, double step_size);
+  common_constants constant;
+
+  // Functions to get p(h) and e(h)
+  double calculate_dh_of_de(const double e, Interpolation &p_of_e);
+  void integrate_for_eos_of_h(Interpolation &p_of_e, double ec_1, double ec_2);
+
+  // Functions to evaluate integration for m(h) and r(h)
+  void evaluate_ODE_at_point(double h, const arma::vec::fixed<3> &y,
+                             arma::vec::fixed<3> &f);
+  void rk4(double &t, arma::vec::fixed<3> &y, double h);
+
+  // Functions to convert units
+  double convert_dimensions(double value, std::string unit,
+                            bool adimensionalize);
 };
 
 #endif

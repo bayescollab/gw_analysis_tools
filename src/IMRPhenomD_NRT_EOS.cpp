@@ -13,6 +13,7 @@
 
 #include "IMRPhenomD_NRT_EOS.h"
 #include "IMRPhenomD_NRT.h"
+#include "io_util.h"
 #include "util.h"
 #include <adolc/adouble.h>
 #include <adolc/drivers/drivers.h>
@@ -23,7 +24,7 @@
 #include <iostream>
 #include <math.h>
 #include <stdexcept>
-#include <valarray>
+
 /* -------------------------------------------------------------------------- */
 /*                         IMRPhenomD_NRT_EOS METHODS                         */
 /* -------------------------------------------------------------------------- */
@@ -71,7 +72,7 @@ int IMRPhenomD_NRT_EOS<T>::construct_waveform(T *frequencies, int length,
  * dependent parameters are updated.
  */
 template <class T>
-void IMRPhenomD_NRT_EOS<T>::get_m_love(source_parameters<T> &params) {
+void IMRPhenomD_NRT_EOS<T>::get_m_love(source_parameters<T> *params) {
   // Define objects needed to store information
   string eos_filepath = "/opt/gw_analysis_tools/data/eos.csv";
 
@@ -82,21 +83,31 @@ void IMRPhenomD_NRT_EOS<T>::get_m_love(source_parameters<T> &params) {
   double ec1;
   double ec2;
 
+  // Objects to
+  arma::vec::fixed<3> observables1;
+  arma::vec::fixed<3> observables2;
+
   // Constructs the bumpy EoS and stores that information in interpolated object
   Bumpy_EOS_Constructor *eos = new Bumpy_EOS_Constructor(eos_filepath);
-
-  eos->construct_EOS(params->bump_mag, params->bump_width, params->bump_offset,
-                     params->plat, params->nbc1, params->nbc2);
+  eos->store_EOS_params(params);
+  eos->construct_EOS();
   eos->get_EOS(*p_of_e, ec1, ec2);
-
   delete eos;
+  eos = 0;
 
   // Get observable values
   ObservablesIntegrator *integrator =
-      new ObservablesIntegrator(ec1, ec2, *p_of_e);
-  integrator->integrate_for_observables(params->mass1, params.mass2,
-                                        params.tidal1, params.tidal2, 0.001);
+      new ObservablesIntegrator(*p_of_e, ec1, ec2);
+  integrator->integrate_for_observables(observables1, observables2);
   delete integrator;
+  integrator = 0;
+  delete p_of_e;
+  p_of_e = 0;
+
+  params->mass1 = observables1[1];
+  params->mass2 = observables2[1];
+  params->tidal1 = observables1[2];
+  params->tidal2 = observables2[2];
 
   // Update dependent observable parameters
 
@@ -124,104 +135,105 @@ void IMRPhenomD_NRT_EOS<T>::get_m_love(source_parameters<T> &params) {
   }
 }
 
+// Because GWAT hates me (DON'T REMOVE THIS THE COMPILER WILL FAIL TO FIND THE
+// WAVEFORM CONSTRUCTOR)
+template class IMRPhenomD_NRT_EOS<double>;
+template class IMRPhenomD_NRT_EOS<adouble>;
+
 /* -------------------------------------------------------------------------- */
-/*                           EOS_CONSTRUCTOR METHODS                          */
+/*                          EOS Contructor Functions                          */
 /* -------------------------------------------------------------------------- */
 
-/* ----------------------------- Public Methods ----------------------------- */
+/* ---------------------------- Public Functions ---------------------------- */
 
 /**
- * @brief Incomplete
+ * @brief Construct a new eos constructor::eos constructor object
  *
- * @details Incomplete
- *
- * @param[in]
- * @param[out]
+ * @param EOS_filepath
  */
 EOS_Constructor::EOS_Constructor(string EOS_filepath) {
-  // Reads the EOS file in ROW-MAJOR ORDER
-  vector<vector<double>> fileRead;
-  read_file<double>(EOS_filepath, fileRead, ',');
+  // Read in EOS table
+  std::vector<std::vector<double>> EOS_Table;
+  read_file(EOS_filepath, EOS_Table, ',');
+  transpose_data_to_column_major(EOS_Table);
 
-  // Convert to COLUMN-MAJOR ORDER
-  vector<vector<double>> EOSvectors;
-  transpose_data_to_column_major(fileRead, EOSvectors);
+  // Convert units to MeV
+  for (int i = 0; i < EOS_Table[4].size(); i++) {
+    EOS_Table[4][i] = convert_fm3_to_MeV(EOS_Table[4][i]);
+  }
 
-  // * IMPORTANT: Assumes MUSES EoS table convention.
-  eos.epsilon = EOSvectors[7];
-  eos.pressure = EOSvectors[8];
-  eos.nb = EOSvectors[4];
-  eos.cs2 = eos_to_cs2_convert(EoS_data.pressure, EoS_data.epsilon);
+  // Store table information
+  eos.epsilon = EOS_Table[7];
+  eos.pressure = EOS_Table[8];
+  eos.nb = EOS_Table[4];
 }
 
-/**
- * @brief Incomplete
- *
- * @details Incomplete
- *
- * @param[in]
- * @param[out]
- */
 void EOS_Constructor::get_EOS(Interpolation &p_of_e, double &central_epsilon_1,
                               double &central_epsilon_2) {
-  convert_cs2_to_eos();
   p_of_e.initialize((gsl_interp_type *)gsl_interp_steffen, eos.epsilon,
                     eos.pressure);
-  central_epsilon_1 = eos.eps_c_1;
-  central_epsilon_2 = eos.eps_c_2;
+
+  central_epsilon_1 = eos.eps_c1;
+  central_epsilon_2 = eos.eps_c2;
 }
 
-/* ---------------------------- Protected Methods --------------------------- */
+/* --------------------------- Protected Functions -------------------------- */
 
 /**
- * @brief Convert a row-major 2D vector of doubles to column-major order.
+ * @brief Converts a row-major 2D vector of doubles to column-major order.
  *
  * @details This is intended primarily for converting read-in CSV file data to
  * column-major order, since default for file-read in is row-major order.
  *
- * @param[in] row_major 2D vector of data in row-major order.
- * @param[out] column_major 2D vector of data in column-major order.
+ * @param[inout] vector_to_convert 2D vector of data in row-major order.
  */
-void transpose_data_to_column_major(const vector<vector<double>> &row_major,
-                                    vector<vector<double>> &column_major) {
+void EOS_Constructor::transpose_data_to_column_major(
+    vector<vector<double>> &vector_to_convert) {
   // If the row-major vector passed in is empty, exits the function
-  if (row_major.empty()) {
+  if (vector_to_convert.empty()) {
     return;
   }
 
-  // Grabs the number of rows and columns
-  size_t num_rows = row_major.size();
-  size_t num_cols = row_major[0].size();
+  std::vector<std::vector<double>> converted_vector;
 
-  // Resize the column_major vector to table size in column-major order
-  column_major.resize(num_cols, vector<double>(num_rows));
+  // Grab size information
+  size_t num_rows = vector_to_convert.size();
+  size_t num_cols = vector_to_convert[0].size();
+
+  converted_vector.resize(num_cols, vector<double>(num_rows));
 
   // Perform the transposition
   for (size_t i = 0; i < num_rows; ++i) {
     for (size_t j = 0; j < num_cols; ++j) {
-      column_major[j][i] = row_major[i][j];
+      converted_vector[j][i] = vector_to_convert[i][j];
     }
   }
+
+  vector_to_convert = converted_vector;
+}
+
+// TODO: Put other potentially needed conversion functions here
+
+/**
+ * @brief Convert value from units of fm^-3 to MeV.
+ *
+ * @param[in] x Value in fm^-3.
+ * @return Value converted to MeV.
+ */
+double EOS_Constructor::convert_fm3_to_MeV(double x) {
+  return x = x * pow(197.3, 3);
 }
 
 /**
- * @brief Calculate the speed of sound squared from pressure and energy density.
+ * @brief Convert value from units of nsat to MeV.
  *
- * @details Pressure and energy density are assumed to be in the same units.
- * cs^2 is given in light speed units and calculated using gsl_interp_steffen.
- *
- * @return Vector of cs^2 values (in c).
+ * @param[in] x Value in nsat.
+ * @return Value converted to MeV.
  */
-void EOS_Constructor::convert_eos_to_cs2() {
-  // Initialize interpolation of epsilon and pressure
-  Interpolation p_of_e((gsl_interp_type *)gsl_interp_steffen, eos.epsilon,
-                       eos.pressure);
-
-  // Calculate cs2 for each point
-  for (int i = 0; i < eos.epsilon.size(); i++) {
-    double cs2_val = p_of_e.dyofx(eos.epsilon[i]);
-    eos.cs2.push_back(cs2_val);
-  }
+double EOS_Constructor::convert_nsat_to_MeV(double x) {
+  double nsat = 0.16;
+  x *= nsat;
+  return convert_fm3_to_MeV(x);
 }
 
 /**
@@ -234,12 +246,11 @@ void EOS_Constructor::convert_eos_to_cs2() {
  * that p_base, epsilon_base, and nb_list are all given in units of MeV. All
  * inputs must start at the same baryon number density value.
  */
-
 void EOS_Constructor::convert_cs2_to_eos() {
   // Get starting points for integration
   double nb = eos.nb[0];
-  double pressure = 0;
-  double epsilon = 0;
+  double pressure = eos.pressure[0];
+  double epsilon = eos.epsilon[0];
 
   // Clear vectors to fill with new EoS data
   eos.pressure.clear();
@@ -260,238 +271,159 @@ void EOS_Constructor::convert_cs2_to_eos() {
     pressure += eos.cs2[i - 1] * delta_e;
 
     // Update pressure and energy density
-    eos.pressure[i] = pressure;
-    eos.epsilon[i] = epsilon;
+    eos.pressure.push_back(pressure);
+    eos.epsilon.push_back(epsilon);
   }
 }
 
-/**
- * @brief Convert value from units of fm^-3 to MeV.
- *
- * @param[in] x Value in fm^-3.
- * @return Value converted to MeV.
- */
-void EOS_Constructor::convert_fm3_to_MeV(double &x) { x = x * pow(197.3, 3); }
-
-/**
- * @brief Convert value from units of nsat to MeV.
- *
- * @param[in] x Value in nsat.
- * @return Value converted to MeV.
- */
-void EOS_Constructor::convert_nsat_to_MeV(double &x) {
-  double nsat = 0.16;
-  x *= nsat;
-  convert_fm3_to_MeV(x);
-}
-
 /* -------------------------------------------------------------------------- */
-/*                        BUMPY_EOS_CONSTRUCTOR METHODS                       */
+/*                       Bumpy EOS Constructor Functions                      */
 /* -------------------------------------------------------------------------- */
 
 /* ----------------------------- Public Methods ----------------------------- */
 
 /**
- * @brief Inject a bump into cs2 and get the corresponding pressures and energy
- * densities.
+ * @brief
  *
- * @details Constructs cs^2 by stitching together the crust EOS, a single
- * parabolic bump, and a plateau. Modifies pressure and energy density vectors
- * according to cs^2 after bump injection.
- *
- * @param[out] pressure1 Vector of pressures for star 1 (in MeV).
- * @param[out] pressure2 Vector of pressures for star 2 (in MeV).
- * @param[out] epsilon1 Vector of energy densities for star 1 (in MeV).
- * @param[out] epsilon2 Vector of energy densities for star 2 (in MeV).
- * @param[in] params gen_params object containing EOS and bump parameters,
- * including central baryon number densities.
+ * @param params
  */
-void construct_EOS(double bump_mag, double bump_width, double bump_offset,
-                   double plat, double nbc1, double nbc2) {
-  // Find start of the bump
-  double nb_cutoff = (bump_offset - bump_width / 2);
+void Bumpy_EOS_Constructor::store_EOS_params(
+    source_parameters<adouble> *params) {
+  eos_params.bump_magnitude = params->bump_mag.value();
+  eos_params.bump_width = convert_nsat_to_MeV(params->bump_width.value());
+  eos_params.bump_offset = convert_nsat_to_MeV(params->bump_offset.value());
+  eos_params.plat = params->plat.value();
+  eos_params.n1 = convert_nsat_to_MeV(params->nbc1.value());
+  eos_params.n2 = convert_nsat_to_MeV(params->nbc2.value());
+}
 
-  // Checks for invalid input (should only be relevant if prior is bad)
-  if (std::max(nbc1, nbc2) > eos.nb.back()) {
+/**
+ * @brief
+ *
+ * @param params
+ */
+void Bumpy_EOS_Constructor::store_EOS_params(
+    source_parameters<double> *params) {
+  eos_params.bump_magnitude = params->bump_mag;
+  eos_params.bump_width = convert_nsat_to_MeV(params->bump_width);
+  eos_params.bump_offset = convert_nsat_to_MeV(params->bump_offset);
+  eos_params.plat = params->plat;
+  eos_params.n1 = convert_nsat_to_MeV(params->nbc1);
+  eos_params.n2 = convert_nsat_to_MeV(params->nbc2);
+}
+
+/**
+ * @brief
+ *
+ * @param params
+ */
+void Bumpy_EOS_Constructor::construct_EOS() {
+
+  // Get helpful values
+  eos_params.bump_start = eos_params.bump_offset - (eos_params.bump_width / 2);
+  eos_params.bump_end = eos_params.bump_offset + (eos_params.bump_width / 2);
+  eos_params.max_nb = std::max(eos_params.n1, eos_params.n2);
+
+  // Check for valid inputs
+  if (eos_params.max_nb > eos.nb.back()) {
     throw std::invalid_argument(
         "Encountered central baryon number density greater than the max value "
         "given in the EOS table. Aborting.");
-  } else if ((std::max(nbc1, nbc2) < nb_cutoff)) {
+  } else if (eos_params.max_nb < eos_params.bump_start) {
     throw std::invalid_argument("Encountered central baryon number density "
                                 "less than the start of the bump. Aborting.");
+  } else if (eos_params.bump_start <= convert_nsat_to_MeV(0.5)) {
+    throw std::invalid_argument("Encountered bump that starts below valid "
+                                "interpolation for SLy EoS tables. Aborting.");
   }
 
-  // Copy over values with correct units
-  eos_params.bump_magnitude = convert_nsat_to_MeV(bump_mag);
-  eos_params.bump_width = convert_nsat_to_MeV(bump_width);
-  eos_params.bump_offset = convert_nsat_to_MeV(bump_offset);
-  eos_params.nbc = convert_nsat_to_MeV(std::max(nbc1, nbc2));
-  eos_params.plat = plat;
+  // Build bump and convert to speed of sound
+  build_cs2_one_quad_bump();
+  convert_cs2_to_eos();
 
+  // TODO: Check if there's a faster way to do the below.
+
+  // Get central epsilon values
   Interpolation *e_of_nb = new Interpolation;
-  Interpolation *p_of_nb = new Interpolation;
-
   e_of_nb->initialize((gsl_interp_type *)gsl_interp_steffen, eos.nb,
                       eos.epsilon);
-  p_of_nb->initialize((gsl_interp_type *)gsl_interp_steffen, eos.nb,
-                      eos.pressure);
-
-  // Find location in data where bump starts, clear data after
-  auto iterator = std::upper_bound(eos.nb.begin(), eos.nb.end(), nb_cutoff);
-  auto start_index = std::distance(eos.nb.begin(), iterator);
-
-  eos.pressure.erase(eos.pressure.begin() + start_index, eos.pressure.end());
-  eos.epsilon.erase(eos.epsilon.begin() + start_index, eos.epsilon.end());
-  eos.nb.erase(eos.nb.begion() + start_index, eos.nb.end());
-
-  double interpolation_steps = 0.001;
-
-  for (double i = eos_params.nbc; i <= split_limit; i += steps) {
-    // For star 1
-    if (i <= nb_end1) // If statement prevents exiting limits
-    {
-      nb_split1.push_back(conversion_fm3_to_MeV(i));
-      epsilon_split1.push_back(e_of_nb.yofx(i));
-      pressure_split1.push_back(p_of_nb.yofx(i));
-    }
-
-    // For star 2
-    if (i <= nb_end2) // If statement prevents exiting limits
-    {
-      nb_split2.push_back(conversion_fm3_to_MeV(i));
-      epsilon_split2.push_back(e_of_nb.yofx(i));
-      pressure_split2.push_back(p_of_nb.yofx(i));
-    }
-  }
-
-  // Get bump parameters from gen_params structure
-  // IMPORTANT: Bump parameters based on baryon number density values are
-  // assumed to be given in units of fm^-3
-  double offset = conversion_fm3_to_MeV(eos_params.bump_offset * nsat);
-  double magnitude = eos_params.bump_mag;
-  double width = conversion_fm3_to_MeV(eos_params.bump_width * nsat);
-  double plateau = eos_params.plat;
-
-  // Get new cs2 curve with bump
-  build_cs2_one_quad_bump(nb_split1, cs2_star1, width, magnitude, offset,
-                          plateau);
-  build_cs2_one_quad_bump(nb_split2, cs2_star2, width, magnitude, offset,
-                          plateau);
-
-  // Define vectors to store the pressure and energy density values with the
-  // bump
-  vector<double> p_bump1;
-  vector<double> p_bump2;
-  vector<double> e_bump1;
-  vector<double> e_bump2;
-
-  // Get new bumpy EoS
-  cs2_to_eos_convert(pressure_split1.front(), epsilon_split1.front(), nb_split1,
-                     cs2_star1, p_bump1, e_bump1);
-  cs2_to_eos_convert(pressure_split2.front(), epsilon_split2.front(), nb_split2,
-                     cs2_star2, p_bump2, e_bump2);
-
-  // Stitch new bumpy EoS onto the original crust EOS
-
-  // Finding location in data table where prior cut-off occurred
-  auto iterator = std::upper_bound(EOSvectors[4].begin(), EOSvectors[4].end(),
-                                   nb_split_val); // Get iterator object
-  auto split_index =
-      std::distance(EOSvectors[4].begin(),
-                    iterator); // Convert to index to extract values for p and e
-
-  // Grab elements from the EOS table and add them to the pressure and epsilon
-  // vectors passed in
-
-  epsilon1.push_back(0);
-  epsilon2.push_back(0);
-  pressure1.push_back(0);
-  pressure2.push_back(0);
-
-  // For star 1
-  pressure1.insert(pressure1.end(), EOSvectors[8].begin(),
-                   EOSvectors[8].begin() + split_index);
-  epsilon1.insert(epsilon1.end(), EOSvectors[7].begin(),
-                  EOSvectors[7].begin() + split_index);
-  // For star 2
-  pressure2.insert(pressure2.end(), EOSvectors[8].begin(),
-                   EOSvectors[8].begin() + split_index);
-  epsilon2.insert(epsilon2.end(), EOSvectors[7].begin(),
-                  EOSvectors[7].begin() + split_index);
-
-  // Copying bump elements to the final pressure and epsilon vectors
-
-  // For star 1
-  pressure1.insert(pressure1.end(), p_bump1.begin(), p_bump1.end());
-  epsilon1.insert(epsilon1.end(), e_bump1.begin(), e_bump1.end());
-  // For star 2
-  pressure2.insert(pressure2.end(), p_bump2.begin(), p_bump2.end());
-  epsilon2.insert(epsilon2.end(), e_bump2.begin(), e_bump2.end());
+  eos.eps_c1 = e_of_nb->yofx(eos_params.n1);
+  eos.eps_c2 = e_of_nb->yofx (eos_params.n2);
+  delete e_of_nb;
+  e_of_nb = 0;
 }
 
-/* ---------------------------- Protected Methods --------------------------- */
+/* --------------------------- Protected Functions -------------------------- */
+
 /**
- * @brief Create a speed of sound squared curve with a parabolic bump added to
- * it.
+ * @brief
  *
- * @Details Algorithm assumes list of cs^2 values and list of nb values are the
- * same size.
- *
- * @param[in] nb_list Vector storing baryon number density values (in MeV).
- * @param[in, out] cs2_list Vector containing speed of sound squared values to
- * write over (in c).
- * @param[in] bump_width Width of the injected bump peak (in MeV).
- * @param[in] bump_magnitude Magnitude/"height" of the injected bump (in c).
- * @param[in] bump_offset Value in baryon number density where the bump peak
- * occurs (in MeV).
- * @param[in] bump_plat Plateau to set speed of sound squared to after bump
- * injection (in c).
  */
-void construct_EOS::build_cs2_one_quad_bump() {
-  // Initialize interpolator function to get cs2 as a function of nb
-  Interpolation cs2_of_nb((gsl_interp_type *)gsl_interp_steffen, EoS_data.nb,
-                          EoS_data.cs2);
+void Bumpy_EOS_Constructor::build_cs2_one_quad_bump() {
+  // Define interpolations to calculate cs2
+  Interpolation e_of_nb((gsl_interp_type *)gsl_interp_steffen, eos.nb,
+                        eos.epsilon);
+  Interpolation p_of_nb((gsl_interp_type *)gsl_interp_steffen, eos.nb,
+                        eos.pressure);
 
-  double f1_n1 =
-      cs2_of_nb.yofx(n1); // Value of the crust at the transition point n1
+  // TODO: Check if the below is an okay way to get dp/de!
 
-  // Loop through baryon number density values to build cs^2
-  for (int i = 0; i < EoS_data.nb.size(); ++i) {
-    double nb_temp = EoS_data.nb[i];
+  // Get value in cs2 of the crust EoS at the transition point
+  double f1_n1 = p_of_nb.dyofx(eos_params.bump_start) /
+                 e_of_nb.dyofx(eos_params.bump_start);
 
-    // Use crust EoS before transition
-    if (nb_temp < n1) {
-      EoS_data.cs2[i] = cs2_of_nb.yofx(nb_temp);
+  // Define parameters for interpolation in nb
+  double nb_start = eos.nb.front();
+  double nb_step = 100;
+  // Adding a step to make sure it doesn't hit GSL interpolation limits.
+  double nb_end = eos_params.max_nb + nb_step;
+  double nb = nb_start;
+
+  // TODO: This can be refined.
+  int i = 0;
+  while (nb <= convert_nsat_to_MeV(0.5)) {
+    double cs2_value = p_of_nb.dyofx(nb) / e_of_nb.dyofx(nb);
+    eos.cs2.push_back(cs2_value);
+    i += 1;
+    nb = eos.nb[i];
+  }
+  i -= 1;
+  nb = convert_nsat_to_MeV(0.5);
+
+  // Clear nb vector to start interpolating the rest of it
+  eos.nb.erase(eos.nb.begin() + i, eos.nb.end());
+
+  // Interpolate through nb values
+  while (nb <= nb_end) {
+    // Crust EoS before bump
+    if (nb < eos_params.bump_start) {
+      double cs2_value = p_of_nb.dyofx(nb) / e_of_nb.dyofx(nb);
+      eos.cs2.push_back(cs2_value);
     }
-    // Inject quadratic bump after transition
-    else if (nb_temp >= n1 && nb_temp <= n2) {
-      EoS_data.cs2[i] = f_quad(nb_temp, bump_width, bump_magnitude, bump_offset,
-                               bump_plat, f1_n1);
+    // Inject bump values between bump start and end
+    else if ((nb >= eos_params.bump_start) && (nb <= eos_params.bump_end)) {
+      eos.cs2.push_back(get_quadratic_bump_point(nb, f1_n1));
     }
-    // Inject plateau after parabola
+    // Use plateau values after bump
     else {
-      EoS_data.cs2[i] = bump_plat;
+      eos.cs2.push_back(eos_params.plat);
     }
+
+    eos.nb.push_back(nb);
+    nb += nb_step;
   }
 }
 
 /**
- * @brief Calculate values for parabolic bump in the speed of sound squared.
+ * @brief
  *
- * @details This function calculates the value of cs^2 at a given baryon number
- * density nb.
- *
- * @param[in] nb Baryon number density value to evaluate bump at (in MeV).
- * @param[in] bump_width Width of the injected bump peak (in MeV).
- * @param[in] bump_magnitude Magnitude/"height" of the injected bump (in c).
- * @param[in] bump_offset Value in baryon number density where the bump peak
- * occurs (in MeV).
- * @param[in] bump_plat Plateau to set speed of sound squared to after bump
- * injection (in c).
- * @param[in] f1_n1 Baryon number density value at start of bump (in MeV).
- * @return Value of cs^2 at nb (in c).
+ * @param nb
+ * @param f1_n1
+ * @return double
  */
-void construct_EOS::f_quad(double nb, double f1_n1) {
+double Bumpy_EOS_Constructor::get_quadratic_bump_point(const double &nb,
+                                                       const double &f1_n1) {
+
   // Calculate the expected value of cs2
   return -0.25 *
              ((8 * pow(eos_params.bump_offset, 2) *
@@ -515,190 +447,343 @@ void construct_EOS::f_quad(double nb, double f1_n1) {
              (3. * pow(eos_params.bump_width, 2));
 }
 
-// IMPORTANT: GWAT has issues with the difference between C++'s *normal* double
-// value and ADOL-C's *adouble* value. This is to prevent conflict and make sure
-// everything compiles normally. All new functions added to the
-// IMRPhenomD_NRT_EOS class should be templated with "template <class T>" at the
-// top (see above functions). This is not necessary for the QLIMR related
-// classes.
-
-template class IMRPhenomD_NRT_EOS<double>;
-template class IMRPhenomD_NRT_EOS<adouble>;
-
 /* -------------------------------------------------------------------------- */
-/*                          TOV and λ̄ FUNCTIONALITY                          */
+/*                       ObservablesIntegrator Functions                      */
 /* -------------------------------------------------------------------------- */
 
-/* ----------------------------- Public Methods ----------------------------- */
-
-ObservablesIntegrator::ObservablesIntegrator(double epsilon_c1,
-                                             double epsilon_c2,
-                                             Interpolation eos) {
-  p_of_e = eos;
-  eps_c1 = epsilon_c1;
-  eps_c2 = epsilon_c2;
-}
-
-void ObservablesIntegrator::integrate_for_observables(double &m1, double &m2,
-                                                      double &tidal1,
-                                                      double &tidal2,
-                                                      double step_size) {
-  valarray<double> observables1;
-  valarray<double> observables2;
-
-  // Mass
-  observables1[0] = 0;
-  observables2[0] = 0;
-  // Radius
-  observables1[1] = 0;
-  observables2[1] = 0;
-  // Tidal deformability
-  observables1[2] = 0;
-  observables2[2] = 0;
-
-  // TODO: There is DEFINITELY a way to condense this so they can be under the
-  // same loop.
-
-  // Integrate for first observables
-
-  double h = h_max1;
-
-  while (h >= 0) {
-    rk4(h, observables1, step_size);
-    h -= step_size;
-  }
-
-  m1 = observables1[0] * GWAT_MSUN_SI;
-  tidal1 = observables1[2];
-
-  // Integrate for second observables
-
-  double h = h_max2;
-
-  while (h >= 0) {
-    rk4(h, observables2, step_size)
-  }
-
-  m2 = observables2[0] * GWAT_MSUN_SI;
-  tidal2 = observables2[2];
-}
-
-/* ---------------------------- Protected Methods --------------------------- */
+/* ---------------------------- Public Functions ---------------------------- */
 
 /**
- * @brief Calculates the derivative of enthalpy(epsilon) with respect to epsilon
+ * @brief Construct a new Observables Integrator object, set eos(h)
  *
- * @details See DOI:10.1086/171882 equation (4). Enthalpy is defined by the
- * integral of dp/(epsilon(p) + p).
+ * @details Takes in the current EoS (p(e)) and uses it to find e(h) and p(h),
+ * where h is the pseudo-enthalpy. Formulation is based on doi:10.1086/171882.
+ * It also takes in the central epsilon of two stars and converts it to central
+ * pseudo-enthalpy.
  *
- * @param epsilon Energy density value at which to calculate dh/de
- * @return double Enthalpy value for given epsilon
+ * @param p_of_e Input equation of state
+ * @param ec_1 Central epsilon of first star
+ * @param ec_2 Central epsilon of second star
  */
-double ObservablesIntegrator::calculate_dh_of_de(double epsilon) {
-  double pressure = p_of_e.yofx(epsilon);
-  double cs2 = p_of_e.dyofx(epsilon);
-
-  return cs2 / (epsilon + pressure);
+ObservablesIntegrator::ObservablesIntegrator(Interpolation &p_of_e, double ec_1,
+                                             double ec_2) {
+  integrate_for_eos_of_h(p_of_e, ec_1, ec_2);
 }
 
 /**
- * @brief Integrates to find epsilon and pressure in terms of enthalpy
+ * @brief Integrates for the observable mass and radius based on the stored EoS
  *
- * @details Simple integrator that uses dh/de to create a table of interpolated
- * epsilon, pressure, and enthalpy values to define interpolated p_of_h and
- * e_of_h objects.
+ * @details Sets some small starting radius (R_epsilon) and calculates the
+ * corrected starting pseudo-enthalpy, h_c - h_epsilon (h_epsilon from
+ * R_epsilon). Then, uses a classic fixed-step Runge-Kutta (rk4) routine to
+ * integrate the TOV equations in terms of pseudo-enthalpy from the corrected
+ * starting enthalpy to 0 (the surface of the star). Default number of steps for
+ * integration is 10,000.
  *
+ * @param first_observables Object to store the first set of calculated neutron
+ * star observables.
+ * @param second_observables Object to store the second set of calculated
+ * neutron star observables.
  */
-void ObservablesIntegrator::integrate_for_eos_of_h() {
-  double delta_e = 0.01;
+void ObservablesIntegrator::integrate_for_observables(
+    arma::vec::fixed<3> &first_observables,
+    arma::vec::fixed<3> &second_observables) {
+  // Define starting radius
+  const double R_start = convert_dimensions(4e-4, "km", true);
+  const double R_start_2 = R_start * R_start;
 
+  // Common terms
+  const double x1 = (2.0 / 3.0) * M_PI * R_start_2;
+  const double x2 = 2.0 * R_start * x1;
+
+  // Define starting enthalpy values
+  double h1 = hc_1 - x1 * (e_of_h.yofx(hc_1) + 3.0 * p_of_h.yofx(hc_1));
+  double h2 = hc_2 - x1 * (e_of_h.yofx(hc_2) + 3.0 * p_of_h.yofx(hc_2));
+
+  // Define starting mass values
+  const double M_start_1 = x2 * e_of_h.yofx(h1);
+  const double M_start_2 = x2 * e_of_h.yofx(h2);
+
+  // Define starting y values
+  const double Y_start = 2.0;
+
+  // TODO: Double check what a reasonable number of steps would be.
+
+  // Define step sizes
+  double N_steps = 1e5;
+  double h1_step = -h1 / N_steps;
+  double h2_step = -h2 / N_steps;
+
+  // Integrate for first set of observables
+
+  first_observables = {R_start, M_start_1, Y_start};
+
+  // TODO: Replace my simple rk4 routine with GSL integration
+  // Run until just before h = 0
+  while (h1 + h1_step > 0) {
+    rk4(h1, first_observables, h1_step);
+  }
+  // Step exactly to h=0
+  rk4(h1, first_observables, (0 - h1));
+
+  // TODO: Clean up these calculations!
+
+  // Dimensionless tidal love number calculation
+  // Evaluating solution Y(R) at the NS surface: NS_Y
+  double NS_Y = first_observables(2);
+
+  // Useful definitions for faster calculations
+  double C = first_observables(1) / first_observables(0);
+  double C2 = C * C;
+  double C3 = C * C2;
+  double C4 = C2 * C2;
+  double C5 = C * C4;
+  double k = (1.0 - 2.0 * C) * (1.0 - 2.0 * C);
+
+  // Dimensionless tidal apsidal constant NS_k2: k2 [-]
+  double NS_k2 = (8.0 / 5.0) * k * C5 * (2.0 * C * (NS_Y - 1.0) - NS_Y + 2.0) *
+                 (1.0 / (2.0 * C *
+                             (4 * (NS_Y + 1.0) * C4 + (6.0 * NS_Y - 4.0) * C3 +
+                              (26.0 - 22.0 * NS_Y) * C2 +
+                              3.0 * (5.0 * NS_Y - 8.0) * C - 3.0 * NS_Y + 6.0) +
+                         3.0 * k * (2 * C * (NS_Y - 1.0) - NS_Y + 2.0) *
+                             log(1.0 - 2.0 * C)));
+
+  // Dimensionless tidal love number NS_Lbar: λ̄ [-]
+  double NS_Lbar = (2.0 / 3.0) * NS_k2 * (1 / C5);
+
+  first_observables(2) = NS_Lbar;
+
+  // Dimensionalize observables
+  first_observables(0) = convert_dimensions(first_observables(0), "km", false);
+
+  // Integrate for second set of observables
+
+  second_observables = {R_start, M_start_2, Y_start};
+
+  // Run until just before h = 0
+  while (h2 + h2_step > 0) {
+    rk4(h2, second_observables, h2_step);
+  }
+  // Step exactly to h=0
+  rk4(h2, second_observables, (0 - h2));
+
+  // Dimensionless tidal love number calculation
+  // Evaluating solution Y(R) at the NS surface: NS_Y
+  NS_Y = second_observables(2);
+
+  // Useful definitions for faster calculations
+  C = second_observables(1) / second_observables(0);
+  C2 = C * C;
+  C3 = C * C2;
+  C4 = C2 * C2;
+  C5 = C * C4;
+  k = (1.0 - 2.0 * C) * (1.0 - 2.0 * C);
+
+  // Dimensionless tidal apsidal constant NS_k2: k2 [-]
+  NS_k2 = (8.0 / 5.0) * k * C5 * (2.0 * C * (NS_Y - 1.0) - NS_Y + 2.0) *
+          (1.0 / (2.0 * C *
+                      (4 * (NS_Y + 1.0) * C4 + (6.0 * NS_Y - 4.0) * C3 +
+                       (26.0 - 22.0 * NS_Y) * C2 +
+                       3.0 * (5.0 * NS_Y - 8.0) * C - 3.0 * NS_Y + 6.0) +
+                  3.0 * k * (2 * C * (NS_Y - 1.0) - NS_Y + 2.0) *
+                      log(1.0 - 2.0 * C)));
+
+  // Dimensionless tidal love number NS_Lbar: λ̄ [-]
+  NS_Lbar = (2.0 / 3.0) * NS_k2 * (1 / C5);
+
+  second_observables(2) = NS_Lbar;
+
+  // Dimensionalize observables
+  second_observables(0) =
+      convert_dimensions(second_observables(0), "km", false);
+}
+
+/* --------------------------- Protected Functions -------------------------- */
+
+double ObservablesIntegrator::calculate_dh_of_de(const double e,
+                                                 Interpolation &p_of_e) {
+  return p_of_e.dyofx(e) / (e + p_of_e.yofx(e));
+}
+
+void ObservablesIntegrator::integrate_for_eos_of_h(Interpolation &p_of_e,
+                                                   double ec_1, double ec_2) {
+  // Define vectors to store values for interpolation
+  std::vector<double> epsilon;
+  std::vector<double> pressure;
+  std::vector<double> enthalpy;
+
+  // Set starting values
+  double e = 0;
   double p = 0;
   double h = 0;
-  double e = 0;
 
-  vector<double> pressure;
+  // Add starting values to vectors
+  epsilon.push_back(e);
   pressure.push_back(p);
-  vector<double> enthalpy;
   enthalpy.push_back(h);
-  vector<double> epsilon;
-  epsilon.push_back(0);
 
-  for (int i = 1; i <= std::max(eps_c1, eps_c2);) {
-    double delta_h = delta_e * calculate_dh_of_de(e);
-    p += p_of_e.yofx(e) h += delta_h;
+  // Set step value and end value for integration
+  const double delta_e = 0.01;
+  const double e_stop = std::max(ec_1, ec_2);
+
+  while (e < e_stop) {
+    // Step in EoS
     e += delta_e;
+    p = p_of_e.yofx(e);
 
-    pressure.push_back(p);
+    // Calculate step in enthalpy
+    double delta_h = delta_e * calculate_dh_of_de(e, p_of_e);
+    h += delta_h;
+
+    // Add adimensionalized values to vectors
+    epsilon.push_back(convert_dimensions(e, "MeV/fm^3", true));
+    pressure.push_back(convert_dimensions(p, "MeV/fm^3", true));
     enthalpy.push_back(h);
-    epsilon.push_back(i);
-
-    i += step_size;
   }
 
+  // Define interpolations
   e_of_h.initialize((gsl_interp_type *)gsl_interp_steffen, enthalpy, epsilon);
   p_of_h.initialize((gsl_interp_type *)gsl_interp_steffen, enthalpy, pressure);
 
+  // Get central enthalpy values
   Interpolation h_of_e((gsl_interp_type *)gsl_interp_steffen, epsilon,
                        enthalpy);
-
-  h_max1 = h_of_e(eps_c1);
-  h_max2 = h_of_e(eps_c2);
+  hc_1 = h_of_e.yofx(convert_dimensions(ec_1, "MeV/fm^3", true));
+  hc_2 = h_of_e.yofx(convert_dimensions(ec_2, "MeV/fm^3", true));
 }
 
-valarray<double>
-ObservablesIntegrator::Observables_ODE(double h, const valarray<double> y) {
-  double e = e_of_h.yofx(h);
-  double de = e_of_h.dyofx(h);
-  double p = p_of_h.yofx(h);
+/**
+ * @brief Evaluates the TOV equations at a single point of pseudo-enthalpy
+ *
+ * @param h Enthalpy at which to evaluate
+ * @param y Equations to solve for (given in order of R(h), M(h), and Y(h))
+ * @param f Object to store the results of calculating dR/dh, dM/dh, and dY/dh
+ */
+void ObservablesIntegrator::evaluate_ODE_at_point(double h,
+                                                  const arma::vec::fixed<3> &y,
+                                                  arma::vec::fixed<3> &f) {
+  // Grab values of pressure and epsilon at the point
+  const double p = p_of_h.yofx(h);
+  const double e = e_of_h.yofx(h);
+  const double dedh = e_of_h.dyofx(h);
 
-  // Functions to be solved for (y in RK4)
-  double R = y[0];
-  double M = y[1];
-  double Y = y[2];
+  // Grab R and M at this point (also calculate R^2 and R^3, which is more
+  // efficient to do this way than using pow())
+  const double R = y(0);
+  const double M = y(1);
+  const double Y = y(2);
 
-  // Output of ODE equations (TOV and tidal deformability)
+  // Condensing common terms
+  const double R_inv = 1.0 / R;
+  const double R_2 = R * R;
+  const double R_2_pi = M_PI * R_2;
+  const double R_3 = R * R_2;
+  const double R_4 = R * R_3;
+  const double R_3_pi = constant.x1 * R_3;
 
-  valarray<double> f;
+  const double M_2 = M * M;
 
-  // dM/dh
-  f[0] = -(4 * M_PI * e * pow(R, 3) * (R - 2 * M)) /
-         (M + 4 * M_PI * pow(R, 3) * p);
-  // dR/dh
-  f[1] = -(R * (R - 2 * M)) / (M + 4 * M_PI * pow(R, 3) * p);
-  // dλ̄/dh (specifically, dλ̄/dR and then multiplying by dR/dh)
-  f[2] =
-      ((4 * pow(M, 2)) / R + (6 * pow(R, 2)) / (pow((R - 2 * M), 2)) +
-       (4 * M * R) * ((10 * e + 26 * p) * (M_PI * pow(R, 2)) - 3) +
-       (4 * de * M_PI * pow(R, 3)) / (M + 4 * p * M_PI * pow(R, 3)) +
-       (4 * M_PI * pow(R, 4)) * (p * (16 * p * M_PI * pow(R, 2) - 9) - 5 * e) +
-       ((1 + 4 * (p - e) * M_PI * pow(R, 2)) * Y) / (2 * M - R) -
-       pow(Y, 2) / R) *
-      f[1];
+  const double R_M_diff = (2.0 * M) - R;
+  const double R_M_diff_2 = R_M_diff * R_M_diff;
 
-  return f;
+  const double Y_2 = Y * Y;
+
+  const double e_x_5 = 5 * e;
+
+  // Calculate dR/dh, dM/dh, and dY/dh.
+  double drdh = R * R_M_diff / (M + (constant.x1 * R_3 * p));
+  double dmdh = constant.x1 * R_2 * e * drdh;
+
+  // TODO: Fix this formatting...
+  double dydh =
+      (-Y_2 * R_inv + Y * (4 * R_2_pi * (-e + p) + 1) / R_M_diff +
+       (dedh * (1.0 / drdh)) * R_3_pi / (M + p * R_3_pi) +
+       R_inv *
+           (4 * M_2 + 4 * M * R * (2 * R_2_pi * (13 * p + e_x_5) - 3) +
+            R_4 * constant.x1 * (p * (16 * p * R_2_pi - 9) - e_x_5) + 6 * R_2) /
+           R_M_diff_2) *
+      drdh;
+
+  // Load calculated values into pass-in array
+  f = {drdh, dmdh, dydh};
 }
 
-void ObservablesIntegrator::rk4(double t, valarray<double> &y,
-                                double step_size) {
-  k1 = Observables_ODE(t, y);
-  k2 = Observables_ODE(t + (step_size / 2), y + k1 * (step_size / 2));
-  k3 = Observables_ODE(t + (step_size / 2), y + k2 * (step_size / 2));
-  k4 = Observables_ODE(t + step_size, y + k3 * step_size);
+/**
+ * @brief Simple classic fixed-step Runge-Kutta method for integration
+ *
+ * @param t Independent variable which functions are being taken with respect to
+ * @param y Functions given in terms of the independent variable t
+ * @param h Step size for the rk4 routine
+ */
+void ObservablesIntegrator::rk4(double &t, arma::vec::fixed<3> &y, double h) {
+  // Calculate step size fractions
+  const double h_6 = h / 6.0;
+  const double h_2 = h / 2.0;
 
-  y += (step_size / 6) * (k1 + 2 * k2 + 2 * k3 + k4);
+  // Define arrays to store rk4 term results in
+  arma::vec::fixed<3> k1;
+  arma::vec::fixed<3> k2;
+  arma::vec::fixed<3> k3;
+  arma::vec::fixed<3> k4;
+
+  // Calculate rk4 terms
+  evaluate_ODE_at_point(t, y, k1);
+  evaluate_ODE_at_point(t + h_2, y + k1 * h_2, k2);
+  evaluate_ODE_at_point(t + h_2, y + k2 * h_2, k3);
+  evaluate_ODE_at_point(t + h, y + k3 * h, k4);
+
+  // Update function values and take a step
+  y += h_6 * (k1 + 2.0 * k2 + 2.0 * k3 + k4);
+  t += h;
+}
+
+double ObservablesIntegrator::convert_dimensions(double value, std::string unit,
+                                                 bool adimensionalize) {
+  // TODO: I need to check if these are natively supported in GWAT
+  double c = 299792458;
+  double M_SUN = 1.988416e30;
+  double G = 6.6743015e-11;
+  double eV = 1.602176634e-19;
+  double MeV = 1e6 * eV;
+  double fm = 1e-15;
+  double km = 1e3;
+
+  double conversion_factor;
+
+  if (unit == "km") {
+    conversion_factor = km * (pow(c, 2) / G) * (1 / M_SUN);
+  } else if (unit == "MeV/fm^3") {
+    conversion_factor =
+        (MeV / pow(fm, 3)) * sqrt(pow(G, 6) / pow(c, 16)) * pow(M_SUN, 2);
+  } else {
+    std::cerr << "Unsupported unit type passed to "
+                 "ObservablesIntegrator::adimensionalize.\n";
+    conversion_factor = 1;
+  }
+
+  double converted_value;
+
+  if (adimensionalize) {
+    converted_value = value * conversion_factor;
+  } else {
+    converted_value = value / conversion_factor;
+  }
+
+  return converted_value;
 }
 
 /* -------------------------------------------------------------------------- */
-/*                         Interpolation Class Methods                        */
+/*                        Interpolation Class Functions                       */
 /* -------------------------------------------------------------------------- */
 
-/* ----------------------------- Public Methods ----------------------------- */
+/* ---------------------------- Public Functions ---------------------------- */
 
 // Constructors
 
-Interpolation::Interpolation(gsl_interp_type *interp_type, vector<double> x,
-                             vector<double> y) {
-  initialize(*interp_type, x, y);
+Interpolation::Interpolation(gsl_interp_type *interp_type,
+                             std::vector<double> x, std::vector<double> y) {
+  initialize(interp_type, x, y);
 }
 
 Interpolation::Interpolation() {}
@@ -720,7 +805,7 @@ double Interpolation::yofx(double x) {
   return result;
 }
 
-// Function to calculate dy/dx of interpolated data using GSL spline
+// Function to calculate dy/dx of intferpolated data using GSL spline
 double Interpolation::dyofx(double x) {
   double result;
   if (x > 0.0) {
@@ -734,8 +819,8 @@ double Interpolation::dyofx(double x) {
 // GSL initialization and memory release functions
 
 // Function to initialize the GSL splines for interpolation
-void Interpolation::initialize(gsl_interp_type *type, vector<double> x,
-                               vector<double> y) {
+void Interpolation::initialize(gsl_interp_type *interp_type,
+                               std::vector<double> x, std::vector<double> y) {
   type = interp_type;
   // Size of the independent variable vector
   size = x.size();

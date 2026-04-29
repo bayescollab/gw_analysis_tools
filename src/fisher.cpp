@@ -106,502 +106,430 @@ using namespace std;
  * NOT SAFE FOR LISA YET -- see hessian of phase for time derivative
  */
 void fisher_numerical(
-	double *frequency,
-	int length, /**< if 0, standard frequency range for the detector is used*/
-	string generation_method, string detector, string reference_detector,
-	double **output, /**< double [dimension][dimension]*/
-	int dimension, gen_params_base<double> *parameters,
-	int order, /**< Order of the numerical derivative (2 or 4)**/
-	// double *parameters,
-	int *amp_tapes,						  /**< if speed is required, precomputed tapes can be used -
-											 assumed the user knows what they're doing, no checks done
-											 here to make sure that the number of tapes matches the
-											 requirement by the generation_method -- if using
-											 numerical derivatives or speed isn't that important, just
-											 set to NULL*/
-	int *phase_tapes,					  /**< if speed is required, precomputed tapes can be used -
-											 assumed the user knows what they're doing, no checks
-											 done here to make sure that the number of tapes matches
-											 the requirement by the generation_method*/
-	double *noise, Quadrature *quadMethod /**< Quadrature method */
-)
-{
-	// populate noise and frequency
-	double *internal_noise = new double[length];
-	if (noise)
-	{
-		for (int i = 0; i < length; i++)
-		{
-			internal_noise[i] = noise[i];
-		}
-	}
-	else
-	{
-		populate_noise(frequency, detector, internal_noise, length);
-		for (int i = 0; i < length; i++)
-			internal_noise[i] = internal_noise[i] * internal_noise[i];
-	}
+    double *frequency,
+    int length, /**< if 0, standard frequency range for the detector is used*/
+    string generation_method, string detector, string reference_detector,
+    double **output, /**< double [dimension][dimension]*/
+    int dimension, gen_params_base<double> *parameters,
+    int order, /**< Order of the numerical derivative (2 or 4)**/
+    // double *parameters,
+    int *amp_tapes,   /**< if speed is required, precomputed tapes can be used -
+                                             assumed the user knows what they're
+                         doing, no checks done   here to make sure that the number
+                         of tapes matches the   requirement by the generation_method
+                         -- if using   numerical derivatives or speed isn't that
+                         important, just   set to NULL*/
+    int *phase_tapes, /**< if speed is required, precomputed tapes can be used -
+                                             assumed the user knows what they're
+                         doing, no checks done here to make sure that the number
+                         of tapes matches the requirement by the
+                         generation_method*/
+    double *noise, Quadrature *quadMethod /**< Quadrature method */
+) {
+  // populate noise and frequency
+  double *internal_noise = new double[length];
+  if (noise) {
+    for (int i = 0; i < length; i++) {
+      internal_noise[i] = noise[i];
+    }
+  } else {
+    populate_noise(frequency, detector, internal_noise, length);
+    for (int i = 0; i < length; i++)
+      internal_noise[i] = internal_noise[i] * internal_noise[i];
+  }
 
-	// populate derivatives - Derivatives of DETECTOR RESPONSE
-	std::complex<double> **response_deriv = new std::complex<double> *[dimension];
-	for (int i = 0; i < dimension; i++)
-	{
-		response_deriv[i] = new std::complex<double>[length];
-	}
-	calculate_derivatives(response_deriv, frequency, length, dimension, detector,
-						  reference_detector, generation_method, parameters,
-						  order);
+  // populate derivatives - Derivatives of DETECTOR RESPONSE
+  std::complex<double> **response_deriv = new std::complex<double> *[dimension];
+  for (int i = 0; i < dimension; i++) {
+    response_deriv[i] = new std::complex<double>[length];
+  }
+  calculate_derivatives(response_deriv, frequency, length, dimension, detector,
+                        reference_detector, generation_method, parameters,
+                        order);
 
-	// calculate fisher elements
-	//  TODO: Remove old calculate_fisher_elements method.
-	//		 Keep only the inside of the ELSE block.
-	//		 All methods that call fisher_numerical would have to pass a
-	// Quadrature class.
-	if (quadMethod == NULL)
-	{
-		// Old method. Hard-coded to Simpsons
-		bool log10_f = false;
-		std::string integration_method = "SIMPSONS";
-		double *weights = NULL;
-		calculate_fisher_elements(frequency, length, dimension, response_deriv,
-								  output, internal_noise, integration_method,
-								  weights, log10_f);
-	}
-	else
-	{
-		// New method. Takes in a user-defined Quadrature class
-		calculate_fisher_elements(output, response_deriv, internal_noise, dimension,
-								  quadMethod);
-	}
+  // calculate fisher elements
+  //  TODO: Remove old calculate_fisher_elements method.
+  //		 Keep only the inside of the ELSE block.
+  //		 All methods that call fisher_numerical would have to pass a
+  // Quadrature class.
+  if (quadMethod == NULL) {
+    // Old method. Hard-coded to Simpsons
+    bool log10_f = false;
+    std::string integration_method = "SIMPSONS";
+    double *weights = NULL;
+    calculate_fisher_elements(frequency, length, dimension, response_deriv,
+                              output, internal_noise, integration_method,
+                              weights, log10_f);
+  } else {
+    // New method. Takes in a user-defined Quadrature class
+    calculate_fisher_elements(output, response_deriv, internal_noise, dimension,
+                              quadMethod);
+  }
 
-	// Factor of 2 for LISA's second arm
-	if (detector == "LISA")
-	{
-		for (int i = 0; i < dimension; i++)
-		{
-			for (int j = 0; j < dimension; j++)
-			{
-				output[i][j] *= 2;
-			}
-		}
-	}
-	for (int i = 0; i < dimension; i++)
-	{
-		delete[] response_deriv[i];
-	}
-	delete[] response_deriv;
-	delete[] internal_noise;
+  // Factor of 2 for LISA's second arm
+  if (detector == "LISA") {
+    for (int i = 0; i < dimension; i++) {
+      for (int j = 0; j < dimension; j++) {
+        output[i][j] *= 2;
+      }
+    }
+  }
+  for (int i = 0; i < dimension; i++) {
+    delete[] response_deriv[i];
+  }
+  delete[] response_deriv;
+  delete[] internal_noise;
 }
 
 void calculate_derivatives(std::complex<double> **response_deriv,
-						   double *frequencies, int length, int dimension,
-						   string detector, string reference_detector,
-						   string gen_method,
-						   gen_params_base<double> *parameters, int order)
-{
-	double epsilon = 1e-8;
-	// double epsilon = .01;
-	// double epsilon = 1e-5;
-	// Order of numerical derivative
-	double parameters_vec[dimension];
-	bool log_factors[dimension];
-	double param_p[dimension];
-	double param_m[dimension];
-	double *param_pp;
-	double *param_mm;
-	if (order >= 4)
-	{
-		param_pp = new double[dimension];
-		param_mm = new double[dimension];
-	}
-	// ##########################################################
-	std::string local_gen_method = local_generation_method(gen_method);
-	unpack_parameters(parameters_vec, parameters, gen_method, dimension,
-					  log_factors);
-	// ##########################################################
-	gen_params waveform_params;
-	repack_non_parameter_options(&waveform_params, parameters, gen_method);
-	// ##########################################################
-	// for(int i = 0 ; i<dimension; i++){
-	//	std::cout<<parameters_vec[i]<<std::endl;
-	// }
+                           double *frequencies, int length, int dimension,
+                           string detector, string reference_detector,
+                           string gen_method,
+                           gen_params_base<double> *parameters, int order) {
+  double epsilon = 1e-8;
+  // double epsilon = .01;
+  // double epsilon = 1e-5;
+  // Order of numerical derivative
+  double parameters_vec[dimension];
+  bool log_factors[dimension];
+  double param_p[dimension];
+  double param_m[dimension];
+  double *param_pp;
+  double *param_mm;
+  if (order >= 4) {
+    param_pp = new double[dimension];
+    param_mm = new double[dimension];
+  }
+  // ##########################################################
+  std::string local_gen_method = local_generation_method(gen_method);
+  unpack_parameters(parameters_vec, parameters, gen_method, dimension,
+                    log_factors);
+  // ##########################################################
+  gen_params waveform_params;
+  repack_non_parameter_options(&waveform_params, parameters, gen_method);
+  // ##########################################################
+  // for(int i = 0 ; i<dimension; i++){
+  //	std::cout<<parameters_vec[i]<<std::endl;
+  // }
 
-	if (parameters->sky_average &&
-		has_substring(local_gen_method, "IMRPhenomD"))
-	{
-		double *amplitude_plus = new double[length];
-		double *phase_plus = new double[length];
-		double *phase_plusc = new double[length];
-		double *amplitude_minus = new double[length];
-		double *phase_minus = new double[length];
-		double *phase_minusc = new double[length];
-		double *amplitude = new double[length];
-		double *amplitude_plus_plus;
-		double *amplitude_minus_minus;
-		double *phase_plus_plus;
-		double *phase_minus_minus;
-		double *phase_plus_plusc;
-		double *phase_minus_minusc;
-		if (order >= 4)
-		{
-			amplitude_plus_plus = new double[length];
-			amplitude_minus_minus = new double[length];
-			phase_plus_plus = new double[length];
-			phase_minus_minus = new double[length];
-			phase_plus_plusc = new double[length];
-			phase_minus_minusc = new double[length];
-		}
-		fourier_amplitude(frequencies, length, amplitude, local_gen_method,
-						  parameters);
-		for (int i = 0; i < dimension; i++)
-		{
-			for (int j = 0; j < dimension; j++)
-			{
-				param_p[j] = parameters_vec[j];
-				param_m[j] = parameters_vec[j];
-			}
-			param_p[i] = parameters_vec[i] + epsilon;
-			param_m[i] = parameters_vec[i] - epsilon;
-			if (!has_substring(
-					local_gen_method,
-					"EOS"))
-			{ // the following code assumes parameter[8] = eta which
-			  // is not true for the IMRPhenomD_NRT_EOS template
-				if (i == 8 && parameters_vec[i] > .25 - epsilon)
-				{
-					param_p[i] =
-						parameters_vec[i]; // instead of parameters_vec[i] + epsilon
-										   // std::cout<<"eta close to boundary, using backward difference
-										   // approximation to differentiate. See line "<<__LINE__<<" in
-										   // "<<__FILE__<<" for more information."<<std::endl;
-				}
-				if (order >= 4)
-				{
-					for (int j = 0; j < dimension; j++)
-					{
-						param_pp[j] = parameters_vec[j];
-						param_mm[j] = parameters_vec[j];
-					}
-					param_pp[i] = parameters_vec[i] + 2 * epsilon;
-					param_mm[i] = parameters_vec[i] - 2 * epsilon;
-					if (i == 8 && parameters_vec[i] > .25 - epsilon)
-					{
-						param_pp[i] = parameters_vec[i];
-						// std::cout<<"eta close to boundary, using backward difference
-						// approximation to differentiate. See line "<<__LINE__<<" in
-						// "<<__FILE__<<" for more information."<<std::endl;
-					}
-				}
-			}
-			repack_parameters(param_p, &waveform_params, gen_method, dimension);
-			fourier_amplitude(frequencies, length, amplitude_plus, local_gen_method,
-							  &waveform_params);
-			fourier_phase(frequencies, length, phase_plus, phase_plusc,
-						  local_gen_method, &waveform_params);
+  if (parameters->sky_average &&
+      has_substring(local_gen_method, "IMRPhenomD")) {
+    double *amplitude_plus = new double[length];
+    double *phase_plus = new double[length];
+    double *phase_plusc = new double[length];
+    double *amplitude_minus = new double[length];
+    double *phase_minus = new double[length];
+    double *phase_minusc = new double[length];
+    double *amplitude = new double[length];
+    double *amplitude_plus_plus;
+    double *amplitude_minus_minus;
+    double *phase_plus_plus;
+    double *phase_minus_minus;
+    double *phase_plus_plusc;
+    double *phase_minus_minusc;
+    if (order >= 4) {
+      amplitude_plus_plus = new double[length];
+      amplitude_minus_minus = new double[length];
+      phase_plus_plus = new double[length];
+      phase_minus_minus = new double[length];
+      phase_plus_plusc = new double[length];
+      phase_minus_minusc = new double[length];
+    }
+    fourier_amplitude(frequencies, length, amplitude, local_gen_method,
+                      parameters);
+    for (int i = 0; i < dimension; i++) {
+      for (int j = 0; j < dimension; j++) {
+        param_p[j] = parameters_vec[j];
+        param_m[j] = parameters_vec[j];
+      }
+      param_p[i] = parameters_vec[i] + epsilon;
+      param_m[i] = parameters_vec[i] - epsilon;
+      if (!has_substring(
+              local_gen_method,
+              "EOS")) { // the following code assumes parameter[8] = eta which
+                        // is not true for the IMRPhenomD_NRT_EOS template
+        if (i == 8 && parameters_vec[i] > .25 - epsilon) {
+          param_p[i] =
+              parameters_vec[i]; // instead of parameters_vec[i] + epsilon
+                                 // std::cout<<"eta close to boundary, using
+                                 // backward difference approximation to
+                                 // differentiate. See line "<<__LINE__<<" in
+                                 // "<<__FILE__<<" for more
+                                 // information."<<std::endl;
+        }
+        if (order >= 4) {
+          for (int j = 0; j < dimension; j++) {
+            param_pp[j] = parameters_vec[j];
+            param_mm[j] = parameters_vec[j];
+          }
+          param_pp[i] = parameters_vec[i] + 2 * epsilon;
+          param_mm[i] = parameters_vec[i] - 2 * epsilon;
+          if (i == 8 && parameters_vec[i] > .25 - epsilon) {
+            param_pp[i] = parameters_vec[i];
+            // std::cout<<"eta close to boundary, using backward difference
+            // approximation to differentiate. See line "<<__LINE__<<" in
+            // "<<__FILE__<<" for more information."<<std::endl;
+          }
+        }
+      }
+      repack_parameters(param_p, &waveform_params, gen_method, dimension);
+      fourier_amplitude(frequencies, length, amplitude_plus, local_gen_method,
+                        &waveform_params);
+      fourier_phase(frequencies, length, phase_plus, phase_plusc,
+                    local_gen_method, &waveform_params);
 
-			repack_parameters(param_m, &waveform_params, gen_method, dimension);
-			fourier_amplitude(frequencies, length, amplitude_minus, local_gen_method,
-							  &waveform_params);
-			fourier_phase(frequencies, length, phase_minus, phase_minusc,
-						  local_gen_method, &waveform_params);
-			if (order >= 4)
-			{
-				repack_parameters(param_pp, &waveform_params, gen_method, dimension);
-				fourier_amplitude(frequencies, length, amplitude_plus_plus,
-								  local_gen_method, &waveform_params);
-				fourier_phase(frequencies, length, phase_plus_plus, phase_plus_plusc,
-							  local_gen_method, &waveform_params);
+      repack_parameters(param_m, &waveform_params, gen_method, dimension);
+      fourier_amplitude(frequencies, length, amplitude_minus, local_gen_method,
+                        &waveform_params);
+      fourier_phase(frequencies, length, phase_minus, phase_minusc,
+                    local_gen_method, &waveform_params);
+      if (order >= 4) {
+        repack_parameters(param_pp, &waveform_params, gen_method, dimension);
+        fourier_amplitude(frequencies, length, amplitude_plus_plus,
+                          local_gen_method, &waveform_params);
+        fourier_phase(frequencies, length, phase_plus_plus, phase_plus_plusc,
+                      local_gen_method, &waveform_params);
 
-				repack_parameters(param_mm, &waveform_params, gen_method, dimension);
-				fourier_amplitude(frequencies, length, amplitude_minus_minus,
-								  local_gen_method, &waveform_params);
-				fourier_phase(frequencies, length, phase_minus_minus,
-							  phase_minus_minusc, local_gen_method, &waveform_params);
-			}
-			double amplitude_deriv, phase_deriv;
-			if (order == 2)
-			{
-				for (int l = 0; l < length; l++)
-				{
-					if (!has_substring(local_gen_method, "EOS"))
-					{
-						if (i == 8 && parameters_vec[i] > .25 - epsilon)
-						{
-							amplitude_deriv =
-								(amplitude_plus[l] - amplitude_minus[l]) / (epsilon);
-							phase_deriv = (phase_plus[l] - phase_minus[l]) / (epsilon);
-						}
-					}
-					else
-					{
-						amplitude_deriv =
-							(amplitude_plus[l] - amplitude_minus[l]) / (2 * epsilon);
-						phase_deriv = (phase_plus[l] - phase_minus[l]) / (2 * epsilon);
-					}
-					response_deriv[i][l] = amplitude_deriv + std::complex<double>(0, 1) *
-																 phase_deriv *
-																 amplitude[l];
-				}
-			}
-			else if (order == 4)
-			{
-				for (int l = 0; l < length; l++)
-				{
-					if (!has_substring(local_gen_method, "EOS"))
-					{
-						if (i == 8 && parameters_vec[i] > .25 - epsilon)
-						{
-							amplitude_deriv =
-								(-amplitude_plus_plus[l] + 8. * amplitude_plus[l] -
-								 8. * amplitude_minus[l] + amplitude_minus_minus[l]) /
-								(6. * epsilon);
-							phase_deriv = (-phase_plus_plus[l] + 8. * phase_plus[l] -
-										   8. * phase_minus[l] + phase_minus_minus[l]) /
-										  (6. * epsilon);
-						}
-					}
-					else
-					{
-						amplitude_deriv =
-							(-amplitude_plus_plus[l] + 8. * amplitude_plus[l] -
-							 8. * amplitude_minus[l] + amplitude_minus_minus[l]) /
-							(12. * epsilon);
-						phase_deriv = (-phase_plus_plus[l] + 8. * phase_plus[l] -
-									   8. * phase_minus[l] + phase_minus_minus[l]) /
-									  (12. * epsilon);
-					}
-					response_deriv[i][l] = amplitude_deriv - std::complex<double>(0, 1) *
-																 phase_deriv *
-																 amplitude[l];
-				}
-			}
-		}
-		delete[] amplitude_plus;
-		delete[] amplitude_minus;
-		delete[] phase_plus;
-		delete[] phase_minus;
-		delete[] phase_plusc;
-		delete[] phase_minusc;
-		delete[] amplitude;
-		if (order >= 4)
-		{
-			delete[] amplitude_plus_plus;
-			delete[] amplitude_minus_minus;
-			delete[] phase_plus_plus;
-			delete[] phase_minus_minus;
-			delete[] phase_plus_plusc;
-			delete[] phase_minus_minusc;
-		}
-	}
-	// ##########################################################
-	else
-	{
-		std::complex<double> *response_plus = new std::complex<double>[length];
-		std::complex<double> *response_minus = new std::complex<double>[length];
-		std::complex<double> *response_plus_plus;
-		std::complex<double> *response_minus_minus;
-		double *times = NULL; // deprecated - assigned in previously used detector
-							  // == "LISA" block
-		int local_dimension = dimension;
-		double DTOA = 0;
-		if (detector == "LISA")
-		{
-			std::cerr << "Detector == LISA but there is no LISA functionality.\n";
-		}
-		if (order >= 4)
-		{
-			response_plus_plus = new std::complex<double>[length];
-			response_minus_minus = new std::complex<double>[length];
-		}
-		for (int i = 0; i < local_dimension; i++)
-		{
-			DTOA = 0;
-			for (int j = 0; j < local_dimension; j++)
-			{
-				param_p[j] = parameters_vec[j];
-				param_m[j] = parameters_vec[j];
-			}
-			param_p[i] = parameters_vec[i] + epsilon;
-			param_m[i] = parameters_vec[i] - epsilon;
-			if (i == 8 && parameters_vec[i] > .25 - epsilon &&
-				(local_gen_method.find("EOS") == std::string::npos))
-			{
-				param_p[i] = parameters_vec[i];
-				// std::cout<<"eta close to boundary, using backward difference
-				// approximation to differentiate. See line "<<__LINE__<<" in
-				// "<<__FILE__<<" for more information."<<std::endl;
-			}
-			if (order >= 4)
-			{
-				for (int j = 0; j < dimension; j++)
-				{
-					param_pp[j] = parameters_vec[j];
-					param_mm[j] = parameters_vec[j];
-				}
-				param_pp[i] = parameters_vec[i] + 2 * epsilon;
-				param_mm[i] = parameters_vec[i] - 2 * epsilon;
-				if (i == 8 && parameters_vec[i] > .25 - epsilon &&
-					(local_gen_method.find("EOS") == std::string::npos))
-				{
-					param_pp[i] = parameters_vec[i];
-					// std::cout<<"eta close to boundary, using backward difference
-					// approximation to differentiate. See line "<<__LINE__<<" in
-					// "<<__FILE__<<" for more information."<<std::endl;
-				}
-			}
-			repack_parameters(param_p, &waveform_params, gen_method, dimension);
-			// if(detector=="LISA"){
-			//	//correct time needs to stay false for now
-			//	//time_phase_corrected(times, length,frequencies,
-			//&waveform_params, local_gen_method, corr_time);
-			//	//map_extrinsic_angles(&waveform_params);
-			// }
-			// else if(reference_detector != detector){
-			//	waveform_params.tc -=
-			// DTOA_DETECTOR(waveform_params.RA,waveform_params.DEC,waveform_params.gmst,
-			// reference_detector, detector);
-			//	//DTOA =
-			//-2*M_PI*DTOA_DETECTOR(waveform_params.RA,waveform_params.DEC,waveform_params.gmst,
-			// reference_detector, detector);
-			// }
-			fourier_detector_response(frequencies, length, response_plus, detector,
-									  local_gen_method, &waveform_params, times);
+        repack_parameters(param_mm, &waveform_params, gen_method, dimension);
+        fourier_amplitude(frequencies, length, amplitude_minus_minus,
+                          local_gen_method, &waveform_params);
+        fourier_phase(frequencies, length, phase_minus_minus,
+                      phase_minus_minusc, local_gen_method, &waveform_params);
+      }
+      double amplitude_deriv, phase_deriv;
+      if (order == 2) {
+        for (int l = 0; l < length; l++) {
+          if (i == 8 && !has_substring(local_gen_method, "EOS") &&
+              parameters_vec[i] > .25 - epsilon) {
+            amplitude_deriv =
+                (amplitude_plus[l] - amplitude_minus[l]) / (epsilon);
+            phase_deriv = (phase_plus[l] - phase_minus[l]) / (epsilon);
+          } else {
+            amplitude_deriv =
+                (amplitude_plus[l] - amplitude_minus[l]) / (2 * epsilon);
+            phase_deriv = (phase_plus[l] - phase_minus[l]) / (2 * epsilon);
+          }
+          response_deriv[i][l] = amplitude_deriv + std::complex<double>(0, 1) *
+                                                       phase_deriv *
+                                                       amplitude[l];
+        }
+      } else if (order == 4) {
+        for (int l = 0; l < length; l++) {
+          if (i == 8 && !has_substring(local_gen_method, "EOS") &&
+              parameters_vec[i] > .25 - epsilon) {
+            amplitude_deriv =
+                (-amplitude_plus_plus[l] + 8. * amplitude_plus[l] -
+                 8. * amplitude_minus[l] + amplitude_minus_minus[l]) /
+                (6. * epsilon);
+            phase_deriv = (-phase_plus_plus[l] + 8. * phase_plus[l] -
+                           8. * phase_minus[l] + phase_minus_minus[l]) /
+                          (6. * epsilon);
+          } else {
+            amplitude_deriv =
+                (-amplitude_plus_plus[l] + 8. * amplitude_plus[l] -
+                 8. * amplitude_minus[l] + amplitude_minus_minus[l]) /
+                (12. * epsilon);
+            phase_deriv = (-phase_plus_plus[l] + 8. * phase_plus[l] -
+                           8. * phase_minus[l] + phase_minus_minus[l]) /
+                          (12. * epsilon);
+          }
+          response_deriv[i][l] = amplitude_deriv - std::complex<double>(0, 1) *
+                                                       phase_deriv *
+                                                       amplitude[l];
+        }
+      }
+    }
+    delete[] amplitude_plus;
+    delete[] amplitude_minus;
+    delete[] phase_plus;
+    delete[] phase_minus;
+    delete[] phase_plusc;
+    delete[] phase_minusc;
+    delete[] amplitude;
+    if (order >= 4) {
+      delete[] amplitude_plus_plus;
+      delete[] amplitude_minus_minus;
+      delete[] phase_plus_plus;
+      delete[] phase_minus_minus;
+      delete[] phase_plus_plusc;
+      delete[] phase_minus_minusc;
+    }
+  }
+  // ##########################################################
+  else {
+    std::complex<double> *response_plus = new std::complex<double>[length];
+    std::complex<double> *response_minus = new std::complex<double>[length];
+    std::complex<double> *response_plus_plus;
+    std::complex<double> *response_minus_minus;
+    double *times = NULL; // deprecated - assigned in previously used detector
+                          // == "LISA" block
+    int local_dimension = dimension;
+    double DTOA = 0;
+    if (detector == "LISA") {
+      std::cerr << "Detector == LISA but there is no LISA functionality.\n";
+    }
+    if (order >= 4) {
+      response_plus_plus = new std::complex<double>[length];
+      response_minus_minus = new std::complex<double>[length];
+    }
+    for (int i = 0; i < local_dimension; i++) {
+      DTOA = 0;
+      for (int j = 0; j < local_dimension; j++) {
+        param_p[j] = parameters_vec[j];
+        param_m[j] = parameters_vec[j];
+      }
+      param_p[i] = parameters_vec[i] + epsilon;
+      param_m[i] = parameters_vec[i] - epsilon;
+      if (i == 8 && parameters_vec[i] > .25 - epsilon &&
+          (local_gen_method.find("EOS") == std::string::npos)) {
+        param_p[i] = parameters_vec[i];
+        // std::cout<<"eta close to boundary, using backward difference
+        // approximation to differentiate. See line "<<__LINE__<<" in
+        // "<<__FILE__<<" for more information."<<std::endl;
+      }
+      if (order >= 4) {
+        for (int j = 0; j < dimension; j++) {
+          param_pp[j] = parameters_vec[j];
+          param_mm[j] = parameters_vec[j];
+        }
+        param_pp[i] = parameters_vec[i] + 2 * epsilon;
+        param_mm[i] = parameters_vec[i] - 2 * epsilon;
+        if (i == 8 && parameters_vec[i] > .25 - epsilon &&
+            (local_gen_method.find("EOS") == std::string::npos)) {
+          param_pp[i] = parameters_vec[i];
+          // std::cout<<"eta close to boundary, using backward difference
+          // approximation to differentiate. See line "<<__LINE__<<" in
+          // "<<__FILE__<<" for more information."<<std::endl;
+        }
+      }
+      repack_parameters(param_p, &waveform_params, gen_method, dimension);
+      // if(detector=="LISA"){
+      //	//correct time needs to stay false for now
+      //	//time_phase_corrected(times, length,frequencies,
+      //&waveform_params, local_gen_method, corr_time);
+      //	//map_extrinsic_angles(&waveform_params);
+      // }
+      // else if(reference_detector != detector){
+      //	waveform_params.tc -=
+      // DTOA_DETECTOR(waveform_params.RA,waveform_params.DEC,waveform_params.gmst,
+      // reference_detector, detector);
+      //	//DTOA =
+      //-2*M_PI*DTOA_DETECTOR(waveform_params.RA,waveform_params.DEC,waveform_params.gmst,
+      // reference_detector, detector);
+      // }
+      fourier_detector_response(frequencies, length, response_plus, detector,
+                                local_gen_method, &waveform_params, times);
 
-			if (reference_detector != detector)
-			{
-				DTOA =
-					-2 * M_PI *
-					DTOA_DETECTOR(waveform_params.RA, waveform_params.DEC,
-								  waveform_params.gmst, reference_detector, detector);
-				for (int l = 0; l < length; l++)
-				{
-					response_plus[l] *=
-						exp(std::complex<double>(0, DTOA * frequencies[l]));
-				}
-			}
+      if (reference_detector != detector) {
+        DTOA =
+            -2 * M_PI *
+            DTOA_DETECTOR(waveform_params.RA, waveform_params.DEC,
+                          waveform_params.gmst, reference_detector, detector);
+        for (int l = 0; l < length; l++) {
+          response_plus[l] *=
+              exp(std::complex<double>(0, DTOA * frequencies[l]));
+        }
+      }
 
-			repack_parameters(param_m, &waveform_params, gen_method, dimension);
-			// if(detector=="LISA"){
-			//	//map_extrinsic_angles(&waveform_params);
-			// }
-			// else if(reference_detector != detector){
-			//	waveform_params.tc -=
-			// DTOA_DETECTOR(waveform_params.RA,waveform_params.DEC,waveform_params.gmst,
-			// reference_detector, detector);
-			//	//DTOA =
-			//-2*M_PI*DTOA_DETECTOR(waveform_params.RA,waveform_params.DEC,waveform_params.gmst,
-			// reference_detector, detector);
-			// }
-			fourier_detector_response(frequencies, length, response_minus, detector,
-									  local_gen_method, &waveform_params, times);
-			if (reference_detector != detector)
-			{
-				DTOA =
-					-2 * M_PI *
-					DTOA_DETECTOR(waveform_params.RA, waveform_params.DEC,
-								  waveform_params.gmst, reference_detector, detector);
-				for (int l = 0; l < length; l++)
-				{
-					response_minus[l] *=
-						exp(std::complex<double>(0, DTOA * frequencies[l]));
-				}
-			}
-			if (order >= 4)
-			{
-				repack_parameters(param_pp, &waveform_params, gen_method, dimension);
-				if (detector == "LISA")
-				{
-					// map_extrinsic_angles(&waveform_params);
-				}
-				else if (reference_detector != detector)
-				{
-					waveform_params.tc -=
-						DTOA_DETECTOR(waveform_params.RA, waveform_params.DEC,
-									  waveform_params.gmst, reference_detector, detector);
-				}
-				fourier_detector_response(frequencies, length, response_plus_plus,
-										  detector, local_gen_method, &waveform_params,
-										  times);
+      repack_parameters(param_m, &waveform_params, gen_method, dimension);
+      // if(detector=="LISA"){
+      //	//map_extrinsic_angles(&waveform_params);
+      // }
+      // else if(reference_detector != detector){
+      //	waveform_params.tc -=
+      // DTOA_DETECTOR(waveform_params.RA,waveform_params.DEC,waveform_params.gmst,
+      // reference_detector, detector);
+      //	//DTOA =
+      //-2*M_PI*DTOA_DETECTOR(waveform_params.RA,waveform_params.DEC,waveform_params.gmst,
+      // reference_detector, detector);
+      // }
+      fourier_detector_response(frequencies, length, response_minus, detector,
+                                local_gen_method, &waveform_params, times);
+      if (reference_detector != detector) {
+        DTOA =
+            -2 * M_PI *
+            DTOA_DETECTOR(waveform_params.RA, waveform_params.DEC,
+                          waveform_params.gmst, reference_detector, detector);
+        for (int l = 0; l < length; l++) {
+          response_minus[l] *=
+              exp(std::complex<double>(0, DTOA * frequencies[l]));
+        }
+      }
+      if (order >= 4) {
+        repack_parameters(param_pp, &waveform_params, gen_method, dimension);
+        if (detector == "LISA") {
+          // map_extrinsic_angles(&waveform_params);
+        } else if (reference_detector != detector) {
+          waveform_params.tc -=
+              DTOA_DETECTOR(waveform_params.RA, waveform_params.DEC,
+                            waveform_params.gmst, reference_detector, detector);
+        }
+        fourier_detector_response(frequencies, length, response_plus_plus,
+                                  detector, local_gen_method, &waveform_params,
+                                  times);
 
-				repack_parameters(param_mm, &waveform_params, gen_method, dimension);
-				if (detector == "LISA")
-				{
-					// map_extrinsic_angles(&waveform_params);
-				}
-				else if (reference_detector != detector)
-				{
-					waveform_params.tc -=
-						DTOA_DETECTOR(waveform_params.RA, waveform_params.DEC,
-									  waveform_params.gmst, reference_detector, detector);
-				}
-				fourier_detector_response(frequencies, length, response_minus_minus,
-										  detector, local_gen_method, &waveform_params,
-										  times);
-			}
-			if (order == 2)
-			{
-				for (int l = 0; l < length; l++)
-				{
-					response_deriv[i][l] =
-						(response_plus[l] - response_minus[l]) / (2. * epsilon);
-					if (i == 8 && parameters_vec[i] > .25 - epsilon)
-					{
-						response_deriv[i][l] =
-							(response_plus[l] - response_minus[l]) / epsilon;
-					}
-				}
-			}
-			else if (order == 4)
-			{
-				for (int l = 0; l < length; l++)
-				{
-					response_deriv[i][l] =
-						(-response_plus_plus[l] + 8. * response_plus[l] -
-						 8. * response_minus[l] + response_minus_minus[l]) /
-						(12. * epsilon);
-					if (i == 8 && parameters_vec[i] > .25 - epsilon)
-					{
-						response_deriv[i][l] =
-							(-response_plus_plus[l] + 8. * response_plus[l] -
-							 8. * response_minus[l] + response_minus_minus[l]) /
-							(6. * epsilon);
-					}
-				}
-			}
-		}
-		if (detector == "LISA")
-		{
-			std::cerr << "Detector == LISA but there is no LISA functionality.\n";
-		}
+        repack_parameters(param_mm, &waveform_params, gen_method, dimension);
+        if (detector == "LISA") {
+          // map_extrinsic_angles(&waveform_params);
+        } else if (reference_detector != detector) {
+          waveform_params.tc -=
+              DTOA_DETECTOR(waveform_params.RA, waveform_params.DEC,
+                            waveform_params.gmst, reference_detector, detector);
+        }
+        fourier_detector_response(frequencies, length, response_minus_minus,
+                                  detector, local_gen_method, &waveform_params,
+                                  times);
+      }
+      if (order == 2) {
+        for (int l = 0; l < length; l++) {
+          response_deriv[i][l] =
+              (response_plus[l] - response_minus[l]) / (2. * epsilon);
+          if (i == 8 && parameters_vec[i] > .25 - epsilon) {
+            response_deriv[i][l] =
+                (response_plus[l] - response_minus[l]) / epsilon;
+          }
+        }
+      } else if (order == 4) {
+        for (int l = 0; l < length; l++) {
+          response_deriv[i][l] =
+              (-response_plus_plus[l] + 8. * response_plus[l] -
+               8. * response_minus[l] + response_minus_minus[l]) /
+              (12. * epsilon);
+          if (i == 8 && parameters_vec[i] > .25 - epsilon) {
+            response_deriv[i][l] =
+                (-response_plus_plus[l] + 8. * response_plus[l] -
+                 8. * response_minus[l] + response_minus_minus[l]) /
+                (6. * epsilon);
+          }
+        }
+      }
+    }
+    if (detector == "LISA") {
+      std::cerr << "Detector == LISA but there is no LISA functionality.\n";
+    }
 
-		delete[] response_plus;
-		delete[] response_minus;
-		if (detector == "LISA")
-		{
-			std::cerr << "Detector == LISA but there is no LISA functionality.\n";
-		}
-		if (order >= 4)
-		{
-			delete[] response_plus_plus;
-			delete[] response_minus_minus;
-		}
-	}
-	if (order >= 4)
-	{
-		delete[] param_pp;
-		delete[] param_mm;
-	}
-	for (int l = 0; l < dimension; l++)
-	{
-		if (log_factors[l])
-		{
-			for (int j = 0; j < length; j++)
-			{
-				response_deriv[l][j] *= parameters_vec[l];
-			}
-		}
-	}
-	deallocate_non_param_options(&waveform_params, parameters, gen_method);
+    delete[] response_plus;
+    delete[] response_minus;
+    if (detector == "LISA") {
+      std::cerr << "Detector == LISA but there is no LISA functionality.\n";
+    }
+    if (order >= 4) {
+      delete[] response_plus_plus;
+      delete[] response_minus_minus;
+    }
+  }
+  if (order >= 4) {
+    delete[] param_pp;
+    delete[] param_mm;
+  }
+  for (int l = 0; l < dimension; l++) {
+    if (log_factors[l]) {
+      for (int j = 0; j < length; j++) {
+        response_deriv[l][j] *= parameters_vec[l];
+      }
+    }
+  }
+  deallocate_non_param_options(&waveform_params, parameters, gen_method);
 }
 
 /*!\brief Calculates the fisher matrix for the given arguments to within
@@ -627,96 +555,87 @@ void calculate_derivatives(std::complex<double> **response_deriv,
  * modification at a time.
  */
 void fisher_autodiff_batch_mod(
-	double *frequency,
-	int length, /**< if 0, standard frequency range for the detector is used*/
-	std::string generation_method, std::string detector,
-	std::string reference_detector,
-	double **output,	/**< double [dimension][dimension]*/
-	int base_dimension, /**< GR dimensionality*/
-	int full_dimension, /**< Total dimension of the output fisher (ie
-						   GR_dimension + Nmod)*/
-	gen_params *parameters,
-	std::string integration_method, /**< Method of integration to use*/
-	double *
-		weights, /**< If using a gaussian quadrature method and the weights have
-					been precomputed, the weights can be supplied here*/
-	bool
-		log10_f,   /**< Boolean for logarithmically (base 10) spaced frequencies*/
-	double *noise, /**<Precomputed PSD array*/
-	// double *parameters,
-	int *amp_tapes,	 /**< if speed is required, precomputed tapes can be used -
-						assumed the user knows what they're doing, no checks done
-						here to make sure that the number of tapes matches the
-						requirement by the generation_method*/
-	int *phase_tapes /**< if speed is required, precomputed tapes can be used -
-						assumed the user knows what they're doing, no checks
-						done here to make sure that the number of tapes matches
-						the requirement by the generation_method*/
-)
-{
-	// std::cout<<"Line "<<__LINE__<<":Using autodiff to calculate
-	// Fishers"<<std::endl;
+    double *frequency,
+    int length, /**< if 0, standard frequency range for the detector is used*/
+    std::string generation_method, std::string detector,
+    std::string reference_detector,
+    double **output,    /**< double [dimension][dimension]*/
+    int base_dimension, /**< GR dimensionality*/
+    int full_dimension, /**< Total dimension of the output fisher (ie
+                                               GR_dimension + Nmod)*/
+    gen_params *parameters,
+    std::string integration_method, /**< Method of integration to use*/
+    double
+        *weights, /**< If using a gaussian quadrature method and the weights
+                     have been precomputed, the weights can be supplied here*/
+    bool
+        log10_f, /**< Boolean for logarithmically (base 10) spaced frequencies*/
+    double *noise, /**<Precomputed PSD array*/
+    // double *parameters,
+    int *
+        amp_tapes,   /**< if speed is required, precomputed tapes can be used -
+                                            assumed the user knows what they're
+                        doing, no checks done   here to make sure that the number of
+                        tapes matches the   requirement by the generation_method*/
+    int *phase_tapes /**< if speed is required, precomputed tapes can be used -
+                                            assumed the user knows what they're
+                        doing, no checks done here to make sure that the number
+                        of tapes matches the requirement by the
+                        generation_method*/
+) {
+  // std::cout<<"Line "<<__LINE__<<":Using autodiff to calculate
+  // Fishers"<<std::endl;
 
-	// populate noise and frequency
-	double *internal_noise;
-	bool local_noise = false;
-	if (noise)
-	{
-		internal_noise = noise;
-	}
-	else
-	{
-		internal_noise = new double[length];
-		populate_noise(frequency, detector, internal_noise, length);
-		for (int i = 0; i < length; i++)
-			internal_noise[i] = internal_noise[i] * internal_noise[i];
-		local_noise = true;
-	}
+  // populate noise and frequency
+  double *internal_noise;
+  bool local_noise = false;
+  if (noise) {
+    internal_noise = noise;
+  } else {
+    internal_noise = new double[length];
+    populate_noise(frequency, detector, internal_noise, length);
+    for (int i = 0; i < length; i++)
+      internal_noise[i] = internal_noise[i] * internal_noise[i];
+    local_noise = true;
+  }
 
-	// populate derivatives
+  // populate derivatives
 
-	std::complex<double> **response_deriv =
-		new std::complex<double> *[full_dimension];
-	for (int i = 0; i < full_dimension; i++)
-	{
-		response_deriv[i] = new std::complex<double>[length];
-	}
-	bool autodiff_time_deriv = false;
-	// Gauss quad is unequal spacing, doesn't work with numerical derivatives
-	if (integration_method == "GAUSSLEG")
-	{
-		autodiff_time_deriv = true;
-	}
-	calculate_derivatives_autodiff(
-		frequency, length, full_dimension, generation_method, parameters,
-		response_deriv, NULL, detector, autodiff_time_deriv, reference_detector);
-	// ##########################################################
+  std::complex<double> **response_deriv =
+      new std::complex<double> *[full_dimension];
+  for (int i = 0; i < full_dimension; i++) {
+    response_deriv[i] = new std::complex<double>[length];
+  }
+  bool autodiff_time_deriv = false;
+  // Gauss quad is unequal spacing, doesn't work with numerical derivatives
+  if (integration_method == "GAUSSLEG") {
+    autodiff_time_deriv = true;
+  }
+  calculate_derivatives_autodiff(
+      frequency, length, full_dimension, generation_method, parameters,
+      response_deriv, NULL, detector, autodiff_time_deriv, reference_detector);
+  // ##########################################################
 
-	// calulate fisher elements
-	calculate_fisher_elements_batch(
-		frequency, length, base_dimension, full_dimension, response_deriv, output,
-		internal_noise, integration_method, weights, log10_f);
-	// Factor of 2 for LISA's second arm
-	if (detector == "LISA")
-	{
-		for (int i = 0; i < full_dimension; i++)
-		{
-			for (int j = 0; j < full_dimension; j++)
-			{
-				output[i][j] *= 2;
-			}
-		}
-	}
+  // calulate fisher elements
+  calculate_fisher_elements_batch(
+      frequency, length, base_dimension, full_dimension, response_deriv, output,
+      internal_noise, integration_method, weights, log10_f);
+  // Factor of 2 for LISA's second arm
+  if (detector == "LISA") {
+    for (int i = 0; i < full_dimension; i++) {
+      for (int j = 0; j < full_dimension; j++) {
+        output[i][j] *= 2;
+      }
+    }
+  }
 
-	if (local_noise)
-	{
-		delete[] internal_noise;
-	}
-	for (int i = 0; i < full_dimension; i++)
-	{
-		delete[] response_deriv[i];
-	}
-	delete[] response_deriv;
+  if (local_noise) {
+    delete[] internal_noise;
+  }
+  for (int i = 0; i < full_dimension; i++) {
+    delete[] response_deriv[i];
+  }
+  delete[] response_deriv;
 }
 
 /*! \brief Calculates the fisher matrix for the given arguments to within
@@ -751,94 +670,85 @@ void fisher_autodiff_batch_mod(
  * only gaussian quadrature routines are supported.
  */
 void fisher_autodiff(
-	double *frequency,
-	int length, /**< if 0, standard frequency range for the detector is used*/
-	std::string generation_method, std::string detector,
-	std::string reference_detector,
-	double **output,				/**< double [dimension][dimension]*/
-	int dimension,					/**<dimension of the fisher*/
-	gen_params *parameters,			/**< Injection parameters*/
-	std::string integration_method, /**< Method of integration to use*/
-	double *
-		weights, /**< If using a gaussian quadrature method and the weights have
-					been precomputed, the weights can be supplied here*/
-	bool
-		log10_f,   /**< Boolean for logarithmically (base 10) spaced frequencies*/
-	double *noise, /**<Precomputed PSD array*/
-	// double *parameters,
-	int *amp_tapes,	 /**< if speed is required, precomputed tapes can be used -
-						assumed the user knows what they're doing, no checks done
-						here to make sure that the number of tapes matches the
-						requirement by the generation_method*/
-	int *phase_tapes /**< if speed is required, precomputed tapes can be used -
-						assumed the user knows what they're doing, no checks
-						done here to make sure that the number of tapes matches
-						the requirement by the generation_method*/
-)
-{
-	// std::cout<<"Line "<<__LINE__<<":Using autodiff to calculate
-	// Fishers"<<std::endl;
+    double *frequency,
+    int length, /**< if 0, standard frequency range for the detector is used*/
+    std::string generation_method, std::string detector,
+    std::string reference_detector,
+    double **output,                /**< double [dimension][dimension]*/
+    int dimension,                  /**<dimension of the fisher*/
+    gen_params *parameters,         /**< Injection parameters*/
+    std::string integration_method, /**< Method of integration to use*/
+    double
+        *weights, /**< If using a gaussian quadrature method and the weights
+                     have been precomputed, the weights can be supplied here*/
+    bool
+        log10_f, /**< Boolean for logarithmically (base 10) spaced frequencies*/
+    double *noise, /**<Precomputed PSD array*/
+    // double *parameters,
+    int *
+        amp_tapes,   /**< if speed is required, precomputed tapes can be used -
+                                            assumed the user knows what they're
+                        doing, no checks done   here to make sure that the number of
+                        tapes matches the   requirement by the generation_method*/
+    int *phase_tapes /**< if speed is required, precomputed tapes can be used -
+                                            assumed the user knows what they're
+                        doing, no checks done here to make sure that the number
+                        of tapes matches the requirement by the
+                        generation_method*/
+) {
+  // std::cout<<"Line "<<__LINE__<<":Using autodiff to calculate
+  // Fishers"<<std::endl;
 
-	// populate noise and frequency
-	double *internal_noise;
-	bool local_noise = false;
-	if (noise)
-	{
-		internal_noise = noise;
-	}
-	else
-	{
-		internal_noise = new double[length];
-		populate_noise(frequency, detector, internal_noise, length);
-		for (int i = 0; i < length; i++)
-			internal_noise[i] = internal_noise[i] * internal_noise[i];
-		local_noise = true;
-	}
+  // populate noise and frequency
+  double *internal_noise;
+  bool local_noise = false;
+  if (noise) {
+    internal_noise = noise;
+  } else {
+    internal_noise = new double[length];
+    populate_noise(frequency, detector, internal_noise, length);
+    for (int i = 0; i < length; i++)
+      internal_noise[i] = internal_noise[i] * internal_noise[i];
+    local_noise = true;
+  }
 
-	// populate derivatives
+  // populate derivatives
 
-	std::complex<double> **response_deriv = new std::complex<double> *[dimension];
-	for (int i = 0; i < dimension; i++)
-	{
-		response_deriv[i] = new std::complex<double>[length];
-	}
-	bool autodiff_time_deriv = false;
-	// Gauss quad is unequal spacing, doesn't work with numerical derivatives
-	if (integration_method == "GAUSSLEG")
-	{
-		autodiff_time_deriv = true;
-	}
-	calculate_derivatives_autodiff(
-		frequency, length, dimension, generation_method, parameters,
-		response_deriv, NULL, detector, autodiff_time_deriv, reference_detector);
-	// ##########################################################
+  std::complex<double> **response_deriv = new std::complex<double> *[dimension];
+  for (int i = 0; i < dimension; i++) {
+    response_deriv[i] = new std::complex<double>[length];
+  }
+  bool autodiff_time_deriv = false;
+  // Gauss quad is unequal spacing, doesn't work with numerical derivatives
+  if (integration_method == "GAUSSLEG") {
+    autodiff_time_deriv = true;
+  }
+  calculate_derivatives_autodiff(
+      frequency, length, dimension, generation_method, parameters,
+      response_deriv, NULL, detector, autodiff_time_deriv, reference_detector);
+  // ##########################################################
 
-	// calulate fisher elements
-	calculate_fisher_elements(frequency, length, dimension, response_deriv,
-							  output, internal_noise, integration_method, weights,
-							  log10_f);
+  // calulate fisher elements
+  calculate_fisher_elements(frequency, length, dimension, response_deriv,
+                            output, internal_noise, integration_method, weights,
+                            log10_f);
 
-	// Factor of 2 for LISA's second arm
-	if (detector == "LISA")
-	{
-		for (int i = 0; i < dimension; i++)
-		{
-			for (int j = 0; j < dimension; j++)
-			{
-				output[i][j] *= 2;
-			}
-		}
-	}
+  // Factor of 2 for LISA's second arm
+  if (detector == "LISA") {
+    for (int i = 0; i < dimension; i++) {
+      for (int j = 0; j < dimension; j++) {
+        output[i][j] *= 2;
+      }
+    }
+  }
 
-	if (local_noise)
-	{
-		delete[] internal_noise;
-	}
-	for (int i = 0; i < dimension; i++)
-	{
-		delete[] response_deriv[i];
-	}
-	delete[] response_deriv;
+  if (local_noise) {
+    delete[] internal_noise;
+  }
+  for (int i = 0; i < dimension; i++) {
+    delete[] response_deriv[i];
+  }
+  delete[] response_deriv;
 }
 
 /*! \brief Calculates the derivatives of the detector response using automatic
@@ -859,223 +769,192 @@ void fisher_autodiff(
  * numerical approximation (autodiff then numerical)
  */
 void calculate_derivatives_autodiff(
-	double *frequency, int length, int dimension, std::string generation_method,
-	gen_params *parameters, std::complex<double> **waveform_deriv,
-	int *waveform_tapes, std::string detector, bool autodiff_time_deriv,
-	std::string reference_detector)
-{
-	// std::cout<<"Line "<<__LINE__<<":Using autodiff to calculate
-	// Fishers"<<std::endl;
+    double *frequency, int length, int dimension, std::string generation_method,
+    gen_params *parameters, std::complex<double> **waveform_deriv,
+    int *waveform_tapes, std::string detector, bool autodiff_time_deriv,
+    std::string reference_detector) {
+  // std::cout<<"Line "<<__LINE__<<":Using autodiff to calculate
+  // Fishers"<<std::endl;
 
-	// Transform gen_params to double vectors
-	// double vec_parameters[dimension+1];
-	int vec_param_length = dimension + 1;
-	if (detector == "LISA")
-	{
-		// take derivative wrt time as well, for the chain rule
-		vec_param_length += 1;
-	}
-	double vec_parameters[vec_param_length];
-	bool log_factors[dimension];
-	int boundary_num = boundary_number(generation_method);
-	if (boundary_num == -1)
-	{
-		std::cout << "Error -- unsupported generation method" << std::endl;
-		exit(1);
-	}
-	double *freq_boundaries = new double[boundary_num];
-	double *grad_freqs = new double[boundary_num];
-	std::string local_gen_method = local_generation_method(generation_method);
-	assign_freq_boundaries(freq_boundaries, grad_freqs, boundary_num, parameters,
-						   generation_method);
-	std::string out_string = std::to_string(freq_boundaries[0]) + " " +
-							 std::to_string(freq_boundaries[1]) + " " +
-							 std::to_string(freq_boundaries[2]) + " " +
-							 std::to_string(freq_boundaries[3]);
-	vec_parameters[0] = grad_freqs[0];
-	unpack_parameters(&vec_parameters[1], parameters, generation_method,
-					  dimension, log_factors);
-	double *grad_times = NULL;
-	double **dt = NULL;
-	double *eval_times = NULL;
-	if (detector == "LISA")
-	{
-		grad_times = new double[boundary_num];
-		time_phase_corrected_autodiff(grad_times, boundary_num, grad_freqs,
-									  parameters, generation_method, false);
-		dt = allocate_2D_array(dimension + 1, length);
-		if (autodiff_time_deriv)
-		{
-			time_phase_corrected_derivative_autodiff_full_hess(
-				dt, length, frequency, parameters, generation_method, dimension,
-				false);
-		}
-		else
-		{
-			time_phase_corrected_derivative_autodiff_numerical(
-				dt, length, frequency, parameters, generation_method, dimension,
-				false);
-		}
-		eval_times = new double[length];
-		time_phase_corrected_autodiff(eval_times, length, frequency, parameters,
-									  generation_method, false);
-	}
-	// calculate_derivative tapes
-	int tapes[boundary_num];
-	for (int i = 0; i < boundary_num; i++)
-	{
-		tapes[i] = i;
-		trace_on(tapes[i]);
-		// adouble avec_parameters[dimension+1];
-		adouble avec_parameters[vec_param_length];
-		avec_parameters[0] <<= grad_freqs[i];
-		for (int j = 1; j <= dimension; j++)
-		{
-			avec_parameters[j] <<= vec_parameters[j];
-		}
-		// Repack parameters
-		gen_params_base<adouble> a_parameters;
-		adouble afreq;
-		afreq = avec_parameters[0];
-		// ############################################
-		// Non variable parameters
-		repack_non_parameter_options(&a_parameters, parameters, generation_method);
-		// ############################################
-		repack_parameters(&avec_parameters[1], &a_parameters, generation_method,
-						  dimension);
-		adouble time;
-		if (detector == "LISA")
-		{
-			time <<= grad_times[i];
-		}
-		std::complex<adouble> a_response;
-		if (!a_parameters.sky_average)
-		{
-			// This exactly matches how it's calculated for the full
-			// MCMC, which works with real data
-			adouble tc;
-			if (detector != "LISA" && detector != reference_detector)
-			{
-				// CHANGED SIGN FOR TC !!!!!!
-				// tc = -2*M_PI*(-a_parameters.tc -
-				// DTOA_DETECTOR(a_parameters.RA,a_parameters.DEC,a_parameters.gmst,
-				// reference_detector,detector));
-				tc = -2 * M_PI *
-					 (DTOA_DETECTOR(a_parameters.RA, a_parameters.DEC,
-									a_parameters.gmst, reference_detector, detector));
-				// a_parameters.tc = 0;
-				// a_parameters.tc -=
-				// DTOA_DETECTOR(a_parameters.RA,a_parameters.DEC,a_parameters.gmst,
-				// reference_detector,detector);
-			}
-			int status =
-				fourier_detector_response(&afreq, 1, &a_response, detector,
-										  local_gen_method, &a_parameters, &time);
-			if (detector != "LISA" && detector != reference_detector)
-			{
-				a_response *= std::exp(std::complex<adouble>(0, tc * afreq));
-			}
-		}
-		else
-		{
-			adouble a_amp;
-			adouble a_phasep;
-			adouble a_phasec;
-			int status =
-				fourier_amplitude(&afreq, 1, &a_amp, local_gen_method, &a_parameters);
-			status = fourier_phase(&afreq, 1, &a_phasep, &a_phasec, local_gen_method,
-								   &a_parameters);
-			a_response = a_amp * exp(std::complex<adouble>(0, a_phasep));
-		}
-		double response[2];
-		real(a_response) >>= response[0];
-		imag(a_response) >>= response[1];
+  // Transform gen_params to double vectors
+  // double vec_parameters[dimension+1];
+  int vec_param_length = dimension + 1;
+  if (detector == "LISA") {
+    // take derivative wrt time as well, for the chain rule
+    vec_param_length += 1;
+  }
+  double vec_parameters[vec_param_length];
+  bool log_factors[dimension];
+  int boundary_num = boundary_number(generation_method);
+  if (boundary_num == -1) {
+    std::cout << "Error -- unsupported generation method" << std::endl;
+    exit(1);
+  }
+  double *freq_boundaries = new double[boundary_num];
+  double *grad_freqs = new double[boundary_num];
+  std::string local_gen_method = local_generation_method(generation_method);
+  assign_freq_boundaries(freq_boundaries, grad_freqs, boundary_num, parameters,
+                         generation_method);
+  std::string out_string = std::to_string(freq_boundaries[0]) + " " +
+                           std::to_string(freq_boundaries[1]) + " " +
+                           std::to_string(freq_boundaries[2]) + " " +
+                           std::to_string(freq_boundaries[3]);
+  vec_parameters[0] = grad_freqs[0];
+  unpack_parameters(&vec_parameters[1], parameters, generation_method,
+                    dimension, log_factors);
+  double *grad_times = NULL;
+  double **dt = NULL;
+  double *eval_times = NULL;
+  if (detector == "LISA") {
+    grad_times = new double[boundary_num];
+    time_phase_corrected_autodiff(grad_times, boundary_num, grad_freqs,
+                                  parameters, generation_method, false);
+    dt = allocate_2D_array(dimension + 1, length);
+    if (autodiff_time_deriv) {
+      time_phase_corrected_derivative_autodiff_full_hess(
+          dt, length, frequency, parameters, generation_method, dimension,
+          false);
+    } else {
+      time_phase_corrected_derivative_autodiff_numerical(
+          dt, length, frequency, parameters, generation_method, dimension,
+          false);
+    }
+    eval_times = new double[length];
+    time_phase_corrected_autodiff(eval_times, length, frequency, parameters,
+                                  generation_method, false);
+  }
+  // calculate_derivative tapes
+  int tapes[boundary_num];
+  for (int i = 0; i < boundary_num; i++) {
+    tapes[i] = i;
+    trace_on(tapes[i]);
+    // adouble avec_parameters[dimension+1];
+    adouble avec_parameters[vec_param_length];
+    avec_parameters[0] <<= grad_freqs[i];
+    for (int j = 1; j <= dimension; j++) {
+      avec_parameters[j] <<= vec_parameters[j];
+    }
+    // Repack parameters
+    gen_params_base<adouble> a_parameters;
+    adouble afreq;
+    afreq = avec_parameters[0];
+    // ############################################
+    // Non variable parameters
+    repack_non_parameter_options(&a_parameters, parameters, generation_method);
+    // ############################################
+    repack_parameters(&avec_parameters[1], &a_parameters, generation_method,
+                      dimension);
+    adouble time;
+    if (detector == "LISA") {
+      time <<= grad_times[i];
+    }
+    std::complex<adouble> a_response;
+    if (!a_parameters.sky_average) {
+      // This exactly matches how it's calculated for the full
+      // MCMC, which works with real data
+      adouble tc;
+      if (detector != "LISA" && detector != reference_detector) {
+        // CHANGED SIGN FOR TC !!!!!!
+        // tc = -2*M_PI*(-a_parameters.tc -
+        // DTOA_DETECTOR(a_parameters.RA,a_parameters.DEC,a_parameters.gmst,
+        // reference_detector,detector));
+        tc = -2 * M_PI *
+             (DTOA_DETECTOR(a_parameters.RA, a_parameters.DEC,
+                            a_parameters.gmst, reference_detector, detector));
+        // a_parameters.tc = 0;
+        // a_parameters.tc -=
+        // DTOA_DETECTOR(a_parameters.RA,a_parameters.DEC,a_parameters.gmst,
+        // reference_detector,detector);
+      }
+      int status =
+          fourier_detector_response(&afreq, 1, &a_response, detector,
+                                    local_gen_method, &a_parameters, &time);
+      if (detector != "LISA" && detector != reference_detector) {
+        a_response *= std::exp(std::complex<adouble>(0, tc * afreq));
+      }
+    } else {
+      adouble a_amp;
+      adouble a_phasep;
+      adouble a_phasec;
+      int status =
+          fourier_amplitude(&afreq, 1, &a_amp, local_gen_method, &a_parameters);
+      status = fourier_phase(&afreq, 1, &a_phasep, &a_phasec, local_gen_method,
+                             &a_parameters);
+      a_response = a_amp * exp(std::complex<adouble>(0, a_phasep));
+    }
+    double response[2];
+    real(a_response) >>= response[0];
+    imag(a_response) >>= response[1];
 
-		trace_off();
-		deallocate_non_param_options(&a_parameters, parameters, generation_method);
-	}
-	// Evaluate derivative tapes
-	int dep = 2;				  // Output is complex
-	int indep = vec_param_length; // First element is for frequency
-	bool eval = false;			  // Keep track of when a boundary is hit
-	double **jacob = allocate_2D_array(dep, indep);
-	for (int k = 0; k < length; k++)
-	{
-		vec_parameters[0] = frequency[k];
-		for (int n = 0; n < boundary_num; n++)
-		{
-			if (vec_parameters[0] < freq_boundaries[n])
-			{
-				if (detector == "LISA")
-				{
-					vec_parameters[vec_param_length - 1] = eval_times[k];
-				}
-				jacobian(tapes[n], dep, indep, vec_parameters, jacob);
-				for (int i = 0; i < dimension; i++)
-				{
-					waveform_deriv[i][k] =
-						jacob[0][i + 1] + std::complex<double>(0, 1) * jacob[1][i + 1];
-					// correct for time deriv for LISA
-					if (detector == "LISA")
-					{
-						// if(false){
-						// std::complex<double> temp=waveform_deriv[i][k];
-						waveform_deriv[i][k] +=
-							(jacob[0][vec_param_length - 1] +
-							 std::complex<double>(0, 1) *
-								 jacob[1][vec_param_length - 1]) // Time derivative of WF
-							* dt[i + 1][k];						 // Derivative of time wrt source parameter
-					}
-				}
-				// Mark successful derivative
-				eval = true;
-				// Skip the rest of the bins
-				break;
-			}
-		}
-		// If freq didn't fall in any boundary, set to 0
-		if (!eval)
-		{
-			for (int i = 0; i < dimension; i++)
-			{
-				waveform_deriv[i][k] = std::complex<double>(0, 0);
-			}
-		}
-		eval = false;
-	}
-	// Account for Log parameters
-	for (int j = 0; j < dimension; j++)
-	{
-		if (log_factors[j])
-		{
-			for (int i = 0; i < length; i++)
-			{
-				// j+1 for vec_parameter because of freq in position 0
-				waveform_deriv[j][i] *= (vec_parameters[j + 1]);
-			}
-		}
-	}
-	deallocate_2D_array(jacob, dep, indep);
-	if (freq_boundaries)
-	{
-		delete[] freq_boundaries;
-	}
-	if (grad_freqs)
-	{
-		delete[] grad_freqs;
-	}
-	if (grad_times)
-	{
-		delete[] grad_times;
-	}
-	if (dt)
-	{
-		deallocate_2D_array(dt, dimension + 1, length);
-	}
-	if (eval_times)
-	{
-		delete[] eval_times;
-	}
+    trace_off();
+    deallocate_non_param_options(&a_parameters, parameters, generation_method);
+  }
+  // Evaluate derivative tapes
+  int dep = 2;                  // Output is complex
+  int indep = vec_param_length; // First element is for frequency
+  bool eval = false;            // Keep track of when a boundary is hit
+  double **jacob = allocate_2D_array(dep, indep);
+  for (int k = 0; k < length; k++) {
+    vec_parameters[0] = frequency[k];
+    for (int n = 0; n < boundary_num; n++) {
+      if (vec_parameters[0] < freq_boundaries[n]) {
+        if (detector == "LISA") {
+          vec_parameters[vec_param_length - 1] = eval_times[k];
+        }
+        jacobian(tapes[n], dep, indep, vec_parameters, jacob);
+        for (int i = 0; i < dimension; i++) {
+          waveform_deriv[i][k] =
+              jacob[0][i + 1] + std::complex<double>(0, 1) * jacob[1][i + 1];
+          // correct for time deriv for LISA
+          if (detector == "LISA") {
+            // if(false){
+            // std::complex<double> temp=waveform_deriv[i][k];
+            waveform_deriv[i][k] +=
+                (jacob[0][vec_param_length - 1] +
+                 std::complex<double>(0, 1) *
+                     jacob[1][vec_param_length - 1]) // Time derivative of WF
+                * dt[i + 1][k]; // Derivative of time wrt source parameter
+          }
+        }
+        // Mark successful derivative
+        eval = true;
+        // Skip the rest of the bins
+        break;
+      }
+    }
+    // If freq didn't fall in any boundary, set to 0
+    if (!eval) {
+      for (int i = 0; i < dimension; i++) {
+        waveform_deriv[i][k] = std::complex<double>(0, 0);
+      }
+    }
+    eval = false;
+  }
+  // Account for Log parameters
+  for (int j = 0; j < dimension; j++) {
+    if (log_factors[j]) {
+      for (int i = 0; i < length; i++) {
+        // j+1 for vec_parameter because of freq in position 0
+        waveform_deriv[j][i] *= (vec_parameters[j + 1]);
+      }
+    }
+  }
+  deallocate_2D_array(jacob, dep, indep);
+  if (freq_boundaries) {
+    delete[] freq_boundaries;
+  }
+  if (grad_freqs) {
+    delete[] grad_freqs;
+  }
+  if (grad_times) {
+    delete[] grad_times;
+  }
+  if (dt) {
+    deallocate_2D_array(dt, dimension + 1, length);
+  }
+  if (eval_times) {
+    delete[] eval_times;
+  }
 }
 /*! \brief Computes the derivative of the phase w.r.t. source parameters AS
  * DEFINED BY FISHER FILE -- hessian of the phase
@@ -1091,136 +970,122 @@ void calculate_derivatives_autodiff(
  *
  */
 void time_phase_corrected_derivative_autodiff_numerical(
-	double **dt, int length, double *frequencies,
-	gen_params_base<double> *params, std::string generation_method,
-	int dimension, bool correct_time)
-{
-	// calculate hessian of phase, take [0][j] components to get the derivative of
-	// time
-	int vec_param_length = dimension + 1; //+1 for frequency
-	int boundary_num = boundary_number(generation_method);
-	double freq_boundaries[boundary_num];
-	double grad_freqs[boundary_num];
-	std::string local_gen_method = local_generation_method(generation_method);
-	assign_freq_boundaries(freq_boundaries, grad_freqs, boundary_num, params,
-						   generation_method);
-	double vec_parameters[vec_param_length];
-	bool log_factors[dimension];
-	unpack_parameters(&vec_parameters[1], params, generation_method, dimension,
-					  log_factors);
+    double **dt, int length, double *frequencies,
+    gen_params_base<double> *params, std::string generation_method,
+    int dimension, bool correct_time) {
+  // calculate hessian of phase, take [0][j] components to get the derivative of
+  // time
+  int vec_param_length = dimension + 1; //+1 for frequency
+  int boundary_num = boundary_number(generation_method);
+  double freq_boundaries[boundary_num];
+  double grad_freqs[boundary_num];
+  std::string local_gen_method = local_generation_method(generation_method);
+  assign_freq_boundaries(freq_boundaries, grad_freqs, boundary_num, params,
+                         generation_method);
+  double vec_parameters[vec_param_length];
+  bool log_factors[dimension];
+  unpack_parameters(&vec_parameters[1], params, generation_method, dimension,
+                    log_factors);
 
-	for (int i = 0; i < vec_param_length; i++)
-	{
-		for (int j = 0; j < length; j++)
-		{
-			dt[i][j] = 0;
-		}
-	}
-	// calculate derivative of phase
-	int tapes[boundary_num];
-	for (int i = 0; i < boundary_num; i++)
-	{
-		tapes[i] = i * 12; // Random tape id
-		trace_on(tapes[i]);
-		adouble avec_parameters[vec_param_length];
-		avec_parameters[0] <<= grad_freqs[i];
-		for (int j = 1; j <= dimension; j++)
-		{
-			avec_parameters[j] <<= vec_parameters[j];
-		}
-		// Repack parameters
-		gen_params_base<adouble> a_parameters;
-		adouble afreq;
-		afreq = avec_parameters[0];
-		// ############################################
-		// Non variable parameters
-		repack_non_parameter_options(&a_parameters, params, generation_method);
-		// ############################################
-		repack_parameters(&avec_parameters[1], &a_parameters, generation_method,
-						  dimension);
-		if (params->equatorial_orientation)
-		{
-			transform_orientation_coords(&a_parameters, generation_method, "");
-		}
-		adouble time;
-		adouble phasep, phasec;
-		int status = fourier_phase(&afreq, 1, &phasep, &phasec, local_gen_method,
-								   &a_parameters);
-		double phase;
-		phasep >>= phase;
+  for (int i = 0; i < vec_param_length; i++) {
+    for (int j = 0; j < length; j++) {
+      dt[i][j] = 0;
+    }
+  }
+  // calculate derivative of phase
+  int tapes[boundary_num];
+  for (int i = 0; i < boundary_num; i++) {
+    tapes[i] = i * 12; // Random tape id
+    trace_on(tapes[i]);
+    adouble avec_parameters[vec_param_length];
+    avec_parameters[0] <<= grad_freqs[i];
+    for (int j = 1; j <= dimension; j++) {
+      avec_parameters[j] <<= vec_parameters[j];
+    }
+    // Repack parameters
+    gen_params_base<adouble> a_parameters;
+    adouble afreq;
+    afreq = avec_parameters[0];
+    // ############################################
+    // Non variable parameters
+    repack_non_parameter_options(&a_parameters, params, generation_method);
+    // ############################################
+    repack_parameters(&avec_parameters[1], &a_parameters, generation_method,
+                      dimension);
+    if (params->equatorial_orientation) {
+      transform_orientation_coords(&a_parameters, generation_method, "");
+    }
+    adouble time;
+    adouble phasep, phasec;
+    int status = fourier_phase(&afreq, 1, &phasep, &phasec, local_gen_method,
+                               &a_parameters);
+    double phase;
+    phasep >>= phase;
 
-		trace_off();
-		deallocate_non_param_options(&a_parameters, params, generation_method);
-	}
-	int indep = vec_param_length; // First element is for frequency
-	bool eval = false;			  // Keep track of when a boundary is hit
-	int dep = 1;
-	double **jacob = allocate_2D_array(dep, indep);
-	double **source_param_deriv = allocate_2D_array(indep, length);
-	for (int k = 0; k < length; k++)
-	{
-		vec_parameters[0] = frequencies[k];
-		for (int n = 0; n < boundary_num; n++)
-		{
-			if (vec_parameters[0] < freq_boundaries[n])
-			{
-				jacobian(tapes[n], dep, indep, vec_parameters, jacob);
-				for (int i = 0; i < vec_param_length; i++)
-				{
-					source_param_deriv[i][k] = jacob[0][i];
-				}
-				// Mark successful derivative
-				eval = true;
-				// Skip the rest of the bins
-				break;
-			}
-		}
-		// If freq didn't fall in any boundary, set to 0
-		if (!eval)
-		{
-			for (int i = 0; i < vec_param_length; i++)
-			{
-				source_param_deriv[i][k] = 0.;
-			}
-		}
-		eval = false;
-	}
-	deallocate_2D_array(jacob, dep, indep);
-	double deltaf = frequencies[1] - frequencies[0];
-	for (int k = 0; k < vec_param_length; k++)
-	{
-		// forward deriv
-		dt[k][0] = (source_param_deriv[k][1] - source_param_deriv[k][0]) /
-				   (2 * M_PI * deltaf);
-		// central difference 2nd
-		dt[k][1] = (source_param_deriv[k][2] - source_param_deriv[k][0]) /
-				   (4 * M_PI * deltaf);
-		// Central difference 4th order
-		for (int i = 2; i < length - 2; i++)
-		{
-			// dt[k][i]=(source_param_deriv[k][i+1] -
-			// source_param_deriv[k][i-1])/(4*M_PI*deltaf);
-			dt[k][i] =
-				(-source_param_deriv[k][i + 2] + 8. * source_param_deriv[k][i + 1] -
-				 8. * source_param_deriv[k][i - 1] + source_param_deriv[k][i - 2]) /
-				(24. * M_PI * deltaf);
-		}
-		// central difference 2nd
-		dt[k][length - 2] = (source_param_deriv[k][length - 1] -
-							 source_param_deriv[k][length - 3]) /
-							(4. * M_PI * deltaf);
-		// backwards deriv
-		dt[k][length - 1] = (source_param_deriv[k][length - 1] -
-							 source_param_deriv[k][length - 2]) /
-							(2. * M_PI * deltaf);
-	}
-	// divide by 2 PI
-	// for(int j = 0 ; j < vec_param_length; j++){
-	//	for(int i = 0 ; i<length; i++){
-	//		dt[j][i]/=(2.*M_PI);
-	//	}
-	// }
-	deallocate_2D_array(source_param_deriv, indep, length);
+    trace_off();
+    deallocate_non_param_options(&a_parameters, params, generation_method);
+  }
+  int indep = vec_param_length; // First element is for frequency
+  bool eval = false;            // Keep track of when a boundary is hit
+  int dep = 1;
+  double **jacob = allocate_2D_array(dep, indep);
+  double **source_param_deriv = allocate_2D_array(indep, length);
+  for (int k = 0; k < length; k++) {
+    vec_parameters[0] = frequencies[k];
+    for (int n = 0; n < boundary_num; n++) {
+      if (vec_parameters[0] < freq_boundaries[n]) {
+        jacobian(tapes[n], dep, indep, vec_parameters, jacob);
+        for (int i = 0; i < vec_param_length; i++) {
+          source_param_deriv[i][k] = jacob[0][i];
+        }
+        // Mark successful derivative
+        eval = true;
+        // Skip the rest of the bins
+        break;
+      }
+    }
+    // If freq didn't fall in any boundary, set to 0
+    if (!eval) {
+      for (int i = 0; i < vec_param_length; i++) {
+        source_param_deriv[i][k] = 0.;
+      }
+    }
+    eval = false;
+  }
+  deallocate_2D_array(jacob, dep, indep);
+  double deltaf = frequencies[1] - frequencies[0];
+  for (int k = 0; k < vec_param_length; k++) {
+    // forward deriv
+    dt[k][0] = (source_param_deriv[k][1] - source_param_deriv[k][0]) /
+               (2 * M_PI * deltaf);
+    // central difference 2nd
+    dt[k][1] = (source_param_deriv[k][2] - source_param_deriv[k][0]) /
+               (4 * M_PI * deltaf);
+    // Central difference 4th order
+    for (int i = 2; i < length - 2; i++) {
+      // dt[k][i]=(source_param_deriv[k][i+1] -
+      // source_param_deriv[k][i-1])/(4*M_PI*deltaf);
+      dt[k][i] =
+          (-source_param_deriv[k][i + 2] + 8. * source_param_deriv[k][i + 1] -
+           8. * source_param_deriv[k][i - 1] + source_param_deriv[k][i - 2]) /
+          (24. * M_PI * deltaf);
+    }
+    // central difference 2nd
+    dt[k][length - 2] = (source_param_deriv[k][length - 1] -
+                         source_param_deriv[k][length - 3]) /
+                        (4. * M_PI * deltaf);
+    // backwards deriv
+    dt[k][length - 1] = (source_param_deriv[k][length - 1] -
+                         source_param_deriv[k][length - 2]) /
+                        (2. * M_PI * deltaf);
+  }
+  // divide by 2 PI
+  // for(int j = 0 ; j < vec_param_length; j++){
+  //	for(int i = 0 ; i<length; i++){
+  //		dt[j][i]/=(2.*M_PI);
+  //	}
+  // }
+  deallocate_2D_array(source_param_deriv, indep, length);
 }
 
 /*! \brief Computes the derivative of the phase w.r.t. source parameters AS
@@ -1234,102 +1099,90 @@ void time_phase_corrected_derivative_autodiff_numerical(
  *
  */
 void time_phase_corrected_derivative_autodiff_full_hess(
-	double **dt, int length, double *frequencies,
-	gen_params_base<double> *params, std::string generation_method,
-	int dimension, bool correct_time)
-{
-	// calculate hessian of phase, take [0][j] components to get the derivative of
-	// time
-	int vec_param_length = dimension + 1; //+1 for frequency
-	int boundary_num = boundary_number(generation_method);
-	double freq_boundaries[boundary_num];
-	double grad_freqs[boundary_num];
-	std::string local_gen_method = local_generation_method(generation_method);
-	assign_freq_boundaries(freq_boundaries, grad_freqs, boundary_num, params,
-						   generation_method);
-	double vec_parameters[vec_param_length];
-	bool log_factors[dimension];
-	unpack_parameters(&vec_parameters[1], params, generation_method, dimension,
-					  log_factors);
+    double **dt, int length, double *frequencies,
+    gen_params_base<double> *params, std::string generation_method,
+    int dimension, bool correct_time) {
+  // calculate hessian of phase, take [0][j] components to get the derivative of
+  // time
+  int vec_param_length = dimension + 1; //+1 for frequency
+  int boundary_num = boundary_number(generation_method);
+  double freq_boundaries[boundary_num];
+  double grad_freqs[boundary_num];
+  std::string local_gen_method = local_generation_method(generation_method);
+  assign_freq_boundaries(freq_boundaries, grad_freqs, boundary_num, params,
+                         generation_method);
+  double vec_parameters[vec_param_length];
+  bool log_factors[dimension];
+  unpack_parameters(&vec_parameters[1], params, generation_method, dimension,
+                    log_factors);
 
-	// calculate derivative of phase
-	int tapes[boundary_num];
-	for (int i = 0; i < boundary_num; i++)
-	{
-		tapes[i] = i * 12; // Random tape id
-		trace_on(tapes[i]);
-		adouble avec_parameters[vec_param_length];
-		avec_parameters[0] <<= grad_freqs[i];
-		for (int j = 1; j <= dimension; j++)
-		{
-			avec_parameters[j] <<= vec_parameters[j];
-		}
-		// Repack parameters
-		gen_params_base<adouble> a_parameters;
-		adouble afreq;
-		afreq = avec_parameters[0];
-		// ############################################
-		// Non variable parameters
-		repack_non_parameter_options(&a_parameters, params, generation_method);
-		// ############################################
-		repack_parameters(&avec_parameters[1], &a_parameters, generation_method,
-						  dimension);
-		if (params->equatorial_orientation)
-		{
-			transform_orientation_coords(&a_parameters, generation_method, "");
-		}
-		adouble time;
-		adouble phasep, phasec;
-		int status = fourier_phase(&afreq, 1, &phasep, &phasec, local_gen_method,
-								   &a_parameters);
-		double phase;
-		phasep >>= phase;
+  // calculate derivative of phase
+  int tapes[boundary_num];
+  for (int i = 0; i < boundary_num; i++) {
+    tapes[i] = i * 12; // Random tape id
+    trace_on(tapes[i]);
+    adouble avec_parameters[vec_param_length];
+    avec_parameters[0] <<= grad_freqs[i];
+    for (int j = 1; j <= dimension; j++) {
+      avec_parameters[j] <<= vec_parameters[j];
+    }
+    // Repack parameters
+    gen_params_base<adouble> a_parameters;
+    adouble afreq;
+    afreq = avec_parameters[0];
+    // ############################################
+    // Non variable parameters
+    repack_non_parameter_options(&a_parameters, params, generation_method);
+    // ############################################
+    repack_parameters(&avec_parameters[1], &a_parameters, generation_method,
+                      dimension);
+    if (params->equatorial_orientation) {
+      transform_orientation_coords(&a_parameters, generation_method, "");
+    }
+    adouble time;
+    adouble phasep, phasec;
+    int status = fourier_phase(&afreq, 1, &phasep, &phasec, local_gen_method,
+                               &a_parameters);
+    double phase;
+    phasep >>= phase;
 
-		trace_off();
-		deallocate_non_param_options(&a_parameters, params, generation_method);
-	}
-	int indep = vec_param_length; // First element is for frequency
-	bool eval = false;			  // Keep track of when a boundary is hit
-	double **hess = allocate_2D_array(indep, indep);
-	for (int k = 0; k < length; k++)
-	{
-		vec_parameters[0] = frequencies[k];
-		for (int n = 0; n < boundary_num; n++)
-		{
-			if (vec_parameters[0] < freq_boundaries[n])
-			{
-				hessian(tapes[n], indep, vec_parameters, hess);
-				for (int i = 0; i < vec_param_length; i++)
-				{
-					dt[i][k] = hess[i][0];
-					// std::cout<<hess[i][0]<<" ";
-				}
-				// std::cout<<std::endl;
-				// Mark successful derivative
-				eval = true;
-				// Skip the rest of the bins
-				break;
-			}
-		}
-		// If freq didn't fall in any boundary, set to 0
-		if (!eval)
-		{
-			for (int i = 0; i < vec_param_length; i++)
-			{
-				dt[i][k] = 0.;
-			}
-		}
-		eval = false;
-	}
-	deallocate_2D_array(hess, indep, indep);
-	// divide by 2 PI
-	for (int j = 0; j < vec_param_length; j++)
-	{
-		for (int i = 0; i < length; i++)
-		{
-			dt[j][i] /= (2. * M_PI);
-		}
-	}
+    trace_off();
+    deallocate_non_param_options(&a_parameters, params, generation_method);
+  }
+  int indep = vec_param_length; // First element is for frequency
+  bool eval = false;            // Keep track of when a boundary is hit
+  double **hess = allocate_2D_array(indep, indep);
+  for (int k = 0; k < length; k++) {
+    vec_parameters[0] = frequencies[k];
+    for (int n = 0; n < boundary_num; n++) {
+      if (vec_parameters[0] < freq_boundaries[n]) {
+        hessian(tapes[n], indep, vec_parameters, hess);
+        for (int i = 0; i < vec_param_length; i++) {
+          dt[i][k] = hess[i][0];
+          // std::cout<<hess[i][0]<<" ";
+        }
+        // std::cout<<std::endl;
+        // Mark successful derivative
+        eval = true;
+        // Skip the rest of the bins
+        break;
+      }
+    }
+    // If freq didn't fall in any boundary, set to 0
+    if (!eval) {
+      for (int i = 0; i < vec_param_length; i++) {
+        dt[i][k] = 0.;
+      }
+    }
+    eval = false;
+  }
+  deallocate_2D_array(hess, indep, indep);
+  // divide by 2 PI
+  for (int j = 0; j < vec_param_length; j++) {
+    for (int i = 0; i < length; i++) {
+      dt[j][i] /= (2. * M_PI);
+    }
+  }
 }
 /*! \brief Utility for mapping generation method string to one accepted by the
  * waveform_generation routines
@@ -1337,20 +1190,16 @@ void time_phase_corrected_derivative_autodiff_full_hess(
  * Certain combinations of parameters are labeled by generation method strings
  * not under the waveform_generation routines, so a transformation is needed
  */
-std::string local_generation_method(std::string generation_method)
-{
-	std::string local_gen_method = generation_method;
-	if (has_substring(generation_method, "MCMC") &&
-		has_substring(generation_method, "Full"))
-	{
-		local_gen_method.erase(0, 5);
-		local_gen_method.erase(local_gen_method.length() - 5, 5);
-	}
-	else if (has_substring(generation_method, "MCMC"))
-	{
-		local_gen_method.erase(0, 5);
-	}
-	return local_gen_method;
+std::string local_generation_method(std::string generation_method) {
+  std::string local_gen_method = generation_method;
+  if (has_substring(generation_method, "MCMC") &&
+      has_substring(generation_method, "Full")) {
+    local_gen_method.erase(0, 5);
+    local_gen_method.erase(local_gen_method.length() - 5, 5);
+  } else if (has_substring(generation_method, "MCMC")) {
+    local_gen_method.erase(0, 5);
+  }
+  return local_gen_method;
 }
 /*! \brief Adjust parameters for detector specific configurations (namely, LISA
  * introduces extra transitions that needs to be accounted for)
@@ -1360,489 +1209,395 @@ std::string local_generation_method(std::string generation_method)
  * specific parameters are taken care of here.
  */
 void detect_adjust_parameters(double *freq_boundaries, double *grad_freqs,
-							  int *boundary_num,
-							  gen_params_base<double> *input_params,
-							  std::string generation_method,
-							  std::string detector, int dim)
-{
-	if (detector == "LISA")
-	{
-		if (has_substring(generation_method, "IMRPhenom"))
-		{
-			gen_params_base<adouble> internal_params;
-			transform_parameters(input_params, &internal_params);
-			source_parameters<adouble> s_param;
-			// s_param =
-			// source_parameters<adouble>::populate_source_parameters(&internal_params);
-			s_param.populate_source_parameters(&internal_params);
-			s_param.sky_average = internal_params.sky_average;
-			s_param.f_ref = internal_params.f_ref;
-			s_param.phiRef = internal_params.phiRef;
-			s_param.shift_time = false;
-			s_param.cosmology = internal_params.cosmology;
-			s_param.incl_angle = internal_params.incl_angle;
-			lambda_parameters<adouble> lambda;
-			double M, fRD, fpeak;
-			if (has_substring(generation_method, "IMRPhenomPv2"))
-			{
-				IMRPhenomPv2<adouble> modelp;
-				s_param.spin1z = internal_params.spin1[2];
-				s_param.spin2z = internal_params.spin2[2];
-				s_param.chip = internal_params.chip;
-				s_param.phip = internal_params.phip;
-				modelp.PhenomPv2_Param_Transform_reduced(&s_param);
-				modelp.assign_lambda_param(&s_param, &lambda);
-				modelp.post_merger_variables(&s_param);
-				M = s_param.M.value();
-				fRD = s_param.fRD.value();
-				fpeak = modelp.fpeak(&s_param, &lambda).value();
-			}
-			else if (has_substring(generation_method, "IMRPhenomPv3"))
-			{
-				IMRPhenomPv3<adouble> modelp;
+                              int *boundary_num,
+                              gen_params_base<double> *input_params,
+                              std::string generation_method,
+                              std::string detector, int dim) {
+  if (detector == "LISA") {
+    if (has_substring(generation_method, "IMRPhenom")) {
+      gen_params_base<adouble> internal_params;
+      transform_parameters(input_params, &internal_params);
+      source_parameters<adouble> s_param;
+      // s_param =
+      // source_parameters<adouble>::populate_source_parameters(&internal_params);
+      s_param.populate_source_parameters(&internal_params);
+      s_param.sky_average = internal_params.sky_average;
+      s_param.f_ref = internal_params.f_ref;
+      s_param.phiRef = internal_params.phiRef;
+      s_param.shift_time = false;
+      s_param.cosmology = internal_params.cosmology;
+      s_param.incl_angle = internal_params.incl_angle;
+      lambda_parameters<adouble> lambda;
+      double M, fRD, fpeak;
+      if (has_substring(generation_method, "IMRPhenomPv2")) {
+        IMRPhenomPv2<adouble> modelp;
+        s_param.spin1z = internal_params.spin1[2];
+        s_param.spin2z = internal_params.spin2[2];
+        s_param.chip = internal_params.chip;
+        s_param.phip = internal_params.phip;
+        modelp.PhenomPv2_Param_Transform_reduced(&s_param);
+        modelp.assign_lambda_param(&s_param, &lambda);
+        modelp.post_merger_variables(&s_param);
+        M = s_param.M.value();
+        fRD = s_param.fRD.value();
+        fpeak = modelp.fpeak(&s_param, &lambda).value();
+      } else if (has_substring(generation_method, "IMRPhenomPv3")) {
+        IMRPhenomPv3<adouble> modelp;
 
-				if (internal_params.mass1 < internal_params.mass2)
-				{
-					PhenomPrecessingSpinEnforcePrimary(
-						&(internal_params.mass1), &(internal_params.mass2),
-						&(internal_params.spin1[0]), &(internal_params.spin1[1]),
-						&(internal_params.spin1[2]), &(internal_params.spin2[0]),
-						&(internal_params.spin2[1]), &(internal_params.spin2[2]));
-				}
+        if (internal_params.mass1 < internal_params.mass2) {
+          PhenomPrecessingSpinEnforcePrimary(
+              &(internal_params.mass1), &(internal_params.mass2),
+              &(internal_params.spin1[0]), &(internal_params.spin1[1]),
+              &(internal_params.spin1[2]), &(internal_params.spin2[0]),
+              &(internal_params.spin2[1]), &(internal_params.spin2[2]));
+        }
 
-				s_param.populate_source_parameters(&internal_params);
-				s_param.spin1z = internal_params.spin1[2];
-				s_param.spin2z = internal_params.spin2[2];
-				s_param.chip = internal_params.chip;
-				s_param.phip = internal_params.phip;
-				PhenomPv3_Param_Transform(&s_param, &internal_params);
+        s_param.populate_source_parameters(&internal_params);
+        s_param.spin1z = internal_params.spin1[2];
+        s_param.spin2z = internal_params.spin2[2];
+        s_param.chip = internal_params.chip;
+        s_param.phip = internal_params.phip;
+        PhenomPv3_Param_Transform(&s_param, &internal_params);
 
-				modelp.assign_lambda_param(&s_param, &lambda);
-				modelp.post_merger_variables(&s_param);
-				M = s_param.M.value();
-				fRD = s_param.fRD.value();
-				fpeak = modelp.fpeak(&s_param, &lambda).value();
-			}
-			else if (has_substring(generation_method, "IMRPhenomD"))
-			{
-				IMRPhenomD<adouble> modeld;
-				modeld.assign_lambda_param(&s_param, &lambda);
-				modeld.post_merger_variables(&s_param);
-				M = s_param.M.value();
-				fRD = s_param.fRD.value();
-				fpeak = modeld.fpeak(&s_param, &lambda).value();
-			}
-		}
-	}
+        modelp.assign_lambda_param(&s_param, &lambda);
+        modelp.post_merger_variables(&s_param);
+        M = s_param.M.value();
+        fRD = s_param.fRD.value();
+        fpeak = modelp.fpeak(&s_param, &lambda).value();
+      } else if (has_substring(generation_method, "IMRPhenomD")) {
+        IMRPhenomD<adouble> modeld;
+        modeld.assign_lambda_param(&s_param, &lambda);
+        modeld.post_merger_variables(&s_param);
+        M = s_param.M.value();
+        fRD = s_param.fRD.value();
+        fpeak = modeld.fpeak(&s_param, &lambda).value();
+      }
+    }
+  }
 }
 /*! \brief Unpacks the input gen_params object into a double array for use with
  * the fisher routines
  */
 void unpack_parameters(double *parameters,
-					   gen_params_base<double> *input_params,
-					   std::string generation_method, int dimension,
-					   bool *log_factors)
-{
-	if (!input_params->sky_average)
-	{
-		if (has_substring(generation_method, "IMRPhenomPv2") ||
-			has_substring(generation_method, "IMRPhenomPv3"))
-		{
-			if (has_substring(generation_method, "MCMC"))
-			{
-				for (int i = 0; i < dimension; i++)
-				{
-					log_factors[i] = false;
-				}
-				parameters[0] = input_params->RA;
-				parameters[1] = sin(input_params->DEC);
-				if (input_params->equatorial_orientation)
-				{
-					parameters[2] = input_params->theta_l;
-					parameters[3] = input_params->phi_l;
-				}
-				else
-				{
-					parameters[2] = input_params->psi;
-					parameters[3] = cos(input_params->incl_angle);
-				}
-				parameters[4] = input_params->phiRef;
-				parameters[5] = input_params->tc;
-				parameters[6] = log(input_params->Luminosity_Distance);
-				parameters[7] =
-					log(calculate_chirpmass(input_params->mass1, input_params->mass2));
-				parameters[8] = calculate_eta(input_params->mass1, input_params->mass2);
-				double spin1sph[3];
-				double spin2sph[3];
-				transform_cart_sph(input_params->spin1, spin1sph);
-				transform_cart_sph(input_params->spin2, spin2sph);
-				parameters[9] = spin1sph[0];
-				parameters[10] = spin2sph[0];
-				parameters[11] = cos(spin1sph[1]);
-				parameters[12] = cos(spin2sph[1]);
-				parameters[13] = spin1sph[2];
-				parameters[14] = spin2sph[2];
-			}
-			else
-			{
-				for (int i = 0; i < dimension; i++)
-				{
-					log_factors[i] = false;
-				}
-				log_factors[6] = true; // Distance
-				log_factors[7] = true; // chirpmass
+                       gen_params_base<double> *input_params,
+                       std::string generation_method, int dimension,
+                       bool *log_factors) {
+  if (!input_params->sky_average) {
+    if (has_substring(generation_method, "IMRPhenomPv2") ||
+        has_substring(generation_method, "IMRPhenomPv3")) {
+      if (has_substring(generation_method, "MCMC")) {
+        for (int i = 0; i < dimension; i++) {
+          log_factors[i] = false;
+        }
+        parameters[0] = input_params->RA;
+        parameters[1] = sin(input_params->DEC);
+        if (input_params->equatorial_orientation) {
+          parameters[2] = input_params->theta_l;
+          parameters[3] = input_params->phi_l;
+        } else {
+          parameters[2] = input_params->psi;
+          parameters[3] = cos(input_params->incl_angle);
+        }
+        parameters[4] = input_params->phiRef;
+        parameters[5] = input_params->tc;
+        parameters[6] = log(input_params->Luminosity_Distance);
+        parameters[7] =
+            log(calculate_chirpmass(input_params->mass1, input_params->mass2));
+        parameters[8] = calculate_eta(input_params->mass1, input_params->mass2);
+        double spin1sph[3];
+        double spin2sph[3];
+        transform_cart_sph(input_params->spin1, spin1sph);
+        transform_cart_sph(input_params->spin2, spin2sph);
+        parameters[9] = spin1sph[0];
+        parameters[10] = spin2sph[0];
+        parameters[11] = cos(spin1sph[1]);
+        parameters[12] = cos(spin2sph[1]);
+        parameters[13] = spin1sph[2];
+        parameters[14] = spin2sph[2];
+      } else {
+        for (int i = 0; i < dimension; i++) {
+          log_factors[i] = false;
+        }
+        log_factors[6] = true; // Distance
+        log_factors[7] = true; // chirpmass
 
-				parameters[0] = input_params->RA;
-				parameters[1] = input_params->DEC;
-				if (input_params->equatorial_orientation)
-				{
-					parameters[2] = input_params->theta_l;
-					parameters[3] = input_params->phi_l;
-				}
-				else
-				{
-					parameters[2] = input_params->psi;
-					parameters[3] = input_params->incl_angle;
-				}
-				parameters[4] = input_params->phiRef;
-				parameters[5] = input_params->tc;
-				parameters[6] = input_params->Luminosity_Distance;
-				parameters[7] =
-					calculate_chirpmass(input_params->mass1, input_params->mass2);
-				parameters[8] = calculate_eta(input_params->mass1, input_params->mass2);
-				parameters[9] = input_params->spin1[2];
-				parameters[10] = input_params->spin2[2];
-				parameters[11] = input_params->chip;
-				parameters[12] = input_params->phip;
-			}
-		}
-		else if (has_substring(generation_method, "IMRPhenomD"))
-		{
-			if ((has_substring(generation_method, "MCMC")) &&
-				!(has_substring(generation_method, "EOS")))
-			{
-				for (int i = 0; i < dimension; i++)
-				{
-					log_factors[i] = false;
-				}
-				parameters[0] = input_params->RA;
-				parameters[1] = sin(input_params->DEC);
+        parameters[0] = input_params->RA;
+        parameters[1] = input_params->DEC;
+        if (input_params->equatorial_orientation) {
+          parameters[2] = input_params->theta_l;
+          parameters[3] = input_params->phi_l;
+        } else {
+          parameters[2] = input_params->psi;
+          parameters[3] = input_params->incl_angle;
+        }
+        parameters[4] = input_params->phiRef;
+        parameters[5] = input_params->tc;
+        parameters[6] = input_params->Luminosity_Distance;
+        parameters[7] =
+            calculate_chirpmass(input_params->mass1, input_params->mass2);
+        parameters[8] = calculate_eta(input_params->mass1, input_params->mass2);
+        parameters[9] = input_params->spin1[2];
+        parameters[10] = input_params->spin2[2];
+        parameters[11] = input_params->chip;
+        parameters[12] = input_params->phip;
+      }
+    } else if (has_substring(generation_method, "IMRPhenomD")) {
+      if ((has_substring(generation_method, "MCMC")) &&
+          !(has_substring(generation_method, "EOS"))) {
+        for (int i = 0; i < dimension; i++) {
+          log_factors[i] = false;
+        }
+        parameters[0] = input_params->RA;
+        parameters[1] = sin(input_params->DEC);
 
-				if (input_params->equatorial_orientation)
-				{
-					parameters[2] = input_params->theta_l;
-					parameters[3] = input_params->phi_l;
-				}
-				else
-				{
-					parameters[2] = input_params->psi;
-					parameters[3] = cos(input_params->incl_angle);
-				}
-				parameters[4] = input_params->phiRef;
-				parameters[5] = input_params->tc;
-				parameters[6] = log(input_params->Luminosity_Distance);
-				parameters[7] =
-					log(calculate_chirpmass(input_params->mass1, input_params->mass2));
-				parameters[8] = calculate_eta(input_params->mass1, input_params->mass2);
-				parameters[9] = input_params->spin1[2];
-				parameters[10] = input_params->spin2[2];
-			}
-			else if (has_substring(generation_method, "EOS"))
-			{
-				for (int i = 0; i < dimension; i++)
-				{
-					log_factors[i] = false;
-				}
+        if (input_params->equatorial_orientation) {
+          parameters[2] = input_params->theta_l;
+          parameters[3] = input_params->phi_l;
+        } else {
+          parameters[2] = input_params->psi;
+          parameters[3] = cos(input_params->incl_angle);
+        }
+        parameters[4] = input_params->phiRef;
+        parameters[5] = input_params->tc;
+        parameters[6] = log(input_params->Luminosity_Distance);
+        parameters[7] =
+            log(calculate_chirpmass(input_params->mass1, input_params->mass2));
+        parameters[8] = calculate_eta(input_params->mass1, input_params->mass2);
+        parameters[9] = input_params->spin1[2];
+        parameters[10] = input_params->spin2[2];
+      } else if (has_substring(generation_method, "EOS")) {
+        for (int i = 0; i < dimension; i++) {
+          log_factors[i] = false;
+        }
 
-				parameters[0] = input_params->RA;
-				parameters[1] = input_params->DEC;
-				if (input_params->equatorial_orientation)
-				{
-					parameters[2] = input_params->theta_l;
-					parameters[3] = input_params->phi_l;
-				}
-				else
-				{
-					parameters[2] = input_params->psi;
-					parameters[3] = input_params->incl_angle;
-				}
-				parameters[4] = input_params->phiRef;
-				parameters[5] = input_params->tc;
-				parameters[6] = input_params->Luminosity_Distance;
-				parameters[7] = input_params->nbc1;
-				parameters[8] = input_params->nbc2;
-				parameters[9] = input_params->spin1[2];
-				parameters[10] = input_params->spin2[2];
-				parameters[11] = input_params->bump_mag;
-				parameters[12] = input_params->bump_width;
-				parameters[13] = input_params->bump_offset;
-				if (input_params->EOS_plat_flag)
-				{
-					parameters[14] = input_params->plat;
-				}
-			}
-			else
-			{
-				for (int i = 0; i < dimension; i++)
-				{
-					log_factors[i] = false;
-				}
-				log_factors[6] = true; // Distance
-				log_factors[7] = true; // chirpmass
+        parameters[0] = input_params->RA;
+        parameters[1] = input_params->DEC;
+        if (input_params->equatorial_orientation) {
+          parameters[2] = input_params->theta_l;
+          parameters[3] = input_params->phi_l;
+        } else {
+          parameters[2] = input_params->psi;
+          parameters[3] = input_params->incl_angle;
+        }
+        parameters[4] = input_params->phiRef;
+        parameters[5] = input_params->tc;
+        parameters[6] = input_params->Luminosity_Distance;
+        parameters[7] = input_params->nbc1;
+        parameters[8] = input_params->nbc2;
+        parameters[9] = input_params->spin1[2];
+        parameters[10] = input_params->spin2[2];
+        parameters[11] = input_params->bump_mag;
+        parameters[12] = input_params->bump_width;
+        parameters[13] = input_params->bump_offset;
+        if (input_params->EOS_plat_flag) {
+          parameters[14] = input_params->plat;
+        }
+      } else {
+        for (int i = 0; i < dimension; i++) {
+          log_factors[i] = false;
+        }
+        log_factors[6] = true; // Distance
+        log_factors[7] = true; // chirpmass
 
-				parameters[0] = input_params->RA;
-				parameters[1] = input_params->DEC;
-				if (input_params->equatorial_orientation)
-				{
-					parameters[2] = input_params->theta_l;
-					parameters[3] = input_params->phi_l;
-				}
-				else
-				{
-					parameters[2] = input_params->psi;
-					parameters[3] = input_params->incl_angle;
-				}
-				parameters[4] = input_params->phiRef;
-				parameters[5] = input_params->tc;
-				parameters[6] = input_params->Luminosity_Distance;
-				parameters[7] =
-					calculate_chirpmass(input_params->mass1, input_params->mass2);
-				parameters[8] = calculate_eta(input_params->mass1, input_params->mass2);
-				parameters[9] = input_params->spin1[2];
-				parameters[10] = input_params->spin2[2];
-			}
-		}
-	}
-	else
-	{
-		if (has_substring(generation_method, "IMRPhenomPv2") ||
-			has_substring(generation_method, "IMRPhenomPv3"))
-		{
-			// Need to populate
-			if (has_substring(generation_method, "MCMC"))
-			{
-				for (int i = 0; i < dimension; i++)
-				{
-					log_factors[i] = false;
-				}
-				parameters[0] =
-					log(calculate_chirpmass(input_params->mass1, input_params->mass2));
-				parameters[1] = calculate_eta(input_params->mass1, input_params->mass2);
-				// parameters[1]=input_params->mass2/input_params->mass1;
-				double spin1sph[3];
-				double spin2sph[3];
-				transform_cart_sph(input_params->spin1, spin1sph);
-				transform_cart_sph(input_params->spin2, spin2sph);
-				parameters[2] = spin1sph[0];
-				parameters[3] = spin2sph[0];
-				parameters[4] = cos(spin1sph[1]);
-				parameters[5] = cos(spin2sph[1]);
-				// parameters[6]=spin1sph[2]-spin2sph[2];
-				parameters[6] = spin1sph[2];
-				parameters[7] = spin2sph[2];
-			}
-			else
-			{
-				std::cout
-					<< "Sky averaged IMRPhenomP is not supported for regular fishers."
-					<< std::endl;
-			}
-		}
-		else if (has_substring(generation_method, "IMRPhenomD"))
-		{
-			if (has_substring(generation_method, "MCMC"))
-			{
-				for (int i = 0; i < dimension; i++)
-				{
-					log_factors[i] = false;
-				}
-				// log_factors[0] = true;//chirpmass
+        parameters[0] = input_params->RA;
+        parameters[1] = input_params->DEC;
+        if (input_params->equatorial_orientation) {
+          parameters[2] = input_params->theta_l;
+          parameters[3] = input_params->phi_l;
+        } else {
+          parameters[2] = input_params->psi;
+          parameters[3] = input_params->incl_angle;
+        }
+        parameters[4] = input_params->phiRef;
+        parameters[5] = input_params->tc;
+        parameters[6] = input_params->Luminosity_Distance;
+        parameters[7] =
+            calculate_chirpmass(input_params->mass1, input_params->mass2);
+        parameters[8] = calculate_eta(input_params->mass1, input_params->mass2);
+        parameters[9] = input_params->spin1[2];
+        parameters[10] = input_params->spin2[2];
+      }
+    }
+  } else {
+    if (has_substring(generation_method, "IMRPhenomPv2") ||
+        has_substring(generation_method, "IMRPhenomPv3")) {
+      // Need to populate
+      if (has_substring(generation_method, "MCMC")) {
+        for (int i = 0; i < dimension; i++) {
+          log_factors[i] = false;
+        }
+        parameters[0] =
+            log(calculate_chirpmass(input_params->mass1, input_params->mass2));
+        parameters[1] = calculate_eta(input_params->mass1, input_params->mass2);
+        // parameters[1]=input_params->mass2/input_params->mass1;
+        double spin1sph[3];
+        double spin2sph[3];
+        transform_cart_sph(input_params->spin1, spin1sph);
+        transform_cart_sph(input_params->spin2, spin2sph);
+        parameters[2] = spin1sph[0];
+        parameters[3] = spin2sph[0];
+        parameters[4] = cos(spin1sph[1]);
+        parameters[5] = cos(spin2sph[1]);
+        // parameters[6]=spin1sph[2]-spin2sph[2];
+        parameters[6] = spin1sph[2];
+        parameters[7] = spin2sph[2];
+      } else {
+        std::cout
+            << "Sky averaged IMRPhenomP is not supported for regular fishers."
+            << std::endl;
+      }
+    } else if (has_substring(generation_method, "IMRPhenomD")) {
+      if (has_substring(generation_method, "MCMC")) {
+        for (int i = 0; i < dimension; i++) {
+          log_factors[i] = false;
+        }
+        // log_factors[0] = true;//chirpmass
 
-				parameters[0] =
-					log(calculate_chirpmass(input_params->mass1, input_params->mass2));
-				parameters[1] = calculate_eta(input_params->mass1, input_params->mass2);
-				parameters[2] = input_params->spin1[2];
-				parameters[3] = input_params->spin2[2];
-			}
-			else if (has_substring(generation_method, "EOS"))
-			{
-				std::cout << "Sky averaged IMRPhenomD_NRT_EOS is not supported for "
-							 "regular fishers."
-						  << std::endl;
-			}
-			else
-			{
-				for (int i = 0; i < dimension; i++)
-				{
-					log_factors[i] = false;
-				}
-				log_factors[0] = true; // A0
-				log_factors[3] = true; // chirpmass
-				log_factors[4] = true; // eta
+        parameters[0] =
+            log(calculate_chirpmass(input_params->mass1, input_params->mass2));
+        parameters[1] = calculate_eta(input_params->mass1, input_params->mass2);
+        parameters[2] = input_params->spin1[2];
+        parameters[3] = input_params->spin2[2];
+      } else if (has_substring(generation_method, "EOS")) {
+        std::cout << "Sky averaged IMRPhenomD_NRT_EOS is not supported for "
+                     "regular fishers."
+                  << std::endl;
+      } else {
+        for (int i = 0; i < dimension; i++) {
+          log_factors[i] = false;
+        }
+        log_factors[0] = true; // A0
+        log_factors[3] = true; // chirpmass
+        log_factors[4] = true; // eta
 
-				parameters[3] =
-					calculate_chirpmass(input_params->mass1, input_params->mass2);
-				parameters[0] = A0_from_DL(parameters[3] * MSOL_SEC,
-										   input_params->Luminosity_Distance * MPC_SEC,
-										   input_params->sky_average);
-				parameters[1] = input_params->phiRef;
-				parameters[2] = input_params->tc;
-				parameters[4] = calculate_eta(input_params->mass1, input_params->mass2);
-				parameters[5] = (input_params->spin1[2] + input_params->spin2[2]) / 2.;
-				parameters[6] = (input_params->spin1[2] - input_params->spin2[2]) / 2.;
-			}
-		}
-	}
-	if (has_substring(generation_method, "NRT") &&
-		(!has_substring(generation_method, "EOS")))
-	{
-		// debugger_print(__FILE__,__LINE__,generation_method);
-		if (!input_params->sky_average)
-		{
-			if (has_substring(generation_method, "PhenomD"))
-			{
-				if ((input_params->tidal_love))
-				{
-					log_factors[11] = false;
-					if (!has_substring(generation_method, "MCMC"))
-					{
-						log_factors[11] = true; // tidal_s
-					}
-					parameters[11] = log(input_params->tidal_s);
-				}
-				else
-				{
-					log_factors[11] = false;
-					log_factors[12] = false;
-					if (!has_substring(generation_method, "MCMC"))
-					{
-						log_factors[11] = true; // tidal_1
-						log_factors[12] = true; // tidal_2
-					}
-					parameters[11] = log(input_params->tidal1);
-					parameters[12] = log(input_params->tidal2);
-				}
-			}
-		}
-		else
-		{
-			if (has_substring(generation_method, "PhenomD"))
-			{
-				if ((input_params->tidal_love))
-				{
-					log_factors[4] = false;
-					if (!has_substring(generation_method, "MCMC"))
-					{
-						log_factors[4] = true; // tidal_s
-					}
-					parameters[4] = log(input_params->tidal_s);
-				}
-				else
-				{
-					log_factors[4] = false;
-					log_factors[5] = false;
-					if (!has_substring(generation_method, "MCMC"))
-					{
-						log_factors[4] = true; // tidal_1
-						log_factors[5] = true; // tidal_2
-					}
-					parameters[4] = log(input_params->tidal1);
-					parameters[5] = log(input_params->tidal2);
-				}
-			}
-		}
-	}
-	if (check_mod(generation_method))
-	{
-		if (has_substring(generation_method, "ppE"))
-		{
-			int base = dimension - input_params->Nmod;
-			for (int i = 0; i < input_params->Nmod; i++)
-			{
-				parameters[base + i] = input_params->betappe[i];
-			}
-		}
-		else if (has_substring(generation_method, "EA"))
-		{
-			// parameters[dimension- 4 ] = input_params->ca_EA;
-			// parameters[dimension- 3 ] = input_params->ctheta_EA;
-			// parameters[dimension- 2 ] = input_params->cw_EA;
-			// parameters[dimension- 1 ] = input_params->csigma_EA;
-			if (input_params->alpha_param)
-			{
-				parameters[dimension - 3] = input_params->alpha1_EA;
-				parameters[dimension - 2] = input_params->alpha2_EA;
-				parameters[dimension - 1] = input_params->cbarw_EA;
-			}
-			else
-			{
-				if (input_params->EA_region1)
-				{ // ctheta = 3c_a(1+delta_ctheta).
-				  // Sample on ca, delta_ctheta, cw
-					parameters[dimension - 3] = input_params->ca_EA;
-					parameters[dimension - 2] = input_params->delta_ctheta_EA;
-					parameters[dimension - 1] = input_params->cw_EA;
-				}
-				else
-				{
-					parameters[dimension - 3] = input_params->ca_EA;
-					parameters[dimension - 2] = input_params->ctheta_EA;
-					parameters[dimension - 1] = input_params->cw_EA;
-				}
-			}
-		}
-		// else if( has_substring(generation_method, "dCS") ||
-		//	has_substring(generation_method, "EdGB")){
-		else if (check_theory_support(generation_method))
-		{
-			int base = dimension - input_params->Nmod;
-			for (int i = 0; i < input_params->Nmod; i++)
-			{
-				parameters[i + base] = input_params->betappe[i];
-			}
-			// For MCMC, alpha is sampled in KM (alpha**2)**.25
-			// if(has_substring(generation_method, "MCMC") &&
-			//	(has_substring(generation_method, "dCS") ||
-			//	has_substring(generation_method, "EdGB"))){
-			//	parameters[base] = pow(input_params->betappe[0],.25)/(c*1000);
-			// }
-		}
-		else if (has_substring(generation_method, "gIMR"))
-		{
-			int mods = input_params->Nmod_phi + input_params->Nmod_sigma +
-					   input_params->Nmod_beta + input_params->Nmod_alpha;
-			int base = dimension - mods;
-			int ct = 0;
-			int ct_total = 0;
-			while (ct < input_params->Nmod_phi)
-			{
-				parameters[base + ct_total] = input_params->delta_phi[ct];
-				ct++;
-				ct_total++;
-			}
-			ct = 0;
-			while (ct < input_params->Nmod_sigma)
-			{
-				parameters[base + ct_total] = input_params->delta_sigma[ct];
-				ct++;
-				ct_total++;
-			}
-			ct = 0;
-			while (ct < input_params->Nmod_beta)
-			{
-				parameters[base + ct_total] = input_params->delta_beta[ct];
-				ct++;
-				ct_total++;
-			}
-			ct = 0;
-			while (ct < input_params->Nmod_alpha)
-			{
-				parameters[base + ct_total] = input_params->delta_alpha[ct];
-				ct++;
-				ct_total++;
-			}
-		}
-	}
+        parameters[3] =
+            calculate_chirpmass(input_params->mass1, input_params->mass2);
+        parameters[0] = A0_from_DL(parameters[3] * MSOL_SEC,
+                                   input_params->Luminosity_Distance * MPC_SEC,
+                                   input_params->sky_average);
+        parameters[1] = input_params->phiRef;
+        parameters[2] = input_params->tc;
+        parameters[4] = calculate_eta(input_params->mass1, input_params->mass2);
+        parameters[5] = (input_params->spin1[2] + input_params->spin2[2]) / 2.;
+        parameters[6] = (input_params->spin1[2] - input_params->spin2[2]) / 2.;
+      }
+    }
+  }
+  if (has_substring(generation_method, "NRT") &&
+      (!has_substring(generation_method, "EOS"))) {
+    // debugger_print(__FILE__,__LINE__,generation_method);
+    if (!input_params->sky_average) {
+      if (has_substring(generation_method, "PhenomD")) {
+        if ((input_params->tidal_love)) {
+          log_factors[11] = false;
+          if (!has_substring(generation_method, "MCMC")) {
+            log_factors[11] = true; // tidal_s
+          }
+          parameters[11] = log(input_params->tidal_s);
+        } else {
+          log_factors[11] = false;
+          log_factors[12] = false;
+          if (!has_substring(generation_method, "MCMC")) {
+            log_factors[11] = true; // tidal_1
+            log_factors[12] = true; // tidal_2
+          }
+          parameters[11] = log(input_params->tidal1);
+          parameters[12] = log(input_params->tidal2);
+        }
+      }
+    } else {
+      if (has_substring(generation_method, "PhenomD")) {
+        if ((input_params->tidal_love)) {
+          log_factors[4] = false;
+          if (!has_substring(generation_method, "MCMC")) {
+            log_factors[4] = true; // tidal_s
+          }
+          parameters[4] = log(input_params->tidal_s);
+        } else {
+          log_factors[4] = false;
+          log_factors[5] = false;
+          if (!has_substring(generation_method, "MCMC")) {
+            log_factors[4] = true; // tidal_1
+            log_factors[5] = true; // tidal_2
+          }
+          parameters[4] = log(input_params->tidal1);
+          parameters[5] = log(input_params->tidal2);
+        }
+      }
+    }
+  }
+  if (check_mod(generation_method)) {
+    if (has_substring(generation_method, "ppE")) {
+      int base = dimension - input_params->Nmod;
+      for (int i = 0; i < input_params->Nmod; i++) {
+        parameters[base + i] = input_params->betappe[i];
+      }
+    } else if (has_substring(generation_method, "EA")) {
+      // parameters[dimension- 4 ] = input_params->ca_EA;
+      // parameters[dimension- 3 ] = input_params->ctheta_EA;
+      // parameters[dimension- 2 ] = input_params->cw_EA;
+      // parameters[dimension- 1 ] = input_params->csigma_EA;
+      if (input_params->alpha_param) {
+        parameters[dimension - 3] = input_params->alpha1_EA;
+        parameters[dimension - 2] = input_params->alpha2_EA;
+        parameters[dimension - 1] = input_params->cbarw_EA;
+      } else {
+        if (input_params->EA_region1) { // ctheta = 3c_a(1+delta_ctheta).
+                                        // Sample on ca, delta_ctheta, cw
+          parameters[dimension - 3] = input_params->ca_EA;
+          parameters[dimension - 2] = input_params->delta_ctheta_EA;
+          parameters[dimension - 1] = input_params->cw_EA;
+        } else {
+          parameters[dimension - 3] = input_params->ca_EA;
+          parameters[dimension - 2] = input_params->ctheta_EA;
+          parameters[dimension - 1] = input_params->cw_EA;
+        }
+      }
+    }
+    // else if( has_substring(generation_method, "dCS") ||
+    //	has_substring(generation_method, "EdGB")){
+    else if (check_theory_support(generation_method)) {
+      int base = dimension - input_params->Nmod;
+      for (int i = 0; i < input_params->Nmod; i++) {
+        parameters[i + base] = input_params->betappe[i];
+      }
+      // For MCMC, alpha is sampled in KM (alpha**2)**.25
+      // if(has_substring(generation_method, "MCMC") &&
+      //	(has_substring(generation_method, "dCS") ||
+      //	has_substring(generation_method, "EdGB"))){
+      //	parameters[base] = pow(input_params->betappe[0],.25)/(c*1000);
+      // }
+    } else if (has_substring(generation_method, "gIMR")) {
+      int mods = input_params->Nmod_phi + input_params->Nmod_sigma +
+                 input_params->Nmod_beta + input_params->Nmod_alpha;
+      int base = dimension - mods;
+      int ct = 0;
+      int ct_total = 0;
+      while (ct < input_params->Nmod_phi) {
+        parameters[base + ct_total] = input_params->delta_phi[ct];
+        ct++;
+        ct_total++;
+      }
+      ct = 0;
+      while (ct < input_params->Nmod_sigma) {
+        parameters[base + ct_total] = input_params->delta_sigma[ct];
+        ct++;
+        ct_total++;
+      }
+      ct = 0;
+      while (ct < input_params->Nmod_beta) {
+        parameters[base + ct_total] = input_params->delta_beta[ct];
+        ct++;
+        ct_total++;
+      }
+      ct = 0;
+      while (ct < input_params->Nmod_alpha) {
+        parameters[base + ct_total] = input_params->delta_alpha[ct];
+        ct++;
+        ct_total++;
+      }
+    }
+  }
 }
 /*! \brief Repack the parameters from an adouble vector to a
  * gen_params_base<adouble> object and freqeuncy
@@ -1852,422 +1607,331 @@ void unpack_parameters(double *parameters,
  */
 template <class T>
 void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params,
-					   std::string generation_method, int dim)
-{
-	if (!a_params->sky_average)
-	{
-		if (has_substring(generation_method, "IMRPhenomPv2") ||
-			has_substring(generation_method, "IMRPhenomPv3"))
-		{
-			if (has_substring(generation_method, "MCMC"))
-			{
-				a_params->mass1 =
-					calculate_mass1(exp(avec_parameters[7]), avec_parameters[8]);
-				a_params->mass2 =
-					calculate_mass2(exp(avec_parameters[7]), avec_parameters[8]);
-				a_params->Luminosity_Distance = exp(avec_parameters[6]);
-				a_params->RA = avec_parameters[0];
-				a_params->DEC = asin(avec_parameters[1]);
-				if (a_params->equatorial_orientation)
-				{
-					a_params->theta_l = avec_parameters[2];
-					a_params->phi_l = avec_parameters[3];
-				}
-				else
-				{
-					a_params->psi = avec_parameters[2];
-					a_params->incl_angle = acos(avec_parameters[3]);
-				}
-				a_params->phiRef = avec_parameters[4];
+                       std::string generation_method, int dim) {
+  if (!a_params->sky_average) {
+    if (has_substring(generation_method, "IMRPhenomPv2") ||
+        has_substring(generation_method, "IMRPhenomPv3")) {
+      if (has_substring(generation_method, "MCMC")) {
+        a_params->mass1 =
+            calculate_mass1(exp(avec_parameters[7]), avec_parameters[8]);
+        a_params->mass2 =
+            calculate_mass2(exp(avec_parameters[7]), avec_parameters[8]);
+        a_params->Luminosity_Distance = exp(avec_parameters[6]);
+        a_params->RA = avec_parameters[0];
+        a_params->DEC = asin(avec_parameters[1]);
+        if (a_params->equatorial_orientation) {
+          a_params->theta_l = avec_parameters[2];
+          a_params->phi_l = avec_parameters[3];
+        } else {
+          a_params->psi = avec_parameters[2];
+          a_params->incl_angle = acos(avec_parameters[3]);
+        }
+        a_params->phiRef = avec_parameters[4];
 
-				// ###################################
-				// Fishers don't necessarily respect the bounds of
-				// acos, so bump it back into range if we're on the edge
-				// ##################################
-				T local_theta1;
-				if (avec_parameters[11] > 1)
-				{
-					local_theta1 = 0;
-				}
-				else if (avec_parameters[11] < -1)
-				{
-					local_theta1 = M_PI;
-				}
-				else
-				{
-					local_theta1 = acos(avec_parameters[11]);
-				}
-				T local_theta2;
-				if (avec_parameters[12] > 1)
-				{
-					local_theta2 = 0;
-				}
-				else if (avec_parameters[12] < -1)
-				{
-					local_theta2 = M_PI;
-				}
-				else
-				{
-					local_theta2 = acos(avec_parameters[12]);
-				}
-				a_params->tc = avec_parameters[5];
-				// ##################################
-				// ##################################
-				T spin1cart[3];
-				T spin1sph[3] = {avec_parameters[9], local_theta1, avec_parameters[13]};
-				T spin2cart[3];
-				T spin2sph[3] = {avec_parameters[10], local_theta2,
-								 avec_parameters[14]};
-				transform_sph_cart(spin1sph, spin1cart);
-				transform_sph_cart(spin2sph, spin2cart);
-				a_params->spin1[0] = spin1cart[0];
-				a_params->spin1[1] = spin1cart[1];
-				a_params->spin1[2] = spin1cart[2];
-				a_params->spin2[0] = spin2cart[0];
-				a_params->spin2[1] = spin2cart[1];
-				a_params->spin2[2] = spin2cart[2];
-			}
-			else
-			{
-				a_params->mass1 =
-					calculate_mass1(avec_parameters[7], avec_parameters[8]);
-				a_params->mass2 =
-					calculate_mass2(avec_parameters[7], avec_parameters[8]);
-				a_params->Luminosity_Distance = avec_parameters[6];
-				a_params->RA = avec_parameters[0];
-				a_params->DEC = avec_parameters[1];
-				if (a_params->equatorial_orientation)
-				{
-					a_params->theta_l = avec_parameters[2];
-					a_params->phi_l = avec_parameters[3];
-				}
-				else
-				{
-					a_params->psi = avec_parameters[2];
-					a_params->incl_angle = avec_parameters[3];
-				}
-				a_params->phiRef = avec_parameters[4];
-				a_params->tc = avec_parameters[5];
-				a_params->spin1[2] = avec_parameters[9];
-				a_params->spin2[2] = avec_parameters[10];
-				a_params->chip = avec_parameters[11];
-				a_params->phip = avec_parameters[12];
-			}
-		}
-		else if (has_substring(generation_method, "EOS"))
-		{
-			a_params->RA = avec_parameters[0];
-			a_params->DEC = avec_parameters[1];
-			if (a_params->equatorial_orientation)
-			{
-				a_params->theta_l = avec_parameters[2];
-				a_params->phi_l = avec_parameters[3];
-			}
-			else
-			{
-				a_params->psi = avec_parameters[2];
-				a_params->incl_angle = avec_parameters[3];
-			}
-			a_params->phiRef = avec_parameters[4];
-			a_params->tc = avec_parameters[5];
-			a_params->Luminosity_Distance = avec_parameters[6];
-			a_params->nbc1 = avec_parameters[7];
-			a_params->nbc2 = avec_parameters[8];
-			a_params->spin1[2] = avec_parameters[9];
-			a_params->spin2[2] = avec_parameters[10];
-			a_params->bump_mag = avec_parameters[11];
-			a_params->bump_width = avec_parameters[12];
-			a_params->bump_offset = avec_parameters[13];
-			if (a_params->EOS_plat_flag)
-			{
-				a_params->plat = avec_parameters[14];
-			}
-		}
-		else if (has_substring(generation_method, "IMRPhenomD"))
-		{
-			if (has_substring(generation_method, "MCMC"))
-			{
-				a_params->mass1 =
-					calculate_mass1(exp(avec_parameters[7]), avec_parameters[8]);
-				a_params->mass2 =
-					calculate_mass2(exp(avec_parameters[7]), avec_parameters[8]);
-				a_params->Luminosity_Distance = exp(avec_parameters[6]);
-				a_params->RA = avec_parameters[0];
-				a_params->DEC = asin(avec_parameters[1]);
-				if (a_params->equatorial_orientation)
-				{
-					a_params->theta_l = avec_parameters[2];
-					a_params->phi_l = avec_parameters[3];
-				}
-				else
-				{
-					a_params->psi = avec_parameters[2];
-					a_params->incl_angle = acos(avec_parameters[3]);
-				}
-				a_params->spin1[2] = avec_parameters[9];
-				a_params->spin2[2] = avec_parameters[10];
+        // ###################################
+        // Fishers don't necessarily respect the bounds of
+        // acos, so bump it back into range if we're on the edge
+        // ##################################
+        T local_theta1;
+        if (avec_parameters[11] > 1) {
+          local_theta1 = 0;
+        } else if (avec_parameters[11] < -1) {
+          local_theta1 = M_PI;
+        } else {
+          local_theta1 = acos(avec_parameters[11]);
+        }
+        T local_theta2;
+        if (avec_parameters[12] > 1) {
+          local_theta2 = 0;
+        } else if (avec_parameters[12] < -1) {
+          local_theta2 = M_PI;
+        } else {
+          local_theta2 = acos(avec_parameters[12]);
+        }
+        a_params->tc = avec_parameters[5];
+        // ##################################
+        // ##################################
+        T spin1cart[3];
+        T spin1sph[3] = {avec_parameters[9], local_theta1, avec_parameters[13]};
+        T spin2cart[3];
+        T spin2sph[3] = {avec_parameters[10], local_theta2,
+                         avec_parameters[14]};
+        transform_sph_cart(spin1sph, spin1cart);
+        transform_sph_cart(spin2sph, spin2cart);
+        a_params->spin1[0] = spin1cart[0];
+        a_params->spin1[1] = spin1cart[1];
+        a_params->spin1[2] = spin1cart[2];
+        a_params->spin2[0] = spin2cart[0];
+        a_params->spin2[1] = spin2cart[1];
+        a_params->spin2[2] = spin2cart[2];
+      } else {
+        a_params->mass1 =
+            calculate_mass1(avec_parameters[7], avec_parameters[8]);
+        a_params->mass2 =
+            calculate_mass2(avec_parameters[7], avec_parameters[8]);
+        a_params->Luminosity_Distance = avec_parameters[6];
+        a_params->RA = avec_parameters[0];
+        a_params->DEC = avec_parameters[1];
+        if (a_params->equatorial_orientation) {
+          a_params->theta_l = avec_parameters[2];
+          a_params->phi_l = avec_parameters[3];
+        } else {
+          a_params->psi = avec_parameters[2];
+          a_params->incl_angle = avec_parameters[3];
+        }
+        a_params->phiRef = avec_parameters[4];
+        a_params->tc = avec_parameters[5];
+        a_params->spin1[2] = avec_parameters[9];
+        a_params->spin2[2] = avec_parameters[10];
+        a_params->chip = avec_parameters[11];
+        a_params->phip = avec_parameters[12];
+      }
+    } else if (has_substring(generation_method, "EOS")) {
+      a_params->RA = avec_parameters[0];
+      a_params->DEC = avec_parameters[1];
+      if (a_params->equatorial_orientation) {
+        a_params->theta_l = avec_parameters[2];
+        a_params->phi_l = avec_parameters[3];
+      } else {
+        a_params->psi = avec_parameters[2];
+        a_params->incl_angle = avec_parameters[3];
+      }
+      a_params->phiRef = avec_parameters[4];
+      a_params->tc = avec_parameters[5];
+      a_params->Luminosity_Distance = avec_parameters[6];
+      a_params->nbc1 = avec_parameters[7];
+      a_params->nbc2 = avec_parameters[8];
+      a_params->spin1[2] = avec_parameters[9];
+      a_params->spin2[2] = avec_parameters[10];
+      a_params->bump_mag = avec_parameters[11];
+      a_params->bump_width = avec_parameters[12];
+      a_params->bump_offset = avec_parameters[13];
+      if (a_params->EOS_plat_flag) {
+        a_params->plat = avec_parameters[14];
+      }
+    } else if (has_substring(generation_method, "IMRPhenomD")) {
+      if (has_substring(generation_method, "MCMC")) {
+        a_params->mass1 =
+            calculate_mass1(exp(avec_parameters[7]), avec_parameters[8]);
+        a_params->mass2 =
+            calculate_mass2(exp(avec_parameters[7]), avec_parameters[8]);
+        a_params->Luminosity_Distance = exp(avec_parameters[6]);
+        a_params->RA = avec_parameters[0];
+        a_params->DEC = asin(avec_parameters[1]);
+        if (a_params->equatorial_orientation) {
+          a_params->theta_l = avec_parameters[2];
+          a_params->phi_l = avec_parameters[3];
+        } else {
+          a_params->psi = avec_parameters[2];
+          a_params->incl_angle = acos(avec_parameters[3]);
+        }
+        a_params->spin1[2] = avec_parameters[9];
+        a_params->spin2[2] = avec_parameters[10];
 
-				a_params->phiRef = avec_parameters[4];
-				a_params->tc = avec_parameters[5];
-			}
-			else
-			{
-				a_params->mass1 =
-					calculate_mass1(avec_parameters[7], avec_parameters[8]);
-				a_params->mass2 =
-					calculate_mass2(avec_parameters[7], avec_parameters[8]);
-				a_params->Luminosity_Distance = avec_parameters[6];
-				a_params->RA = avec_parameters[0];
-				a_params->DEC = avec_parameters[1];
-				if (a_params->equatorial_orientation)
-				{
-					a_params->theta_l = avec_parameters[2];
-					a_params->phi_l = avec_parameters[3];
-				}
-				else
-				{
-					a_params->psi = avec_parameters[2];
-					a_params->incl_angle = avec_parameters[3];
-				}
-				a_params->phiRef = avec_parameters[4];
-				a_params->tc = avec_parameters[5];
-				a_params->spin1[2] = avec_parameters[9];
-				a_params->spin2[2] = avec_parameters[10];
-			}
-		}
-	}
-	else
-	{
-		if (has_substring(generation_method, "IMRPhenomPv2") ||
-			has_substring(generation_method, "IMRPhenomPv3"))
-		{
-			if (has_substring(generation_method, "MCMC"))
-			{
-				a_params->mass1 =
-					calculate_mass1(exp(avec_parameters[0]), avec_parameters[1]);
-				a_params->mass2 =
-					calculate_mass2(exp(avec_parameters[0]), avec_parameters[1]);
+        a_params->phiRef = avec_parameters[4];
+        a_params->tc = avec_parameters[5];
+      } else {
+        a_params->mass1 =
+            calculate_mass1(avec_parameters[7], avec_parameters[8]);
+        a_params->mass2 =
+            calculate_mass2(avec_parameters[7], avec_parameters[8]);
+        a_params->Luminosity_Distance = avec_parameters[6];
+        a_params->RA = avec_parameters[0];
+        a_params->DEC = avec_parameters[1];
+        if (a_params->equatorial_orientation) {
+          a_params->theta_l = avec_parameters[2];
+          a_params->phi_l = avec_parameters[3];
+        } else {
+          a_params->psi = avec_parameters[2];
+          a_params->incl_angle = avec_parameters[3];
+        }
+        a_params->phiRef = avec_parameters[4];
+        a_params->tc = avec_parameters[5];
+        a_params->spin1[2] = avec_parameters[9];
+        a_params->spin2[2] = avec_parameters[10];
+      }
+    }
+  } else {
+    if (has_substring(generation_method, "IMRPhenomPv2") ||
+        has_substring(generation_method, "IMRPhenomPv3")) {
+      if (has_substring(generation_method, "MCMC")) {
+        a_params->mass1 =
+            calculate_mass1(exp(avec_parameters[0]), avec_parameters[1]);
+        a_params->mass2 =
+            calculate_mass2(exp(avec_parameters[0]), avec_parameters[1]);
 
-				T local_theta1;
-				if (avec_parameters[4] > 1)
-				{
-					local_theta1 = 0;
-				}
-				else if (avec_parameters[4] < -1)
-				{
-					local_theta1 = M_PI;
-				}
-				else
-				{
-					local_theta1 = acos(avec_parameters[4]);
-				}
-				T local_theta2;
-				if (avec_parameters[5] > 1)
-				{
-					local_theta2 = 0;
-				}
-				else if (avec_parameters[5] < -1)
-				{
-					local_theta2 = M_PI;
-				}
-				else
-				{
-					local_theta2 = acos(avec_parameters[5]);
-				}
-				// ##################################
-				// ##################################
-				T spin1cart[3];
-				T spin1sph[3] = {avec_parameters[2], local_theta1, avec_parameters[6]};
-				T spin2cart[3];
-				T spin2sph[3] = {avec_parameters[3], local_theta2, avec_parameters[7]};
-				transform_sph_cart(spin1sph, spin1cart);
-				transform_sph_cart(spin2sph, spin2cart);
-				a_params->spin1[0] = spin1cart[0];
-				a_params->spin1[1] = spin1cart[1];
-				a_params->spin1[2] = spin1cart[2];
-				a_params->spin2[0] = spin2cart[0];
-				a_params->spin2[1] = spin2cart[1];
-				a_params->spin2[2] = spin2cart[2];
+        T local_theta1;
+        if (avec_parameters[4] > 1) {
+          local_theta1 = 0;
+        } else if (avec_parameters[4] < -1) {
+          local_theta1 = M_PI;
+        } else {
+          local_theta1 = acos(avec_parameters[4]);
+        }
+        T local_theta2;
+        if (avec_parameters[5] > 1) {
+          local_theta2 = 0;
+        } else if (avec_parameters[5] < -1) {
+          local_theta2 = M_PI;
+        } else {
+          local_theta2 = acos(avec_parameters[5]);
+        }
+        // ##################################
+        // ##################################
+        T spin1cart[3];
+        T spin1sph[3] = {avec_parameters[2], local_theta1, avec_parameters[6]};
+        T spin2cart[3];
+        T spin2sph[3] = {avec_parameters[3], local_theta2, avec_parameters[7]};
+        transform_sph_cart(spin1sph, spin1cart);
+        transform_sph_cart(spin2sph, spin2cart);
+        a_params->spin1[0] = spin1cart[0];
+        a_params->spin1[1] = spin1cart[1];
+        a_params->spin1[2] = spin1cart[2];
+        a_params->spin2[0] = spin2cart[0];
+        a_params->spin2[1] = spin2cart[1];
+        a_params->spin2[2] = spin2cart[2];
 
-				a_params->tc = 0;
-				a_params->phiRef = 0;
-				a_params->RA = 0;
-				a_params->DEC = 0;
-				a_params->psi = 0;
-				a_params->incl_angle = M_PI / 4.;
-				a_params->Luminosity_Distance = 100;
-			}
-			else
-			{
-			}
-		}
-		else if (has_substring(generation_method, "IMRPhenomD"))
-		{
-			if (has_substring(generation_method, "MCMC"))
-			{
-				a_params->mass1 =
-					calculate_mass1(exp(avec_parameters[0]), avec_parameters[1]);
-				a_params->mass2 =
-					calculate_mass2(exp(avec_parameters[0]), avec_parameters[1]);
+        a_params->tc = 0;
+        a_params->phiRef = 0;
+        a_params->RA = 0;
+        a_params->DEC = 0;
+        a_params->psi = 0;
+        a_params->incl_angle = M_PI / 4.;
+        a_params->Luminosity_Distance = 100;
+      } else {
+      }
+    } else if (has_substring(generation_method, "IMRPhenomD")) {
+      if (has_substring(generation_method, "MCMC")) {
+        a_params->mass1 =
+            calculate_mass1(exp(avec_parameters[0]), avec_parameters[1]);
+        a_params->mass2 =
+            calculate_mass2(exp(avec_parameters[0]), avec_parameters[1]);
 
-				a_params->Luminosity_Distance = 1000;
-				a_params->spin1[2] = avec_parameters[2];
-				a_params->spin2[2] = avec_parameters[3];
-				a_params->phiRef = 0;
-				a_params->tc = 0;
-				a_params->incl_angle = 0;
-			}
-			else
-			{
-				a_params->mass1 =
-					calculate_mass1(avec_parameters[3], avec_parameters[4]);
-				a_params->mass2 =
-					calculate_mass2(avec_parameters[3], avec_parameters[4]);
-				a_params->Luminosity_Distance =
-					DL_from_A0((T)(avec_parameters[3] * MSOL_SEC), avec_parameters[0],
-							   a_params->sky_average) /
-					MPC_SEC;
-				a_params->tc = avec_parameters[2];
-				a_params->phiRef = avec_parameters[1];
-				T chi1 = avec_parameters[5] + avec_parameters[6];
-				T chi2 = avec_parameters[5] - avec_parameters[6];
-				// transform_sph_cart(spin2sph,a_params->spin2);
-				a_params->spin1[2] = chi1;
-				a_params->spin2[2] = chi2;
-			}
-		}
-	}
-	if (has_substring(generation_method, "NRT") &&
-		!has_substring(generation_method, "EOS"))
-	{
-		if (!a_params->sky_average)
-		{
-			if (has_substring(generation_method, "PhenomD"))
-			{
-				if ((a_params->tidal_love))
-				{
-					a_params->tidal_s = exp(avec_parameters[11]);
-				}
-				else
-				{
-					a_params->tidal1 = exp(avec_parameters[11]);
-					a_params->tidal2 = exp(avec_parameters[12]);
-				}
-			}
-		}
-		else
-		{
-			if (has_substring(generation_method, "PhenomD"))
-			{
-				if ((a_params->tidal_love))
-				{
-					a_params->tidal_s = exp(avec_parameters[4]);
-				}
-				else
-				{
-					a_params->tidal1 = exp(avec_parameters[4]);
-					a_params->tidal2 = exp(avec_parameters[5]);
-				}
-			}
-		}
-	}
-	// debugger_print(__FILE__,__LINE__,generation_method);
-	if (check_mod(generation_method))
-	{
-		if (has_substring(generation_method, "ppE"))
-		{
-			int base = dim - a_params->Nmod;
-			for (int i = 0; i < a_params->Nmod; i++)
-			{
-				a_params->betappe[i] = avec_parameters[base + i];
-			}
-		}
-		// if( has_substring(generation_method, "dCS") ||
-		//	has_substring(generation_method, "EdGB")){
-		else if (has_substring(generation_method, "EA"))
-		{
-			// Remnant from running the code with 16 dimensions
-			// a_params->ca_EA = avec_parameters[dim- 4 ] ;
-			// a_params->ctheta_EA = avec_parameters[dim- 3 ] ;
-			// a_params->cw_EA = avec_parameters[dim- 2 ] ;
-			// a_params->csigma_EA = avec_parameters[dim- 1 ] ;
-			if (a_params->alpha_param)
-			{
-				a_params->alpha1_EA = avec_parameters[dim - 3];
-				a_params->alpha2_EA = avec_parameters[dim - 2];
-				a_params->cbarw_EA = avec_parameters[dim - 1];
-			}
-			else
-			{
-				if (a_params->EA_region1)
-				{ // ctheta = 3ca(1 + delta_ctheta). Sample
-				  // on ca, delta_ctheta, cw
-					a_params->ca_EA = avec_parameters[dim - 3];
-					a_params->delta_ctheta_EA = avec_parameters[dim - 2];
-					a_params->cw_EA = avec_parameters[dim - 1];
-				}
-				else
-				{
-					a_params->ca_EA = avec_parameters[dim - 3];
-					a_params->ctheta_EA = avec_parameters[dim - 2];
-					a_params->cw_EA = avec_parameters[dim - 1];
-				}
-			}
+        a_params->Luminosity_Distance = 1000;
+        a_params->spin1[2] = avec_parameters[2];
+        a_params->spin2[2] = avec_parameters[3];
+        a_params->phiRef = 0;
+        a_params->tc = 0;
+        a_params->incl_angle = 0;
+      } else {
+        a_params->mass1 =
+            calculate_mass1(avec_parameters[3], avec_parameters[4]);
+        a_params->mass2 =
+            calculate_mass2(avec_parameters[3], avec_parameters[4]);
+        a_params->Luminosity_Distance =
+            DL_from_A0((T)(avec_parameters[3] * MSOL_SEC), avec_parameters[0],
+                       a_params->sky_average) /
+            MPC_SEC;
+        a_params->tc = avec_parameters[2];
+        a_params->phiRef = avec_parameters[1];
+        T chi1 = avec_parameters[5] + avec_parameters[6];
+        T chi2 = avec_parameters[5] - avec_parameters[6];
+        // transform_sph_cart(spin2sph,a_params->spin2);
+        a_params->spin1[2] = chi1;
+        a_params->spin2[2] = chi2;
+      }
+    }
+  }
+  if (has_substring(generation_method, "NRT") &&
+      !has_substring(generation_method, "EOS")) {
+    if (!a_params->sky_average) {
+      if (has_substring(generation_method, "PhenomD")) {
+        if ((a_params->tidal_love)) {
+          a_params->tidal_s = exp(avec_parameters[11]);
+        } else {
+          a_params->tidal1 = exp(avec_parameters[11]);
+          a_params->tidal2 = exp(avec_parameters[12]);
+        }
+      }
+    } else {
+      if (has_substring(generation_method, "PhenomD")) {
+        if ((a_params->tidal_love)) {
+          a_params->tidal_s = exp(avec_parameters[4]);
+        } else {
+          a_params->tidal1 = exp(avec_parameters[4]);
+          a_params->tidal2 = exp(avec_parameters[5]);
+        }
+      }
+    }
+  }
+  // debugger_print(__FILE__,__LINE__,generation_method);
+  if (check_mod(generation_method)) {
+    if (has_substring(generation_method, "ppE")) {
+      int base = dim - a_params->Nmod;
+      for (int i = 0; i < a_params->Nmod; i++) {
+        a_params->betappe[i] = avec_parameters[base + i];
+      }
+    }
+    // if( has_substring(generation_method, "dCS") ||
+    //	has_substring(generation_method, "EdGB")){
+    else if (has_substring(generation_method, "EA")) {
+      // Remnant from running the code with 16 dimensions
+      // a_params->ca_EA = avec_parameters[dim- 4 ] ;
+      // a_params->ctheta_EA = avec_parameters[dim- 3 ] ;
+      // a_params->cw_EA = avec_parameters[dim- 2 ] ;
+      // a_params->csigma_EA = avec_parameters[dim- 1 ] ;
+      if (a_params->alpha_param) {
+        a_params->alpha1_EA = avec_parameters[dim - 3];
+        a_params->alpha2_EA = avec_parameters[dim - 2];
+        a_params->cbarw_EA = avec_parameters[dim - 1];
+      } else {
+        if (a_params->EA_region1) { // ctheta = 3ca(1 + delta_ctheta). Sample
+                                    // on ca, delta_ctheta, cw
+          a_params->ca_EA = avec_parameters[dim - 3];
+          a_params->delta_ctheta_EA = avec_parameters[dim - 2];
+          a_params->cw_EA = avec_parameters[dim - 1];
+        } else {
+          a_params->ca_EA = avec_parameters[dim - 3];
+          a_params->ctheta_EA = avec_parameters[dim - 2];
+          a_params->cw_EA = avec_parameters[dim - 1];
+        }
+      }
 
-			a_params->csigma_EA = 0;
-		}
-		else if (check_theory_support(generation_method))
-		{
-			int base = dim - a_params->Nmod;
-			for (int i = 0; i < a_params->Nmod; i++)
-			{
-				a_params->betappe[i] = avec_parameters[base + i];
-			}
-			// MCMC samples in root(alpha) in KM
-			// but the dCS/EdGB waveform works with (seconds)^2
-			// if(has_substring(generation_method, "MCMC") &&
-			//	(has_substring(generation_method, "dCS") ||
-			//	has_substring(generation_method, "EdGB"))){
-			//	a_params->betappe[0] =
-			//		pow_int(a_params->betappe[0]/(c/1000.) , 4);
-			// }
-		}
-		else if (has_substring(generation_method, "gIMR"))
-		{
-			int mods = a_params->Nmod_phi + a_params->Nmod_sigma +
-					   a_params->Nmod_beta + a_params->Nmod_alpha;
-			int base = dim - mods;
-			int ct = 0;
-			int ct_total = 0;
-			while (ct < a_params->Nmod_phi)
-			{
-				a_params->delta_phi[ct] = avec_parameters[base + ct_total];
-				ct++;
-				ct_total++;
-			}
-			ct = 0;
-			while (ct < a_params->Nmod_sigma)
-			{
-				a_params->delta_sigma[ct] = avec_parameters[base + ct_total];
-				ct++;
-				ct_total++;
-			}
-			ct = 0;
-			while (ct < a_params->Nmod_beta)
-			{
-				a_params->delta_beta[ct] = avec_parameters[base + ct_total];
-				ct++;
-				ct_total++;
-			}
-			ct = 0;
-			while (ct < a_params->Nmod_alpha)
-			{
-				a_params->delta_alpha[ct] = avec_parameters[base + ct_total];
-				ct++;
-				ct_total++;
-			}
-		}
-	}
+      a_params->csigma_EA = 0;
+    } else if (check_theory_support(generation_method)) {
+      int base = dim - a_params->Nmod;
+      for (int i = 0; i < a_params->Nmod; i++) {
+        a_params->betappe[i] = avec_parameters[base + i];
+      }
+      // MCMC samples in root(alpha) in KM
+      // but the dCS/EdGB waveform works with (seconds)^2
+      // if(has_substring(generation_method, "MCMC") &&
+      //	(has_substring(generation_method, "dCS") ||
+      //	has_substring(generation_method, "EdGB"))){
+      //	a_params->betappe[0] =
+      //		pow_int(a_params->betappe[0]/(c/1000.) , 4);
+      // }
+    } else if (has_substring(generation_method, "gIMR")) {
+      int mods = a_params->Nmod_phi + a_params->Nmod_sigma +
+                 a_params->Nmod_beta + a_params->Nmod_alpha;
+      int base = dim - mods;
+      int ct = 0;
+      int ct_total = 0;
+      while (ct < a_params->Nmod_phi) {
+        a_params->delta_phi[ct] = avec_parameters[base + ct_total];
+        ct++;
+        ct_total++;
+      }
+      ct = 0;
+      while (ct < a_params->Nmod_sigma) {
+        a_params->delta_sigma[ct] = avec_parameters[base + ct_total];
+        ct++;
+        ct_total++;
+      }
+      ct = 0;
+      while (ct < a_params->Nmod_beta) {
+        a_params->delta_beta[ct] = avec_parameters[base + ct_total];
+        ct++;
+        ct_total++;
+      }
+      ct = 0;
+      while (ct < a_params->Nmod_alpha) {
+        a_params->delta_alpha[ct] = avec_parameters[base + ct_total];
+        ct++;
+        ct_total++;
+      }
+    }
+  }
 }
 
 /*! \brief Utilitiy to transfer non-parameter options from one gen_params
@@ -2277,120 +1941,102 @@ void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params,
  */
 template <class T>
 void repack_non_parameter_options(gen_params_base<T> *waveform_params,
-								  gen_params_base<double> *input_params,
-								  std::string gen_method)
-{
-	waveform_params->sky_average = input_params->sky_average;
-	waveform_params->tidal_love = input_params->tidal_love;
-	waveform_params->tidal_love_error = input_params->tidal_love_error;
-	waveform_params->EOS_plat_flag = input_params->EOS_plat_flag;
-	waveform_params->alpha_param = input_params->alpha_param;
-	waveform_params->EA_region1 = input_params->EA_region1;
-	waveform_params->f_ref = input_params->f_ref;
-	waveform_params->gmst = input_params->gmst;
-	waveform_params->horizon_coord = input_params->horizon_coord;
-	waveform_params->equatorial_orientation =
-		input_params->equatorial_orientation;
-	waveform_params->NSflag1 = input_params->NSflag1;
-	waveform_params->NSflag2 = input_params->NSflag2;
-	waveform_params->shift_time = false;
-	waveform_params->shift_phase = input_params->shift_phase;
-	waveform_params->LISA_alpha0 = input_params->LISA_alpha0;
-	waveform_params->LISA_phi0 = input_params->LISA_phi0;
-	waveform_params->dep_postmerger = input_params->dep_postmerger;
-	// Phi_p and phiRef are exactly degenerate
-	// Chose phiRef to be the parameter in the fisher, phip is set
-	// to the input value
-	// waveform_params->phip = input_params->phip;
+                                  gen_params_base<double> *input_params,
+                                  std::string gen_method) {
+  waveform_params->sky_average = input_params->sky_average;
+  waveform_params->tidal_love = input_params->tidal_love;
+  waveform_params->tidal_love_error = input_params->tidal_love_error;
+  waveform_params->EOS_plat_flag = input_params->EOS_plat_flag;
+  waveform_params->alpha_param = input_params->alpha_param;
+  waveform_params->EA_region1 = input_params->EA_region1;
+  waveform_params->f_ref = input_params->f_ref;
+  waveform_params->gmst = input_params->gmst;
+  waveform_params->horizon_coord = input_params->horizon_coord;
+  waveform_params->equatorial_orientation =
+      input_params->equatorial_orientation;
+  waveform_params->NSflag1 = input_params->NSflag1;
+  waveform_params->NSflag2 = input_params->NSflag2;
+  waveform_params->shift_time = false;
+  waveform_params->shift_phase = input_params->shift_phase;
+  waveform_params->LISA_alpha0 = input_params->LISA_alpha0;
+  waveform_params->LISA_phi0 = input_params->LISA_phi0;
+  waveform_params->dep_postmerger = input_params->dep_postmerger;
+  // Phi_p and phiRef are exactly degenerate
+  // Chose phiRef to be the parameter in the fisher, phip is set
+  // to the input value
+  // waveform_params->phip = input_params->phip;
 
-	if (check_mod(gen_method))
-	{
-		// if(has_substring(gen_method, "ppE") ||
-		//	has_substring(gen_method, "dCS") ||
-		//	has_substring(gen_method, "EdGB")){
-		if (has_substring(gen_method, "ppE") || check_theory_support(gen_method))
-		{
-			waveform_params->bppe = input_params->bppe;
-			waveform_params->Nmod = input_params->Nmod;
-			waveform_params->betappe = new T[waveform_params->Nmod];
-		}
-		else if (has_substring(gen_method, "gIMR"))
-		{
-			waveform_params->phii = input_params->phii;
-			waveform_params->sigmai = input_params->sigmai;
-			waveform_params->betai = input_params->betai;
-			waveform_params->alphai = input_params->alphai;
-			waveform_params->Nmod_phi = input_params->Nmod_phi;
-			waveform_params->Nmod_sigma = input_params->Nmod_sigma;
-			waveform_params->Nmod_beta = input_params->Nmod_beta;
-			waveform_params->Nmod_alpha = input_params->Nmod_alpha;
-			if (waveform_params->Nmod_phi != 0)
-			{
-				waveform_params->delta_phi = new T[waveform_params->Nmod_phi];
-			}
-			if (waveform_params->Nmod_sigma != 0)
-			{
-				waveform_params->delta_sigma = new T[waveform_params->Nmod_sigma];
-			}
-			if (waveform_params->Nmod_beta != 0)
-			{
-				waveform_params->delta_beta = new T[waveform_params->Nmod_beta];
-			}
-			if (waveform_params->Nmod_alpha != 0)
-			{
-				waveform_params->delta_alpha = new T[waveform_params->Nmod_alpha];
-			}
-		}
-	}
+  if (check_mod(gen_method)) {
+    // if(has_substring(gen_method, "ppE") ||
+    //	has_substring(gen_method, "dCS") ||
+    //	has_substring(gen_method, "EdGB")){
+    if (has_substring(gen_method, "ppE") || check_theory_support(gen_method)) {
+      waveform_params->bppe = input_params->bppe;
+      waveform_params->Nmod = input_params->Nmod;
+      waveform_params->betappe = new T[waveform_params->Nmod];
+    } else if (has_substring(gen_method, "gIMR")) {
+      waveform_params->phii = input_params->phii;
+      waveform_params->sigmai = input_params->sigmai;
+      waveform_params->betai = input_params->betai;
+      waveform_params->alphai = input_params->alphai;
+      waveform_params->Nmod_phi = input_params->Nmod_phi;
+      waveform_params->Nmod_sigma = input_params->Nmod_sigma;
+      waveform_params->Nmod_beta = input_params->Nmod_beta;
+      waveform_params->Nmod_alpha = input_params->Nmod_alpha;
+      if (waveform_params->Nmod_phi != 0) {
+        waveform_params->delta_phi = new T[waveform_params->Nmod_phi];
+      }
+      if (waveform_params->Nmod_sigma != 0) {
+        waveform_params->delta_sigma = new T[waveform_params->Nmod_sigma];
+      }
+      if (waveform_params->Nmod_beta != 0) {
+        waveform_params->delta_beta = new T[waveform_params->Nmod_beta];
+      }
+      if (waveform_params->Nmod_alpha != 0) {
+        waveform_params->delta_alpha = new T[waveform_params->Nmod_alpha];
+      }
+    }
+  }
 }
 template void repack_non_parameter_options<double>(gen_params_base<double> *,
-												   gen_params_base<double> *,
-												   std::string);
+                                                   gen_params_base<double> *,
+                                                   std::string);
 template void repack_non_parameter_options<adouble>(gen_params_base<adouble> *,
-													gen_params_base<double> *,
-													std::string);
+                                                    gen_params_base<double> *,
+                                                    std::string);
 
 template <class T>
 void deallocate_non_param_options(gen_params_base<T> *waveform_params,
-								  gen_params_base<double> *input_params,
-								  std::string gen_method)
-{
-	if (check_mod(gen_method))
-	{
-		// if(has_substring(gen_method, "ppE") ||
-		//	has_substring(gen_method, "dCS") ||
-		//	has_substring(gen_method, "EdGB")){
-		if (has_substring(gen_method, "ppE") || check_theory_support(gen_method))
-		{
-			delete[] waveform_params->betappe;
-		}
-		else if (has_substring(gen_method, "gIMR"))
-		{
-			if (waveform_params->Nmod_phi != 0)
-			{
-				delete[] waveform_params->delta_phi;
-			}
-			if (waveform_params->Nmod_sigma != 0)
-			{
-				delete[] waveform_params->delta_sigma;
-			}
-			if (waveform_params->Nmod_beta != 0)
-			{
-				delete[] waveform_params->delta_beta;
-			}
-			if (waveform_params->Nmod_alpha != 0)
-			{
-				delete[] waveform_params->delta_alpha;
-			}
-		}
-	}
+                                  gen_params_base<double> *input_params,
+                                  std::string gen_method) {
+  if (check_mod(gen_method)) {
+    // if(has_substring(gen_method, "ppE") ||
+    //	has_substring(gen_method, "dCS") ||
+    //	has_substring(gen_method, "EdGB")){
+    if (has_substring(gen_method, "ppE") || check_theory_support(gen_method)) {
+      delete[] waveform_params->betappe;
+    } else if (has_substring(gen_method, "gIMR")) {
+      if (waveform_params->Nmod_phi != 0) {
+        delete[] waveform_params->delta_phi;
+      }
+      if (waveform_params->Nmod_sigma != 0) {
+        delete[] waveform_params->delta_sigma;
+      }
+      if (waveform_params->Nmod_beta != 0) {
+        delete[] waveform_params->delta_beta;
+      }
+      if (waveform_params->Nmod_alpha != 0) {
+        delete[] waveform_params->delta_alpha;
+      }
+    }
+  }
 }
 template void deallocate_non_param_options<double>(gen_params_base<double> *,
-												   gen_params_base<double> *,
-												   std::string);
+                                                   gen_params_base<double> *,
+                                                   std::string);
 template void deallocate_non_param_options<adouble>(gen_params_base<adouble> *,
-													gen_params_base<double> *,
-													std::string);
+                                                    gen_params_base<double> *,
+                                                    std::string);
 
 /*! \brief Subroutine to calculate fisher elements for a subset of the fisher
  *
@@ -2401,478 +2047,404 @@ template void deallocate_non_param_options<adouble>(gen_params_base<adouble> *,
  *
  */
 void calculate_fisher_elements_batch(double *frequency, int length,
-									 int base_dimension, int full_dimension,
-									 std::complex<double> **response_deriv,
-									 double **output, double *psd,
-									 std::string integration_method,
-									 double *weights, bool log10_f)
-{
-	// list of modifications
-	int mod_list[full_dimension - base_dimension];
-	for (int i = base_dimension; i < full_dimension; i++)
-	{
-		mod_list[i - base_dimension] = i;
-	}
+                                     int base_dimension, int full_dimension,
+                                     std::complex<double> **response_deriv,
+                                     double **output, double *psd,
+                                     std::string integration_method,
+                                     double *weights, bool log10_f) {
+  // list of modifications
+  int mod_list[full_dimension - base_dimension];
+  for (int i = base_dimension; i < full_dimension; i++) {
+    mod_list[i - base_dimension] = i;
+  }
 
-	double *integrand = new double[length];
-	for (int j = 0; j < full_dimension; j++)
-	{
-		for (int k = 0; k < j; k++)
-		{
-			// Mod mod element of fisher, set to zero
-			if (check_list(k, mod_list, full_dimension - base_dimension) &&
-				check_list(k, mod_list, full_dimension - base_dimension))
-			{
-				output[j][k] = 0;
-			}
-			// GR GR or GR mod element of the fisher
-			else
-			{
-				for (int i = 0; i < length; i++)
-				{
-					integrand[i] =
-						real((response_deriv[j][i] * std::conj(response_deriv[k][i])) /
-							 psd[i]);
-					if (log10_f)
-					{
-						integrand[i] *= (frequency[i]) * LOG10;
-					}
-				}
+  double *integrand = new double[length];
+  for (int j = 0; j < full_dimension; j++) {
+    for (int k = 0; k < j; k++) {
+      // Mod mod element of fisher, set to zero
+      if (check_list(k, mod_list, full_dimension - base_dimension) &&
+          check_list(k, mod_list, full_dimension - base_dimension)) {
+        output[j][k] = 0;
+      }
+      // GR GR or GR mod element of the fisher
+      else {
+        for (int i = 0; i < length; i++) {
+          integrand[i] =
+              real((response_deriv[j][i] * std::conj(response_deriv[k][i])) /
+                   psd[i]);
+          if (log10_f) {
+            integrand[i] *= (frequency[i]) * LOG10;
+          }
+        }
 
-				if (integration_method == "GAUSSLEG")
-				{
-					double sum = 0;
-					for (int i = 0; i < length; i++)
-					{
-						sum += (weights[i] * integrand[i]);
-					}
-					output[j][k] = 4 * sum;
-				}
-				else if (integration_method == "SIMPSONS")
-				{
-					output[j][k] =
-						4 * simpsons_sum(frequency[1] - frequency[0], length, integrand);
-				}
-			}
-			output[k][j] = output[j][k];
-		}
-	}
+        if (integration_method == "GAUSSLEG") {
+          double sum = 0;
+          for (int i = 0; i < length; i++) {
+            sum += (weights[i] * integrand[i]);
+          }
+          output[j][k] = 4 * sum;
+        } else if (integration_method == "SIMPSONS") {
+          output[j][k] =
+              4 * simpsons_sum(frequency[1] - frequency[0], length, integrand);
+        }
+      }
+      output[k][j] = output[j][k];
+    }
+  }
 
-	// All diagonal terms are calculated
-	for (int j = 0; j < full_dimension; j++)
-	{
-		for (int i = 0; i < length; i++)
-		{
-			integrand[i] = real(
-				(response_deriv[j][i] * std::conj(response_deriv[j][i])) / psd[i]);
-			if (log10_f)
-			{
-				integrand[i] *= (frequency[i]) * LOG10;
-			}
-		}
+  // All diagonal terms are calculated
+  for (int j = 0; j < full_dimension; j++) {
+    for (int i = 0; i < length; i++) {
+      integrand[i] = real(
+          (response_deriv[j][i] * std::conj(response_deriv[j][i])) / psd[i]);
+      if (log10_f) {
+        integrand[i] *= (frequency[i]) * LOG10;
+      }
+    }
 
-		if (integration_method == "GAUSSLEG")
-		{
-			double sum = 0;
-			for (int i = 0; i < length; i++)
-			{
-				sum += (weights[i] * integrand[i]);
-			}
-			output[j][j] = 4 * sum;
-		}
-		else if (integration_method == "SIMPSONS")
-		{
-			output[j][j] =
-				4 * simpsons_sum(frequency[1] - frequency[0], length, integrand);
-		}
-	}
-	delete[] integrand;
+    if (integration_method == "GAUSSLEG") {
+      double sum = 0;
+      for (int i = 0; i < length; i++) {
+        sum += (weights[i] * integrand[i]);
+      }
+      output[j][j] = 4 * sum;
+    } else if (integration_method == "SIMPSONS") {
+      output[j][j] =
+          4 * simpsons_sum(frequency[1] - frequency[0], length, integrand);
+    }
+  }
+  delete[] integrand;
 }
 void calculate_fisher_elements(double *frequency, int length, int dimension,
-							   std::complex<double> **response_deriv,
-							   double **output, double *psd,
-							   std::string integration_method, double *weights,
-							   bool log10_f)
-{
-	double *integrand = new double[length];
-	for (int j = 0; j < dimension; j++)
-	{
-		for (int k = 0; k < j; k++)
-		{
-			for (int i = 0; i < length; i++)
-			{
-				integrand[i] = real(
-					(response_deriv[j][i] * std::conj(response_deriv[k][i])) / psd[i]);
-				// Jacobian for integrating in logspace
-				if (log10_f)
-				{
-					integrand[i] *= (frequency[i]) * LOG10;
-				}
-				if (i == 8)
-				{
-					// std::cout<<"response_deriv[j][8]"<<response_deriv[j][8]<<
-					// std::endl;
-					// std::cout<<"response_deriv[k][8]"<<response_deriv[k][8]<<
-					// std::endl; std::cout<<"integrand[8]"<<integrand[8]<< std::endl;
-				}
-			}
-			if (integration_method == "GAUSSLEG")
-			{
-				double sum = 0;
-				for (int i = 0; i < length; i++)
-				{
-					sum += (weights[i] * integrand[i]);
-				}
-				output[j][k] = 4 * sum;
-			}
-			else if (integration_method == "SIMPSONS")
-			{
-				output[j][k] =
-					4 * simpsons_sum(frequency[1] - frequency[0], length, integrand);
-			}
-			output[k][j] = output[j][k];
-		}
-	}
+                               std::complex<double> **response_deriv,
+                               double **output, double *psd,
+                               std::string integration_method, double *weights,
+                               bool log10_f) {
+  double *integrand = new double[length];
+  for (int j = 0; j < dimension; j++) {
+    for (int k = 0; k < j; k++) {
+      for (int i = 0; i < length; i++) {
+        integrand[i] = real(
+            (response_deriv[j][i] * std::conj(response_deriv[k][i])) / psd[i]);
+        // Jacobian for integrating in logspace
+        if (log10_f) {
+          integrand[i] *= (frequency[i]) * LOG10;
+        }
+        if (i == 8) {
+          // std::cout<<"response_deriv[j][8]"<<response_deriv[j][8]<<
+          // std::endl;
+          // std::cout<<"response_deriv[k][8]"<<response_deriv[k][8]<<
+          // std::endl; std::cout<<"integrand[8]"<<integrand[8]<< std::endl;
+        }
+      }
+      if (integration_method == "GAUSSLEG") {
+        double sum = 0;
+        for (int i = 0; i < length; i++) {
+          sum += (weights[i] * integrand[i]);
+        }
+        output[j][k] = 4 * sum;
+      } else if (integration_method == "SIMPSONS") {
+        output[j][k] =
+            4 * simpsons_sum(frequency[1] - frequency[0], length, integrand);
+      }
+      output[k][j] = output[j][k];
+    }
+  }
 
-	for (int j = 0; j < dimension; j++)
-	{
-		for (int i = 0; i < length; i++)
-		{
-			integrand[i] = real(
-				(response_deriv[j][i] * std::conj(response_deriv[j][i])) / psd[i]);
-			// Jacobian for integrating in logspace
-			if (log10_f)
-			{
-				integrand[i] *= (frequency[i]) * LOG10;
-			}
-		}
-		if (integration_method == "GAUSSLEG")
-		{
-			double sum = 0;
-			for (int i = 0; i < length; i++)
-			{
-				sum += (weights[i] * integrand[i]);
-			}
-			output[j][j] = 4 * sum;
-		}
-		else if (integration_method == "SIMPSONS")
-		{
-			output[j][j] =
-				4 * simpsons_sum(frequency[1] - frequency[0], length, integrand);
-		}
-	}
-	delete[] integrand;
+  for (int j = 0; j < dimension; j++) {
+    for (int i = 0; i < length; i++) {
+      integrand[i] = real(
+          (response_deriv[j][i] * std::conj(response_deriv[j][i])) / psd[i]);
+      // Jacobian for integrating in logspace
+      if (log10_f) {
+        integrand[i] *= (frequency[i]) * LOG10;
+      }
+    }
+    if (integration_method == "GAUSSLEG") {
+      double sum = 0;
+      for (int i = 0; i < length; i++) {
+        sum += (weights[i] * integrand[i]);
+      }
+      output[j][j] = 4 * sum;
+    } else if (integration_method == "SIMPSONS") {
+      output[j][j] =
+          4 * simpsons_sum(frequency[1] - frequency[0], length, integrand);
+    }
+  }
+  delete[] integrand;
 }
 
 void calculate_fisher_elements(
-	double **output,					   //< [return] Fisher matrix
-	std::complex<double> **response_deriv, //< Derivatives of the response from
-										   // calculate_derivatives
-	double *psd,						   //< PSD array
-	int dimension,						   //< Dimension of parameter space
-	Quadrature *quadMethod				   //< Quadrature class to compute integrals
-)
-{
-	// Array for integrand
-	int length = quadMethod->get_length();
-	double *integrand = new double[length];
+    double **output,                       //< [return] Fisher matrix
+    std::complex<double> **response_deriv, //< Derivatives of the response from
+                                           // calculate_derivatives
+    double *psd,                           //< PSD array
+    int dimension,                         //< Dimension of parameter space
+    Quadrature *quadMethod //< Quadrature class to compute integrals
+) {
+  // Array for integrand
+  int length = quadMethod->get_length();
+  double *integrand = new double[length];
 
-	// Loop over derivatives
-	for (int j = 0; j < dimension; j++)
-	{
-		for (int k = 0; k <= j; k++)
-		{
-			// Set up integrand
-			for (int i = 0; i < length; i++)
-			{
-				integrand[i] = real(
-					(response_deriv[j][i] * std::conj(response_deriv[k][i])) / psd[i]);
-			}
+  // Loop over derivatives
+  for (int j = 0; j < dimension; j++) {
+    for (int k = 0; k <= j; k++) {
+      // Set up integrand
+      for (int i = 0; i < length; i++) {
+        integrand[i] = real(
+            (response_deriv[j][i] * std::conj(response_deriv[k][i])) / psd[i]);
+      }
 
-			// Compute the (j,k) Fisher element
-			output[j][k] = 4. * quadMethod->integrate(integrand);
+      // Compute the (j,k) Fisher element
+      output[j][k] = 4. * quadMethod->integrate(integrand);
 
-			// Off-diagonal elements
-			if (k != j)
-			{
-				// By symmetry, compute the (k,j) element
-				output[k][j] = output[j][k];
-			}
-		}
-	}
+      // Off-diagonal elements
+      if (k != j) {
+        // By symmetry, compute the (k,j) element
+        output[k][j] = output[j][k];
+      }
+    }
+  }
 
-	// Clean-up
-	delete[] integrand;
+  // Clean-up
+  delete[] integrand;
 }
 // #################################################################
 template void repack_parameters<adouble>(adouble *, gen_params_base<adouble> *,
-										 std::string, int);
+                                         std::string, int);
 template void repack_parameters<double>(double *, gen_params_base<double> *,
-										std::string, int);
+                                        std::string, int);
 
-void prep_gsl_subroutine(gsl_subroutine *params_packed)
-{
-	int dimension = params_packed->dim;
-	std::string generation_method = params_packed->generation_method;
-	std::string detector = params_packed->detector;
-	std::string reference_detector = params_packed->reference_detector;
+void prep_gsl_subroutine(gsl_subroutine *params_packed) {
+  int dimension = params_packed->dim;
+  std::string generation_method = params_packed->generation_method;
+  std::string detector = params_packed->detector;
+  std::string reference_detector = params_packed->reference_detector;
 
-	params_packed->boundary_num = boundary_number(generation_method);
+  params_packed->boundary_num = boundary_number(generation_method);
 
-	int boundary_num = params_packed->boundary_num;
-	params_packed->freq_boundaries = new double[boundary_num];
-	params_packed->grad_freqs = new double[boundary_num];
-	params_packed->log_factors = new bool[dimension];
-	params_packed->waveform_tapes = new int[boundary_num];
-	if (detector == "LISA")
-	{
-		params_packed->time_tapes = new int[boundary_num];
-		params_packed->phase_tapes = new int[boundary_num];
-	}
-	double *freq_boundaries = params_packed->freq_boundaries;
-	double *grad_freqs = params_packed->grad_freqs;
-	bool *log_factors = params_packed->log_factors;
-	gen_params *params = params_packed->gen_params_in;
-	if (boundary_num == -1)
-	{
-		std::cout << "Error -- unsupported generation method" << std::endl;
-		exit(1);
-	}
-	int vec_param_length = dimension + 1;
-	double vec_parameters[vec_param_length];
-	assign_freq_boundaries(freq_boundaries, grad_freqs, boundary_num, params,
-						   generation_method);
-	// unpack_parameters(&vec_parameters[1], params, generation_method, dimension,
-	// log_factors);
+  int boundary_num = params_packed->boundary_num;
+  params_packed->freq_boundaries = new double[boundary_num];
+  params_packed->grad_freqs = new double[boundary_num];
+  params_packed->log_factors = new bool[dimension];
+  params_packed->waveform_tapes = new int[boundary_num];
+  if (detector == "LISA") {
+    params_packed->time_tapes = new int[boundary_num];
+    params_packed->phase_tapes = new int[boundary_num];
+  }
+  double *freq_boundaries = params_packed->freq_boundaries;
+  double *grad_freqs = params_packed->grad_freqs;
+  bool *log_factors = params_packed->log_factors;
+  gen_params *params = params_packed->gen_params_in;
+  if (boundary_num == -1) {
+    std::cout << "Error -- unsupported generation method" << std::endl;
+    exit(1);
+  }
+  int vec_param_length = dimension + 1;
+  double vec_parameters[vec_param_length];
+  assign_freq_boundaries(freq_boundaries, grad_freqs, boundary_num, params,
+                         generation_method);
+  // unpack_parameters(&vec_parameters[1], params, generation_method, dimension,
+  // log_factors);
 }
-void tape_phase_gsl_subroutine(gsl_subroutine *params_packed)
-{
-	int boundary_num = params_packed->boundary_num;
-	double *freq_boundaries = params_packed->freq_boundaries;
-	double *grad_freqs = params_packed->grad_freqs;
-	std::string detector = params_packed->detector;
-	std::string generation_method = params_packed->generation_method;
-	gen_params *params = params_packed->gen_params_in;
-	// calculate hessian of phase, take [0][j] components to get the derivative of
-	// time
-	std::string local_gen_method = local_generation_method(generation_method);
+void tape_phase_gsl_subroutine(gsl_subroutine *params_packed) {
+  int boundary_num = params_packed->boundary_num;
+  double *freq_boundaries = params_packed->freq_boundaries;
+  double *grad_freqs = params_packed->grad_freqs;
+  std::string detector = params_packed->detector;
+  std::string generation_method = params_packed->generation_method;
+  gen_params *params = params_packed->gen_params_in;
+  // calculate hessian of phase, take [0][j] components to get the derivative of
+  // time
+  std::string local_gen_method = local_generation_method(generation_method);
 
-	// calculate derivative of phase
-	int *tapes = params_packed->phase_tapes;
-	gen_params_base<adouble> aparams;
-	transform_parameters(params, &aparams);
-	for (int i = 0; i < boundary_num; i++)
-	{
-		tapes[i] = (i + 1) * 31;
-		trace_on(tapes[i]);
-		adouble freq;
-		freq <<= grad_freqs[i];
-		adouble phasep, phasec;
-		fourier_phase(&freq, 1, &phasep, &phasec, generation_method, &aparams);
-		double phaseout;
-		phasep >>= phaseout;
-		trace_off();
-	}
-	if (check_mod(generation_method))
-	{
-		// if(has_substring(generation_method, "ppE") ||
-		//	has_substring(generation_method, "dCS") ||
-		//	has_substring(generation_method, "EdGB")){
-		if (has_substring(generation_method, "ppE") ||
-			check_theory_support(generation_method))
-		{
-			delete[] aparams.betappe;
-			delete[] aparams.bppe;
-		}
-		else if (has_substring(generation_method, "gIMR"))
-		{
-			if (aparams.Nmod_phi != 0)
-			{
-				delete[] aparams.delta_phi;
-				delete[] aparams.phii;
-			}
-			if (aparams.Nmod_sigma != 0)
-			{
-				delete[] aparams.delta_sigma;
-				delete[] aparams.sigmai;
-			}
-			if (aparams.Nmod_beta != 0)
-			{
-				delete[] aparams.delta_beta;
-				delete[] aparams.betai;
-			}
-			if (aparams.Nmod_alpha != 0)
-			{
-				delete[] aparams.delta_alpha;
-				delete[] aparams.alphai;
-			}
-		}
-	}
+  // calculate derivative of phase
+  int *tapes = params_packed->phase_tapes;
+  gen_params_base<adouble> aparams;
+  transform_parameters(params, &aparams);
+  for (int i = 0; i < boundary_num; i++) {
+    tapes[i] = (i + 1) * 31;
+    trace_on(tapes[i]);
+    adouble freq;
+    freq <<= grad_freqs[i];
+    adouble phasep, phasec;
+    fourier_phase(&freq, 1, &phasep, &phasec, generation_method, &aparams);
+    double phaseout;
+    phasep >>= phaseout;
+    trace_off();
+  }
+  if (check_mod(generation_method)) {
+    // if(has_substring(generation_method, "ppE") ||
+    //	has_substring(generation_method, "dCS") ||
+    //	has_substring(generation_method, "EdGB")){
+    if (has_substring(generation_method, "ppE") ||
+        check_theory_support(generation_method)) {
+      delete[] aparams.betappe;
+      delete[] aparams.bppe;
+    } else if (has_substring(generation_method, "gIMR")) {
+      if (aparams.Nmod_phi != 0) {
+        delete[] aparams.delta_phi;
+        delete[] aparams.phii;
+      }
+      if (aparams.Nmod_sigma != 0) {
+        delete[] aparams.delta_sigma;
+        delete[] aparams.sigmai;
+      }
+      if (aparams.Nmod_beta != 0) {
+        delete[] aparams.delta_beta;
+        delete[] aparams.betai;
+      }
+      if (aparams.Nmod_alpha != 0) {
+        delete[] aparams.delta_alpha;
+        delete[] aparams.alphai;
+      }
+    }
+  }
 }
-void tape_time_gsl_subroutine(gsl_subroutine *params_packed)
-{
-	int id1 = params_packed->id1;
-	int id2 = params_packed->id2;
-	int dimension = params_packed->dim;
-	int boundary_num = params_packed->boundary_num;
-	double *freq_boundaries = params_packed->freq_boundaries;
-	double *grad_freqs = params_packed->grad_freqs;
-	bool *log_factors = params_packed->log_factors;
-	std::string detector = params_packed->detector;
-	std::string generation_method = params_packed->generation_method;
-	gen_params *params = params_packed->gen_params_in;
-	// calculate hessian of phase, take [0][j] components to get the derivative of
-	// time
-	int vec_param_length = dimension + 1; //+1 for frequency
-	std::string local_gen_method = local_generation_method(generation_method);
-	double vec_parameters[vec_param_length];
-	unpack_parameters(&vec_parameters[1], params, generation_method, dimension,
-					  log_factors);
+void tape_time_gsl_subroutine(gsl_subroutine *params_packed) {
+  int id1 = params_packed->id1;
+  int id2 = params_packed->id2;
+  int dimension = params_packed->dim;
+  int boundary_num = params_packed->boundary_num;
+  double *freq_boundaries = params_packed->freq_boundaries;
+  double *grad_freqs = params_packed->grad_freqs;
+  bool *log_factors = params_packed->log_factors;
+  std::string detector = params_packed->detector;
+  std::string generation_method = params_packed->generation_method;
+  gen_params *params = params_packed->gen_params_in;
+  // calculate hessian of phase, take [0][j] components to get the derivative of
+  // time
+  int vec_param_length = dimension + 1; //+1 for frequency
+  std::string local_gen_method = local_generation_method(generation_method);
+  double vec_parameters[vec_param_length];
+  unpack_parameters(&vec_parameters[1], params, generation_method, dimension,
+                    log_factors);
 
-	// calculate derivative of phase
-	int *tapes = params_packed->time_tapes;
-	for (int i = 0; i < boundary_num; i++)
-	{
-		tapes[i] = (i + 1) * 17; // Random tape id
-		trace_on(tapes[i]);
-		adouble avec_parameters[vec_param_length];
-		avec_parameters[0] <<= grad_freqs[i];
-		for (int j = 1; j <= dimension; j++)
-		{
-			if (j == id1 + 1 || j == id2 + 1)
-			{
-				avec_parameters[j] <<= vec_parameters[j];
-			}
-			else
-			{
-				avec_parameters[j] = vec_parameters[j];
-			}
-		}
-		// Repack parameters
-		gen_params_base<adouble> a_parameters;
-		adouble afreq;
-		afreq = avec_parameters[0];
-		// ############################################
-		// Non variable parameters
-		repack_non_parameter_options(&a_parameters, params, generation_method);
-		// ############################################
-		repack_parameters(&avec_parameters[1], &a_parameters, generation_method,
-						  dimension);
-		adouble phasep, phasec;
-		int status = fourier_phase(&afreq, 1, &phasep, &phasec, local_gen_method,
-								   &a_parameters);
-		double phase;
-		phasep >>= phase;
+  // calculate derivative of phase
+  int *tapes = params_packed->time_tapes;
+  for (int i = 0; i < boundary_num; i++) {
+    tapes[i] = (i + 1) * 17; // Random tape id
+    trace_on(tapes[i]);
+    adouble avec_parameters[vec_param_length];
+    avec_parameters[0] <<= grad_freqs[i];
+    for (int j = 1; j <= dimension; j++) {
+      if (j == id1 + 1 || j == id2 + 1) {
+        avec_parameters[j] <<= vec_parameters[j];
+      } else {
+        avec_parameters[j] = vec_parameters[j];
+      }
+    }
+    // Repack parameters
+    gen_params_base<adouble> a_parameters;
+    adouble afreq;
+    afreq = avec_parameters[0];
+    // ############################################
+    // Non variable parameters
+    repack_non_parameter_options(&a_parameters, params, generation_method);
+    // ############################################
+    repack_parameters(&avec_parameters[1], &a_parameters, generation_method,
+                      dimension);
+    adouble phasep, phasec;
+    int status = fourier_phase(&afreq, 1, &phasep, &phasec, local_gen_method,
+                               &a_parameters);
+    double phase;
+    phasep >>= phase;
 
-		trace_off();
-		deallocate_non_param_options(&a_parameters, params, generation_method);
-	}
+    trace_off();
+    deallocate_non_param_options(&a_parameters, params, generation_method);
+  }
 }
-void tape_waveform_gsl_subroutine(gsl_subroutine *params_packed)
-{
-	int id1 = params_packed->id1;
-	int id2 = params_packed->id2;
-	int dimension = params_packed->dim;
-	int boundary_num = params_packed->boundary_num;
-	double *freq_boundaries = params_packed->freq_boundaries;
-	double *grad_freqs = params_packed->grad_freqs;
-	bool *log_factors = params_packed->log_factors;
-	std::string generation_method = params_packed->generation_method;
-	std::string detector = params_packed->detector;
-	std::string reference_detector = params_packed->reference_detector;
-	gen_params *parameters = params_packed->gen_params_in;
+void tape_waveform_gsl_subroutine(gsl_subroutine *params_packed) {
+  int id1 = params_packed->id1;
+  int id2 = params_packed->id2;
+  int dimension = params_packed->dim;
+  int boundary_num = params_packed->boundary_num;
+  double *freq_boundaries = params_packed->freq_boundaries;
+  double *grad_freqs = params_packed->grad_freqs;
+  bool *log_factors = params_packed->log_factors;
+  std::string generation_method = params_packed->generation_method;
+  std::string detector = params_packed->detector;
+  std::string reference_detector = params_packed->reference_detector;
+  gen_params *parameters = params_packed->gen_params_in;
 
-	int vec_param_length = dimension + 1;
-	if (detector == "LISA")
-	{
-		// take derivative wrt time as well, for the chain rule
-		vec_param_length += 1;
-	}
-	double vec_parameters[vec_param_length];
-	std::string local_gen_method = local_generation_method(generation_method);
-	vec_parameters[0] = grad_freqs[0];
-	unpack_parameters(&vec_parameters[1], parameters, generation_method,
-					  dimension, log_factors);
-	double *grad_times = NULL;
-	if (detector == "LISA")
-	{
-		grad_times = new double[boundary_num];
-		time_phase_corrected_autodiff(grad_times, boundary_num, grad_freqs,
-									  parameters, generation_method, false);
-	}
-	// calculate_derivative tapes
-	int *tapes = params_packed->waveform_tapes;
-	for (int i = 0; i < boundary_num; i++)
-	{
-		tapes[i] = (i + 1) * 7;
-		trace_on(tapes[i]);
-		// adouble avec_parameters[dimension+1];
-		adouble avec_parameters[vec_param_length];
-		// avec_parameters[0] =grad_freqs[i];
-		avec_parameters[0] <<= grad_freqs[i];
-		for (int j = 1; j <= dimension; j++)
-		{
-			if (j == id1 + 1 || j == id2 + 1)
-			{
-				avec_parameters[j] <<= vec_parameters[j];
-			}
-			else
-			{
-				avec_parameters[j] = vec_parameters[j];
-			}
-		}
-		// Repack parameters
-		gen_params_base<adouble> a_parameters;
-		adouble afreq;
-		afreq = avec_parameters[0];
-		// ############################################
-		// Non variable parameters
-		repack_non_parameter_options(&a_parameters, parameters, generation_method);
-		// ############################################
-		repack_parameters(&avec_parameters[1], &a_parameters, generation_method,
-						  dimension);
-		adouble time;
-		if (detector == "LISA")
-		{
-			time <<= grad_times[i];
-			// map_extrinsic_angles(&a_parameters);
-		}
-		std::complex<adouble> a_response;
-		if (!a_parameters.sky_average)
-		{
-			if (detector != "LISA" && detector != reference_detector)
-			{
-				a_parameters.tc -=
-					DTOA_DETECTOR(a_parameters.RA, a_parameters.DEC, a_parameters.gmst,
-								  reference_detector, detector);
-			}
-			int status =
-				fourier_detector_response(&afreq, 1, &a_response, detector,
-										  local_gen_method, &a_parameters, &time);
-		}
-		else
-		{
-			adouble a_amp;
-			adouble a_phasep;
-			adouble a_phasec;
+  int vec_param_length = dimension + 1;
+  if (detector == "LISA") {
+    // take derivative wrt time as well, for the chain rule
+    vec_param_length += 1;
+  }
+  double vec_parameters[vec_param_length];
+  std::string local_gen_method = local_generation_method(generation_method);
+  vec_parameters[0] = grad_freqs[0];
+  unpack_parameters(&vec_parameters[1], parameters, generation_method,
+                    dimension, log_factors);
+  double *grad_times = NULL;
+  if (detector == "LISA") {
+    grad_times = new double[boundary_num];
+    time_phase_corrected_autodiff(grad_times, boundary_num, grad_freqs,
+                                  parameters, generation_method, false);
+  }
+  // calculate_derivative tapes
+  int *tapes = params_packed->waveform_tapes;
+  for (int i = 0; i < boundary_num; i++) {
+    tapes[i] = (i + 1) * 7;
+    trace_on(tapes[i]);
+    // adouble avec_parameters[dimension+1];
+    adouble avec_parameters[vec_param_length];
+    // avec_parameters[0] =grad_freqs[i];
+    avec_parameters[0] <<= grad_freqs[i];
+    for (int j = 1; j <= dimension; j++) {
+      if (j == id1 + 1 || j == id2 + 1) {
+        avec_parameters[j] <<= vec_parameters[j];
+      } else {
+        avec_parameters[j] = vec_parameters[j];
+      }
+    }
+    // Repack parameters
+    gen_params_base<adouble> a_parameters;
+    adouble afreq;
+    afreq = avec_parameters[0];
+    // ############################################
+    // Non variable parameters
+    repack_non_parameter_options(&a_parameters, parameters, generation_method);
+    // ############################################
+    repack_parameters(&avec_parameters[1], &a_parameters, generation_method,
+                      dimension);
+    adouble time;
+    if (detector == "LISA") {
+      time <<= grad_times[i];
+      // map_extrinsic_angles(&a_parameters);
+    }
+    std::complex<adouble> a_response;
+    if (!a_parameters.sky_average) {
+      if (detector != "LISA" && detector != reference_detector) {
+        a_parameters.tc -=
+            DTOA_DETECTOR(a_parameters.RA, a_parameters.DEC, a_parameters.gmst,
+                          reference_detector, detector);
+      }
+      int status =
+          fourier_detector_response(&afreq, 1, &a_response, detector,
+                                    local_gen_method, &a_parameters, &time);
+    } else {
+      adouble a_amp;
+      adouble a_phasep;
+      adouble a_phasec;
 
-			int status =
-				fourier_amplitude(&afreq, 1, &a_amp, local_gen_method, &a_parameters);
-			status = fourier_phase(&afreq, 1, &a_phasep, &a_phasec, local_gen_method,
-								   &a_parameters);
-			a_response = a_amp * exp(std::complex<adouble>(0, a_phasep));
-		}
-		double response[2];
-		real(a_response) >>= response[0];
-		imag(a_response) >>= response[1];
+      int status =
+          fourier_amplitude(&afreq, 1, &a_amp, local_gen_method, &a_parameters);
+      status = fourier_phase(&afreq, 1, &a_phasep, &a_phasec, local_gen_method,
+                             &a_parameters);
+      a_response = a_amp * exp(std::complex<adouble>(0, a_phasep));
+    }
+    double response[2];
+    real(a_response) >>= response[0];
+    imag(a_response) >>= response[1];
 
-		trace_off();
-		deallocate_non_param_options(&a_parameters, parameters, generation_method);
-	}
-	if (detector == "LISA")
-	{
-		delete[] grad_times;
-	}
+    trace_off();
+    deallocate_non_param_options(&a_parameters, parameters, generation_method);
+  }
+  if (detector == "LISA") {
+    delete[] grad_times;
+  }
 }
 /*! \brief Routine that implements GSL numerical integration to calculate the
  * Fishers
@@ -2896,29 +2468,30 @@ void tape_waveform_gsl_subroutine(gsl_subroutine *params_packed)
  * Implements (GSL_INTEG_GAUSS15)
  */
 void fisher_autodiff_gsl_integration(
-	double *frequency_bounds,  /**<Bounds of integration in fourier space*/
-	string generation_method,  /**<Method of waveform generation*/
-	string sensitivity_curve,  /**<Sensitivity curve to be used for the PSD --
-								  MUST BE ANALYTIC*/
-	string detector,		   /**< Detector to use for the response function*/
-	string reference_detector, /**< Detector to use for the response function*/
-	double **output,		   /**<[out] Output Fisher -- must be preallocated -- shape
-								  [dimension][dimension]*/
-	double **error,			   /**<[out] Estimated error, as specified by GSL's integration
-								  -- must be preallocated -- shape [dimension][dimension]*/
-	int dimension,			   /**<Dimension of the Fisher */
-	gen_params *parameters,	   /**< Generation parameters specifying source
-								  parameters and waveform options*/
-	double abserr,			   /**<Target absolute error (0 if this should be ignored -- ONE
-								  type of error must be specified)*/
-	double relerr			   /**<Target relative error (0 if this should be ignored -- ONE
-								  type of error must be specified)*/
-)
-{
-	fisher_autodiff_gsl_integration(frequency_bounds, generation_method,
-									sensitivity_curve, detector,
-									reference_detector, output, error, dimension,
-									parameters, abserr, relerr, "", false);
+    double *frequency_bounds,  /**<Bounds of integration in fourier space*/
+    string generation_method,  /**<Method of waveform generation*/
+    string sensitivity_curve,  /**<Sensitivity curve to be used for the PSD --
+                                                              MUST BE ANALYTIC*/
+    string detector,           /**< Detector to use for the response function*/
+    string reference_detector, /**< Detector to use for the response function*/
+    double **output, /**<[out] Output Fisher -- must be preallocated -- shape
+                                            [dimension][dimension]*/
+    double **error, /**<[out] Estimated error, as specified by GSL's integration
+                                           -- must be preallocated -- shape
+                       [dimension][dimension]*/
+    int dimension,  /**<Dimension of the Fisher */
+    gen_params *parameters, /**< Generation parameters specifying source
+                                                           parameters and
+                               waveform options*/
+    double abserr, /**<Target absolute error (0 if this should be ignored -- ONE
+                                          type of error must be specified)*/
+    double relerr  /**<Target relative error (0 if this should be ignored -- ONE
+                                          type of error must be specified)*/
+) {
+  fisher_autodiff_gsl_integration(frequency_bounds, generation_method,
+                                  sensitivity_curve, detector,
+                                  reference_detector, output, error, dimension,
+                                  parameters, abserr, relerr, "", false);
 }
 
 /*! \brief Routine that implements GSL numerical integration to calculate the
@@ -2946,138 +2519,124 @@ void fisher_autodiff_gsl_integration(
  * of errors
  */
 void fisher_autodiff_gsl_integration(
-	double *frequency_bounds,  /**<Bounds of integration in fourier space*/
-	string generation_method,  /**<Method of waveform generation*/
-	string sensitivity_curve,  /**<Sensitivity curve to be used for the PSD --
-								  MUST BE ANALYTIC*/
-	string detector,		   /**< Detector to use for the response function*/
-	string reference_detector, /**< Detector to use for the response function*/
-	double **output,		   /**<[out] Output Fisher -- must be preallocated -- shape
-								  [dimension][dimension]*/
-	double **error,			   /**<[out] Estimated error, as specified by GSL's integration
-								  -- must be preallocated -- shape [dimension][dimension]*/
-	int dimension,			   /**<Dimension of the Fisher */
-	gen_params *parameters,	   /**< Generation parameters specifying source
-								  parameters and waveform options*/
-	double abserr,			   /**<Target absolute error (0 if this should be ignored -- ONE
-								  type of error must be specified)*/
-	double relerr,			   /**<Target relative error (0 if this should be ignored -- ONE
-								  type of error must be specified)*/
-	std::string error_log,	   /**< File to write non-critical error codes to
-								  (roundoff error)*/
-	bool logerr				   /**<Whether or not to end program with certain error codes, or
-								  to log them and continue*/
-)
-{
-	gsl_subroutine params_packed;
-	params_packed.detector = detector;
-	params_packed.reference_detector = reference_detector;
-	params_packed.sensitivity_curve = sensitivity_curve;
-	params_packed.generation_method = generation_method;
-	params_packed.gen_params_in = parameters;
-	params_packed.dim = dimension;
-	gsl_function F;
-	// double abserr = 0, relerr = 1e-3;
-	double result;
-	double err;
-	int id1, id2;
-	size_t np = 1e5; // Max number of division
-	std::ofstream log_file;
-	// int *err_rows;
-	// int *err_cols;
-	bool no_err = true;
-	if (logerr)
-	{
-		log_file.open(error_log);
-		// err_rows = new int [dimension];
-		// err_cols = new int [dimension];
-	}
-	gsl_integration_workspace *w = gsl_integration_workspace_alloc(np);
-	for (int i = 0; i < dimension; i++)
-	{
-		for (int j = 0; j <= i; j++)
-		{
-			// i>j
-			params_packed.id1 = j;
-			params_packed.id2 = i;
-			// Find boundary_num, boundary_freqs, grad_freqs
-			prep_gsl_subroutine(&params_packed);
-			// Tape functions
-			tape_waveform_gsl_subroutine(&params_packed);
-			if (detector == "LISA")
-			{
-				tape_time_gsl_subroutine(&params_packed);
-				tape_phase_gsl_subroutine(&params_packed);
-			}
+    double *frequency_bounds,  /**<Bounds of integration in fourier space*/
+    string generation_method,  /**<Method of waveform generation*/
+    string sensitivity_curve,  /**<Sensitivity curve to be used for the PSD --
+                                                              MUST BE ANALYTIC*/
+    string detector,           /**< Detector to use for the response function*/
+    string reference_detector, /**< Detector to use for the response function*/
+    double **output, /**<[out] Output Fisher -- must be preallocated -- shape
+                                            [dimension][dimension]*/
+    double **error, /**<[out] Estimated error, as specified by GSL's integration
+                                           -- must be preallocated -- shape
+                       [dimension][dimension]*/
+    int dimension,  /**<Dimension of the Fisher */
+    gen_params *parameters, /**< Generation parameters specifying source
+                                                           parameters and
+                               waveform options*/
+    double abserr, /**<Target absolute error (0 if this should be ignored -- ONE
+                                          type of error must be specified)*/
+    double relerr, /**<Target relative error (0 if this should be ignored -- ONE
+                                          type of error must be specified)*/
+    std::string error_log, /**< File to write non-critical error codes to
+                                                          (roundoff error)*/
+    bool logerr /**<Whether or not to end program with certain error codes, or
+                               to log them and continue*/
+) {
+  gsl_subroutine params_packed;
+  params_packed.detector = detector;
+  params_packed.reference_detector = reference_detector;
+  params_packed.sensitivity_curve = sensitivity_curve;
+  params_packed.generation_method = generation_method;
+  params_packed.gen_params_in = parameters;
+  params_packed.dim = dimension;
+  gsl_function F;
+  // double abserr = 0, relerr = 1e-3;
+  double result;
+  double err;
+  int id1, id2;
+  size_t np = 1e5; // Max number of division
+  std::ofstream log_file;
+  // int *err_rows;
+  // int *err_cols;
+  bool no_err = true;
+  if (logerr) {
+    log_file.open(error_log);
+    // err_rows = new int [dimension];
+    // err_cols = new int [dimension];
+  }
+  gsl_integration_workspace *w = gsl_integration_workspace_alloc(np);
+  for (int i = 0; i < dimension; i++) {
+    for (int j = 0; j <= i; j++) {
+      // i>j
+      params_packed.id1 = j;
+      params_packed.id2 = i;
+      // Find boundary_num, boundary_freqs, grad_freqs
+      prep_gsl_subroutine(&params_packed);
+      // Tape functions
+      tape_waveform_gsl_subroutine(&params_packed);
+      if (detector == "LISA") {
+        tape_time_gsl_subroutine(&params_packed);
+        tape_phase_gsl_subroutine(&params_packed);
+      }
 
-			F.function = &calculate_integrand_autodiff_gsl_subroutine;
-			F.params = &params_packed;
+      F.function = &calculate_integrand_autodiff_gsl_subroutine;
+      F.params = &params_packed;
 
-			// std::cout<<"Integrating "<<i<<" "<<j<<std::endl;
-			if (logerr)
-			{
-				gsl_set_error_handler_off();
-			}
-			int errcode = gsl_integration_qag(&F, frequency_bounds[0],
-											  frequency_bounds[1], abserr, relerr, np,
-											  GSL_INTEG_GAUSS15, w, &result, &err);
-			if (logerr && errcode)
-			{
-				if (errcode == 18)
-				{
-					log_file << i << " " << j << " : " << gsl_strerror(errcode);
-					no_err = false;
-					// err_rows[
-				}
-				else
-				{
-					std::cout << "Error -- not roundoff" << std::endl;
-					;
-					exit(-1);
-				}
-			}
+      // std::cout<<"Integrating "<<i<<" "<<j<<std::endl;
+      if (logerr) {
+        gsl_set_error_handler_off();
+      }
+      int errcode = gsl_integration_qag(&F, frequency_bounds[0],
+                                        frequency_bounds[1], abserr, relerr, np,
+                                        GSL_INTEG_GAUSS15, w, &result, &err);
+      if (logerr && errcode) {
+        if (errcode == 18) {
+          log_file << i << " " << j << " : " << gsl_strerror(errcode);
+          no_err = false;
+          // err_rows[
+        } else {
+          std::cout << "Error -- not roundoff" << std::endl;
+          ;
+          exit(-1);
+        }
+      }
 
-			output[i][j] = 4 * result;
-			output[j][i] = output[i][j];
-			error[i][j] = err;
-			error[j][i] = error[i][j];
+      output[i][j] = 4 * result;
+      output[j][i] = output[i][j];
+      error[i][j] = err;
+      error[j][i] = error[i][j];
 
-			delete[] params_packed.waveform_tapes;
-			if (detector == "LISA")
-			{
-				delete[] params_packed.time_tapes;
-				delete[] params_packed.phase_tapes;
-			}
-			delete[] params_packed.freq_boundaries;
-			delete[] params_packed.grad_freqs;
-			delete[] params_packed.log_factors;
+      delete[] params_packed.waveform_tapes;
+      if (detector == "LISA") {
+        delete[] params_packed.time_tapes;
+        delete[] params_packed.phase_tapes;
+      }
+      delete[] params_packed.freq_boundaries;
+      delete[] params_packed.grad_freqs;
+      delete[] params_packed.log_factors;
 
-			// std::cout<<"2*Result "<<2*output[i][j]<<std::endl;
-			// std::cout<<"Error "<<err<<std::endl;
-			// std::cout<<"intervals "<<w->size<<std::endl;
-		}
-	}
-	if (logerr)
-	{
-		log_file.close();
-	}
-	if (logerr && no_err)
-	{
-		std::remove(error_log.c_str());
-	}
+      // std::cout<<"2*Result "<<2*output[i][j]<<std::endl;
+      // std::cout<<"Error "<<err<<std::endl;
+      // std::cout<<"intervals "<<w->size<<std::endl;
+    }
+  }
+  if (logerr) {
+    log_file.close();
+  }
+  if (logerr && no_err) {
+    std::remove(error_log.c_str());
+  }
 
-	gsl_integration_workspace_free(w);
+  gsl_integration_workspace_free(w);
 
-	if (detector == "LISA")
-	{
-		for (int i = 0; i < dimension; i++)
-		{
-			for (int j = 0; j < dimension; j++)
-			{
-				output[i][j] *= 2;
-			}
-		}
-	}
+  if (detector == "LISA") {
+    for (int i = 0; i < dimension; i++) {
+      for (int j = 0; j < dimension; j++) {
+        output[i][j] *= 2;
+      }
+    }
+  }
 }
 /*! \brief Routine that implements GSL numerical integration to calculate the
  * Fishers -- batch modifications version
@@ -3107,31 +2666,31 @@ void fisher_autodiff_gsl_integration(
  * Implements (GSL_INTEG_GAUSS15)
  */
 void fisher_autodiff_gsl_integration_batch_mod(
-	double *frequency_bounds,  /**<Bounds of integration in fourier space*/
-	string generation_method,  /**<Method of waveform generation*/
-	string sensitivity_curve,  /**<Sensitivity curve to be used for the PSD --
-								  MUST BE ANALYTIC*/
-	string detector,		   /**< Detector to use for the response function*/
-	string reference_detector, /**< Detector to use for the response function*/
-	double **output,		   /**<[out] Output Fisher -- must be preallocated -- shape
-								  [full_dimension][full_dimension]*/
-	double **error,			   /**<[out] Estimated error, as specified by GSL's integration
-								  -- must be preallocated -- shape
-								  [full_dimension][full_dimension]*/
-	int base_dimension,		   /**< Dimension of base model (ie GR dimension)*/
-	int full_dimension,		   /**< Full dimension (GR dimension + Nmod)*/
-	gen_params *parameters,	   /**< Generation parameters specifying source
-								  parameters and waveform options*/
-	double abserr,			   /**<Target absolute error (0 if this should be ignored -- ONE
-								  type of error must be specified)*/
-	double relerr			   /**<Target relative error (0 if this should be ignored -- ONE
-								  type of error must be specified)*/
-)
-{
-	fisher_autodiff_gsl_integration_batch_mod(
-		frequency_bounds, generation_method, sensitivity_curve, detector,
-		reference_detector, output, error, base_dimension, full_dimension,
-		parameters, abserr, relerr, "", false);
+    double *frequency_bounds,  /**<Bounds of integration in fourier space*/
+    string generation_method,  /**<Method of waveform generation*/
+    string sensitivity_curve,  /**<Sensitivity curve to be used for the PSD --
+                                                              MUST BE ANALYTIC*/
+    string detector,           /**< Detector to use for the response function*/
+    string reference_detector, /**< Detector to use for the response function*/
+    double **output, /**<[out] Output Fisher -- must be preallocated -- shape
+                                            [full_dimension][full_dimension]*/
+    double **error, /**<[out] Estimated error, as specified by GSL's integration
+                                           -- must be preallocated -- shape
+                                           [full_dimension][full_dimension]*/
+    int base_dimension,     /**< Dimension of base model (ie GR dimension)*/
+    int full_dimension,     /**< Full dimension (GR dimension + Nmod)*/
+    gen_params *parameters, /**< Generation parameters specifying source
+                                                           parameters and
+                               waveform options*/
+    double abserr, /**<Target absolute error (0 if this should be ignored -- ONE
+                                          type of error must be specified)*/
+    double relerr  /**<Target relative error (0 if this should be ignored -- ONE
+                                          type of error must be specified)*/
+) {
+  fisher_autodiff_gsl_integration_batch_mod(
+      frequency_bounds, generation_method, sensitivity_curve, detector,
+      reference_detector, output, error, base_dimension, full_dimension,
+      parameters, abserr, relerr, "", false);
 }
 /*! \brief Routine that implements GSL numerical integration to calculate the
  * Fishers -- batch modifications version
@@ -3164,147 +2723,128 @@ void fisher_autodiff_gsl_integration_batch_mod(
  * of errors
  */
 void fisher_autodiff_gsl_integration_batch_mod(
-	double *frequency_bounds,  /**<Bounds of integration in fourier space*/
-	string generation_method,  /**<Method of waveform generation*/
-	string sensitivity_curve,  /**<Sensitivity curve to be used for the PSD --
-								  MUST BE ANALYTIC*/
-	string detector,		   /**< Detector to use for the response function*/
-	string reference_detector, /**< Detector to use for the response function*/
-	double **output,		   /**<[out] Output Fisher -- must be preallocated -- shape
-								  [full_dimension][full_dimension]*/
-	double **error,			   /**<[out] Estimated error, as specified by GSL's integration
-								  -- must be preallocated -- shape
-								  [full_dimension][full_dimension]*/
-	int base_dimension,		   /**< Dimension of base model (ie GR dimension)*/
-	int full_dimension,		   /**< Full dimension (GR dimension + Nmod)*/
-	gen_params *parameters,	   /**< Generation parameters specifying source
-								  parameters and waveform options*/
-	double abserr,			   /**<Target absolute error (0 if this should be ignored -- ONE
-								  type of error must be specified)*/
-	double relerr,			   /**<Target relative error (0 if this should be ignored -- ONE
-								  type of error must be specified)*/
-	std::string error_log,	   /**< File to write non-critical error codes to
-								  (roundoff error)*/
-	bool logerr				   /**<Whether or not to end program with certain error codes, or
-								  to log them and continue*/
-)
-{
-	int mod_list[full_dimension - base_dimension];
-	for (int i = base_dimension; i < full_dimension; i++)
-	{
-		mod_list[i - base_dimension] = i;
-	}
-	gsl_subroutine params_packed;
-	params_packed.detector = detector;
-	params_packed.reference_detector = detector;
-	params_packed.sensitivity_curve = sensitivity_curve;
-	params_packed.generation_method = generation_method;
-	params_packed.gen_params_in = parameters;
-	params_packed.dim = full_dimension;
-	gsl_function F;
-	// double abserr = 0, relerr = 1e-3;
-	double result;
-	double err;
-	int id1, id2;
-	size_t np = 1e5; // Max number of division
-	std::ofstream log_file;
-	bool no_err = true;
-	if (logerr)
-	{
-		log_file.open(error_log);
-	}
-	gsl_integration_workspace *w = gsl_integration_workspace_alloc(np);
-	for (int i = 0; i < full_dimension; i++)
-	{
-		for (int j = 0; j <= i; j++)
-		{
-			// i>j
-			if (check_list(i, mod_list, full_dimension - base_dimension) &&
-				check_list(j, mod_list, full_dimension - base_dimension) && i != j)
-			{
-				output[i][j] = 0;
-				output[j][i] = 0;
-				error[i][j] = 0;
-				error[j][i] = 0;
-			}
-			else
-			{
-				params_packed.id1 = j;
-				params_packed.id2 = i;
-				// Find boundary_num, boundary_freqs, grad_freqs
-				prep_gsl_subroutine(&params_packed);
-				// Tape functions
-				tape_waveform_gsl_subroutine(&params_packed);
-				if (detector == "LISA")
-				{
-					tape_time_gsl_subroutine(&params_packed);
-					tape_phase_gsl_subroutine(&params_packed);
-				}
+    double *frequency_bounds,  /**<Bounds of integration in fourier space*/
+    string generation_method,  /**<Method of waveform generation*/
+    string sensitivity_curve,  /**<Sensitivity curve to be used for the PSD --
+                                                              MUST BE ANALYTIC*/
+    string detector,           /**< Detector to use for the response function*/
+    string reference_detector, /**< Detector to use for the response function*/
+    double **output, /**<[out] Output Fisher -- must be preallocated -- shape
+                                            [full_dimension][full_dimension]*/
+    double **error, /**<[out] Estimated error, as specified by GSL's integration
+                                           -- must be preallocated -- shape
+                                           [full_dimension][full_dimension]*/
+    int base_dimension,     /**< Dimension of base model (ie GR dimension)*/
+    int full_dimension,     /**< Full dimension (GR dimension + Nmod)*/
+    gen_params *parameters, /**< Generation parameters specifying source
+                                                           parameters and
+                               waveform options*/
+    double abserr, /**<Target absolute error (0 if this should be ignored -- ONE
+                                          type of error must be specified)*/
+    double relerr, /**<Target relative error (0 if this should be ignored -- ONE
+                                          type of error must be specified)*/
+    std::string error_log, /**< File to write non-critical error codes to
+                                                          (roundoff error)*/
+    bool logerr /**<Whether or not to end program with certain error codes, or
+                               to log them and continue*/
+) {
+  int mod_list[full_dimension - base_dimension];
+  for (int i = base_dimension; i < full_dimension; i++) {
+    mod_list[i - base_dimension] = i;
+  }
+  gsl_subroutine params_packed;
+  params_packed.detector = detector;
+  params_packed.reference_detector = detector;
+  params_packed.sensitivity_curve = sensitivity_curve;
+  params_packed.generation_method = generation_method;
+  params_packed.gen_params_in = parameters;
+  params_packed.dim = full_dimension;
+  gsl_function F;
+  // double abserr = 0, relerr = 1e-3;
+  double result;
+  double err;
+  int id1, id2;
+  size_t np = 1e5; // Max number of division
+  std::ofstream log_file;
+  bool no_err = true;
+  if (logerr) {
+    log_file.open(error_log);
+  }
+  gsl_integration_workspace *w = gsl_integration_workspace_alloc(np);
+  for (int i = 0; i < full_dimension; i++) {
+    for (int j = 0; j <= i; j++) {
+      // i>j
+      if (check_list(i, mod_list, full_dimension - base_dimension) &&
+          check_list(j, mod_list, full_dimension - base_dimension) && i != j) {
+        output[i][j] = 0;
+        output[j][i] = 0;
+        error[i][j] = 0;
+        error[j][i] = 0;
+      } else {
+        params_packed.id1 = j;
+        params_packed.id2 = i;
+        // Find boundary_num, boundary_freqs, grad_freqs
+        prep_gsl_subroutine(&params_packed);
+        // Tape functions
+        tape_waveform_gsl_subroutine(&params_packed);
+        if (detector == "LISA") {
+          tape_time_gsl_subroutine(&params_packed);
+          tape_phase_gsl_subroutine(&params_packed);
+        }
 
-				F.function = &calculate_integrand_autodiff_gsl_subroutine;
-				F.params = &params_packed;
+        F.function = &calculate_integrand_autodiff_gsl_subroutine;
+        F.params = &params_packed;
 
-				// std::cout<<"Integrating "<<i<<" "<<j<<std::endl;
-				if (logerr)
-				{
-					gsl_set_error_handler_off();
-				}
-				int errcode = gsl_integration_qag(
-					&F, frequency_bounds[0], frequency_bounds[1], abserr, relerr, np,
-					GSL_INTEG_GAUSS15, w, &result, &err);
-				if (logerr && errcode)
-				{
-					if (errcode == 18)
-					{
-						log_file << i << " " << j << " : " << gsl_strerror(errcode)
-								 << std::endl;
-						no_err = false;
-					}
-					else
-					{
-						std::cout << "Error -- not roundoff" << std::endl;
-						;
-						exit(-1);
-					}
-				}
-				output[i][j] = 4 * result;
-				output[j][i] = output[i][j];
-				error[i][j] = err;
-				error[j][i] = error[i][j];
+        // std::cout<<"Integrating "<<i<<" "<<j<<std::endl;
+        if (logerr) {
+          gsl_set_error_handler_off();
+        }
+        int errcode = gsl_integration_qag(
+            &F, frequency_bounds[0], frequency_bounds[1], abserr, relerr, np,
+            GSL_INTEG_GAUSS15, w, &result, &err);
+        if (logerr && errcode) {
+          if (errcode == 18) {
+            log_file << i << " " << j << " : " << gsl_strerror(errcode)
+                     << std::endl;
+            no_err = false;
+          } else {
+            std::cout << "Error -- not roundoff" << std::endl;
+            ;
+            exit(-1);
+          }
+        }
+        output[i][j] = 4 * result;
+        output[j][i] = output[i][j];
+        error[i][j] = err;
+        error[j][i] = error[i][j];
 
-				delete[] params_packed.waveform_tapes;
-				if (detector == "LISA")
-				{
-					delete[] params_packed.time_tapes;
-					delete[] params_packed.phase_tapes;
-				}
-				delete[] params_packed.freq_boundaries;
-				delete[] params_packed.grad_freqs;
-				delete[] params_packed.log_factors;
-			}
-		}
-	}
-	if (logerr)
-	{
-		log_file.close();
-	}
-	if (logerr && no_err)
-	{
-		std::remove(error_log.c_str());
-	}
+        delete[] params_packed.waveform_tapes;
+        if (detector == "LISA") {
+          delete[] params_packed.time_tapes;
+          delete[] params_packed.phase_tapes;
+        }
+        delete[] params_packed.freq_boundaries;
+        delete[] params_packed.grad_freqs;
+        delete[] params_packed.log_factors;
+      }
+    }
+  }
+  if (logerr) {
+    log_file.close();
+  }
+  if (logerr && no_err) {
+    std::remove(error_log.c_str());
+  }
 
-	gsl_integration_workspace_free(w);
+  gsl_integration_workspace_free(w);
 
-	if (detector == "LISA")
-	{
-		for (int i = 0; i < full_dimension; i++)
-		{
-			for (int j = 0; j < full_dimension; j++)
-			{
-				output[i][j] *= 2;
-			}
-		}
-	}
+  if (detector == "LISA") {
+    for (int i = 0; i < full_dimension; i++) {
+      for (int j = 0; j < full_dimension; j++) {
+        output[i][j] *= 2;
+      }
+    }
+  }
 }
 /*! \brief Calculates the derivatives of the detector response using automatic
  * differentiation -- one frequency for gsl_integration
@@ -3320,160 +2860,135 @@ void fisher_autodiff_gsl_integration_batch_mod(
  * frequency deriv(time deriv)
  */
 double calculate_integrand_autodiff_gsl_subroutine(double frequency,
-												   void *params_in)
-{
-	// double start = clock();
-	gsl_subroutine params_packed = *(gsl_subroutine *)params_in;
-	std::string detector = params_packed.detector;
-	std::string reference_detector = params_packed.detector;
-	std::string generation_method = params_packed.generation_method;
-	gen_params *parameters = params_packed.gen_params_in;
-	std::string sensitivity_curve = params_packed.sensitivity_curve;
-	int *wf_tapes = params_packed.waveform_tapes;
-	int *time_tapes = params_packed.time_tapes;
-	int boundary_num = params_packed.boundary_num;
-	double *freq_boundaries = params_packed.freq_boundaries;
-	bool *log_factors = params_packed.log_factors;
-	int id1 = params_packed.id1;
-	int id2 = params_packed.id2;
-	int dimension = params_packed.dim;
-	// std::cout<<id1<<" "<<id2<<std::endl;
+                                                   void *params_in) {
+  // double start = clock();
+  gsl_subroutine params_packed = *(gsl_subroutine *)params_in;
+  std::string detector = params_packed.detector;
+  std::string reference_detector = params_packed.detector;
+  std::string generation_method = params_packed.generation_method;
+  gen_params *parameters = params_packed.gen_params_in;
+  std::string sensitivity_curve = params_packed.sensitivity_curve;
+  int *wf_tapes = params_packed.waveform_tapes;
+  int *time_tapes = params_packed.time_tapes;
+  int boundary_num = params_packed.boundary_num;
+  double *freq_boundaries = params_packed.freq_boundaries;
+  bool *log_factors = params_packed.log_factors;
+  int id1 = params_packed.id1;
+  int id2 = params_packed.id2;
+  int dimension = params_packed.dim;
+  // std::cout<<id1<<" "<<id2<<std::endl;
 
-	// Transform gen_params to double vectors
-	int vec_param_length = dimension + 1;
-	int indep;
-	if (id1 != id2)
-	{
-		indep = 3; // 2 plus frequency
-	}
-	else
-	{
-		indep = 2; // 1 plus frequency
-	}
-	if (detector == "LISA")
-	{
-		// take derivative wrt time as well, for the chain rule
-		vec_param_length += 1;
-		indep += 1;
-	}
-	std::complex<double> waveform_deriv[2];
-	double vec_parameters[vec_param_length];
-	unpack_parameters(&vec_parameters[1], parameters, generation_method,
-					  dimension, log_factors);
-	double eval_time;
-	if (detector == "LISA")
-	{
-		time_phase_corrected_autodiff(&eval_time, 1, &frequency, parameters,
-									  generation_method, false,
-									  params_packed.phase_tapes);
-	}
-	// Evaluate derivative tapes
-	int dep = 2;	   // Output is complex
-	bool eval = false; // Keep track of when a boundary is hit
-	double indep_vec[indep];
-	double **jacob = allocate_2D_array(dep, indep);
-	std::complex<double> dt;
-	vec_parameters[0] = frequency;
-	indep_vec[0] = frequency;
-	indep_vec[1] = vec_parameters[id1 + 1];
-	if (id1 != id2)
-	{
-		indep_vec[2] = vec_parameters[id2 + 1];
-	}
-	if (detector == "LISA")
-	{
-		indep_vec[indep - 1] = eval_time;
-	}
-	double **dt_hess;
-	for (int n = 0; n < boundary_num; n++)
-	{
-		if (indep_vec[0] < freq_boundaries[n])
-		{
-			jacobian(wf_tapes[n], dep, indep, indep_vec, jacob);
+  // Transform gen_params to double vectors
+  int vec_param_length = dimension + 1;
+  int indep;
+  if (id1 != id2) {
+    indep = 3; // 2 plus frequency
+  } else {
+    indep = 2; // 1 plus frequency
+  }
+  if (detector == "LISA") {
+    // take derivative wrt time as well, for the chain rule
+    vec_param_length += 1;
+    indep += 1;
+  }
+  std::complex<double> waveform_deriv[2];
+  double vec_parameters[vec_param_length];
+  unpack_parameters(&vec_parameters[1], parameters, generation_method,
+                    dimension, log_factors);
+  double eval_time;
+  if (detector == "LISA") {
+    time_phase_corrected_autodiff(&eval_time, 1, &frequency, parameters,
+                                  generation_method, false,
+                                  params_packed.phase_tapes);
+  }
+  // Evaluate derivative tapes
+  int dep = 2;       // Output is complex
+  bool eval = false; // Keep track of when a boundary is hit
+  double indep_vec[indep];
+  double **jacob = allocate_2D_array(dep, indep);
+  std::complex<double> dt;
+  vec_parameters[0] = frequency;
+  indep_vec[0] = frequency;
+  indep_vec[1] = vec_parameters[id1 + 1];
+  if (id1 != id2) {
+    indep_vec[2] = vec_parameters[id2 + 1];
+  }
+  if (detector == "LISA") {
+    indep_vec[indep - 1] = eval_time;
+  }
+  double **dt_hess;
+  for (int n = 0; n < boundary_num; n++) {
+    if (indep_vec[0] < freq_boundaries[n]) {
+      jacobian(wf_tapes[n], dep, indep, indep_vec, jacob);
 
-			if (detector == "LISA")
-			{
-				dt_hess = new double *[indep - 1];
-				for (int j = 0; j < indep - 1; j++)
-				{
-					dt_hess[j] = new double[indep - 1];
-				}
-				double time_eval[indep - 1];
-				time_eval[0] = indep_vec[0];
-				time_eval[1] = indep_vec[1];
-				if (id1 != id2)
-				{
-					time_eval[2] = indep_vec[2];
-				}
-				hessian(time_tapes[n], indep - 1, time_eval, dt_hess);
-			}
-			int derivs;
-			if (id1 != id2)
-			{
-				derivs = 2;
-			}
-			else
-			{
-				derivs = 1;
-			}
-			for (int i = 0; i < derivs; i++)
-			{
-				waveform_deriv[i] =
-					jacob[0][i + 1] + std::complex<double>(0, 1) * jacob[1][i + 1];
-				// correct for time deriv for LISA
-				if (detector == "LISA")
-				{
-					// if(false ){
-					waveform_deriv[i] +=
-						(jacob[0][indep - 1] +
-						 std::complex<double>(0, 1) *
-							 jacob[1][indep - 1]) // Time derivative of WF
-						* dt_hess[i + 1][0] /
-						(2 * M_PI); // Derivative of time wrt source parameter -- 2 pi
-									// from definition of time
-				}
-			}
-			if (detector == "LISA")
-			{
-				for (int j = 0; j < indep - 1; j++)
-				{
-					delete[] dt_hess[j];
-				}
-				delete[] dt_hess;
-			}
-			// Mark successful derivative
-			eval = true;
-			if (id1 == id2)
-			{
-				waveform_deriv[1] = waveform_deriv[0];
-			}
-			// Skip the rest of the bins
-			break;
-		}
-	}
-	// If freq didn't fall in any boundary, set to 0
-	if (!eval)
-	{
-		for (int i = 0; i < indep; i++)
-		{
-			waveform_deriv[i] = std::complex<double>(0, 0);
-		}
-	}
-	// Account for Log parameters
-	if (log_factors[id1])
-	{
-		waveform_deriv[0] *= vec_parameters[id1 + 1];
-	}
-	// This needs to be here even if id1==id2
-	if (log_factors[id2])
-	{
-		waveform_deriv[1] *= vec_parameters[id2 + 1];
-	}
-	deallocate_2D_array(jacob, dep, indep);
-	double psdroot;
-	populate_noise(&frequency, sensitivity_curve, &psdroot, 1);
-	return std::real((waveform_deriv[0] * conj(waveform_deriv[1]))) /
-		   (psdroot * psdroot);
+      if (detector == "LISA") {
+        dt_hess = new double *[indep - 1];
+        for (int j = 0; j < indep - 1; j++) {
+          dt_hess[j] = new double[indep - 1];
+        }
+        double time_eval[indep - 1];
+        time_eval[0] = indep_vec[0];
+        time_eval[1] = indep_vec[1];
+        if (id1 != id2) {
+          time_eval[2] = indep_vec[2];
+        }
+        hessian(time_tapes[n], indep - 1, time_eval, dt_hess);
+      }
+      int derivs;
+      if (id1 != id2) {
+        derivs = 2;
+      } else {
+        derivs = 1;
+      }
+      for (int i = 0; i < derivs; i++) {
+        waveform_deriv[i] =
+            jacob[0][i + 1] + std::complex<double>(0, 1) * jacob[1][i + 1];
+        // correct for time deriv for LISA
+        if (detector == "LISA") {
+          // if(false ){
+          waveform_deriv[i] +=
+              (jacob[0][indep - 1] +
+               std::complex<double>(0, 1) *
+                   jacob[1][indep - 1]) // Time derivative of WF
+              * dt_hess[i + 1][0] /
+              (2 * M_PI); // Derivative of time wrt source parameter -- 2 pi
+                          // from definition of time
+        }
+      }
+      if (detector == "LISA") {
+        for (int j = 0; j < indep - 1; j++) {
+          delete[] dt_hess[j];
+        }
+        delete[] dt_hess;
+      }
+      // Mark successful derivative
+      eval = true;
+      if (id1 == id2) {
+        waveform_deriv[1] = waveform_deriv[0];
+      }
+      // Skip the rest of the bins
+      break;
+    }
+  }
+  // If freq didn't fall in any boundary, set to 0
+  if (!eval) {
+    for (int i = 0; i < indep; i++) {
+      waveform_deriv[i] = std::complex<double>(0, 0);
+    }
+  }
+  // Account for Log parameters
+  if (log_factors[id1]) {
+    waveform_deriv[0] *= vec_parameters[id1 + 1];
+  }
+  // This needs to be here even if id1==id2
+  if (log_factors[id2]) {
+    waveform_deriv[1] *= vec_parameters[id2 + 1];
+  }
+  deallocate_2D_array(jacob, dep, indep);
+  double psdroot;
+  populate_noise(&frequency, sensitivity_curve, &psdroot, 1);
+  return std::real((waveform_deriv[0] * conj(waveform_deriv[1]))) /
+         (psdroot * psdroot);
 }
 // #################################################################
 // #################################################################
@@ -3482,44 +2997,41 @@ double calculate_integrand_autodiff_gsl_subroutine(double frequency,
  * Computes the gradient for multiple betas, if present
  */
 void ppE_theory_transformation_calculate_derivatives(
-	std::string original_method, std::string new_method, int dimension,
-	int base_dim, gen_params_base<double> *param, double **derivatives)
-{
-	double vec_parameters[dimension];
-	bool log_factors[dimension];
-	unpack_parameters(vec_parameters, param, new_method, dimension, log_factors);
-	for (int i = 0; i < dimension - base_dim; i++)
-	{
-		// int id = omp_get_thread_num();
-		int id = 0;
-		trace_on(id);
-		adouble avec_parameters[dimension];
-		for (int j = 0; j < dimension; j++)
-		{
-			avec_parameters[j] <<= vec_parameters[j];
-		}
-		// Repack parameters
-		gen_params_base<adouble> a_parameters;
-		// ############################################
-		// Non variable parameters
-		repack_non_parameter_options(&a_parameters, param, new_method);
-		// ############################################
-		repack_parameters(avec_parameters, &a_parameters, new_method, dimension);
-		source_parameters<adouble> asource;
-		std::string local_method =
-			prep_source_parameters(&asource, &a_parameters, new_method);
-		// theory_ppE_map<adouble> mapping;
-		// assign_mapping(new_method,&mapping);
-		// adouble abeta = mapping.beta_fns[i](&asource);
-		double beta;
-		asource.betappe[i] >>= beta;
-		trace_off();
-		gradient(id, dimension, vec_parameters, derivatives[i]);
-		deallocate_non_param_options(&a_parameters, param, new_method);
-		cleanup_source_parameters(&asource, new_method);
-		// deallocate_mapping(&mapping);
-	}
-	return;
+    std::string original_method, std::string new_method, int dimension,
+    int base_dim, gen_params_base<double> *param, double **derivatives) {
+  double vec_parameters[dimension];
+  bool log_factors[dimension];
+  unpack_parameters(vec_parameters, param, new_method, dimension, log_factors);
+  for (int i = 0; i < dimension - base_dim; i++) {
+    // int id = omp_get_thread_num();
+    int id = 0;
+    trace_on(id);
+    adouble avec_parameters[dimension];
+    for (int j = 0; j < dimension; j++) {
+      avec_parameters[j] <<= vec_parameters[j];
+    }
+    // Repack parameters
+    gen_params_base<adouble> a_parameters;
+    // ############################################
+    // Non variable parameters
+    repack_non_parameter_options(&a_parameters, param, new_method);
+    // ############################################
+    repack_parameters(avec_parameters, &a_parameters, new_method, dimension);
+    source_parameters<adouble> asource;
+    std::string local_method =
+        prep_source_parameters(&asource, &a_parameters, new_method);
+    // theory_ppE_map<adouble> mapping;
+    // assign_mapping(new_method,&mapping);
+    // adouble abeta = mapping.beta_fns[i](&asource);
+    double beta;
+    asource.betappe[i] >>= beta;
+    trace_off();
+    gradient(id, dimension, vec_parameters, derivatives[i]);
+    deallocate_non_param_options(&a_parameters, param, new_method);
+    cleanup_source_parameters(&asource, new_method);
+    // deallocate_mapping(&mapping);
+  }
+  return;
 }
 /*! \brief Calculates the jacobian matrix going from ppE to a specific theory
  *
@@ -3527,81 +3039,60 @@ void ppE_theory_transformation_calculate_derivatives(
  * are the theory specific parameters
  */
 void ppE_theory_transformation_jac(std::string original_method,
-								   std::string new_method, int dimension,
-								   gen_params_base<double> *param,
-								   double **jac)
-{
-	// Figure out base dimension from generation method and sky_average flag
-	int base_dim;
-	if (has_substring(new_method, "PhenomPv2"))
-	{
-		if (param->sky_average)
-		{
-			base_dim = 7;
-		}
-		else
-		{
-			base_dim = 13;
-		}
-	}
-	else if (has_substring(new_method, "PhenomD"))
-	{
-		if (param->sky_average)
-		{
-			base_dim = 7;
-		}
-		else
-		{
-			base_dim = 11;
-		}
-	}
-	if (has_substring(new_method, "NRT"))
-	{
-		if (param->tidal_love)
-		{
-			base_dim += 1;
-		}
-		else
-		{
-			base_dim += 2;
-		}
-	}
-	double **derivatives = new double *[dimension - base_dim];
-	for (int i = 0; i < dimension - base_dim; i++)
-	{
-		derivatives[i] = new double[dimension];
-	}
-	ppE_theory_transformation_calculate_derivatives(
-		original_method, new_method, dimension, base_dim, param, derivatives);
+                                   std::string new_method, int dimension,
+                                   gen_params_base<double> *param,
+                                   double **jac) {
+  // Figure out base dimension from generation method and sky_average flag
+  int base_dim;
+  if (has_substring(new_method, "PhenomPv2")) {
+    if (param->sky_average) {
+      base_dim = 7;
+    } else {
+      base_dim = 13;
+    }
+  } else if (has_substring(new_method, "PhenomD")) {
+    if (param->sky_average) {
+      base_dim = 7;
+    } else {
+      base_dim = 11;
+    }
+  }
+  if (has_substring(new_method, "NRT")) {
+    if (param->tidal_love) {
+      base_dim += 1;
+    } else {
+      base_dim += 2;
+    }
+  }
+  double **derivatives = new double *[dimension - base_dim];
+  for (int i = 0; i < dimension - base_dim; i++) {
+    derivatives[i] = new double[dimension];
+  }
+  ppE_theory_transformation_calculate_derivatives(
+      original_method, new_method, dimension, base_dim, param, derivatives);
 
-	// Start with identity
-	for (int i = 0; i < dimension; i++)
-	{
-		for (int j = 0; j < dimension; j++)
-		{
-			jac[i][j] = 0;
-		}
-	}
-	for (int i = 0; i < dimension; i++)
-	{
-		jac[i][i] = 1;
-	}
+  // Start with identity
+  for (int i = 0; i < dimension; i++) {
+    for (int j = 0; j < dimension; j++) {
+      jac[i][j] = 0;
+    }
+  }
+  for (int i = 0; i < dimension; i++) {
+    jac[i][i] = 1;
+  }
 
-	// Replace row of each beta with new derivatives
-	for (int j = 0; j < dimension - base_dim; j++)
-	{
-		for (int i = 0; i < dimension; i++)
-		{
-			// jac[i][j+base_dim]= derivatives[j][i];
-			jac[j + base_dim][i] = derivatives[j][i];
-		}
-	}
+  // Replace row of each beta with new derivatives
+  for (int j = 0; j < dimension - base_dim; j++) {
+    for (int i = 0; i < dimension; i++) {
+      // jac[i][j+base_dim]= derivatives[j][i];
+      jac[j + base_dim][i] = derivatives[j][i];
+    }
+  }
 
-	for (int i = 0; i < dimension - base_dim; i++)
-	{
-		delete[] derivatives[i];
-	}
-	delete[] derivatives;
+  for (int i = 0; i < dimension - base_dim; i++) {
+    delete[] derivatives[i];
+  }
+  delete[] derivatives;
 }
 /*! \brief Transform a generic ppE Fisher matrix to a theory specific Fisher
  * matrix
@@ -3612,40 +3103,37 @@ void ppE_theory_transformation_jac(std::string original_method,
  * theory-specific parameter, ie \alpha_dCS^2 and not \beta_2PN
  */
 void ppE_theory_fisher_transformation(std::string original_method,
-									  std::string new_method, int dimension,
-									  gen_params_base<double> *param,
-									  double **old_fisher,
-									  double **new_fisher)
-{
-	double **jac = allocate_2D_array(dimension, dimension);
-	double **jacT = allocate_2D_array(dimension, dimension);
-	double **temp_fisher = allocate_2D_array(dimension, dimension);
-	ppE_theory_transformation_jac(original_method, new_method, dimension, param,
-								  jac);
+                                      std::string new_method, int dimension,
+                                      gen_params_base<double> *param,
+                                      double **old_fisher,
+                                      double **new_fisher) {
+  double **jac = allocate_2D_array(dimension, dimension);
+  double **jacT = allocate_2D_array(dimension, dimension);
+  double **temp_fisher = allocate_2D_array(dimension, dimension);
+  ppE_theory_transformation_jac(original_method, new_method, dimension, param,
+                                jac);
 
-	for (int i = 0; i < dimension; i++)
-	{
-		for (int j = 0; j < dimension; j++)
-		{
-			jacT[i][j] = jac[j][i];
-		}
-	}
+  for (int i = 0; i < dimension; i++) {
+    for (int j = 0; j < dimension; j++) {
+      jacT[i][j] = jac[j][i];
+    }
+  }
 
-	matrix_multiply(old_fisher, jac, temp_fisher, dimension, dimension,
-					dimension);
-	matrix_multiply(jacT, temp_fisher, new_fisher, dimension, dimension,
-					dimension);
-	// debugger_print(__FILE__,__LINE__,"Jac testing");
-	// for(int i = 0 ; i<dimension; i++){
-	//	for(int j = 0 ; j<dimension; j++){
-	//		std::cout<<jac[i][j]<<" ";
-	//	}
-	//	std::cout<<std::endl;
-	// }
+  matrix_multiply(old_fisher, jac, temp_fisher, dimension, dimension,
+                  dimension);
+  matrix_multiply(jacT, temp_fisher, new_fisher, dimension, dimension,
+                  dimension);
+  // debugger_print(__FILE__,__LINE__,"Jac testing");
+  // for(int i = 0 ; i<dimension; i++){
+  //	for(int j = 0 ; j<dimension; j++){
+  //		std::cout<<jac[i][j]<<" ";
+  //	}
+  //	std::cout<<std::endl;
+  // }
 
-	deallocate_2D_array(jac, dimension, dimension);
-	deallocate_2D_array(jacT, dimension, dimension);
-	deallocate_2D_array(temp_fisher, dimension, dimension);
+  deallocate_2D_array(jac, dimension, dimension);
+  deallocate_2D_array(jacT, dimension, dimension);
+  deallocate_2D_array(temp_fisher, dimension, dimension);
 }
 /*! \brief Transform a generic ppE covariance matrix to a theory specific
  * covariance matrix
@@ -3656,35 +3144,32 @@ void ppE_theory_fisher_transformation(std::string original_method,
  * matrix
  */
 void ppE_theory_covariance_transformation(std::string original_method,
-										  std::string new_method, int dimension,
-										  gen_params_base<double> *param,
-										  double **old_cov, double **new_cov)
-{
-	double **jac = allocate_2D_array(dimension, dimension);
-	double **jac_inverse = allocate_2D_array(dimension, dimension);
-	double **jac_inverseT = allocate_2D_array(dimension, dimension);
-	double **temp_cov = allocate_2D_array(dimension, dimension);
-	ppE_theory_transformation_jac(original_method, new_method, dimension, param,
-								  jac);
+                                          std::string new_method, int dimension,
+                                          gen_params_base<double> *param,
+                                          double **old_cov, double **new_cov) {
+  double **jac = allocate_2D_array(dimension, dimension);
+  double **jac_inverse = allocate_2D_array(dimension, dimension);
+  double **jac_inverseT = allocate_2D_array(dimension, dimension);
+  double **temp_cov = allocate_2D_array(dimension, dimension);
+  ppE_theory_transformation_jac(original_method, new_method, dimension, param,
+                                jac);
 
-	gsl_LU_matrix_invert(jac, jac_inverse, dimension);
-	for (int i = 0; i < dimension; i++)
-	{
-		for (int j = 0; j < dimension; j++)
-		{
-			jac_inverseT[i][j] = jac_inverse[j][i];
-		}
-	}
+  gsl_LU_matrix_invert(jac, jac_inverse, dimension);
+  for (int i = 0; i < dimension; i++) {
+    for (int j = 0; j < dimension; j++) {
+      jac_inverseT[i][j] = jac_inverse[j][i];
+    }
+  }
 
-	matrix_multiply(old_cov, jac_inverseT, temp_cov, dimension, dimension,
-					dimension);
-	matrix_multiply(jac_inverse, temp_cov, new_cov, dimension, dimension,
-					dimension);
+  matrix_multiply(old_cov, jac_inverseT, temp_cov, dimension, dimension,
+                  dimension);
+  matrix_multiply(jac_inverse, temp_cov, new_cov, dimension, dimension,
+                  dimension);
 
-	deallocate_2D_array(jac, dimension, dimension);
-	deallocate_2D_array(jac_inverse, dimension, dimension);
-	deallocate_2D_array(jac_inverseT, dimension, dimension);
-	deallocate_2D_array(temp_cov, dimension, dimension);
+  deallocate_2D_array(jac, dimension, dimension);
+  deallocate_2D_array(jac_inverse, dimension, dimension);
+  deallocate_2D_array(jac_inverseT, dimension, dimension);
+  deallocate_2D_array(temp_cov, dimension, dimension);
 }
 
 // #################################################################

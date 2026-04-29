@@ -83,7 +83,7 @@ void IMRPhenomD_NRT_EOS<T>::get_m_love(source_parameters<T> *params) {
   double ec1;
   double ec2;
 
-  // Objects to
+  // Objects to store integration information
   arma::vec::fixed<3> observables1;
   arma::vec::fixed<3> observables2;
 
@@ -98,12 +98,20 @@ void IMRPhenomD_NRT_EOS<T>::get_m_love(source_parameters<T> *params) {
   // Get observable values
   ObservablesIntegrator *integrator =
       new ObservablesIntegrator(*p_of_e, ec1, ec2);
-  integrator->integrate_for_observables(observables1, observables2);
+  bool CurvatureCheck;
+  integrator->integrate_for_observables(observables1, observables2,
+                                        CurvatureCheck);
   delete integrator;
   integrator = 0;
   delete p_of_e;
   p_of_e = 0;
 
+  // Check if curvature is valid
+  if (CurvatureCheck) {
+    exit(2);
+  }
+
+  // Store observables into params structure
   params->mass1 = observables1[1];
   params->mass2 = observables2[1];
   params->tidal1 = observables1[2];
@@ -221,7 +229,7 @@ void EOS_Constructor::transpose_data_to_column_major(
  * @return Value converted to MeV.
  */
 double EOS_Constructor::convert_fm3_to_MeV(double x) {
-  return x = x * pow(197.3, 3);
+  return x = x * (197.3 * 197.3 * 197.3);
 }
 
 /**
@@ -253,14 +261,11 @@ void EOS_Constructor::convert_cs2_to_eos() {
   double epsilon = eos.epsilon[0];
 
   // Clear vectors to fill with new EoS data
-  eos.pressure.clear();
-  eos.epsilon.clear();
-
-  eos.pressure.push_back(pressure);
-  eos.epsilon.push_back(epsilon);
+  eos.pressure.erase(eos.pressure.begin() + 1, eos.pressure.end());
+  eos.epsilon.erase(eos.epsilon.begin() + 1, eos.epsilon.end());
 
   // Loop through all baryon number density values and perform integration
-  for (int i = 1; i < eos.nb.size(); ++i) {
+  for (int i = 1; i < eos.nb.size(); i++) {
     double delta_nb = eos.nb[i] - nb; // Calculate step size
     double delta_e =
         delta_nb * (epsilon + pressure) / nb; // Calculate energy delta at step
@@ -329,9 +334,6 @@ void Bumpy_EOS_Constructor::construct_EOS() {
     throw std::invalid_argument(
         "Encountered central baryon number density greater than the max value "
         "given in the EOS table. Aborting.");
-  } else if (eos_params.max_nb < eos_params.bump_start) {
-    throw std::invalid_argument("Encountered central baryon number density "
-                                "less than the start of the bump. Aborting.");
   } else if (eos_params.bump_start <= convert_nsat_to_MeV(0.5)) {
     throw std::invalid_argument("Encountered bump that starts below valid "
                                 "interpolation for SLy EoS tables. Aborting.");
@@ -339,7 +341,32 @@ void Bumpy_EOS_Constructor::construct_EOS() {
 
   // Build bump and convert to speed of sound
   build_cs2_one_quad_bump();
+
   convert_cs2_to_eos();
+
+  // TODO: For debugging, remove!
+  std::vector<std::vector<double>> eos_output;
+  eos_output.push_back(eos.pressure);
+  eos_output.push_back(eos.epsilon);
+
+  double rows = eos.cs2.size();
+  double cols = 2;
+
+  std::ofstream out_file("/opt/gw_analysis_tools/injections/data/eos.csv");
+  out_file.precision(15);
+  if (out_file) {
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < cols; j++) {
+        if (j == cols - 1)
+          out_file << eos_output[j][i] << std::endl;
+        else
+          out_file << eos_output[j][i] << " , ";
+      }
+    }
+    out_file.close();
+  } else {
+    std::cout << "ERROR -- Could not open file" << std::endl;
+  }
 
   // TODO: Check if there's a faster way to do the below.
 
@@ -348,7 +375,7 @@ void Bumpy_EOS_Constructor::construct_EOS() {
   e_of_nb->initialize((gsl_interp_type *)gsl_interp_steffen, eos.nb,
                       eos.epsilon);
   eos.eps_c1 = e_of_nb->yofx(eos_params.n1);
-  eos.eps_c2 = e_of_nb->yofx (eos_params.n2);
+  eos.eps_c2 = e_of_nb->yofx(eos_params.n2);
   delete e_of_nb;
   e_of_nb = 0;
 }
@@ -487,7 +514,7 @@ ObservablesIntegrator::ObservablesIntegrator(Interpolation &p_of_e, double ec_1,
  */
 void ObservablesIntegrator::integrate_for_observables(
     arma::vec::fixed<3> &first_observables,
-    arma::vec::fixed<3> &second_observables) {
+    arma::vec::fixed<3> &second_observables, bool &CurveIsNegative) {
   // Define starting radius
   const double R_start = convert_dimensions(4e-4, "km", true);
   const double R_start_2 = R_start * R_start;
@@ -500,9 +527,19 @@ void ObservablesIntegrator::integrate_for_observables(
   double h1 = hc_1 - x1 * (e_of_h.yofx(hc_1) + 3.0 * p_of_h.yofx(hc_1));
   double h2 = hc_2 - x1 * (e_of_h.yofx(hc_2) + 3.0 * p_of_h.yofx(hc_2));
 
+  // Define enthalpy shift values
+  double h1_shift = hc_1_shift - x1 * (e_of_h.yofx(hc_1_shift) +
+                                       3.0 * p_of_h.yofx(hc_1_shift));
+  double h2_shift = hc_2_shift - x1 * (e_of_h.yofx(hc_2_shift) +
+                                       3.0 * p_of_h.yofx(hc_2_shift));
+
   // Define starting mass values
   const double M_start_1 = x2 * e_of_h.yofx(h1);
   const double M_start_2 = x2 * e_of_h.yofx(h2);
+
+  // Define starting mass values for shifts
+  const double M_shift_1 = x2 * e_of_h.yofx(h1_shift);
+  const double M_shift_2 = x2 * e_of_h.yofx(h2_shift);
 
   // Define starting y values
   const double Y_start = 2.0;
@@ -597,6 +634,39 @@ void ObservablesIntegrator::integrate_for_observables(
   // Dimensionalize observables
   second_observables(0) =
       convert_dimensions(second_observables(0), "km", false);
+
+  // TODO: Please clean this up future me I'm crying here.
+  // Integrate for shift values
+
+  arma::vec::fixed<3> first_shifts;
+  arma::vec::fixed<3> second_shifts;
+
+  first_shifts = {R_start, M_shift_1, Y_start};
+  second_shifts = {R_start, M_shift_2, Y_start};
+
+  // Run until just before h = 0
+  while (h1_shift + h1_step > 0) {
+    rk4(h1_shift, first_shifts, h1_step);
+  }
+  // Step exactly to h=0
+  rk4(h1_shift, first_shifts, (0 - h1_shift));
+
+  // Run until just before h = 0
+  while (h2_shift + h2_step > 0) {
+    rk4(h2_shift, second_shifts, h2_step);
+  }
+  // Step exactly to h=0
+  rk4(h2_shift, second_shifts, (0 - h2_shift));
+
+  // Get first-order difference
+  double slope1 = (first_observables[1] - first_shifts[1]) / shift;
+  double slope2 = (second_observables[1] - second_shifts[1]) / shift;
+
+  if ((slope1 < 0) || (slope2 < 0)) {
+    CurveIsNegative = true;
+  } else {
+    CurveIsNegative = false;
+  }
 }
 
 /* --------------------------- Protected Functions -------------------------- */
@@ -651,6 +721,10 @@ void ObservablesIntegrator::integrate_for_eos_of_h(Interpolation &p_of_e,
                        enthalpy);
   hc_1 = h_of_e.yofx(convert_dimensions(ec_1, "MeV/fm^3", true));
   hc_2 = h_of_e.yofx(convert_dimensions(ec_2, "MeV/fm^3", true));
+
+  // Grab shifts for evaluating M(epsilon) curve
+  hc_1_shift = hc_1 - shift;
+  hc_2_shift = hc_2 - shift;
 }
 
 /**

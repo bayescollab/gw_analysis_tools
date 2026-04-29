@@ -166,7 +166,7 @@ public:
   ObservablesIntegrator(Interpolation &p_of_e, double ec_1, double ec_2);
 
   void integrate_for_observables(arma::vec::fixed<3> &first_observables,
-                                 arma::vec::fixed<3> &second_observables);
+                                 arma::vec::fixed<3> &second_observables, bool &CurveIsNegative);
 
 protected:
   // EoS Interpolations
@@ -176,6 +176,11 @@ protected:
   // Central enthalpy values
   double hc_1;
   double hc_2;
+
+  // Shifted enthalpy values
+  double shift = 0.001;
+  double hc_1_shift;
+  double hc_2_shift;
 
   struct common_constants {
     double x1 = 4.0 * M_PI;

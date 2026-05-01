@@ -1250,7 +1250,8 @@ template <class T> void PhenomP_ParametersFromSourceFrame(
     const T ASp2 = A2*S2_perp;
     /* chip = max(A1 Sp1, A2 Sp2) / (A_i m_i^2) for i index of larger BH */
     const T num = (ASp2 > ASp1) ? ASp2 : ASp1;
-    const T den = (m2 > m1) ? A2*m2_2 : A1*m1_2;
+    const T den1 = A2*m2_2; const T den2 = A1*m1_2;
+    const T den = (m2 > m1) ? den1 : den2;
     *chip = num / den;
 
     /* Compute L, J0 and orientation angles */

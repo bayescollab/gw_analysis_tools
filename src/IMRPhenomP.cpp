@@ -764,7 +764,8 @@ T IMRPhenomPv2<T>::PhenomPv2_inplane_spin(gen_params_base<T> *params)
 	T ASp1 = A1*S1_perp;
 	T ASp2 = A2*S2_perp;
 	T num = (ASp2>ASp1) ? ASp2 : ASp1;
-	T denom = (params->mass2 > params->mass1)? A2*m2_2 : A1*m1_2;
+	T denom1 = A2*m2_2; T denom2 = A1*m1_2;
+	T denom = (params->mass2 > params->mass1) ? denom1 : denom2;
 	return num/denom;
 }
 
@@ -1106,7 +1107,8 @@ void IMRPhenomPv2<T>::PhenomPv2_Param_Transform(source_parameters<T> *params /*<
 	T ASp1 = A1*S1_perp;
 	T ASp2 = A2*S2_perp;
 	T num = (ASp2>ASp1) ? ASp2 : ASp1;
-	T denom = (params->mass2 > params->mass1)? A2*m2_2 : A1*m1_2;
+	T denom1 = A2*m2_2; T denom2 = A1*m1_2;
+	T denom = (params->mass2 > params->mass1) ? denom1 : denom2;
 	params->chip = num/denom;
 	T m1 = q/(1+q);
 	T m2 = 1./(1+q);

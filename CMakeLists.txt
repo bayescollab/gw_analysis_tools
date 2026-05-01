@@ -30,8 +30,7 @@ set (GWAT_VERSION_MINOR 0)
 
 set (GWAT_ROOT_DIRECTORY "${PROJECT_SOURCE_DIR}/")
 set (GWAT_INSTALL_DIRECTORY "${CMAKE_INSTALL_PREFIX}/")
-message("${GWAT_INSTALL_DIRECTORY}")
-
+message(STATUS "Install directory: ${GWAT_INSTALL_DIRECTORY}")
 
  
 # configure a header file to pass some of the CMake settings
@@ -67,18 +66,11 @@ find_package(nlohmann_json REQUIRED)
 
 ###############################################################
 
-#SET(BAYESSHIP_INCLUDE_DIR "/Users/sperkins/git-repos/BayesShip/build/install/include")
-#SET(BAYESSHIP_LIBRARIES "/Users/sperkins/git-repos/BayesShip/build/install/lib/libbayesship.dylib")
-#SET(BAYESSHIP_INCLUDE_DIR "/bayesshipBuild/install/include")
-#SET(BAYESSHIP_LIBRARIES "/bayesshipBuild/install/lib/libbayesship.so")
-SET(BAYESSHIP_INCLUDE_DIR "/usr/local/include")
-SET(BAYESSHIP_LIBRARIES "/usr/local/lib/libbayesship.so")
+find_package(BayesShip REQUIRED)
 ###############################################################
 
-#set(INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include/gwat;${OpenMP_INCLUDE_DIR};${ADOLC_INCLUDE_DIR};${HDF5_INCLUDE_DIR};${FFTW3_INCLUDE_DIR};${GSL_INCLUDE_DIR};${BAYESSHIP_INCLUDE_DIR}" )
-set(INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include/gwat;${PROJECT_SOURCE_DIR}/include;${OpenMP_INCLUDE_DIR};${ADOLC_INCLUDE_DIR};${HDF5_INCLUDE_DIR};${FFTW3_INCLUDE_DIR};${GSL_INCLUDE_DIR};${BAYESSHIP_INCLUDE_DIR}" )
-set(LIB_DIRS "${HDF5_LIBRARIES};OpenMP::OpenMP_CXX;${ADOLC_LIBRARIES};${FFTW3_LIBRARIES};${GSL_LIBRARIES};m;${BAYESSHIP_LIBRARIES}")
-
+set(INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include/gwat;${PROJECT_SOURCE_DIR}/include;${OpenMP_INCLUDE_DIR};${ADOLC_INCLUDE_DIRS};${HDF5_INCLUDE_DIRS};${FFTW3_INCLUDE_DIR};${GSL_INCLUDE_DIR}" )
+set(LIB_DIRS "${HDF5_LIBRARIES};OpenMP::OpenMP_CXX;${ADOLC_LIBRARIES};${FFTW3_LIBRARIES};${GSL_LIBRARIES};m")
 
 #Library
 add_subdirectory("${CMAKE_SOURCE_DIR}/src")

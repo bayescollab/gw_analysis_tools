@@ -10,19 +10,29 @@ if(ENABLE_PV3_INIT_ERROR)
         PROPERTIES COMPILE_DEFINITIONS ENABLE_PV3_INIT_ERROR)
 endif()
 set_property(TARGET OBJS PROPERTY  POSITION_INDEPENDENT_CODE ON)
-set_property(TARGET OBJS PROPERTY CXX_STANDARD 11)
+set_property(TARGET OBJS PROPERTY CXX_STANDARD 14)
 target_link_libraries( OBJS PUBLIC "${LIB_DIRS}")
 target_include_directories( OBJS PUBLIC ${INCLUDE_DIRS})
 
 add_library(gwat SHARED $<TARGET_OBJECTS:OBJS> ${HEADER_LIST})
 add_library(gwat_static STATIC $<TARGET_OBJECTS:OBJS> ${HEADER_LIST})
-set_property(TARGET gwat PROPERTY CXX_STANDARD 11)
-set_property(TARGET gwat_static PROPERTY CXX_STANDARD 11)
+set_property(TARGET gwat PROPERTY CXX_STANDARD 14)
+set_property(TARGET gwat_static PROPERTY CXX_STANDARD 14)
 
-target_link_libraries( gwat PUBLIC "${LIB_DIRS}")
+target_link_libraries( gwat PUBLIC "${LIB_DIRS}" BayesShip::bayesship)
 target_include_directories( gwat PUBLIC ${INCLUDE_DIRS})
-target_link_libraries( gwat_static PUBLIC "${LIB_DIRS}")
+target_link_libraries( gwat_static PUBLIC "${LIB_DIRS}" BayesShip::bayesship_static)
 target_include_directories( gwat_static PUBLIC ${INCLUDE_DIRS})
+
+# On macOS, ensure the ADOL-C lib64 directory is searched at link time (-L)
+# and embedded as an rpath in the installed library so the shared libadolc is found
+# at runtime without requiring LD_LIBRARY_PATH.
+if(APPLE)
+    target_link_directories(gwat PUBLIC ${ADOLC_LIBRARY_DIRS})
+    target_link_directories(gwat_static PUBLIC ${ADOLC_LIBRARY_DIRS})
+    set_target_properties(gwat PROPERTIES INSTALL_RPATH "${ADOLC_LIBRARY_DIRS}")
+    set_target_properties(gwat_static PROPERTIES INSTALL_RPATH "${ADOLC_LIBRARY_DIRS}")
+endif()
 
 
 

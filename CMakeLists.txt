@@ -72,6 +72,9 @@ find_package(BayesShip REQUIRED)
 set(INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include/gwat;${PROJECT_SOURCE_DIR}/include;${OpenMP_INCLUDE_DIR};${ADOLC_INCLUDE_DIRS};${HDF5_INCLUDE_DIRS};${FFTW3_INCLUDE_DIR};${GSL_INCLUDE_DIR}" )
 set(LIB_DIRS "${HDF5_LIBRARIES};OpenMP::OpenMP_CXX;${ADOLC_LIBRARIES};${FFTW3_LIBRARIES};${GSL_LIBRARIES};m")
 
+#Install EFPE
+add_subdirectory("${CMAKE_SOURCE_DIR}/third_party/efpe")
+
 #Library
 add_subdirectory("${CMAKE_SOURCE_DIR}/src")
 

@@ -13,6 +13,7 @@
 #include "IMRPhenomP_NRT.h"
 #include "ppE_utilities.h"
 #include "gIMRPhenomP.h"
+#include "EFPE.h"
 #include "util.h"
 #include <complex>
 #include <time.h>
@@ -272,6 +273,10 @@ int fourier_waveform(T *frequencies, /**< double array of frequencies for the wa
 			IMRPhenomPv3<T> model;
 			status = model.construct_waveform(frequencies, length, wp->hplus, wp->hcross, &params);
 		}
+	}
+	else if(local_method.find("EFPE")!=std::string::npos)
+	{
+		status = efpe_fourier_waveform(frequencies, length, wp, parameters);
 	}
 
 	//Catch all for any modifications not captured in ppE formalism like extra polarizations

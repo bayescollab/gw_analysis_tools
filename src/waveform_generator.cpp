@@ -276,7 +276,10 @@ int fourier_waveform(T *frequencies, /**< double array of frequencies for the wa
 	}
 	else if(local_method.find("EFPE")!=std::string::npos)
 	{
-		status = efpe_fourier_waveform(frequencies, length, wp, parameters);
+		if(local_method.find("uniform")!=std::string::npos)
+			status = efpe_fourier_waveform_uniform(frequencies, length, wp, parameters);
+		else
+			status = efpe_fourier_waveform(frequencies, length, wp, parameters);
 	}
 
 	//Catch all for any modifications not captured in ppE formalism like extra polarizations

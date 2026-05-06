@@ -1,8 +1,7 @@
 /*! \file EFPE.cpp
  *  \brief Implementation of the EFPE frequency-domain waveform wrapper.
  *
- *  Maps GWAT source parameters to pyefpe::Parameters, calls pyefpe::Model,
- *  and optionally applies a coalescence-time phase shift.
+ *  Maps GWAT source parameters to pyefpe::Parameters, calls pyefpe::Model.
  */
 #include "EFPE.h"
 #include <pyefpe/pyefpe.hpp>

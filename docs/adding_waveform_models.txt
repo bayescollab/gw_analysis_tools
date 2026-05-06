@@ -1,0 +1,123 @@
+Adding a New Waveform Model to GWAT
+=====================================
+
+This document describes the steps required to integrate a new waveform model
+into GWAT's parameter estimation pipeline, using the EFPE integration as a
+concrete reference. It covers the code changes needed after the library has
+been vendored and the CMake build has been set up.
+
+
+1. Parameter Repacking (src/fisher.cpp: repack_parameters)
+----------------------------------------------------------
+repack_parameters maps the flat MCMC parameter vector to gen_params_base
+fields. Add a branch for the new model. The generation method string passed
+here is prefixed with "MCMC_", so check for the model name with find().
+
+The parameter vector layout should be documented explicitly. For models based
+on precessing spins, follow the IMRPhenomPv2 MCMC layout as a reference:
+
+    [0]  RA
+    [1]  sin(DEC)
+    [2]  psi
+    [3]  cos(iota)        -> acos applied
+    [4]  phiRef
+    [5]  tc
+    [6]  ln(D_L)          -> exp applied
+    [7]  ln(Mc)           -> exp applied
+    [8]  eta
+    [9]  a1               (spin1 magnitude)
+    [10] a2               (spin2 magnitude)
+    [11] cos(tilt1)       -> acos applied
+    [12] cos(tilt2)       -> acos applied
+    [13] phi1             (spin1 azimuthal angle in the L frame)
+    [14] phi2             (spin2 azimuthal angle in the L frame)
+
+Spins are stored in Cartesian coordinates in gen_params_base. Use
+transform_sph_cart to convert from spherical (a, theta, phi) to Cartesian.
+Clamp the cos(tilt) arguments to [-1, 1] before calling acos, as the Fisher
+proposal can step outside this range.
+
+Additional model-specific parameters follow after index 14.
+
+Model variants (e.g. a circular limit) can be handled inside the same branch
+with a nested find() check rather than a separate branch:
+
+    else if(generation_method.find("<MODEL>") != std::string::npos){
+        if(generation_method.find("MCMC") != std::string::npos){
+            // ... common parameter mapping ...
+            if(generation_method.find("circular") != std::string::npos){
+                a_params->e_start = 0;
+            } else {
+                a_params->e_start = avec_parameters[15];
+            }
+        }
+    }
+
+
+2. MCMC Preparation (src/mcmc_gw_extended.cpp)
+-----------------------------------------------
+
+2a. PTMCMC_method_specific_prep_v2
+    Add branches that recognise the model name and parameter-space dimension,
+    print the parameter list, and set *intrinsic. Add these before the
+    generic else{} exit block. Use an early return to avoid falling through
+    to the error exit:
+
+        if(generation_method.find("<MODEL>") != std::string::npos
+            && (dimension - totalmod) == <N>)
+        {
+            std::cout << "Sampling in parameters: ..." << std::endl;
+            *intrinsic = false;
+            return;
+        }
+
+    Add one branch per supported dimension (e.g. a circular variant at
+    dim=15, an eccentric variant at dim=17).
+
+2b. Proposal setup in PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2
+    The five proposals are:
+        propArray[0]  gaussianProposal
+        propArray[1]  blockDifferentialEvolutionProposal  (or DE for intrinsic)
+        propArray[2]  KDEProposal
+        propArray[3]  blockFisherProposal
+        propArray[4]  GMMProposal
+
+    For models that follow the standard extrinsic/intrinsic split with 7
+    extrinsic parameters (RA, sin DEC, psi, cos iota, phi_ref, tc, ln DL),
+    the existing else{} branch at the end of the if/else chain already
+    provides the correct 3-block structure for all five proposals. No
+    additional block is needed.
+
+    Add an explicit branch only if the model requires a different block
+    structure (e.g. a different extrinsic/intrinsic split, or additional
+    parameter blocks as in EA_IMRPhenomD_NRT).
+
+    The blockFisherProposal calls fisher_autodiff when the user sets
+    fisher_AD=true. If the model does not support ADOL-C, this will throw
+    at runtime. Set fisher_AD=false in the user parameters for such models.
+    The numerical Fisher (fisher_AD=false) works with any model that has a
+    double-precision waveform.
+
+
+3. Generation Method String Conventions
+----------------------------------------
+Use descriptive substrings that compose predictably:
+
+    "<MODEL>"              base model, arbitrary frequency grid
+    "<MODEL>_uniform"      uniform frequency grid (faster for MCMC)
+    "<MODEL>_circular"     circular limit (e=0), fewer sampled parameters
+    "<MODEL>_circular_uniform"  both
+
+Dispatch is always done with find(), so any string containing "<MODEL>"
+routes to the model's branch. More specific variants (e.g. "_circular")
+are checked inside the branch with a nested find().
+
+
+4. Checklist for a New Model
+------------------------------
+[ ] Add repack_parameters branch in src/fisher.cpp
+[ ] Add dimension branch(es) in PTMCMC_method_specific_prep_v2
+[ ] Add proposal branch in PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2
+    (only if block structure differs from the standard 7/rest split)
+[ ] Add any new gen_params_base fields to include/gwat/util.h with defaults
+[ ] Verify fresh build passes with no new errors

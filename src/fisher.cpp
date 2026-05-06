@@ -2277,8 +2277,50 @@ void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params, std::st
 				a_params->chip = avec_parameters[11];
 				a_params->phip = avec_parameters[12];
 
-			}	
-		}	
+			}
+		}
+		else if(generation_method.find("EFPE") != std::string::npos){
+			if(generation_method.find("MCMC")!=std::string::npos){
+				a_params->mass1 = calculate_mass1(exp(avec_parameters[7]),
+					avec_parameters[8]);
+				a_params->mass2 = calculate_mass2(exp(avec_parameters[7]),
+					avec_parameters[8]);
+				a_params->Luminosity_Distance = exp(avec_parameters[6]);
+				a_params->RA = avec_parameters[0];
+				a_params->DEC = asin(avec_parameters[1]);
+				a_params->psi = avec_parameters[2];
+				a_params->incl_angle = acos(avec_parameters[3]);
+				a_params->phiRef = avec_parameters[4];
+				a_params->tc = avec_parameters[5];
+				T local_theta1;
+				if(avec_parameters[11] > 1){ local_theta1 = 0; }
+				else if(avec_parameters[11] < -1){ local_theta1 = M_PI; }
+				else{ local_theta1 = acos(avec_parameters[11]); }
+				T local_theta2;
+				if(avec_parameters[12] > 1){ local_theta2 = 0; }
+				else if(avec_parameters[12] < -1){ local_theta2 = M_PI; }
+				else{ local_theta2 = acos(avec_parameters[12]); }
+				T spin1sph[3] = {avec_parameters[9], local_theta1, avec_parameters[13]};
+				T spin2sph[3] = {avec_parameters[10], local_theta2, avec_parameters[14]};
+				T spin1cart[3], spin2cart[3];
+				transform_sph_cart(spin1sph, spin1cart);
+				transform_sph_cart(spin2sph, spin2cart);
+				a_params->spin1[0] = spin1cart[0];
+				a_params->spin1[1] = spin1cart[1];
+				a_params->spin1[2] = spin1cart[2];
+				a_params->spin2[0] = spin2cart[0];
+				a_params->spin2[1] = spin2cart[1];
+				a_params->spin2[2] = spin2cart[2];
+				if(generation_method.find("circular") != std::string::npos){
+					a_params->e_start = 0;
+					a_params->mean_anomaly_start = 0;
+				}
+				else{
+					a_params->e_start = avec_parameters[15];
+					a_params->mean_anomaly_start = avec_parameters[16];
+				}
+			}
+		}
 		else if(generation_method.find("IMRPhenomD") != std::string::npos){
 			if(generation_method.find("MCMC")!=std::string::npos){
 				a_params->mass1 = calculate_mass1(exp(avec_parameters[7]),

@@ -8,7 +8,8 @@
 /*! \brief Frequency-domain waveform for the EFPE eccentric-precessing model.
  *
  * Evaluates the plus and cross polarizations of an eccentric, precessing binary
- * inspiral at the requested frequencies using the pyEFPE SUA.
+ * inspiral at the requested frequencies using the pyEFPE SUA. Sets tolerances with
+ * pyefpe::ParameterPreset::Production.
  *
  * \param frequencies Array of gravitational-wave frequencies in Hz
  * \param length Number of elements in \p frequencies

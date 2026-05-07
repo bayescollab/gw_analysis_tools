@@ -36,7 +36,7 @@ constexpr double kTSunSeconds = 4.92549094831e-6;
 constexpr double kMpcSeconds = 1.02927125054339e14;
 const double kY2Prefactor = 1.0 / std::sqrt(0.8 * kPi);
 
-using C = std::complex<double>;
+using cpl = std::complex<double>;
 
 // Radiation-reaction state vector:
 //   [0] y              PN velocity-like variable
@@ -443,39 +443,39 @@ Jacobi ellipj_from_u(double u, double m) {
   return {sn, cn, safe_sqrt(1.0 - m * sn * sn), phi};
 }
 
-std::pair<std::array<C, 5>, std::array<C, 5>> compute_necessary_Wigner_small_d2(double cth) {
+std::pair<std::array<cpl, 5>, std::array<cpl, 5>> compute_necessary_Wigner_small_d2(double cth) {
   cth = clamp(cth, -1.0, 1.0);
   const double cth2 = cth * cth;
   const double sth = safe_sqrt(1.0 - cth2);
-  std::array<C, 5> d2_mp2 = {
-      C{sqr(0.5 * (1.0 - cth)), 0.0},
-      C{0.5 * sth * (1.0 - cth), 0.0},
-      C{std::sqrt(0.375) * sth * sth, 0.0},
-      C{0.5 * sth * (1.0 + cth), 0.0},
-      C{sqr(0.5 * (1.0 + cth)), 0.0}};
+  std::array<cpl, 5> d2_mp2 = {
+      cpl{sqr(0.5 * (1.0 - cth)), 0.0},
+      cpl{0.5 * sth * (1.0 - cth), 0.0},
+      cpl{std::sqrt(0.375) * sth * sth, 0.0},
+      cpl{0.5 * sth * (1.0 + cth), 0.0},
+      cpl{sqr(0.5 * (1.0 + cth)), 0.0}};
 
   const double d2_10 = -std::sqrt(1.5) * sth * cth;
-  std::array<C, 5> d2_mp0 = {
+  std::array<cpl, 5> d2_mp0 = {
       d2_mp2[2],
-      C{-d2_10, 0.0},
-      C{0.5 * (3.0 * cth2 - 1.0), 0.0},
-      C{d2_10, 0.0},
+      cpl{-d2_10, 0.0},
+      cpl{0.5 * (3.0 * cth2 - 1.0), 0.0},
+      cpl{d2_10, 0.0},
       d2_mp2[2]};
   return {d2_mp2, d2_mp0};
 }
 
-std::pair<std::array<C, 5>, std::array<C, 5>> compute_necessary_Wigner_D2(
+std::pair<std::array<cpl, 5>, std::array<cpl, 5>> compute_necessary_Wigner_D2(
     double phi, double cos_theta, double zeta) {
   auto [D2_mp2, D2_mp0] = compute_necessary_Wigner_small_d2(cos_theta);
-  const C exp_miph = std::polar(1.0, -phi);
-  const std::array<C, 2> exp_mimpphi = {exp_miph, exp_miph * exp_miph};
+  const cpl exp_miph = std::polar(1.0, -phi);
+  const std::array<cpl, 2> exp_mimpphi = {exp_miph, exp_miph * exp_miph};
 
   D2_mp2[0] *= std::conj(exp_mimpphi[1]);
   D2_mp2[1] *= std::conj(exp_mimpphi[0]);
   D2_mp2[3] *= exp_mimpphi[0];
   D2_mp2[4] *= exp_mimpphi[1];
-  const C exp_m2iz = std::polar(1.0, -2.0 * zeta);
-  for (C& v : D2_mp2) {
+  const cpl exp_m2iz = std::polar(1.0, -2.0 * zeta);
+  for (cpl& v : D2_mp2) {
     v *= exp_m2iz;
   }
 
@@ -486,9 +486,9 @@ std::pair<std::array<C, 5>, std::array<C, 5>> compute_necessary_Wigner_D2(
   return {D2_mp2, D2_mp0};
 }
 
-std::array<C, 5> compute_m2_Y2(double cos_theta, double phi) {
+std::array<cpl, 5> compute_m2_Y2(double cos_theta, double phi) {
   auto d = compute_necessary_Wigner_D2(phi, cos_theta, 0.0).first;
-  for (C& v : d) {
+  for (cpl& v : d) {
     v = kY2Prefactor * std::conj(v);
   }
   return d;
@@ -558,7 +558,7 @@ std::vector<ModeOrder> Newtonian_orders_needed(double e2, int pmax, double tol) 
   return result;
 }
 
-std::vector<C> solve_linear_complex(std::vector<std::vector<C>> A, std::vector<C> b) {
+std::vector<cpl> solve_linear_complex(std::vector<std::vector<cpl>> A, std::vector<cpl> b) {
   const std::size_t n = b.size();
   for (std::size_t i = 0; i < n; ++i) {
     std::size_t pivot = i;
@@ -577,7 +577,7 @@ std::vector<C> solve_linear_complex(std::vector<std::vector<C>> A, std::vector<C
       std::swap(A[i], A[pivot]);
       std::swap(b[i], b[pivot]);
     }
-    const C diag = A[i][i];
+    const cpl diag = A[i][i];
     for (std::size_t c = i; c < n; ++c) {
       A[i][c] /= diag;
     }
@@ -586,7 +586,7 @@ std::vector<C> solve_linear_complex(std::vector<std::vector<C>> A, std::vector<C
       if (r == i) {
         continue;
       }
-      const C factor = A[r][i];
+      const cpl factor = A[r][i];
       for (std::size_t c = i; c < n; ++c) {
         A[r][c] -= factor * A[i][c];
       }
@@ -600,19 +600,19 @@ std::vector<C> solve_linear_complex(std::vector<std::vector<C>> A, std::vector<C
 // the stationary time. These coefficients are independent of the binary and are
 // found by solving the small linear system implied by the SUA matching
 // conditions for the chosen kmax.
-std::vector<C> compute_ak_SUA(int kmax) {
-  std::vector<std::vector<C>> M(static_cast<std::size_t>(kmax + 1),
-                                std::vector<C>(static_cast<std::size_t>(kmax + 1), C{0.0, 0.0}));
-  std::vector<C> b(static_cast<std::size_t>(kmax + 1), C{0.5, 0.0});
-  M[0][0] = C{0.5, 0.0};
+std::vector<cpl> compute_ak_SUA(int kmax) {
+  std::vector<std::vector<cpl>> M(static_cast<std::size_t>(kmax + 1),
+                                std::vector<cpl>(static_cast<std::size_t>(kmax + 1), cpl{0.0, 0.0}));
+  std::vector<cpl> b(static_cast<std::size_t>(kmax + 1), cpl{0.5, 0.0});
+  M[0][0] = cpl{0.5, 0.0};
   for (int k = 1; k <= kmax; ++k) {
-    M[0][static_cast<std::size_t>(k)] = C{1.0, 0.0};
+    M[0][static_cast<std::size_t>(k)] = cpl{1.0, 0.0};
   }
   for (int q = 1; q <= kmax; ++q) {
     for (int k = 1; k <= kmax; ++k) {
-      C value{1.0, 0.0};
+      cpl value{1.0, 0.0};
       for (int r = 1; r <= q; ++r) {
-        value *= C{0.0, static_cast<double>(k * k)} / static_cast<double>(2 * r - 1);
+        value *= cpl{0.0, static_cast<double>(k * k)} / static_cast<double>(2 * r - 1);
       }
       M[static_cast<std::size_t>(q)][static_cast<std::size_t>(k)] = value;
     }
@@ -1940,12 +1940,12 @@ struct ModeData {
 struct ApcSegmentCache {
   // Projection/precession amplitudes sampled on the segment interpolation nodes.
   // m = -2 is obtained by conjugation symmetry, so only m=0 and m=+2 are stored.
-  std::vector<std::array<C, 2>> m0;
-  std::vector<std::array<C, 2>> m2;
+  std::vector<std::array<cpl, 2>> m0;
+  std::vector<std::array<cpl, 2>> m2;
 };
 
-std::array<C, 2> zero_amp() {
-  return {C{0.0, 0.0}, C{0.0, 0.0}};
+std::array<cpl, 2> zero_amp() {
+  return {cpl{0.0, 0.0}, cpl{0.0, 0.0}};
 }
 
 } // namespace
@@ -2053,11 +2053,11 @@ void apply_extrinsic_transform_uniform(double f_min_hz, double delta_f_hz,
     const double f = f_min_hz + delta_f_hz * static_cast<double>(i);
     // A time shift in the Fourier domain is exp(-2 pi i f dt). The constant
     // phase and distance/amplitude scale multiply both polarizations.
-    const C phase = transform.amplitude_scale *
+    const cpl phase = transform.amplitude_scale *
                     std::polar(1.0, transform.phase_shift_radians -
                                          2.0 * kPi * f * transform.time_shift_seconds);
-    const C hp = waveform.plus[i];
-    const C hc = waveform.cross[i];
+    const cpl hp = waveform.plus[i];
+    const cpl hc = waveform.cross[i];
     waveform.plus[i] = phase * (c2p * hp + s2p * hc);
     waveform.cross[i] = phase * (-s2p * hp + c2p * hc);
   }
@@ -2266,15 +2266,15 @@ struct Model::Impl {
     // and cross for the fixed line of sight. This avoids repeating spherical
     // harmonic bookkeeping at every frequency sample.
     const auto y2mp = compute_m2_Y2(cos_theta_JN, phi_JN);
-    std::array<C, 5> y2mp_mod{};
+    std::array<cpl, 5> y2mp_mod{};
     for (std::size_t i = 0; i < 5; ++i) {
       y2mp_mod[i] = std::conj(y2mp[4 - i]);
     }
     y2mp_mod[1] = -y2mp_mod[1];
     y2mp_mod[3] = -y2mp_mod[3];
     for (std::size_t i = 0; i < 5; ++i) {
-      const C Ap = 0.5 * (y2mp[i] + y2mp_mod[i]);
-      const C Ac = C{0.0, -0.5} * (y2mp[i] - y2mp_mod[i]);
+      const cpl Ap = 0.5 * (y2mp[i] + y2mp_mod[i]);
+      const cpl Ac = cpl{0.0, -0.5} * (y2mp[i] - y2mp_mod[i]);
       Apc_proj[i] = {Ap, Ac};
     }
 
@@ -2324,11 +2324,11 @@ struct Model::Impl {
     }
   }
 
-  C barycentric_complex(const std::vector<std::array<C, 2>>& values, double x,
+  cpl barycentric_complex(const std::vector<std::array<cpl, 2>>& values, double x,
                         std::size_t pol) const {
     // Stable Lagrange interpolation. If x is exactly one of the nodes, return
     // the stored value to avoid the removable singularity.
-    C numerator{0.0, 0.0};
+    cpl numerator{0.0, 0.0};
     double denominator = 0.0;
     for (std::size_t i = 0; i < interp_nodes.size(); ++i) {
       const double dx = x - interp_nodes[i];
@@ -2540,7 +2540,7 @@ struct Model::Impl {
     return segments[find_segment(t)].eval(t);
   }
 
-  std::pair<std::array<C, 5>, std::array<C, 5>> compute_D2_mp_from_state(const State& yv) const {
+  std::pair<std::array<cpl, 5>, std::array<cpl, 5>> compute_D2_mp_from_state(const State& yv) const {
     // Reconstruct the Wigner-D pieces that rotate the co-precessing l=2 modes
     // into the observer frame. Non-precessing systems take the cheap branch with
     // zero Euler angles.
@@ -2566,23 +2566,23 @@ struct Model::Impl {
     // factor here; the eccentric harmonic coefficient N_{2m,p} is applied
     // later because it is mode-dependent.
     const double omega_factor = (1.0 - e2) * y * y;
-    for (C& v : D.first) {
+    for (cpl& v : D.first) {
       v *= omega_factor;
     }
-    for (C& v : D.second) {
+    for (cpl& v : D.second) {
       v *= omega_factor;
     }
     return D;
   }
 
-  std::pair<std::array<C, 5>, std::array<C, 5>> compute_D2_mp_exact(double t) const {
+  std::pair<std::array<cpl, 5>, std::array<cpl, 5>> compute_D2_mp_exact(double t) const {
     return compute_D2_mp_from_state(eval_state(t));
   }
 
-  std::array<C, 2> project(const std::array<C, 5>& D) const {
+  std::array<cpl, 2> project(const std::array<cpl, 5>& D) const {
     // Contract the five m' components with the line-of-sight projection factors
     // computed in the constructor. The result is [A_plus, A_cross].
-    std::array<C, 2> out = zero_amp();
+    std::array<cpl, 2> out = zero_amp();
     for (std::size_t i = 0; i < 5; ++i) {
       out[0] += D[i] * Apc_proj[i][0];
       out[1] += D[i] * Apc_proj[i][1];
@@ -2590,7 +2590,7 @@ struct Model::Impl {
     return out;
   }
 
-  std::array<C, 2> compute_Apc_prec(double t, int m) const {
+  std::array<cpl, 2> compute_Apc_prec(double t, int m) const {
     // Production runs interpolate the expensive projection/precession amplitude;
     // validation runs call the exact reconstruction every time.
     if (!params.interpolate_amplitudes) {
@@ -2600,7 +2600,7 @@ struct Model::Impl {
     const Segment& seg = segments[iseg];
     const auto& cache = apc_cache[iseg];
     const double x = clamp((t - seg.t0) / seg.h, 0.0, 1.0);
-    std::array<C, 2> A = zero_amp();
+    std::array<cpl, 2> A = zero_amp();
     if (m == 0) {
       A = {barycentric_complex(cache.m0, x, 0), barycentric_complex(cache.m0, x, 1)};
     } else if (std::abs(m) == 2) {
@@ -2613,11 +2613,11 @@ struct Model::Impl {
     return A;
   }
 
-  std::array<C, 2> compute_Apc_prec_from_state_exact(const State& state, int m) const {
+  std::array<cpl, 2> compute_Apc_prec_from_state_exact(const State& state, int m) const {
     // Exact here means "no amplitude interpolation." The underlying equations
     // are still the same approximate PN/pyEFPE model.
     const auto D = compute_D2_mp_from_state(state);
-    std::array<C, 2> A = zero_amp();
+    std::array<cpl, 2> A = zero_amp();
     if (m == 0) {
       A = project(D.second);
     } else if (std::abs(m) == 2) {
@@ -2654,7 +2654,7 @@ struct Model::Impl {
     return 0.0;
   }
 
-  std::array<C, 2> compute_amplitudes(double t, const ModeData& mode) const {
+  std::array<cpl, 2> compute_amplitudes(double t, const ModeData& mode) const {
     // Fast path: interpolate both A_pc and N on the same segment nodes and
     // multiply them. Fallbacks preserve correctness at segment/SUA boundaries.
     if (params.interpolate_amplitudes && !mode.n_interp.empty()) {
@@ -2662,7 +2662,7 @@ struct Model::Impl {
       if (t >= seg.t0 && t <= seg.t1) {
         const double x = clamp((t - seg.t0) / seg.h, 0.0, 1.0);
         const auto& cache = apc_cache[static_cast<std::size_t>(mode.segment)];
-        std::array<C, 2> A = zero_amp();
+        std::array<cpl, 2> A = zero_amp();
         if (mode.m == 0) {
           A = {barycentric_complex(cache.m0, x, 0), barycentric_complex(cache.m0, x, 1)};
         } else if (std::abs(mode.m) == 2) {
@@ -2678,14 +2678,14 @@ struct Model::Impl {
         return A;
       }
     }
-    std::array<C, 2> A = compute_Apc_prec(t, mode.m);
+    std::array<cpl, 2> A = compute_Apc_prec(t, mode.m);
     const double N = compute_N2m(t, mode);
     A[0] *= N;
     A[1] *= N;
     return A;
   }
 
-  std::array<C, 2> SUA_amplitudes(double t, const ModeData& mode, double T_SPA) const {
+  std::array<cpl, 2> SUA_amplitudes(double t, const ModeData& mode, double T_SPA) const {
     // Shifted Uniform Asymptotics samples the slow amplitude around t by
     // multiples of T_spa. Near the beginning/end of the waveform the stencil
     // would leave the available ODE support, so we safely fall back to the
@@ -2696,10 +2696,10 @@ struct Model::Impl {
     if (!in_range) {
       return compute_amplitudes(t, mode);
     }
-    std::array<C, 2> out = zero_amp();
+    std::array<cpl, 2> out = zero_amp();
     for (int k = -params.sua_kmax; k <= params.sua_kmax; ++k) {
       const auto A = compute_amplitudes(t + static_cast<double>(k) * T_SPA, mode);
-      const C coeff = ak_SUA[static_cast<std::size_t>(std::abs(k))];
+      const cpl coeff = ak_SUA[static_cast<std::size_t>(std::abs(k))];
       out[0] += coeff * A[0];
       out[1] += coeff * A[1];
     }
@@ -2804,8 +2804,8 @@ struct Model::Impl {
 
   FrequencyWaveform generate_waveform(const std::vector<double>& frequencies_hz) const {
     FrequencyWaveform out;
-    out.plus.assign(frequencies_hz.size(), C{0.0, 0.0});
-    out.cross.assign(frequencies_hz.size(), C{0.0, 0.0});
+    out.plus.assign(frequencies_hz.size(), cpl{0.0, 0.0});
+    out.cross.assign(frequencies_hz.size(), cpl{0.0, 0.0});
     const double pref = std::sqrt(2.0 * kPi) * h0_pref;
     if (is_sorted_frequency_grid(frequencies_hz)) {
       // Mode-major traversal: find the frequency bins inside each mode's
@@ -2832,7 +2832,7 @@ struct Model::Impl {
             continue;
           }
           const double psi = omega * t_guess - phase - 0.25 * kPi;
-          const C spa = T_spa * std::polar(1.0, psi);
+          const cpl spa = T_spa * std::polar(1.0, psi);
           const auto A = SUA_amplitudes(t_guess, mode, T_spa);
           out.plus[i] += pref * std::conj(spa * A[0]);
           out.cross[i] += pref * std::conj(spa * A[1]);
@@ -2845,8 +2845,8 @@ struct Model::Impl {
     // cannot reuse stationary-time guesses across frequencies.
     for (std::size_t i = 0; i < frequencies_hz.size(); ++i) {
       const double omega = 2.0 * kPi * frequencies_hz[i];
-      C hp{0.0, 0.0};
-      C hc{0.0, 0.0};
+      cpl hp{0.0, 0.0};
+      cpl hc{0.0, 0.0};
       for (const auto& mode : modes) {
         double t_spa = 0.0;
         double phase = 0.0;
@@ -2855,7 +2855,7 @@ struct Model::Impl {
           continue;
         }
         const double psi = omega * t_spa - phase - 0.25 * kPi;
-        const C spa = T_spa * std::polar(1.0, psi);
+        const cpl spa = T_spa * std::polar(1.0, psi);
         const auto A = SUA_amplitudes(t_spa, mode, T_spa);
         hp += spa * A[0];
         hc += spa * A[1];
@@ -2910,7 +2910,7 @@ struct Model::Impl {
   }
 
   void accumulate_waveform_uniform_modes(double f_min_hz, double delta_f_hz, std::size_t count,
-                                         C* plus, C* cross, std::size_t mode_begin,
+                                         cpl* plus, cpl* cross, std::size_t mode_begin,
                                          std::size_t mode_end) const {
     // Accumulate a subset of modes into caller-owned arrays. In serial this is
     // the whole waveform; in threaded mode each worker writes into a private
@@ -2933,7 +2933,7 @@ struct Model::Impl {
           continue;
         }
         const double psi = omega * t_guess - phase - 0.25 * kPi;
-        const C spa = T_spa * std::polar(1.0, psi);
+        const cpl spa = T_spa * std::polar(1.0, psi);
         const auto A = SUA_amplitudes(t_guess, mode, T_spa);
         plus[i] += pref * std::conj(spa * A[0]);
         cross[i] += pref * std::conj(spa * A[1]);
@@ -2942,7 +2942,7 @@ struct Model::Impl {
   }
 
   void generate_waveform_uniform(double f_min_hz, double delta_f_hz, std::size_t count,
-                                 C* plus, C* cross) const {
+                                 cpl* plus, cpl* cross) const {
     if (!(delta_f_hz > 0.0)) {
       throw std::invalid_argument("delta_f_hz must be positive");
     }
@@ -2952,8 +2952,8 @@ struct Model::Impl {
     if (count == 0) {
       return;
     }
-    std::fill(plus, plus + count, C{0.0, 0.0});
-    std::fill(cross, cross + count, C{0.0, 0.0});
+    std::fill(plus, plus + count, cpl{0.0, 0.0});
+    std::fill(cross, cross + count, cpl{0.0, 0.0});
     const int requested_threads = std::max(1, params.num_threads);
     const std::size_t nthreads =
         std::min<std::size_t>(static_cast<std::size_t>(requested_threads), modes.size());
@@ -2985,10 +2985,10 @@ struct Model::Impl {
         const std::size_t end = (ithread + 1) * modes.size() / nthreads;
         std::fill(partials[ithread].plus.begin(),
                   partials[ithread].plus.begin() + static_cast<std::ptrdiff_t>(tile_count),
-                  C{0.0, 0.0});
+                  cpl{0.0, 0.0});
         std::fill(partials[ithread].cross.begin(),
                   partials[ithread].cross.begin() + static_cast<std::ptrdiff_t>(tile_count),
-                  C{0.0, 0.0});
+                  cpl{0.0, 0.0});
         workers.emplace_back([&, ithread, begin, end, tile_f_min, tile_count] {
           accumulate_waveform_uniform_modes(tile_f_min, delta_f_hz, tile_count,
                                             partials[ithread].plus.data(),
@@ -3072,7 +3072,7 @@ struct Model::Impl {
   // Overall strain scale and precomputed line-of-sight projection factors.
   double h0_pref = 0.0;
   std::unique_ptr<PNDerivatives> pn;
-  std::array<std::array<C, 2>, 5> Apc_proj{};
+  std::array<std::array<cpl, 2>, 5> Apc_proj{};
 
   // Dense ODE support and segment-local mode support. modes_by_segment is used
   // by the time-domain path; frequency-domain paths mostly traverse modes.
@@ -3082,7 +3082,7 @@ struct Model::Impl {
   std::vector<std::vector<int>> modes_by_segment;
 
   // SUA and interpolation caches.
-  std::vector<C> ak_SUA;
+  std::vector<cpl> ak_SUA;
   std::vector<double> interp_nodes;
   std::vector<double> interp_weights;
   std::vector<ApcSegmentCache> apc_cache;

@@ -5,6 +5,8 @@
  */
 #include "EFPE.h"
 #include <pyefpe/pyefpe.hpp>
+#include <cmath>
+#include <complex>
 #include <vector>
 
 namespace {
@@ -30,6 +32,18 @@ pyefpe::Parameters build_efpe_params(gen_params_base<double> *p, double f_fallba
     return ep;
 }
 
+void apply_time_shift(double *frequencies, int length,
+                      waveform_polarizations<double> *wp, double tc)
+{
+    const double two_pi_tc = 2.0 * M_PI * tc;
+    for (int i = 0; i < length; i++) {
+        double phase = two_pi_tc * frequencies[i];
+        std::complex<double> shift(std::cos(phase), std::sin(phase));
+        wp->hplus[i]  *= shift;
+        wp->hcross[i] *= shift;
+    }
+}
+
 } // namespace
 
 template<>
@@ -49,6 +63,9 @@ int efpe_fourier_waveform<double>(double *frequencies, int length,
         wp->hcross[i] = fw.cross[i];
     }
 
+    if (p->shift_time && p->tc != 0.0)
+        apply_time_shift(frequencies, length, wp, p->tc);
+
     return 1;
 }
 
@@ -66,6 +83,9 @@ int efpe_fourier_waveform_uniform<double>(double *frequencies, int length,
 
     model.generate_waveform_uniform(f_min, delta_f, static_cast<std::size_t>(length),
                                     wp->hplus, wp->hcross);
+
+    if (p->shift_time && p->tc != 0.0)
+        apply_time_shift(frequencies, length, wp, p->tc);
 
     return 1;
 }

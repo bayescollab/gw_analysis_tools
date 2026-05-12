@@ -2192,7 +2192,7 @@ void MCMC_fisher_transformations(
 		fisher[8][8] += 1./.25;//eta
 		fisher[9][9] += 1./4;//spin1
 		fisher[10][10] += 1./4;//spin2
-		if(generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos){
+		if(generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos || generation_method.find("EFPE") != std::string::npos){
 			fisher[11][11] += 1./4;//cos theta1
 			fisher[12][12] += 1./4;//cos theta2
 			fisher[13][13] += 1./(4*M_PI*M_PI);//phi1
@@ -2200,7 +2200,7 @@ void MCMC_fisher_transformations(
 		}
 	}
 	else{
-		if(generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos){
+		if(generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos || generation_method.find("EFPE") != std::string::npos){
 			fisher[1][1] =1./(.25) ;//eta
 			fisher[2][2] =1./(4);//spin1
 			fisher[3][3] =1./(4);//spin2
@@ -3814,7 +3814,7 @@ void RJMCMC_2WF_fisher_wrapper(
 		fisher[8][8] += 1./.25;//eta
 		fisher[9][9] += 1./4;//spin1
 		fisher[10][10] += 1./4;//spin2
-		if(mcmc_generation_method_base.find("PhenomPv2") != std::string::npos || mcmc_generation_method_base.find("PhenomPv3") != std::string::npos){
+		if(mcmc_generation_method_base.find("PhenomPv2") != std::string::npos || mcmc_generation_method_base.find("PhenomPv3") != std::string::npos || mcmc_generation_method_base.find("EFPE") != std::string::npos){
 			fisher[11][11] += 1./4;//cos theta1
 			fisher[12][12] += 1./4;//cos theta2
 			fisher[13][13] += 1./(4*M_PI*M_PI);//phi1
@@ -3822,7 +3822,7 @@ void RJMCMC_2WF_fisher_wrapper(
 		}
 	}
 	else{
-		if(mcmc_generation_method_base.find("PhenomPv2") != std::string::npos || mcmc_generation_method_base.find("PhenomPv3") != std::string::npos){
+		if(mcmc_generation_method_base.find("PhenomPv2") != std::string::npos || mcmc_generation_method_base.find("PhenomPv3") != std::string::npos || mcmc_generation_method_base.find("EFPE") != std::string::npos){
 			fisher[1][1] =1./(.25) ;//eta
 			fisher[2][2] =1./(4);//spin1
 			fisher[3][3] =1./(4);//spin2

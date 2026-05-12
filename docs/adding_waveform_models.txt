@@ -7,51 +7,77 @@ concrete reference. It covers the code changes needed after the library has
 been vendored and the CMake build has been set up.
 
 
-1. Parameter Repacking (src/fisher.cpp: repack_parameters)
-----------------------------------------------------------
-repack_parameters maps the flat MCMC parameter vector to gen_params_base
-fields. Add a branch for the new model. The generation method string passed
-here is prefixed with "MCMC_", so check for the model name with find().
+1. Parameter Packing/Unpacking (src/fisher.cpp)
+-----------------------------------------------
 
-The parameter vector layout should be documented explicitly. For models based
-on precessing spins, follow the IMRPhenomPv2 MCMC layout as a reference:
+1a. unpack_parameters
+    This function converts a gen_params_base<double> back into the flat MCMC
+    parameter vector. It is called by calculate_derivatives (the numerical
+    Fisher routine) to obtain the parameter vector before perturbing each
+    element for finite differencing. If a model has no branch here, the
+    parameter vector will be left uninitialised, causing the perturbed
+    waveform calls to receive garbage masses and crash.
 
-    [0]  RA
-    [1]  sin(DEC)
-    [2]  psi
-    [3]  cos(iota)        -> acos applied
-    [4]  phiRef
-    [5]  tc
-    [6]  ln(D_L)          -> exp applied
-    [7]  ln(Mc)           -> exp applied
-    [8]  eta
-    [9]  a1               (spin1 magnitude)
-    [10] a2               (spin2 magnitude)
-    [11] cos(tilt1)       -> acos applied
-    [12] cos(tilt2)       -> acos applied
-    [13] phi1             (spin1 azimuthal angle in the L frame)
-    [14] phi2             (spin2 azimuthal angle in the L frame)
+    Add a branch inside BOTH the non-sky-averaged (!sky_average) AND the
+    sky-averaged (intrinsic) blocks.
 
-Spins are stored in Cartesian coordinates in gen_params_base. Use
-transform_sph_cart to convert from spherical (a, theta, phi) to Cartesian.
-Clamp the cos(tilt) arguments to [-1, 1] before calling acos, as the Fisher
-proposal can step outside this range.
+    Non-sky-averaged MCMC branch (mirrors repack_parameters layout):
+        parameters[0..14] = RA, sin(DEC), psi, cos(iota), phiRef, tc,
+                            ln(DL), ln(Mc), eta, a1, a2,
+                            cos(tilt1), cos(tilt2), phi1, phi2
+        Additional model-specific entries at [15+].
 
-Additional model-specific parameters follow after index 14.
+    Sky-averaged MCMC branch (intrinsic-only, mirrors PhenomPv2 intrinsic):
+        parameters[0..7] = ln(Mc), eta, a1, a2,
+                           cos(tilt1), cos(tilt2), phi1, phi2
+        Additional model-specific entries at [8+].
 
-Model variants (e.g. a circular limit) can be handled inside the same branch
-with a nested find() check rather than a separate branch:
+1b. repack_parameters
+    This is the inverse: maps the flat MCMC vector to gen_params_base fields.
+    The generation method string is prefixed with "MCMC_" when called from
+    the MCMC likelihood, so use find() to match.
 
-    else if(generation_method.find("<MODEL>") != std::string::npos){
-        if(generation_method.find("MCMC") != std::string::npos){
-            // ... common parameter mapping ...
-            if(generation_method.find("circular") != std::string::npos){
-                a_params->e_start = 0;
-            } else {
-                a_params->e_start = avec_parameters[15];
+    Add a branch inside both the non-sky-averaged AND sky-averaged blocks,
+    mirroring the layout documented in unpack_parameters above.
+
+    For the non-sky-averaged layout, follow the IMRPhenomPv2 MCMC reference:
+
+        [0]  RA
+        [1]  sin(DEC)
+        [2]  psi
+        [3]  cos(iota)        -> acos applied
+        [4]  phiRef
+        [5]  tc
+        [6]  ln(D_L)          -> exp applied
+        [7]  ln(Mc)           -> exp applied
+        [8]  eta
+        [9]  a1               (spin1 magnitude)
+        [10] a2               (spin2 magnitude)
+        [11] cos(tilt1)       -> acos applied
+        [12] cos(tilt2)       -> acos applied
+        [13] phi1             (spin1 azimuthal angle in the L frame)
+        [14] phi2             (spin2 azimuthal angle in the L frame)
+
+    Spins are stored in Cartesian coordinates in gen_params_base. Use
+    transform_sph_cart to convert from spherical (a, theta, phi) to Cartesian.
+    Clamp the cos(tilt) arguments to [-1, 1] before calling acos, as the
+    Fisher proposal can step outside this range.
+
+    Additional model-specific parameters follow after index 14.
+
+    Model variants (e.g. a circular limit) can be handled inside the same
+    branch with a nested find() check rather than a separate branch:
+
+        else if(generation_method.find("<MODEL>") != std::string::npos){
+            if(generation_method.find("MCMC") != std::string::npos){
+                // ... common parameter mapping ...
+                if(generation_method.find("circular") != std::string::npos){
+                    a_params->e_start = 0;
+                } else {
+                    a_params->e_start = avec_parameters[15];
+                }
             }
         }
-    }
 
 
 2. MCMC Preparation (src/mcmc_gw_extended.cpp)
@@ -74,7 +100,44 @@ with a nested find() check rather than a separate branch:
     Add one branch per supported dimension (e.g. a circular variant at
     dim=15, an eccentric variant at dim=17).
 
-2b. Proposal setup in PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2
+2b. Fisher regularization in MCMC_fisher_transformations_v2
+    This function adds prior-width regularization terms to the diagonal of the
+    Fisher matrix. Without these, parameters that are weakly constrained by the
+    likelihood (near-zero Fisher elements) make the matrix ill-conditioned. When
+    the block Fisher is inverted for the proposal covariance, a near-singular
+    matrix causes huge proposed steps across all parameters in the block, not
+    just the weakly constrained ones.
+
+    For models using the precessing-spin layout (indices 11-14: cos_tilt1,
+    cos_tilt2, phi1, phi2), add the model name to the condition that
+    regularizes those entries. This must be done in all four Fisher
+    transformation sites across the codebase:
+
+        src/mcmc_gw_extended.cpp  MCMC_fisher_transformations_v2  non-intrinsic branch
+        src/mcmc_gw_extended.cpp  MCMC_fisher_transformations_v2  intrinsic branch
+        src/mcmc_gw.cpp           MCMC_fisher_transformations      non-intrinsic branch
+        src/mcmc_gw.cpp           MCMC_fisher_transformations      intrinsic branch
+        src/mcmc_gw.cpp           MCMC_fisher_wrapper              non-intrinsic branch
+        src/mcmc_gw.cpp           MCMC_fisher_wrapper              intrinsic branch
+
+    In each site the pattern is:
+
+        if(generation_method.find("PhenomPv2") != std::string::npos ||
+           generation_method.find("PhenomPv3") != std::string::npos ||
+           generation_method.find("<MODEL>")   != std::string::npos){
+            fisher[11][11] += 1./4;   // non-intrinsic: indices 11-14
+            fisher[12][12] += 1./4;
+            fisher[13][13] += 1./(4*M_PI*M_PI);
+            fisher[14][14] += 1./(4*M_PI*M_PI);
+        }
+
+    The intrinsic branch uses indices 4-7 instead (different layout); add the
+    same model condition there too.
+
+    This is particularly important at the circular limit, where spin orientations
+    are weakly constrained and the corresponding Fisher elements are near-zero.
+
+2c. Proposal setup in PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2
     The five proposals are:
         propArray[0]  gaussianProposal
         propArray[1]  blockDifferentialEvolutionProposal  (or DE for intrinsic)
@@ -115,9 +178,13 @@ are checked inside the branch with a nested find().
 
 4. Checklist for a New Model
 ------------------------------
-[ ] Add repack_parameters branch in src/fisher.cpp
+[ ] Add unpack_parameters branch (non-sky-averaged + sky-averaged) in src/fisher.cpp
+[ ] Add repack_parameters branch (non-sky-averaged + sky-averaged) in src/fisher.cpp
 [ ] Add dimension branch(es) in PTMCMC_method_specific_prep_v2
+    (extrinsic dim=N with *intrinsic=false; intrinsic dim=M with *intrinsic=true)
 [ ] Add proposal branch in PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2
     (only if block structure differs from the standard 7/rest split)
+[ ] Add Fisher regularization for spin-angle indices in all six sites
+    (see section 2b for the full list of files and functions)
 [ ] Add any new gen_params_base fields to include/gwat/util.h with defaults
 [ ] Verify fresh build passes with no new errors

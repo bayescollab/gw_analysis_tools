@@ -1984,7 +1984,10 @@ double choose_f22_start_for_duration(Parameters parameters, double duration_seco
     throw std::invalid_argument("duration and minimum start frequency must be positive");
   }
   if (!(parameters.mass1 > 0.0) || !(parameters.mass2 > 0.0)) {
-    throw std::invalid_argument("mass1 and mass2 must be positive");
+    throw std::invalid_argument(
+          "mass1 and mass2 must be positive (got mass1=" +
+          std::to_string(parameters.mass1) + ", mass2=" +
+          std::to_string(parameters.mass2) + ")");
   }
   if (!(parameters.f22_end > 0.0)) {
     parameters.f22_end = f22_isco_frequency_hz(parameters.mass1, parameters.mass2);
@@ -2211,7 +2214,10 @@ Parameters with_preset(Parameters parameters, ParameterPreset preset) {
 struct Model::Impl {
   explicit Impl(Parameters input) : params(std::move(input)) {
     if (!(params.mass1 > 0.0) || !(params.mass2 > 0.0)) {
-      throw std::invalid_argument("mass1 and mass2 must be positive");
+      throw std::invalid_argument(
+          "mass1 and mass2 must be positive (got mass1=" +
+          std::to_string(params.mass1) + ", mass2=" +
+          std::to_string(params.mass2) + ")");
     }
 
     // Convert external solar-mass inputs to geometric seconds once. Everything

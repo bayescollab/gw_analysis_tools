@@ -1859,6 +1859,18 @@ void PTMCMC_method_specific_prep_v2(std::string generation_method, int dimension
 		*intrinsic=false;
 		return;
 	}
+	else if(generation_method.find("EFPE") != std::string::npos && nonModDim == 8)
+	{
+		std::cout<<"Sampling in parameters: ln chirpmass, eta, a1, a2, cos tilt1, cos tilt2, phi1, phi2"<<std::endl;
+		*intrinsic=true;
+		return;
+	}
+	else if(generation_method.find("EFPE") != std::string::npos && nonModDim == 10)
+	{
+		std::cout<<"Sampling in parameters: ln chirpmass, eta, a1, a2, cos tilt1, cos tilt2, phi1, phi2, e, mean_anomaly"<<std::endl;
+		*intrinsic=true;
+		return;
+	}
 	if(generation_method.find("PhenomD") != std::string::npos && nonModDim == 4)
 	{
 		std::cout<<"Sampling in parameters: ln chirpmass, eta, chi1, chi2";
@@ -2064,7 +2076,7 @@ void MCMC_fisher_transformations_v2(
 		fisher[8][8] += 1./.25;//eta
 		fisher[9][9] += 1./4;//spin1
 		fisher[10][10] += 1./4;//spin2
-		if(generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos){
+		if(generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos || generation_method.find("EFPE") != std::string::npos){
 			fisher[11][11] += 1./4;//cos theta1
 			fisher[12][12] += 1./4;//cos theta2
 			fisher[13][13] += 1./(4*M_PI*M_PI);//phi1
@@ -2072,7 +2084,7 @@ void MCMC_fisher_transformations_v2(
 		}
 	}
 	else{
-		if(generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos){
+		if(generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos || generation_method.find("EFPE") != std::string::npos){
 			fisher[1][1] =1./(.25) ;//eta
 			fisher[2][2] =1./(4);//spin1
 			fisher[3][3] =1./(4);//spin2

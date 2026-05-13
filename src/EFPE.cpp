@@ -11,7 +11,7 @@
 
 namespace {
 
-pyefpe::Parameters build_efpe_params(gen_params_base<double> *p, double f_fallback)
+pyefpe::Parameters build_efpe_params(gen_params_base<double> *p, double f22_start_fallback, double f22_end)
 {
     pyefpe::Parameters ep;
     ep.mass1              = p->mass1;
@@ -27,8 +27,8 @@ pyefpe::Parameters build_efpe_params(gen_params_base<double> *p, double f_fallba
     ep.phi_start          = p->phiRef;
     ep.e_start            = p->e_start;
     ep.mean_anomaly_start = p->mean_anomaly_start;
-    ep.f22_start          = (p->f_ref > 0.0) ? p->f_ref : f_fallback;
-    ep.f22_end            = 0.0; // 0 instructs efpe to use ISCO
+    ep.f22_start          = (p->f_ref > 0.0) ? p->f_ref : f22_start_fallback;
+    ep.f22_end            = f22_end; // 0 instructs efpe to use ISCO
     return ep;
 }
 
@@ -51,7 +51,7 @@ int efpe_fourier_waveform<double>(double *frequencies, int length,
                                   waveform_polarizations<double> *wp,
                                   gen_params_base<double> *p)
 {
-    pyefpe::Parameters ep = build_efpe_params(p, frequencies[0]);
+    pyefpe::Parameters ep = build_efpe_params(p, frequencies[0], frequencies[length-1]);
     pyefpe::apply_preset(ep, pyefpe::ParameterPreset::Production);
     pyefpe::Model model(ep);
 
@@ -77,7 +77,7 @@ int efpe_fourier_waveform_uniform<double>(double *frequencies, int length,
     double f_min   = frequencies[0];
     double delta_f = frequencies[1] - frequencies[0];
 
-    pyefpe::Parameters ep = build_efpe_params(p, f_min);
+    pyefpe::Parameters ep = build_efpe_params(p, f_min, frequencies[length-1]);
     pyefpe::apply_preset(ep, pyefpe::ParameterPreset::Production);
     pyefpe::Model model(ep);
 

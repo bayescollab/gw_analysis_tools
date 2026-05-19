@@ -20,13 +20,10 @@ using std::string;
 using std::valarray;
 using std::vector;
 
-/*! \file
- */
-
-/*! Class that extends the IMRPhenomD_NRT waveform to sample directly on
+/**
+ * @file Class that extends the IMRPhenomD_NRT waveform to sample directly on
  * equation of state (EOS) parameters.
  *
- * THIS FILE IS DYSFUNCTIONAL RIGHT NOW - DO NOT USE
  */
 
 /* -------------------------------------------------------------------------- */
@@ -35,16 +32,16 @@ using std::vector;
 
 /* -------- Defines a class to create an interpolated function y(x). -------- */
 class Interpolation {
-public:
+ public:
   // Calls initialize()
-  Interpolation(gsl_interp_type *interp_type, std::vector<double> x,
+  Interpolation(gsl_interp_type* interp_type, std::vector<double> x,
                 std::vector<double> y);
   Interpolation();
   // Calls free()
   ~Interpolation();
 
   // Initializes GSL splines for interpolation
-  void initialize(gsl_interp_type *interp_type, std::vector<double> x,
+  void initialize(gsl_interp_type* interp_type, std::vector<double> x,
                   std::vector<double> y);
 
   // Frees GSL spline and accelerator memory
@@ -54,11 +51,11 @@ public:
   double yofx(double x);
   double dyofx(double x);
 
-protected:
+ protected:
   // GSL-type variables for interpolation
-  gsl_interp_accel *acc;
-  gsl_spline *spline;
-  gsl_interp_type *type;
+  gsl_interp_accel* acc;
+  gsl_spline* spline;
+  gsl_interp_type* type;
 
   // Size of data to be interpolated
   size_t size;
@@ -69,14 +66,18 @@ protected:
 /* -------------------------------------------------------------------------- */
 
 /* ------ Defines a class to construct a waveform with EoS parameters. ------ */
-template <class T> class IMRPhenomD_NRT_EOS : public IMRPhenomD_NRT<T> {
-public:
+template <class T>
+class IMRPhenomD_NRT_EOS : public IMRPhenomD_NRT<T> {
+ public:
   // Overrides IMRPhenomD_NRT construct_waveform
-  virtual int construct_waveform(T *frequencies, int length,
-                                 std::complex<T> *waveform,
-                                 source_parameters<T> *params) override;
+  virtual int construct_waveform(T* frequencies, int length,
+                                 std::complex<T>* waveform,
+                                 source_parameters<T>* params) override;
 
-  void get_m_love(source_parameters<T> *params);
+  void get_m_love(source_parameters<T>* params);
+
+ protected:
+  void get_observable_params(source_parameters<T>* params);
 };
 
 /* -------------------------------------------------------------------------- */
@@ -85,13 +86,13 @@ public:
 
 /* --------------- Defines a *base class* to construct an EoS. -------------- */
 class EOS_Constructor {
-public:
+ public:
   EOS_Constructor(string EOS_filepath);
 
-  void get_EOS(Interpolation &p_of_e, double &central_epsilon_1,
-               double &central_epsilon_2);
+  void get_EOS(Interpolation& p_of_e, double& central_epsilon_1,
+               double& central_epsilon_2);
 
-protected:
+ protected:
   struct EoS_data {
     // Vectors
     vector<double> pressure;
@@ -106,7 +107,7 @@ protected:
 
   EoS_data eos;
 
-  void transpose_data_to_column_major(vector<vector<double>> &vector);
+  void transpose_data_to_column_major(vector<vector<double>>& vector);
 
   // Conversion methods
   void convert_cs2_to_eos();
@@ -122,20 +123,20 @@ protected:
 
 /* ----- Defines a class to construct a bumpy EoS from given parameters. ---- */
 class Bumpy_EOS_Constructor : public EOS_Constructor {
-public:
+ public:
   // Constructor stores EOS table and converts units
   Bumpy_EOS_Constructor(string EOS_filepath) : EOS_Constructor(EOS_filepath) {};
 
   // Functions to store parameters
   // Need this because of whatever is even happening with GWAT's parameter
   // objects
-  void store_EOS_params(source_parameters<adouble> *params);
-  void store_EOS_params(source_parameters<double> *params);
+  void store_EOS_params(source_parameters<adouble>* params);
+  void store_EOS_params(source_parameters<double>* params);
 
   // Injects bump into the EOS
   virtual void construct_EOS();
 
-protected:
+ protected:
   struct Bumpy_Params {
     double bump_magnitude;
     double bump_width;
@@ -154,7 +155,7 @@ protected:
 
   // Methods to calculate points in cs2 for the quadratic bump
   void build_cs2_one_quad_bump();
-  double get_quadratic_bump_point(const double &nb, const double &f1_n1);
+  double get_quadratic_bump_point(const double& nb, const double& f1_n1);
 };
 
 /* -------------------------------------------------------------------------- */
@@ -162,13 +163,14 @@ protected:
 /* -------------------------------------------------------------------------- */
 
 class ObservablesIntegrator {
-public:
-  ObservablesIntegrator(Interpolation &p_of_e, double ec_1, double ec_2);
+ public:
+  ObservablesIntegrator(Interpolation& p_of_e, double ec_1, double ec_2);
 
-  void integrate_for_observables(arma::vec::fixed<3> &first_observables,
-                                 arma::vec::fixed<3> &second_observables, bool &CurveIsNegative);
+  void integrate_for_observables(arma::vec::fixed<3>& first_observables,
+                                 arma::vec::fixed<3>& second_observables,
+                                 bool& CurveIsNegative);
 
-protected:
+ protected:
   // EoS Interpolations
   Interpolation p_of_h;
   Interpolation e_of_h;
@@ -189,13 +191,13 @@ protected:
   common_constants constant;
 
   // Functions to get p(h) and e(h)
-  double calculate_dh_of_de(const double e, Interpolation &p_of_e);
-  void integrate_for_eos_of_h(Interpolation &p_of_e, double ec_1, double ec_2);
+  double calculate_dh_of_de(const double e, Interpolation& p_of_e);
+  void integrate_for_eos_of_h(Interpolation& p_of_e, double ec_1, double ec_2);
 
   // Functions to evaluate integration for m(h) and r(h)
-  void evaluate_ODE_at_point(double h, const arma::vec::fixed<3> &y,
-                             arma::vec::fixed<3> &f);
-  void rk4(double &t, arma::vec::fixed<3> &y, double h);
+  void evaluate_ODE_at_point(double h, const arma::vec::fixed<3>& y,
+                             arma::vec::fixed<3>& f);
+  void rk4(double& t, arma::vec::fixed<3>& y, double h);
 
   // Functions to convert units
   double convert_dimensions(double value, std::string unit,

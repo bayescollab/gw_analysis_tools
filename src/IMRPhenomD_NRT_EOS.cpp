@@ -613,7 +613,7 @@ void ObservablesIntegrator::integrate_for_observables(
                             (4 * (Y_1 + 1.0) * C4 + (6.0 * Y_1 - 4.0) * C3 +
                              (26.0 - 22.0 * Y_1) * C2 +
                              3.0 * (5.0 * Y_1 - 8.0) * C - 3.0 * Y_1 + 6.0) +
-                        3.0 * k * (2 * C * (Y_1 - 1.0) - Y_1 + 2.0) *
+                        3.0 * k_1 * (2 * C * (Y_1 - 1.0) - Y_1 + 2.0) *
                             log(1.0 - 2.0 * C)));
 
   // Store the dimensionless tidal love number (λ̄)
@@ -638,11 +638,11 @@ void ObservablesIntegrator::integrate_for_observables(
   double Y_2 = second_observables(2);
 
   // Useful definitions for faster calculations
-  double C = second_observables(1) / second_observables(0);
-  double C2 = C * C;
-  double C3 = C * C2;
-  double C4 = C2 * C2;
-  double C5 = C * C4;
+  C = second_observables(1) / second_observables(0);
+  C2 = C * C;
+  C3 = C * C2;
+  C4 = C2 * C2;
+  C5 = C * C4;
   double k_2 = (1.0 - 2.0 * C) * (1.0 - 2.0 * C);
 
   // Dimensionless tidal apsidal constant k2
@@ -651,7 +651,7 @@ void ObservablesIntegrator::integrate_for_observables(
                             (4 * (Y_2 + 1.0) * C4 + (6.0 * Y_2 - 4.0) * C3 +
                              (26.0 - 22.0 * Y_2) * C2 +
                              3.0 * (5.0 * Y_2 - 8.0) * C - 3.0 * Y_2 + 6.0) +
-                        3.0 * k * (2 * C * (Y_2 - 1.0) - Y_2 + 2.0) *
+                        3.0 * k_2 * (2 * C * (Y_2 - 1.0) - Y_2 + 2.0) *
                             log(1.0 - 2.0 * C)));
 
   // Store the dimensionless tidal love number (λ̄)

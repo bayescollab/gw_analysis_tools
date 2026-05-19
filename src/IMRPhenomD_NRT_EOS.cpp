@@ -892,8 +892,8 @@ double ObservablesIntegrator::convert_dimensions(double value, std::string unit,
     conversion_factor = km * (c * c / GWAT_G_SI) * (1 / GWAT_MSUN_SI);
   } else if (unit == "MeV/fm^3") {
     conversion_factor = (MeV / (fm * fm * fm)) *
-                        sqrt(pow(GWAT_G_SI, 6) / pow(c, 16)) * GWAT_G_SI *
-                        GWAT_G_SI;
+                        sqrt(pow(GWAT_G_SI, 6) / pow(c, 16)) *
+                        (GWAT_MSUN_SI * GWAT_MSUN_SI);
   } else {
     std::cerr << "Unsupported unit type passed to "
                  "ObservablesIntegrator::adimensionalize.\n";

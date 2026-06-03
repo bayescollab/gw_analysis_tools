@@ -1455,7 +1455,7 @@ int dCS_EdGB(int argc, char *argv[])
 	else{
 		std::cout<<"Cutoff:"<<params.mass2*.5*1.5<<std::endl;
 	}
-	if(!has_substringmethod, "GHO")){
+	if(!has_substring(method, "GHO")){
 		std::cout<<"(delta alpha^2)^(1/4) (KM): "<<1.64*pow(COV_ADSA[dimDSA-1][dimDSA-1],1./8.)*3.e5<<std::endl;
 	}
 	else{

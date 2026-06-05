@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['quadrature_0',['Quadrature',['../classQuadrature.html',1,'']]]
+  ['qlimr_5fparams_0',['QLIMR_params',['../structQLIMR__params.html',1,'']]],
+  ['quadrature_1',['Quadrature',['../classQuadrature.html',1,'']]]
 ];

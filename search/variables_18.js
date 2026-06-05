@@ -1,9 +1,9 @@
 var searchData=
 [
-  ['y_0',['y',['../structvector3D.html#a766df29d1f4cce1a621f39007c5482fc',1,'vector3D']]],
-  ['y20_1',['Y20',['../structsph__harm.html#a3bf4f2bd1a902fb516f55c9d5f2ab510',1,'sph_harm']]],
-  ['y21_2',['Y21',['../structsph__harm.html#a198e9d0138e5a47b585e137aead0e409',1,'sph_harm']]],
-  ['y22_3',['Y22',['../structsph__harm.html#a0b825cb4dc9e15370d9de94ec290ed2e',1,'sph_harm']]],
-  ['y2m1_4',['Y2m1',['../structsph__harm.html#ae152cb5736981339cc5a1db219af1d74',1,'sph_harm']]],
-  ['y2m2_5',['Y2m2',['../structsph__harm.html#aaf92ccdf351f773e22c21055deeab849',1,'sph_harm']]]
+  ['z_0',['z',['../structvector3D.html#a21c992fb0c84b9c5cf5e954bdfe79d0f',1,'vector3D']]],
+  ['z_5fdl_5faccel_5fptr_1',['Z_DL_accel_ptr',['../classgen__params__base.html#aabdb7823d0d6c98a79e6f16c63ceff63',1,'gen_params_base::Z_DL_accel_ptr'],['../structsource__parameters.html#ae079ce586d3f1cdeb97c4dc82ca4629c',1,'source_parameters::Z_DL_accel_ptr']]],
+  ['z_5fdl_5fspline_5fptr_2',['Z_DL_spline_ptr',['../classgen__params__base.html#a551ef3f246f186bf3ff1f4b51a40b465',1,'gen_params_base::Z_DL_spline_ptr'],['../structsource__parameters.html#a490daa8916bb550275f05da618d984b6',1,'source_parameters::Z_DL_spline_ptr']]],
+  ['z_5fea_3',['Z_EA',['../structsource__parameters.html#a55c865e2925330762954473549013901',1,'source_parameters']]],
+  ['zeta_5f0_4',['zeta_0',['../structsysprecquant.html#a14a3e515fd8254b3ffde7fd0bc2ca7d4',1,'sysprecquant']]],
+  ['zeta_5fpolariz_5',['zeta_polariz',['../structPhenomPv3Storage.html#a824654748090a10ad874eb884a8ed74e',1,'PhenomPv3Storage::zeta_polariz'],['../classgen__params__base.html#a79fd8f75c600381faed19e2c55897e79',1,'gen_params_base::zeta_polariz'],['../structsource__parameters.html#a7a4c0c4c3847c4e632b5bef3bb32155c',1,'source_parameters::zeta_polariz']]]
 ];

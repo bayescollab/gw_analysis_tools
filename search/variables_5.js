@@ -46,6 +46,7 @@ var searchData=
   ['freq_5fboundaries_43',['freq_boundaries',['../structgsl__subroutine.html#a237d86fd52747febdafb2f88d5b6ebfd',1,'gsl_subroutine']]],
   ['freqs_44',['freqs',['../structifo__data__struct.html#afe0960c8d92ebab9a249d0fef1cfc7bd',1,'ifo_data_struct::freqs'],['../classppEFisherRJVariables.html#a939212de90df9ba4b03e95856a4c5f9b',1,'ppEFisherRJVariables::freqs']]],
   ['full_5fdimension_45',['full_dimension',['../fisher_8cpp.html#a844bbb3325d3a1ca95de072aca55333b',1,'fisher.cpp']]],
-  ['fx_46',['Fx',['../structdet__res__pat.html#adad86d31d66a9bb39bb86ff45c17d708',1,'det_res_pat']]],
-  ['fy_47',['Fy',['../structdet__res__pat.html#a16db5d1fc5ce0d56578adf125aafc6a4',1,'det_res_pat']]]
+  ['fun_46',['fun',['../classTOV.html#acc5c2d3336370446f64bbd9b02191303',1,'TOV']]],
+  ['fx_47',['Fx',['../structdet__res__pat.html#adad86d31d66a9bb39bb86ff45c17d708',1,'det_res_pat']]],
+  ['fy_48',['Fy',['../structdet__res__pat.html#a16db5d1fc5ce0d56578adf125aafc6a4',1,'det_res_pat']]]
 ];

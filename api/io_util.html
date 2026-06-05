@@ -70,6 +70,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv44trimNSt6stringE"><code class="docutils literal notranslate"><span class="pre">trim()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv49read_fileNSt6stringEPPdii"><code class="docutils literal notranslate"><span class="pre">read_file()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv49read_fileNSt6stringEPPiii"><code class="docutils literal notranslate"><span class="pre">read_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv49read_fileNSt6stringERNSt6vectorINSt6vectorIdEEEEc"><code class="docutils literal notranslate"><span class="pre">read_file()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv49read_fileNSt6stringEPd"><code class="docutils literal notranslate"><span class="pre">read_file()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv49read_fileNSt6stringEPi"><code class="docutils literal notranslate"><span class="pre">read_file()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv410write_fileNSt6stringEPPdii"><code class="docutils literal notranslate"><span class="pre">write_file()</span></code></a></li>
@@ -83,6 +84,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv421count_lines_data_fileNSt6stringEPi"><code class="docutils literal notranslate"><span class="pre">count_lines_data_file()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv425count_lines_LOSC_PSD_fileNSt6stringEPi"><code class="docutils literal notranslate"><span class="pre">count_lines_LOSC_PSD_file()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv426count_lines_LOSC_data_fileNSt6stringEPi"><code class="docutils literal notranslate"><span class="pre">count_lines_LOSC_data_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4I0E9read_filevNSt6stringERNSt6vectorINSt6vectorI1TEEEEc"><code class="docutils literal notranslate"><span class="pre">read_file()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="mc_reject.html">mc_reject</a></li>
@@ -198,6 +200,24 @@
 <li><p><strong>output</strong> – [out] array to store output, dimensions rowsXcols </p></li>
 <li><p><strong>rows</strong> – first dimension </p></li>
 <li><p><strong>cols</strong> – second dimension </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv49read_fileNSt6stringERNSt6vectorINSt6vectorIdEEEEc">
+<span id="_CPPv39read_fileNSt6stringERNSt6vectorINSt6vectorIdEEEEc"></span><span id="_CPPv29read_fileNSt6stringERNSt6vectorINSt6vectorIdEEEEc"></span><span id="read_file__ss.std::vector:std::vector:double::R.c"></span><span class="target" id="io__util_8h_1ae9de6c740d893248f96ece0a6400fa0d"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">read_file</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">filename</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">double</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">output</span></span>, <span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">delimiter</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv49read_fileNSt6stringERNSt6vectorINSt6vectorIdEEEEc" title="Link to this definition"></a><br /></dt>
+<dd><p>Utility to read in data. </p>
+<p>Takes filename and delimiter of file, and assigns to ROW MAJOR 2D output vector</p>
+<p>File must be delimiter separated numerical entries, but can contain NaNs</p>
+<p>double version </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> – input filename, relative to execution directory </p></li>
+<li><p><strong>output</strong> – [out] vector to store output, dynamic dimensions to store full table </p></li>
+<li><p><strong>delimiter</strong> – input delimiter based on data file </p></li>
 </ul>
 </dd>
 </dl>
@@ -391,6 +411,22 @@
 <dt class="sig sig-object cpp" id="_CPPv426count_lines_LOSC_data_fileNSt6stringEPi">
 <span id="_CPPv326count_lines_LOSC_data_fileNSt6stringEPi"></span><span id="_CPPv226count_lines_LOSC_data_fileNSt6stringEPi"></span><span id="count_lines_LOSC_data_file__ss.iP"></span><span class="target" id="io__util_8h_1a2d2ec12ff7cb75ea68ec4139513bab4c"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">count_lines_LOSC_data_file</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">file</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">count</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv426count_lines_LOSC_data_fileNSt6stringEPi" title="Link to this definition"></a><br /></dt>
 <dd><p>Takes in LOSC data file and returns the number of data elements in file. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0E9read_filevNSt6stringERNSt6vectorINSt6vectorI1TEEEEc">
+<span id="_CPPv3I0E9read_fileNSt6stringERNSt6vectorINSt6vectorI1TEEEEc"></span><span id="_CPPv2I0E9read_fileNSt6stringERNSt6vectorINSt6vectorI1TEEEEc"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="io__util_8h_1ad62972428844cf7fe103c9c8d265b4ed"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">read_file</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">filename</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0E9read_filevNSt6stringERNSt6vectorINSt6vectorI1TEEEEc" title="read_file::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">output</span></span>, <span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">delimiter</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0E9read_filevNSt6stringERNSt6vectorINSt6vectorI1TEEEEc" title="Link to this definition"></a><br /></dt>
+<dd><p>Utility to read in data. </p>
+<p>Takes filename and delimiter of file, and assigns to ROW MAJOR 2D output vector</p>
+<p>File must be delimiter separated entries of the same type as passed in </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> – input filename, relative to execution directory </p></li>
+<li><p><strong>delimiter</strong> – delimiter used in read-in data file </p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </div>

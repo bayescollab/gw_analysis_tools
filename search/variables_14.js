@@ -1,5 +1,14 @@
 var searchData=
 [
-  ['update_5frj_5fwidth_0',['update_RJ_width',['../classsampler.html#a687c0eee8242674ec836e6b3986fe1c4',1,'sampler::update_RJ_width'],['../mcmc__sampler_8cpp.html#a7e4e1a31978397c5f9f3a76ad2bd5c9b',1,'update_RJ_width:&#160;mcmc_sampler.cpp']]],
-  ['user_5fparameters_1',['user_parameters',['../structmcmcVariables.html#a4c948ec6445d1afe1ff9b7f2580be403',1,'mcmcVariables::user_parameters'],['../structmcmcVariablesRJ.html#a2a7f4fe9b88f2e638402a7618e7ccea5',1,'mcmcVariablesRJ::user_parameters'],['../classsampler.html#a123399eb4393f9708c01789ffc5aa308',1,'sampler::user_parameters'],['../mcmc__sampler_8cpp.html#afec639568c726368d706bad2367ddb0a',1,'user_parameters:&#160;mcmc_sampler.cpp']]]
+  ['v_5fazimuth_5foffset_0',['V_azimuth_offset',['../detector__util_8h.html#a16f6c7a9877eebfc2197e0d250a6f5bc',1,'detector_util.h']]],
+  ['v_5felevation_1',['V_elevation',['../detector__util_8h.html#a5644ef4e7c76e45807a0b6219b7f6037',1,'detector_util.h']]],
+  ['v_5fgeometric_5ffactor_2',['V_geometric_factor',['../detector__util_8h.html#ae10b2e93d90b435c95beb81cd78d41c2',1,'detector_util.h']]],
+  ['v_5flat_3',['V_LAT',['../detector__util_8h.html#af746e081b047e8905f5593b65f4487d4',1,'detector_util.h']]],
+  ['v_5flocation_4',['V_location',['../detector__util_8h.html#a527aacec9a4bc87e43a3a15bb612e361',1,'detector_util.h']]],
+  ['v_5flong_5',['V_LONG',['../detector__util_8h.html#a032dccbec455c3e9f987df873fe06fed',1,'detector_util.h']]],
+  ['v_5fradius_6',['V_radius',['../detector__util_8h.html#afe6dc4a785ca00eb42fcb21abdad9121',1,'detector_util.h']]],
+  ['v_5fx_5fea_7',['V_x_EA',['../structsource__parameters.html#ace7c7037fb8c4c0fd23018cb44475807',1,'source_parameters']]],
+  ['v_5fy_5fea_8',['V_y_EA',['../structsource__parameters.html#a3d995f011a2976e0b8d0e0897e88edce',1,'source_parameters']]],
+  ['v_5fz_5fea_9',['V_z_EA',['../structsource__parameters.html#a3e3fba4d7ab2d6b86203134b73275801',1,'source_parameters']]],
+  ['virgo_5fd_10',['Virgo_D',['../detector__util_8h.html#ab3f9eb7bf2b7778fd56ed0a48ddaf423',1,'detector_util.h']]]
 ];

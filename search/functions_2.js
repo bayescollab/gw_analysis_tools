@@ -9,6 +9,5 @@ var searchData=
   ['bhevaporation_5fbeta_6',['BHEvaporation_beta',['../ppE__utilities_8h.html#a369f80d57a486a664b1664d99b343ba2',1,'ppE_utilities.h']]],
   ['binary_5flove_5frelation_7',['binary_love_relation',['../classIMRPhenomD__NRT.html#a2093e85fd3bad4211edb7da6de2238cd',1,'IMRPhenomD_NRT']]],
   ['boundary_5fnumber_8',['boundary_number',['../waveform__util_8h.html#a806f40462cbcdff3d062ac7fa1275915',1,'boundary_number(std::string method):&#160;waveform_util.cpp'],['../waveform__util_8cpp.html#a806f40462cbcdff3d062ac7fa1275915',1,'boundary_number(std::string method):&#160;waveform_util.cpp']]],
-  ['build_5famp_9',['build_amp',['../classIMRPhenomD.html#acf5645dc97b020ef468149883d1aca50',1,'IMRPhenomD']]],
-  ['build_5fphase_10',['build_phase',['../classIMRPhenomD.html#a03ecb320683b9d2b6df6e943fc55cec7',1,'IMRPhenomD']]]
+  ['build_5fcs2_5fone_5fquad_5fbump_9',['build_cs2_one_quad_bump',['../classIMRPhenomD__NRT__EOS.html#aa580a18a4e124bc5fcec27d029d27f5b',1,'IMRPhenomD_NRT_EOS']]]
 ];

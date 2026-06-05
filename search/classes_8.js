@@ -7,7 +7,5 @@ var searchData=
   ['mcmc_5fsampler_5foutput_4',['mcmc_sampler_output',['../classmcmc__sampler__output.html',1,'']]],
   ['mcmc_5fuser_5fparam_5',['MCMC_user_param',['../structMCMC__user__param.html',1,'']]],
   ['mcmcvariables_6',['mcmcVariables',['../structmcmcVariables.html',1,'']]],
-  ['mcmcvariablesrj_7',['mcmcVariablesRJ',['../structmcmcVariablesRJ.html',1,'']]],
-  ['mcr_5fjob_8',['mcr_job',['../structmcr__job.html',1,'']]],
-  ['mcr_5fsampler_9',['mcr_sampler',['../classmcr__sampler.html',1,'']]]
+  ['mcmcvariablesrj_7',['mcmcVariablesRJ',['../structmcmcVariablesRJ.html',1,'']]]
 ];

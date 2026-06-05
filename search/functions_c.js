@@ -46,9 +46,10 @@ var searchData=
   ['logpriorstandard_5fd_5fmod_43',['logPriorStandard_D_mod',['../classlogPriorStandard__D__mod.html#a3786c882aac66c4bc3db850466792dda',1,'logPriorStandard_D_mod']]],
   ['logpriorstandard_5fd_5fnrt_44',['logPriorStandard_D_NRT',['../classlogPriorStandard__D__NRT.html#a6d853c452ddfe27bf4def08eb376d0f5',1,'logPriorStandard_D_NRT']]],
   ['logpriorstandard_5fd_5fnrt_5fea_45',['logPriorStandard_D_NRT_EA',['../classlogPriorStandard__D__NRT__EA.html#a6d4cf3798d5e746a2e4ca3efc10e8e60',1,'logPriorStandard_D_NRT_EA']]],
-  ['logpriorstandard_5fd_5fnrt_5fmod_46',['logPriorStandard_D_NRT_mod',['../classlogPriorStandard__D__NRT__mod.html#abe19d7cd67615b15c458afff7dd4829d',1,'logPriorStandard_D_NRT_mod']]],
-  ['logpriorstandard_5fp_47',['logPriorStandard_P',['../classlogPriorStandard__P.html#af4c16625fe2d968d9dce9f55064ed362',1,'logPriorStandard_P']]],
-  ['logpriorstandard_5fp_5fmod_48',['logPriorStandard_P_mod',['../classlogPriorStandard__P__mod.html#a94ecefcb8921e607c4869999dbceb077',1,'logPriorStandard_P_mod']]],
-  ['logpriorstandard_5fp_5fnrt_49',['logPriorStandard_P_NRT',['../classlogPriorStandard__P__NRT.html#a0d32cb04386deb4049857930c11ebf28',1,'logPriorStandard_P_NRT']]],
-  ['logpriorstandard_5fp_5fnrt_5fmod_50',['logPriorStandard_P_NRT_mod',['../classlogPriorStandard__P__NRT__mod.html#a7d1e1bac44606c2f7a31f86dbd1f49cb',1,'logPriorStandard_P_NRT_mod']]]
+  ['logpriorstandard_5fd_5fnrt_5feos_46',['logPriorStandard_D_NRT_EOS',['../classlogPriorStandard__D__NRT__EOS.html#ad4772c924b29cf6c2c74dece42498394',1,'logPriorStandard_D_NRT_EOS']]],
+  ['logpriorstandard_5fd_5fnrt_5fmod_47',['logPriorStandard_D_NRT_mod',['../classlogPriorStandard__D__NRT__mod.html#abe19d7cd67615b15c458afff7dd4829d',1,'logPriorStandard_D_NRT_mod']]],
+  ['logpriorstandard_5fp_48',['logPriorStandard_P',['../classlogPriorStandard__P.html#af4c16625fe2d968d9dce9f55064ed362',1,'logPriorStandard_P']]],
+  ['logpriorstandard_5fp_5fmod_49',['logPriorStandard_P_mod',['../classlogPriorStandard__P__mod.html#a94ecefcb8921e607c4869999dbceb077',1,'logPriorStandard_P_mod']]],
+  ['logpriorstandard_5fp_5fnrt_50',['logPriorStandard_P_NRT',['../classlogPriorStandard__P__NRT.html#a0d32cb04386deb4049857930c11ebf28',1,'logPriorStandard_P_NRT']]],
+  ['logpriorstandard_5fp_5fnrt_5fmod_51',['logPriorStandard_P_NRT_mod',['../classlogPriorStandard__P__NRT__mod.html#a7d1e1bac44606c2f7a31f86dbd1f49cb',1,'logPriorStandard_P_NRT_mod']]]
 ];

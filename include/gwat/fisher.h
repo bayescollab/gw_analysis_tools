@@ -77,17 +77,6 @@ void calculate_fisher_elements_batch(double *frequency,
 	double *weights, 
 	bool log10_f);
 
-
-void calculate_derivatives(std::complex<double>  **response_deriv, 
-       	double *frequencies,
-       	int length, 
-       	int dimension, 
-       	string detector, 
-       	string reference_detector, 
-       	string  gen_method,
-       	gen_params_base<double> *parameters, 
-	int order);
-
 void fisher_autodiff(double *frequency, 
 	int length,
 	string generation_method, 
@@ -283,9 +272,7 @@ void ppE_theory_covariance_transformation(std::string original_method,
 	double **new_cov);
 
 
-// new calcualtederivatives stuff ----------------------------------------------------------------------------------
-
-void calculate_derivatives_new(std::complex<double> **response_deriv,
+void calculate_derivatives(std::complex<double> **response_deriv,
 							   double *frequencies,
 							   int length,
 							   int dimension,
@@ -550,5 +537,5 @@ class FullResponseDerivatives_O4:public FullResponseDerivatives_O2 {
 	};
 
 
-//------------------------------------------------------------------------------------------------------------------
+
 #endif

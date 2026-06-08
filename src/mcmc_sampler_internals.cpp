@@ -1812,18 +1812,16 @@ void allocate_sampler_mem(sampler *sampler)
 	int cold_chain_ids[sampler->chain_N];
 	int cold_chain_ct = 0;
 	//if(sampler->pool){
-	if(true){
-		sampler->chain_neighborhoods=(double **)malloc(sizeof(double*)*sampler->chain_N);
-		sampler->chain_neighbors=(int *)malloc(sizeof(int)*sampler->chain_N);
-		sampler->chain_neighborhoods_ids=(int **)malloc(sizeof(int*)*sampler->chain_N);
-		sampler->chain_neighbors_ids=(int *)malloc(sizeof(int)*sampler->chain_N);
-		for(int i = 0  ;i<sampler->chain_N; i++){
-			sampler->chain_neighborhoods[i]=NULL;	
-			sampler->chain_neighborhoods_ids[i]=NULL;	
-		}
-		update_temp_neighborhoods(sampler);
-		
+	sampler->chain_neighborhoods=(double **)malloc(sizeof(double*)*sampler->chain_N);
+	sampler->chain_neighbors=(int *)malloc(sizeof(int)*sampler->chain_N);
+	sampler->chain_neighborhoods_ids=(int **)malloc(sizeof(int*)*sampler->chain_N);
+	sampler->chain_neighbors_ids=(int *)malloc(sizeof(int)*sampler->chain_N);
+	for(int i = 0  ;i<sampler->chain_N; i++){
+		sampler->chain_neighborhoods[i]=NULL;	
+		sampler->chain_neighborhoods_ids[i]=NULL;	
 	}
+	update_temp_neighborhoods(sampler);
+		
 	//#############
 	sampler->interfaces = new mcmc_data_interface*[sampler->chain_N];
 	//#############
@@ -2050,18 +2048,17 @@ void deallocate_sampler_mem(sampler *sampler)
 	delete [] sampler->swap_partners;
 	delete [] sampler->swap_accepts;
 	//if(sampler->pool){
-	if(true){
-		for (i =0; i<sampler->chain_N; i++)
-		{
-			free(sampler->chain_neighborhoods[i]);
-			free(sampler->chain_neighborhoods_ids[i]);
-			free(sampler->step_prob[i]);
-		}
-		free(sampler->chain_neighborhoods);
-		free(sampler->chain_neighbors);
-		free(sampler->chain_neighborhoods_ids);
-		free(sampler->chain_neighbors_ids);
+	for (i =0; i<sampler->chain_N; i++)
+	{
+		free(sampler->chain_neighborhoods[i]);
+		free(sampler->chain_neighborhoods_ids[i]);
+		free(sampler->step_prob[i]);
 	}
+	free(sampler->chain_neighborhoods);
+	free(sampler->chain_neighbors);
+	free(sampler->chain_neighborhoods_ids);
+	free(sampler->chain_neighbors_ids);
+
 	if(sampler->local_param_allocation){
 		delete [] sampler->user_parameters;
 	}

@@ -210,65 +210,6 @@ double maximized_coal_log_likelihood_IMRPhenomD_Full_Param(double *frequencies,
 		template_strain[i] = template_strain[i]*q;
 	
 
-	////Calculate template snr and scale it to match the data snr
-	////later, upgrade to non uniform spacing, cause why not
-	//double delta_f = frequencies[1]-frequencies[0];
-	//double sum = 0;
-	//double *integrand = (double *)malloc(sizeof(double)*length);
-	//for (int i =0;i< length;i++)
-	//	integrand[i] = real(template_strain[i]*std::conj(template_strain[i]))/noise[i];
-	////double integral = 4.*trapezoidal_sum_uniform(delta_f, length, integrand);
-	//double integral = 4.*simpsons_sum(delta_f, length, integrand);
-	//double HH = integral;
-
-	//sum = 0;
-	//double integral2;
-	//for (int i =0;i< length;i++)
-	//	integrand[i] = real(data[i]*std::conj(data[i]))/noise[i];
-	////integral2 = 4*trapezoidal_sum_uniform(delta_f, length, integrand2);
-	//integral2 = 4*simpsons_sum(delta_f, length, integrand);
-	//double DD = integral2;
-
-	////###################################################################
-	////testing
-	////###################################################################
-	//sum = 0;
-	//double integral3;
-	//for (int i =0;i< length;i++)
-	//	integrand[i] = real(template_strain[i]*std::conj(data[i]))/noise[i];
-	////integral2 = 4*trapezoidal_sum_uniform(delta_f, length, integrand2);
-	//integral3 = 4*simpsons_sum(delta_f, length, integrand);
-	//double HD = integral3;
-	////###################################################################
-
-
-
-	////double normalizing_factor = SNR/sqrt(integral);
-	//
-	////calculate the fourier transform that corresponds to maximizing over phic and tc
-	////Use malloc at some point, not sure how long these arrays will be 
-	//std::complex<double> g_tilde;
-	//for (int i=0;i<length; i++)
-	//{
-	//	g_tilde = 4.*conj(data[i]) * template_strain[i] / noise[i]; 
-	//	plan->in[i][0] = real(g_tilde);
-	//	plan->in[i][1] = imag(g_tilde);
-	//}
-
-	//double *g = (double *)malloc(sizeof(double)*length);
-	//
-	//fftw_execute(plan->p);
-	//
-	//for (int i=0;i<length; i++)
-	//{
-	//	g[i] = std::abs(std::complex<double>(plan->out[i][0],plan->out[i][1])) ;
-	//}
-
-	//double max = *std::max_element(g, g+length)*delta_f; 
-
-	//free(integrand);
-	//free(g);
-
 	double out =  maximized_Log_Likelihood_aligned_spin_internal(data,
 				noise,
 				frequencies,
@@ -278,9 +219,6 @@ double maximized_coal_log_likelihood_IMRPhenomD_Full_Param(double *frequencies,
 				);
 	free(template_strain);
 	return out;
-	//return -0.5*(HH- 2*HD);//TESTING
-	//return -0.5*(HH- 2*max);
-	//return -0.5*(DD+HH- 2*max);
 }
 double maximized_coal_log_likelihood_IMRPhenomD_Full_Param(double *frequencies,
 				size_t length,
@@ -380,7 +318,7 @@ double maximized_Log_Likelihood(std::complex<double> *data,
 				)
 {
 	double ll = 0;
-	if(	generation_method.find("IMRPhenomD")!=std::string::npos){
+	if(	has_substring(generation_method, "IMRPhenomD")){
 		std::complex<double> *response =
 			(std::complex<double> *) malloc(sizeof(std::complex<double>) * length);
 		fourier_detector_response_horizon(frequencies, length, response, detector, generation_method, params);
@@ -388,7 +326,7 @@ double maximized_Log_Likelihood(std::complex<double> *data,
 		
 		free(response);
 		}
-	if(generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos){
+	if(has_substring(generation_method, "PhenomPv2") || has_substring(generation_method, "PhenomPv3")){
 				
 		//fourier_waveform(frequencies,length,hp,hc,generation_method,params);
 		waveform_polarizations<double> wp;
@@ -522,9 +460,6 @@ double maximized_coal_Log_Likelihood_internal(std::complex<double> *data,
 	for (int i=0;i<length; i++)
 	{
 		g_tilde = 4.*conj(data[i]) * detector_response[i] / psd[i]; 
-		//g_tilde = conj(data[i]) * detector_response[i] / psd[i]; 
-		//plan->in[i][0] = real(g_tilde);
-		//plan->in[i][1] = imag(g_tilde);
 		in[i][0] = real(g_tilde);
 		in[i][1] = imag(g_tilde);
 	}
@@ -532,15 +467,12 @@ double maximized_coal_Log_Likelihood_internal(std::complex<double> *data,
 	double *g = (double *)malloc(sizeof(double)*length);
 	std::complex<double> *gc = (std::complex<double> *)malloc(sizeof(std::complex<double>)*length);
 	
-	//fftw_execute(plan->p);
 	fftw_execute_dft(plan->p, in, out);
 	
 	for (int i=0;i<length; i++)
 	{
 		g[i] = std::abs(std::complex<double>(out[i][0],out[i][1])) ;
 		gc[i] = std::complex<double>(out[i][0],out[i][1]) ;
-		//g[i] = plan->out[i][0]*plan->out[i][0]+plan->out[i][1]*plan->out[i][1] ;
-		//g[i] = out[i][0]*out[i][0]+out[i][1]*out[i][1] ;
 	}
 	//std::vector<int>::iterator max;
 	double *max;
@@ -621,33 +553,25 @@ double maximized_Log_Likelihood_aligned_spin_internal(std::complex<double> *data
 	for (int i=0;i<length; i++)
 	{
 		g_tilde = 4.*conj(data[i]) * detector_response[i] / psd[i]; 
-		//g_tilde = conj(data[i]) * detector_response[i] / psd[i]; 
-		//plan->in[i][0] = real(g_tilde);
-		//plan->in[i][1] = imag(g_tilde);
 		in[i][0] = real(g_tilde);
 		in[i][1] = imag(g_tilde);
 	}
 
 	double *g = (double *)malloc(sizeof(double)*length);
-	
-	//fftw_execute(plan->p);
+
 	fftw_execute_dft(plan->p, in, out);
 	
 	for (int i=0;i<length; i++)
 	{
-		//g[i] = std::abs(std::complex<double>(plan->out[i][0],plan->out[i][1])) ;
-		//g[i] = plan->out[i][0]*plan->out[i][0]+plan->out[i][1]*plan->out[i][1] ;
 		g[i] = out[i][0]*out[i][0]+out[i][1]*out[i][1] ;
 	}
 
 	double max = *std::max_element(g, g+length)*delta_f*delta_f; 
-	//double max = *std::max_element(g, g+length)*length; 
 
 	free(integrand);
 	free(g);
 	fftw_free(in);
 	fftw_free(out);
-	//std::cout<<.5*(max)/HH<<" "<<1./length<<" "<<delta_f*delta_f<<" "<<delta_f/length<<" "<<length<<" "<<1./(delta_f*length)<<std::endl;
 	return .5*(max)/HH;
 }
 
@@ -669,21 +593,6 @@ double maximized_Log_Likelihood_unaligned_spin_internal(std::complex<double> *da
 	double delta_f = frequencies[1]-frequencies[0];
 	double *integrand = (double *)malloc(sizeof(double)*length);
 	double integral;
-	//NOTE: I'm setting detector to HANFORD TEMPORARILY for testing
-	//
-	//THIS NEEDS TO CHANGE
-	//
-	//
-	//
-	//calculate overall template snr squared HH = <H|H> NOT NECESSARY I think
-	//std::complex<double> *detector_response = 
-	//	(std::complex<double> *)malloc(sizeof(std::complex<double>)*length);
-	//fourier_detector_response(frequencies, length, hplus,hcross, detector_response, 0.0,0.0,"Hanford");
-
-	//for (int i =0;i< length;i++)
-	//	integrand[i] = real(detector_response[i]*std::conj(detector_response[i]))/psd[i];
-	//integral = 4.*simpsons_sum(delta_f, length, integrand);
-	//double HH = integral;
 
 	//Calculate template snr for plus polarization sqrt(<H+|H+>)
 	for (int i =0;i< length;i++){
@@ -773,9 +682,6 @@ double maximized_Log_Likelihood_unaligned_spin_internal(std::complex<double> *da
 			/(1. - Ipc*Ipc);
 	}
 	double max = .25 * (*std::max_element(lambda, lambda+length)); 
-	//double maxrhoplus2 =  (*std::max_element(rhoplus2, rhoplus2+length)); 
-	//double maxrhocross2 =  (*std::max_element(rhocross2, rhocross2+length)); 
-	//double maxgammahat =  (*std::max_element(gammahat, gammahat+length)); 
 
 	free(integrand);
 	free(hpnorm);
@@ -789,8 +695,6 @@ double maximized_Log_Likelihood_unaligned_spin_internal(std::complex<double> *da
 	fftw_free(in);
 	fftw_free(out);
 
-	//std::cout<<max<<" "<<maxrhoplus2 <<" "<<maxrhocross2 <<" "<<maxgammahat << " "<<Ipc<<std::endl;
-	//return -0.5*(HH- 2*max);
 	return max;
 }
 
@@ -856,15 +760,8 @@ double Log_Likelihood_internal(std::complex<double> *data,
 	}
 	double DH = integral;
 
-	//for (int i =0;i< length;i++)
-	//	integrand[i] = real(data[i]*std::conj(data[i]))/psd[i];
-	//integral = 4.*simpsons_sum(delta_f, length, integrand);
-	//double DD = integral;
-
 	free(integrand);
-	//std::cout<<HH<<" "<<DH<<" "<<-0.5*(HH- 2*DH)<<std::endl;
 	return -0.5*(HH- 2*DH);
-	//return -2*(HH- 2*DH);
 }
 
 //! \brief Compute unmarginalized likelihood with a specified Quadrature method
@@ -987,8 +884,7 @@ void SkySearch_PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(mcmc_sampler_output *s
 	//		mcmc_frequencies[i][mcmc_data_length[i]-1] 
 	//			!= mcmc_frequencies[0][mcmc_data_length[0]-1]){
 	//		mcmc_save_waveform= false;
-	//	}
-	//		
+	//	}	
 	//}
 
 	bool local_seeding ;
@@ -1050,19 +946,14 @@ double MCMC_likelihood_wrapper_SKYSEARCH(double *param, mcmc_data_interface *int
 	}
 	std::complex<double> *response = new std::complex<double>[mcmc_data_length[0]];	
 	double delta_t,tc;
-	//double tc_ref = param[5],tc;
 	double T = 1./( mcmc_frequencies[0][1]-mcmc_frequencies[0][0]);
 	double tc_ref = T-param[5];
-	//double llvec[3];
 	for(int i = 0 ; i<mcmc_num_detectors; i++){
 		delta_t = DTOA_DETECTOR(param[0],asin(param[1]),mcmc_gmst, mcmc_detectors[0],mcmc_detectors[i]);
-		//tc = tc_ref + delta_t;
 		tc = tc_ref - delta_t;
 		tc*=2.*M_PI;
 		fourier_detector_response_equatorial(mcmc_frequencies[i],mcmc_data_length[i],&wp, response,param[0],asin(param[1]),param[2],mcmc_gmst, (double *)NULL,0.,0.,0.,0.,mcmc_detectors[i]);
 		for(int j = 0 ; j<mcmc_data_length[i];j++){
-			//response[j]*=exp(-std::complex<double>(
-			//	0,tc*(mcmc_frequencies[i][j]-20.) - param[4] ));
 			response[j]*=exp(std::complex<double>(
 				0,tc*(mcmc_frequencies[i][j]) - param[4] ));
 		}	
@@ -1075,11 +966,9 @@ double MCMC_likelihood_wrapper_SKYSEARCH(double *param, mcmc_data_interface *int
 			false,
 			"SIMPSONS"		
 			);
-		//llvec[i]=ll;
 		
 	}
-	//debugger_print(__FILE__,__LINE__,ll);
-	//std::cout<<ll<<" "<<llvec[0]<<" "<<llvec[1]-llvec[0]<<" "<<llvec[2]-llvec[1]<<std::endl;
+
 	delete [] response;
 	wp.deallocate_memory();
 	return ll;
@@ -1153,13 +1042,6 @@ void PTMCMC_MH_GW(double ***output,
 	mcmc_num_detectors = num_detectors;
 	mcmc_gps_time = gps_time;
 	mcmc_gmst = gps_to_GMST_radian(mcmc_gps_time);
-	//mcmc_gmst = 2.456551496456678;
-	//mcmc_Nmod = Nmod;
-	//mcmc_bppe = bppe;
-	//MCMC_modification_struct ms;
-	//ms.ppE_Nmod = Nmod;
-	//ms.bppe = bppe;
-	//mcmc_mod_struct = &ms;
 	mcmc_mod_struct=mod_struct;
 	
 	mcmc_log_beta = false;
@@ -1255,8 +1137,6 @@ void continue_PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(std::string checkpoint_
 	mcmc_num_detectors = num_detectors;
 	mcmc_gps_time = gps_time;
 	mcmc_gmst = gps_to_GMST_radian(mcmc_gps_time);
-	//mcmc_Nmod = Nmod;
-	//mcmc_bppe = bppe;
 	mcmc_mod_struct = mod_struct;
 	mcmc_log_beta = false;
 	mcmc_intrinsic = false;
@@ -1305,39 +1185,6 @@ void continue_PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(std::string checkpoint_
 		}
 	}
 	
-
-	//######################################################
-	//######################################################
-	//Fishers sometimes need AD, but that's slow and single 
-	//threaded -- use GAUSS quad with precomputed weights 
-	//and abscissa 
-	//double *fish_freqs = NULL;
-	//double *fish_weights = NULL;
-	//double **fish_psd = NULL; //Needs to be interpolated from data given
-	//int fish_length = 100;
-	//double flow = mcmc_frequencies[0][0];
-	//double fhigh = mcmc_frequencies[0][mcmc_data_length[0]-1];
-	//if(mod_struct->GAUSS_QUAD){
-	//	fish_freqs = new double[fish_length];	
-	//	fish_weights = new double[fish_length];	
-	//	fish_psd = new double*[mcmc_num_detectors];	
-	//	
-	//	gauleg(log10(flow), log10(fhigh), fish_freqs, fish_weights, fish_length);
-	//	for(int i = 0 ; i<fish_length; i++){
-	//		fish_freqs[i]=pow(10,fish_freqs[i]);
-	//	}
-	//	for(int i = 0 ; i<mcmc_num_detectors; i++){
-	//		fish_psd[i] = new double[fish_length];
-	//		gsl_interp_accel *accel = gsl_interp_accel_alloc();
-	//		gsl_spline *spline = gsl_spline_alloc(gsl_interp_linear, mcmc_data_length[i]);
-	//		gsl_spline_init(spline, mcmc_frequencies[i], mcmc_noise[i],mcmc_data_length[i]);
-	//		for(int j = 0 ; j<fish_length; j++){
-	//			fish_psd[i][j] = gsl_spline_eval(spline, fish_freqs[j],accel);
-	//		}
-	//		gsl_spline_free(spline);
-	//	}
-	//}
-	//######################################################
 	int chain_N = 0;
 	int status = chain_number_from_checkpoint_file(checkpoint_file_start, &chain_N);
 
@@ -1383,24 +1230,8 @@ void continue_PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(std::string checkpoint_
 		user_parameters[i]->fisher_length= mod_struct->fisher_length;
 
 		user_parameters[i]->mod_struct = mod_struct;
-
-		//user_parameters[i]->burn_freqs = mcmc_frequencies;
-		//user_parameters[i]->burn_data = mcmc_data;
-		//user_parameters[i]->burn_noise = mcmc_noise;
-		//user_parameters[i]->burn_lengths = mcmc_data_length;
 	}
-	//######################################################
 
-	//###########################################################
-	//double trial[11] = {1,.9,.2,.9,.2,3,7,4,.24,0,0};
-	//mcmc_data_interface i;
-	//i.min_dim = 11; 
-	//i.max_dim = 11; 
-	//i.chain_id  = 0; 
-	//i.chain_number  = 11; 
-	//double ll = MCMC_likelihood_wrapper(trial, &i ,user_parameters[0]);
-	//debugger_print(__FILE__,__LINE__,ll);
-	//###########################################################
 	continue_PTMCMC_MH_dynamic_PT_alloc_uncorrelated(checkpoint_file_start,sampler_output,output,  N_steps,  
 		max_chain_N_thermo_ensemble, chain_temps, 
 		swp_freq, t0, nu, max_chunk_size,chain_distribution_scheme,
@@ -1431,14 +1262,7 @@ void continue_PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(std::string checkpoint_
 		delete [] burn_noise[i];
 		deallocate_FFTW_mem(&burn_plans[i]);
 	}
-	//if(mod_struct->GAUSS_QUAD){
-	//	delete [] fish_freqs;
-	//	delete [] fish_weights;
-	//	for(int i = 0 ;i<mcmc_num_detectors; i++){
-	//		delete [] fish_psd[i];
-	//	}
-	//	delete [] fish_psd;
-	//}
+
 	delete [] burn_data;
 	delete [] burn_lengths;
 	delete [] burn_noise;
@@ -1513,8 +1337,6 @@ void PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(mcmc_sampler_output *sampler_out
 	mcmc_num_detectors = num_detectors;
 	mcmc_gps_time = gps_time;
 	mcmc_gmst = gps_to_GMST_radian(mcmc_gps_time);
-	//mcmc_Nmod = mod_struct->ppE_Nmod;
-	//mcmc_bppe = mod_struct->bppe;
 	mcmc_mod_struct = mod_struct;
 	mcmc_log_beta = false;
 	mcmc_intrinsic = false;
@@ -1570,39 +1392,6 @@ void PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(mcmc_sampler_output *sampler_out
 		}
 	}
 	
-
-	//######################################################
-	//######################################################
-	//Fishers sometimes need AD, but that's slow and single 
-	//threaded -- use GAUSS quad with precomputed weights 
-	//and abscissa 
-	//double *fish_freqs = NULL;
-	//double *fish_weights = NULL;
-	//double **fish_psd = NULL; //Needs to be interpolated from data given
-	//int fish_length = 100;
-	//double flow = mcmc_frequencies[0][0];
-	//double fhigh = mcmc_frequencies[0][mcmc_data_length[0]-1];
-	//if(mod_struct->GAUSS_QUAD){
-	//	fish_freqs = new double[fish_length];	
-	//	fish_weights = new double[fish_length];	
-	//	fish_psd = new double*[mcmc_num_detectors];	
-	//	
-	//	gauleg(log10(flow), log10(fhigh), fish_freqs, fish_weights, fish_length);
-	//	for(int i = 0 ; i<fish_length; i++){
-	//		fish_freqs[i]=pow(10,fish_freqs[i]);
-	//	}
-	//	for(int i = 0 ; i<mcmc_num_detectors; i++){
-	//		fish_psd[i] = new double[fish_length];
-	//		gsl_interp_accel *accel = gsl_interp_accel_alloc();
-	//		gsl_spline *spline = gsl_spline_alloc(gsl_interp_linear, mcmc_data_length[i]);
-	//		gsl_spline_init(spline, mcmc_frequencies[i], mcmc_noise[i],mcmc_data_length[i]);
-	//		for(int j = 0 ; j<fish_length; j++){
-	//			fish_psd[i][j] = gsl_spline_eval(spline, fish_freqs[j],accel);
-	//		}
-	//		gsl_spline_free(spline);
-	//	}
-	//}
-	//######################################################
 	MCMC_user_param **user_parameters=NULL;
 	user_parameters = new MCMC_user_param*[chain_N];
 	for(int i = 0 ;i<chain_N; i++){
@@ -1645,25 +1434,8 @@ void PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(mcmc_sampler_output *sampler_out
 
 
 		user_parameters[i]->mod_struct = mod_struct;
-
-		//user_parameters[i]->burn_freqs = mcmc_frequencies;
-		//user_parameters[i]->burn_data = mcmc_data;
-		//user_parameters[i]->burn_noise = mcmc_noise;
-		//user_parameters[i]->burn_lengths = mcmc_data_length;
 	}
-	//######################################################
-	//###########################################################
-	//double trial[11] = {1,.9,.2,.9,.2,3,7,4,.24,0,0};
-	//mcmc_data_interface i;
-	//i.min_dim = 11; 
-	//i.max_dim = 11; 
-	//i.chain_id  = 0; 
-	//i.chain_number  = 11; 
-	//double ll = MCMC_likelihood_wrapper(trial, &i ,user_parameters[0]);
-	//debugger_print(__FILE__,__LINE__,ll);
-	//###########################################################
-
-
+	
 	PTMCMC_MH_dynamic_PT_alloc_uncorrelated(sampler_output,output, dimension, N_steps, chain_N, 
 		max_chain_N_thermo_ensemble,initial_pos,seeding_var,ensemble_initial_pos, chain_temps, 
 		swp_freq, t0, nu,max_chunk_size,chain_distribution_scheme,
@@ -1692,14 +1464,7 @@ void PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(mcmc_sampler_output *sampler_out
 		delete [] burn_noise[i];
 		deallocate_FFTW_mem(&burn_plans[i]);
 	}
-	//if(mod_struct->GAUSS_QUAD){
-	//	delete [] fish_freqs;
-	//	delete [] fish_weights;
-	//	for(int i = 0 ;i<mcmc_num_detectors; i++){
-	//		delete [] fish_psd[i];
-	//	}
-	//	delete [] fish_psd;
-	//}
+
 	delete [] burn_data;
 	delete [] burn_lengths;
 	delete [] burn_noise;
@@ -1771,8 +1536,6 @@ void PTMCMC_MH_dynamic_PT_alloc_GW(double ***output,
 	mcmc_num_detectors = num_detectors;
 	mcmc_gps_time = gps_time;
 	mcmc_gmst = gps_to_GMST_radian(mcmc_gps_time);
-	//mcmc_Nmod = Nmod;
-	//mcmc_bppe = bppe;
 	mcmc_mod_struct = mod_struct;
 	mcmc_log_beta = false;
 	mcmc_intrinsic = false;
@@ -1909,15 +1672,15 @@ void continue_PTMCMC_MH_GW(std::string start_checkpoint_file,
 void PTMCMC_method_specific_prep(std::string generation_method, int dimension,double **seeding_var, bool local_seeding)
 {
 	int totalmod = (mcmc_mod_struct->gIMR_Nmod_phi + mcmc_mod_struct->gIMR_Nmod_sigma + mcmc_mod_struct->gIMR_Nmod_beta + mcmc_mod_struct->gIMR_Nmod_alpha  + mcmc_mod_struct->ppE_Nmod);
-	//if(generation_method.find("EA") != std::string::npos){totalmod+=4;}
-	if(generation_method.find("EA") != std::string::npos){
+	//if(has_substring(generation_method, "EA")){totalmod+=4;}
+	if(has_substring(generation_method, "EA")){
 	        totalmod+=3;
 	}
 	// Two new parameters to search for with the dissipative tidal Love 
-        if(generation_method.find("_D") != std::string::npos){
+        if(has_substring(generation_method, "_D")){
 	        totalmod+=2;
 	}
-	if(generation_method.find("PhenomD") != std::string::npos && (dimension - totalmod) == 4)
+	if(has_substring(generation_method, "PhenomD") && (dimension - totalmod) == 4)
 	{
 		std::cout<<"Sampling in parameters: ln chirpmass, eta, chi1, chi2";
 		for(int i =0; i<totalmod; i++){
@@ -1936,7 +1699,7 @@ void PTMCMC_method_specific_prep(std::string generation_method, int dimension,do
 		}
 		mcmc_intrinsic=true;
 	} 
-	else if(generation_method.find("PhenomD_NRT") != std::string::npos &&   (dimension - totalmod) == 6)
+	else if(has_substring(generation_method, "PhenomD_NRT") &&   (dimension - totalmod) == 6)
 	{
 		std::cout<<"Sampling in parameters: ln chirpmass, eta, chi1, chi2, tidal1,  tidal2";
 		for(int i =0; i<totalmod; i++){
@@ -1957,7 +1720,7 @@ void PTMCMC_method_specific_prep(std::string generation_method, int dimension,do
 		}
 		mcmc_intrinsic=true;
 	} 
-	else if(generation_method.find("PhenomD_NRT") != std::string::npos &&   (dimension - totalmod) == 8)
+	else if(has_substring(generation_method, "PhenomD_NRT") &&   (dimension - totalmod) == 8)
 	{
 		std::cout<<"Sampling in parameters: ln chirpmass, eta, chi1, chi2, tidal1,  tidal2, diss_tidal1, diss_tidal2";
 		for(int i =0; i<totalmod; i++){
@@ -1978,7 +1741,7 @@ void PTMCMC_method_specific_prep(std::string generation_method, int dimension,do
 		}
 		mcmc_intrinsic=true;
 	} 
-	else if(generation_method.find("PhenomD_NRT") != std::string::npos &&   (dimension - totalmod) == 5)
+	else if(has_substring(generation_method, "PhenomD_NRT") &&   (dimension - totalmod) == 5)
 	{
 		std::cout<<"Sampling in parameters: ln chirpmass, eta, chi1, chi2, tidal_s";
 		for(int i =0; i<totalmod; i++){
@@ -1998,7 +1761,7 @@ void PTMCMC_method_specific_prep(std::string generation_method, int dimension,do
 		}
 		mcmc_intrinsic=true;
 	} 
-	else if((generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos)
+	else if((has_substring(generation_method, "PhenomPv2") || has_substring(generation_method, "PhenomPv3"))
 		&& (dimension - totalmod) == 8)
 	{
 		std::cout<<"Sampling in parameters: ln chirpmass, eta, a1, a2, tilt1, tilt2, phi1, phi2";
@@ -2022,7 +1785,7 @@ void PTMCMC_method_specific_prep(std::string generation_method, int dimension,do
 		}
 		mcmc_intrinsic=true;
 	} 
-	else if(generation_method.find("PhenomD") != std::string::npos && (dimension - totalmod) == 11)
+	else if(has_substring(generation_method, "PhenomD") && (dimension - totalmod) == 11)
 	{
 		std::cout<<"Sampling in parameters: RA, sin DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2"<<std::endl;
 		for(int i =0; i<totalmod; i++){
@@ -2048,7 +1811,7 @@ void PTMCMC_method_specific_prep(std::string generation_method, int dimension,do
 		}
 		mcmc_intrinsic=false;
 	} 
-	else if(generation_method.find("PhenomD_NRT") != std::string::npos && (dimension - totalmod) == 13)
+	else if(has_substring(generation_method, "PhenomD_NRT") && (dimension - totalmod) == 13)
 	{
 		std::cout<<"Sampling in parameters: RA, sin  DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2, tidal1, tidal2"<<std::endl;
 		for(int i =0; i<totalmod; i++){
@@ -2076,7 +1839,7 @@ void PTMCMC_method_specific_prep(std::string generation_method, int dimension,do
 		}
 		mcmc_intrinsic=false;
 	} 
-	else if(generation_method.find("PhenomD_NRT") != std::string::npos && (dimension - totalmod) == 15)
+	else if(has_substring(generation_method, "PhenomD_NRT") && (dimension - totalmod) == 15)
 	{
 		std::cout<<"Sampling in parameters: RA, sin  DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2, tidal1, tidal2, diss_tidal1, diss_tidal2"<<std::endl;
 		for(int i =0; i<totalmod; i++){
@@ -2104,7 +1867,7 @@ void PTMCMC_method_specific_prep(std::string generation_method, int dimension,do
 		}
 		mcmc_intrinsic=false;
 	} 
-	else if(generation_method.find("PhenomD_NRT") != std::string::npos && (dimension - totalmod) == 12)
+	else if(has_substring(generation_method, "PhenomD_NRT") && (dimension - totalmod) == 12)
 	{
 		std::cout<<"Sampling in parameters: RA, sin  DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2, tidal_s"<<std::endl;
 		for(int i =0; i<totalmod; i++){
@@ -2132,7 +1895,7 @@ void PTMCMC_method_specific_prep(std::string generation_method, int dimension,do
 		}
 		mcmc_intrinsic=false;
 	} 
-	else if((generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos)
+	else if((has_substring(generation_method, "PhenomPv2") || has_substring(generation_method, "PhenomPv3"))
 		&& (dimension - totalmod) == 15)
 	{
 		std::cout<<"Sampling in parameters: RA, sin DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, a1, a2,cos tilt1, cos tilt2, phi1, phi2"<<std::endl;
@@ -2192,7 +1955,7 @@ void MCMC_fisher_transformations(
 		fisher[8][8] += 1./.25;//eta
 		fisher[9][9] += 1./4;//spin1
 		fisher[10][10] += 1./4;//spin2
-		if(generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos){
+		if(has_substring(generation_method, "PhenomPv2") || has_substring(generation_method, "PhenomPv3")){
 			fisher[11][11] += 1./4;//cos theta1
 			fisher[12][12] += 1./4;//cos theta2
 			fisher[13][13] += 1./(4*M_PI*M_PI);//phi1
@@ -2200,7 +1963,7 @@ void MCMC_fisher_transformations(
 		}
 	}
 	else{
-		if(generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos){
+		if(has_substring(generation_method, "PhenomPv2") || has_substring(generation_method, "PhenomPv3")){
 			fisher[1][1] =1./(.25) ;//eta
 			fisher[2][2] =1./(4);//spin1
 			fisher[3][3] =1./(4);//spin2
@@ -2209,7 +1972,7 @@ void MCMC_fisher_transformations(
 			fisher[6][6] =1./(4*M_PI*M_PI) ;//phi1
 			fisher[7][7] =1./(4*M_PI*M_PI) ;//phi2
 		}
-		else if (generation_method.find("PhenomD")!=std::string::npos){
+		else if (has_substring(generation_method, "PhenomD")){
 			fisher[1][1] =1./(.25) ;//eta
 			fisher[2][2] =1./(4) ;//spin1
 			fisher[3][3] =1./(4) ;//spin2
@@ -2217,8 +1980,8 @@ void MCMC_fisher_transformations(
 		}
 	}
 
-	if(generation_method.find("dCS") != std::string::npos ||
-		generation_method.find("EdGB") != std::string::npos){
+	if(has_substring(generation_method, "dCS") ||
+		has_substring(generation_method, "EdGB")){
 		int base = dimension - mod_struct->ppE_Nmod;
 		for(int i = 0 ; i<dimension; i++){
 			//Transform to root alpha from alpha^2
@@ -2228,41 +1991,9 @@ void MCMC_fisher_transformations(
 			fisher[base][i] *= factor ;
 			fisher[i][base] *= factor;
 		}
-	}/*
-	if(generation_method.find("EA") != std::string::npos){
-	  //for(int i = 0 ; i <4; i++){
-	    for(int i = 0 ; i <3; i++){
-	      for(int j = 0 ; j<dimension; j++){
-		if(i!=j){
-		  fisher[dimension-1-i][dimension-1-j] = 0;
-		  fisher[dimension-1-j][dimension-1-i] = 0;
-		}
-		/*
-		  if(i==j){
-		  fisher[dimension-1-i][dimension-1-j] = 1./pow(10, -6.);
-		  }
-	      }
-	    }
-	    fisher[dimension-3][dimension-3] = 1./pow(10, -2.);
-	    fisher[dimension-2][dimension-2] = 1./pow(10, -4.);
-	    fisher[dimension-1][dimension-1] = 1./pow(10, -2.);
-	}*/
-	/*if(isnan(fabs(fisher[8][8]))){
-	  for(int i = 0 ; i<dimension; i++){
-	    std::cout<<i<<" ";
-	    for(int j = 0 ; j<dimension; j++){
-	      std::cout<<std::setprecision(5)<<fisher[i][j]<<" ";
-	    }
-	    std::cout<<std::endl;
-	  }
-	  }*/
-	//std::cout<<"eta nan?:"<<fisher[8][8]<<std::endl; 
-	/*if(isnan(fabs(fisher[8][8])))
-	  {
-	    std::cout<<"eta nan problem"<<std::endl; 
-	    }*/
-	return;
+	}
 
+	return;
 }
 
 
@@ -2277,14 +2008,10 @@ void MCMC_fisher_wrapper(double *param,  double **output, mcmc_data_interface *i
 		temp_params,&params, dimension, mcmc_generation_method,mcmc_mod_struct);
 	//#########################################################################
 	//#########################################################################
-	repack_parameters(temp_params, &params, 
-		"MCMC_"+mcmc_generation_method, dimension, NULL);
-	//std::cout<<temp_params[11]<<" "<<temp_params[12]<<std::endl;
-	//repack_parameters(mcmc_init_pos, &params, 
-	//	"MCMC_"+mcmc_generation_method, dimension, NULL);
+	repack_parameters(temp_params, &params,
+					  "MCMC_" + mcmc_generation_method, dimension);
 	//#########################################################################
 	//#########################################################################
-	//std::cout<<"INCL angle fisher: "<<params.incl_angle<<std::endl;
 	for(int j =0; j<dimension; j++){
 		for(int k =0; k<dimension; k++)
 		{
@@ -2314,11 +2041,7 @@ void MCMC_fisher_wrapper(double *param,  double **output, mcmc_data_interface *i
 	}
 	std::string local_gen_method = mcmc_generation_method;
 	int local_dimension = dimension;  
-	/*if(local_gen_method.find("EA") != std::string::npos)
-	  {
-	    local_gen_method = "IMRPhenomD_NRT";
-	    local_dimension -= 3;
-	    }*/
+
 	double **temp_out = allocate_2D_array(local_dimension,local_dimension);
 	for(int i =0 ; i <mcmc_num_detectors; i++){
 		
@@ -2326,9 +2049,7 @@ void MCMC_fisher_wrapper(double *param,  double **output, mcmc_data_interface *i
 		if(user_param->fisher_AD)
 		{	
 			std::unique_lock<std::mutex> lock{*(user_param->mFish)};
-			//fisher_autodiff(mcmc_frequencies[i], mcmc_data_length[i],
-			//	"MCMC_"+mcmc_generation_method, mcmc_detectors[i],mcmc_detectors[0],temp_out,dimension, 
-			//	(gen_params *)(&params),  "SIMPSONS",(double *)NULL,false,mcmc_noise[i]);
+
 			fisher_autodiff(local_freq[i], local_lengths[i],
 				"MCMC_"+local_gen_method, mcmc_detectors[i],mcmc_detectors[0],temp_out,local_dimension, 
 				(gen_params *)(&params),  local_integration_method,local_weights[i],true,local_noise[i]);
@@ -2343,52 +2064,24 @@ void MCMC_fisher_wrapper(double *param,  double **output, mcmc_data_interface *i
 			for(int k =0; k<local_dimension; k++)
 			{
 				output[j][k] +=temp_out[j][k];
-				//if(std::isnan(output[j][k]))
-				//{
-				//      std::cout<<j<<" "<<k<<" "<<temp_out[j][k]<<std::endl;
-				//}
 			}
 		} 
 	}
 	//Add prior information to fisher
-	//if(mcmc_generation_method.find("Pv2") && !mcmc_intrinsic){
 	
 	MCMC_fisher_transformations(temp_params, output,dimension,local_gen,mcmc_intrinsic,
 		interface,mcmc_mod_struct, parameters);
 	
 	deallocate_2D_array(temp_out, local_dimension,local_dimension);
-	//////////////////////////////////////////////
-	//if(!interface->burn_phase)
-	//{
-	//	debugger_print(__FILE__,__LINE__,"Fisher MCMC");
-	//	double **cov = allocate_2D_array( dimension,dimension);
-	//	gsl_cholesky_matrix_invert(output, cov, dimension);
-	//	for(int i = 0 ; i<dimension; i++){
-	//		std::cout<<sqrt(cov[i][i])<<" ";	
-	//		//for(int j = 0 ; j<dimension; j++){
-	//		//	std::cout<<cov[i][j]<<" ";	
-	//		//}
-	//		//std::cout<<std::endl;	
-	//		
-	//	}
-	//	std::cout<<std::endl;	
-	//	deallocate_2D_array(cov, dimension,dimension);
-	//}
-	//////////////////////////////////////////////
 
 	//Cleanup
 	delete [] temp_params;
 	if(check_mod(local_gen)){
-		//if(local_gen.find("ppE") != std::string::npos ||
-		//	local_gen.find("dCS")!=std::string::npos||
-		//	local_gen.find("EdGB")!=std::string::npos){
-		//	delete [] params.betappe;
-		//}
 		if(local_gen.find("ppE") != std::string::npos ||
 			check_theory_support(local_gen)){
 			delete [] params.betappe;
 		}
-		else if( local_gen.find("gIMR") != std::string::npos){
+		else if( has_substring(local_gen, "gIMR")){
 			if(mcmc_mod_struct ->gIMR_Nmod_phi !=0){
 				delete [] params.delta_phi;
 			}
@@ -2425,86 +2118,6 @@ double MCMC_likelihood_extrinsic(bool save_waveform,
 	Quadrature *QuadMethod
 	)
 {
-	//################################################################
-	//Outdated -- remove after some time 
-	//
-	//double *phi = new double[num_detectors];
-	//double *theta = new double[num_detectors];
-	////celestial_horizon_transform(RA,DEC, gps_time, detectors[0], &phi[0], &theta[0]);
-	//double tc_ref, phic_ref, ll=0, delta_t;
-	//double LISA_alpha0,LISA_phi0, LISA_thetal, LISA_phil;
-	//double *times=NULL;
-	////#######################################################################3
-	//
-	//std::complex<double> *response = 
-	//	(std::complex<double> *)malloc(sizeof(std::complex<double>)*
-	//		data_length[0]);
-	//double T = 1./( frequencies[1]-frequencies[0]);
-	//tc_ref = T-parameters->tc;
-	//double tc = tc_ref;
-	//tc*=2.*M_PI;
-	//parameters->tc=0;
-	//waveform_polarizations<double> wp;
-	//assign_polarizations(generation_method, &wp);
-	//wp.allocate_memory(data_length[0]);
-	//fourier_waveform(frequencies[0], data_length[0], 
-	//	&wp,generation_method, parameters);
-	//fourier_detector_response_equatorial(frequencies[0], data_length[0], 
-	//	&wp, response, parameters->RA, parameters->DEC, parameters->psi,
-	//	parameters->gmst,times, LISA_alpha0, LISA_phi0, LISA_thetal, LISA_phil,detectors[0]);
-	//for(int i = 0 ; i<data_length[0];i++){
-	//	response[i]*=exp(std::complex<double>(0,tc*(frequencies[0][i])));
-	//}	
-	////Referecne detector first
-
-	//ll += Log_Likelihood_internal(data[0], 
-	//		psd[0],
-	//		frequencies[0],
-	//		weights[0],
-	//		response,
-	//		(size_t) data_length[0],
-	//		log10F,
-	//		integration_method
-	//		);
-	//for(int i=1; i < num_detectors; i++){
-	//	delta_t = DTOA_DETECTOR(parameters->RA, parameters->DEC,parameters->gmst, detectors[0], detectors[i]);
-	//	tc = tc_ref - delta_t;
-	//	fourier_detector_response_equatorial(frequencies[i], data_length[i], 
-	//		&wp, response, parameters->RA, parameters->DEC, 
-	//		parameters->psi,parameters->gmst,times, LISA_alpha0, 
-	//		LISA_phi0, LISA_thetal, LISA_phil,detectors[i]);
-	//	tc*=2.*M_PI;
-	//	for(int j = 0 ; j<data_length[i];j++){
-	//		response[j]*=exp(std::complex<double>(
-	//			0,tc*(frequencies[i][j])
-	//			));
-	//	}	
-	//
-	//	ll += Log_Likelihood_internal(data[i], 
-	//		psd[i],
-	//		frequencies[i],
-	//		weights[i],
-	//		response,
-	//		(size_t) data_length[i],
-	//		log10F,
-	//		integration_method	
-	//		);
-	//}
-	//wp.deallocate_memory();
-	//free( response);
-	//
-	//delete [] phi;
-	//delete [] theta;
-	
-	//debugger_print(__FILE__,__LINE__,ll);
-	//################################################################
-	//################################################################
-	
-	
-	//#################################################################################
-	//#################################################################################
-	//double T = 1./( frequencies[0][1]-frequencies[0][0]);
-	//double tc_ref = T-parameters->tc;
 	double ll=0;
 	std::complex<double> **responses = new std::complex<double>*[num_detectors];	
 	for(int i = 0 ; i<num_detectors; i++){
@@ -2565,12 +2178,11 @@ std::string MCMC_prep_params(double *param, double *temp_params, gen_params_base
 	gen_params->tidal_love = mod_struct->tidal_love;
 	gen_params->tidal_love_error = mod_struct->tidal_love_error;
 	gen_params->alpha_param = mod_struct->alpha_param;
-	gen_params->EA_region1 = mod_struct->EA_region1; 
+	gen_params->EA_region1 = mod_struct->EA_region1;
+	gen_params->EOS_plat_flag = mod_struct->EOS_plat_flag; 
 	gen_params->f_ref = mod_struct->f_ref;
 	gen_params->shift_time = true;
 	gen_params->shift_phase = true;
-	//gen_params->shift_time = false;
-	//gen_params->shift_phase = false;
 	gen_params->gmst = mcmc_gmst;
 	gen_params->equatorial_orientation=false;
 	gen_params->horizon_coord=false;
@@ -2584,22 +2196,14 @@ std::string MCMC_prep_params(double *param, double *temp_params, gen_params_base
 	}
 	int base = dimension;
 	if(check_mod(generation_method)){
-		//if(generation_method.find("ppE") != std::string::npos ||
-		//	generation_method.find("dCS") !=std::string::npos||
-		//	generation_method.find("EdGB") != std::string::npos){
-		//	gen_params->bppe=mcmc_mod_struct->bppe;
-		//	gen_params->Nmod=mcmc_mod_struct->ppE_Nmod;
-		//	gen_params->betappe=new double[gen_params->Nmod];
-		//}
 		if(generation_method.find("ppE") != std::string::npos ||
 			check_theory_support(generation_method)){
 			gen_params->bppe=mod_struct->bppe;
 			gen_params->Nmod=mod_struct->ppE_Nmod;
 			gen_params->betappe=new double[gen_params->Nmod];
 			base = dimension - mod_struct->ppE_Nmod;
-			//debugger_print(__FILE__,__LINE__,mod_struct->ppE_Nmod);
 		}
-		else if(generation_method.find("gIMR") != std::string::npos){
+		else if(has_substring(generation_method, "gIMR")){
 			gen_params->Nmod_phi=mod_struct->gIMR_Nmod_phi;
 			gen_params->phii=mod_struct->gIMR_phii;
 			if(gen_params->Nmod_phi !=0){
@@ -2626,11 +2230,10 @@ std::string MCMC_prep_params(double *param, double *temp_params, gen_params_base
 				- mod_struct->gIMR_Nmod_beta 
 				- mod_struct->gIMR_Nmod_alpha; 
 		}
-		if((generation_method.find("dCS")!= std::string::npos ||
-			generation_method.find("EdGB")!=std::string::npos)){
-			//temp_params[base] = pow(temp_params[base],.25)/(c*1000);
-			temp_params[base] = 
-				pow_int(temp_params[base]/(c/1000.) , 4);
+		if((has_substring(generation_method, "dCS") ||
+			has_substring(generation_method, "EdGB"))){
+			temp_params[base] =
+				pow_int(temp_params[base] / (c / 1000.), 4);
 		}
 	}
 	return generation_method;
@@ -2655,7 +2258,7 @@ double MCMC_likelihood_wrapper(double *param, mcmc_data_interface *interface ,vo
   //repack_non_parameters(temp_params, &gen_params, 
   //"MCMC_"+mcmc_generation_method, dimension, NULL);
   repack_parameters(temp_params, &gen_params, 
-		    "MCMC_"+mcmc_generation_method, dimension, NULL);
+		    "MCMC_"+mcmc_generation_method, dimension);
   //#########################################################################
   //#########################################################################
   //return 1;
@@ -2666,19 +2269,14 @@ double MCMC_likelihood_wrapper(double *param, mcmc_data_interface *interface ,vo
   int *local_lengths = mcmc_data_length;
   fftw_outline *local_plans = mcmc_fftw_plans;
   std::string local_integration_method="SIMPSONS";
+
+  //TODO: This branch of the code is never executed. What purpose does it serve?
   //if(interface->burn_phase && user_param->burn_data){
-  if(false){
-    local_data = user_param->burn_data;
-    local_freqs = user_param->burn_freqs;
-    local_noise = user_param->burn_noise;
-    local_lengths = user_param->burn_lengths;
-    local_plans = user_param->burn_plans;
-  }
   if(user_param->GAUSS_QUAD){
     local_integration_method="GAUSSLEG";
   }
   if(mcmc_intrinsic){
-    if(mcmc_generation_method.find("IMRPhenomD") != std::string::npos){
+    if(has_substring(mcmc_generation_method, "IMRPhenomD")){
       if(!mcmc_save_waveform){
 	for(int i=0; i < mcmc_num_detectors; i++){
 	  gen_params.theta=0;	
@@ -2759,48 +2357,41 @@ double MCMC_likelihood_wrapper(double *param, mcmc_data_interface *interface ,vo
       }
 
     }
-    else if(mcmc_generation_method.find("IMRPhenomP")!=std::string::npos){
-      //if(!mcmc_save_waveform){
-      if(false){
-      }
-      else{
-	gen_params.theta=0;	
-	gen_params.phi=0;	
-	gen_params.psi=0;	
-	gen_params.phiRef = 1;
-	gen_params.f_ref = 20;
-	gen_params.incl_angle=0;	
-	gen_params.tc =1;
-	waveform_polarizations<double> wp;
-	assign_polarizations(mcmc_generation_method,&wp);
-	wp.allocate_memory(local_lengths[0]);
-	fourier_waveform(local_freqs[0],local_lengths[0], &wp, local_gen, &gen_params);
-	for(int i=0; i < mcmc_num_detectors; i++){
-	  ll += maximized_Log_Likelihood_unaligned_spin_internal(local_data[i], 
-								 local_noise[i],
-								 local_freqs[i],
-								 wp.hplus,
-								 wp.hcross,
-								 (size_t) local_lengths[i],
-								 &local_plans[i]
-								 );
+	else if (has_substring(mcmc_generation_method, "IMRPhenomP"))
+	{
+		gen_params.theta = 0;
+		gen_params.phi = 0;
+		gen_params.psi = 0;
+		gen_params.phiRef = 1;
+		gen_params.f_ref = 20;
+		gen_params.incl_angle = 0;
+		gen_params.tc = 1;
+		waveform_polarizations<double> wp;
+		assign_polarizations(mcmc_generation_method, &wp);
+		wp.allocate_memory(local_lengths[0]);
+		fourier_waveform(local_freqs[0], local_lengths[0], &wp, local_gen, &gen_params);
+		for (int i = 0; i < mcmc_num_detectors; i++)
+		{
+			ll += maximized_Log_Likelihood_unaligned_spin_internal(local_data[i],
+																   local_noise[i],
+																   local_freqs[i],
+																   wp.hplus,
+																   wp.hcross,
+																   (size_t)local_lengths[i],
+																   &local_plans[i]);
+		}
+		wp.deallocate_memory();
 	}
-	wp.deallocate_memory();
-      }
-      
-    }
   }
   else{
     double RA = gen_params.RA;
     double DEC = gen_params.DEC;
     double PSI = gen_params.psi;
-    //if(mcmc_generation_method.find("IMRPhenomD") != std::string:npos){
     
     ll =  MCMC_likelihood_extrinsic(mcmc_save_waveform, 
 				    &gen_params,local_gen, local_lengths, 
 				    local_freqs, local_data, local_noise, local_weights, local_integration_method, user_param->log10F,mcmc_detectors, 
 				    mcmc_num_detectors);
-    //ll=2;
     
     //ll = Log_Likelihood(mcmc_data[0], 
     //		mcmc_noise[0],
@@ -2811,25 +2402,21 @@ double MCMC_likelihood_wrapper(double *param, mcmc_data_interface *interface ,vo
     //		local_gen,
     //		&mcmc_fftw_plans[0]
     //		);
-    
-    //}
-    //else if(mcmc_generation_method.find("IMRPhenomP")!=std::string::npos){
-    
-    //}
+
   }
   //Cleanup
   delete [] temp_params;
   if(check_mod(local_gen)){
-    //if( local_gen.find("ppE") != std::string::npos ||
-    //	local_gen.find("dCS") != std::string::npos ||
-    //	local_gen.find("EdGB") != std::string::npos){
+    //if( has_substring(local_gen, "ppE") ||
+    //	has_substring(local_gen, "dCS") ||
+    //	has_substring(local_gen, "EdGB")){
     //	delete [] gen_params.betappe;
     //}
-    if( local_gen.find("ppE") != std::string::npos ||
+    if( has_substring(local_gen, "ppE") ||
 	check_theory_support(local_gen)){
       delete [] gen_params.betappe;
     }
-    else if( local_gen.find("gIMR") != std::string::npos){
+    else if( has_substring(local_gen, "gIMR")){
       if(mcmc_mod_struct ->gIMR_Nmod_phi !=0){
 	delete [] gen_params.delta_phi;
       }
@@ -2866,7 +2453,7 @@ double MCMC_likelihood_wrapper(double *param, mcmc_data_interface *interface ,vo
  */
 void RJPTMCMC_method_specific_prep(std::string generation_method, int max_dim, int min_dim,double *seeding_var, bool local_seeding)
 {
-	if(min_dim==11 && (generation_method.find("IMRPhenomD") != std::string::npos)){
+	if(min_dim==11 && (has_substring(generation_method, "IMRPhenomD"))){
 		mcmc_intrinsic=false;
 		std::cout<<"Sampling in parameters: cos inclination, RA, DEC, ln DL ,ln chirpmass, eta, chi1, chi2, psi";
 		for(int i =0; i<mcmc_Nmod_max; i++){
@@ -2892,7 +2479,7 @@ void RJPTMCMC_method_specific_prep(std::string generation_method, int max_dim, i
 			}
 		}
 	}
-	else if(min_dim==4 && (generation_method.find("IMRPhenomD") != std::string::npos)){
+	else if(min_dim==4 && (has_substring(generation_method, "IMRPhenomD"))){
 		mcmc_intrinsic=true;
 		std::cout<<"Sampling in parameters: cos inclination, RA, DEC, ln DL ,ln chirpmass, eta, chi1, chi2, psi";
 		for(int i =0; i<mcmc_Nmod_max; i++){
@@ -2911,7 +2498,7 @@ void RJPTMCMC_method_specific_prep(std::string generation_method, int max_dim, i
 			}
 		}
 	}
-	else if(min_dim==15 && (generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos)){
+	else if(min_dim==15 && (has_substring(generation_method, "PhenomPv2") || has_substring(generation_method, "PhenomPv3"))){
 		mcmc_intrinsic=false;
 		std::cout<<"Sampling in parameters: cos inclination, RA, DEC, ln DL ,ln chirpmass, eta, chi1, chi2, psi";
 		for(int i =0; i<mcmc_Nmod_max; i++){
@@ -2941,7 +2528,7 @@ void RJPTMCMC_method_specific_prep(std::string generation_method, int max_dim, i
 			}
 		}
 	}
-	else if(min_dim==8 && (generation_method.find("PhenomPv2") != std::string::npos || generation_method.find("PhenomPv3") != std::string::npos)){
+	else if(min_dim==8 && (has_substring(generation_method, "PhenomPv2") || has_substring(generation_method, "PhenomPv3"))){
 		mcmc_intrinsic=true;
 		std::cout<<"Sampling in parameters: cos inclination, RA, DEC, ln DL ,ln chirpmass, eta, chi1, chi2, psi";
 		for(int i =0; i<mcmc_Nmod_max; i++){
@@ -3081,40 +2668,6 @@ void continue_RJPTMCMC_MH_dynamic_PT_alloc_comprehensive_2WF_GW(
 		}
 	}
 	
-
-	//######################################################
-	//######################################################
-	//Fishers sometimes need AD, but that's slow and single 
-	//threaded -- use GAUSS quad with precomputed weights 
-	//and abscissa 
-	//double *fish_freqs = NULL;
-	//double *fish_weights = NULL;
-	//double **fish_psd = NULL; //Needs to be interpolated from data given
-	//int fish_length = 100;
-	//double flow = mcmc_frequencies[0][0];
-	//double fhigh = mcmc_frequencies[0][mcmc_data_length[0]-1];
-	//if(mod_struct->GAUSS_QUAD){
-	//	fish_freqs = new double[fish_length];	
-	//	fish_weights = new double[fish_length];	
-	//	fish_psd = new double*[mcmc_num_detectors];	
-	//	
-	//	gauleg(log10(flow), log10(fhigh), fish_freqs, fish_weights, fish_length);
-	//	for(int i = 0 ; i<fish_length; i++){
-	//		fish_freqs[i]=pow(10,fish_freqs[i]);
-	//	}
-	//	for(int i = 0 ; i<mcmc_num_detectors; i++){
-	//		fish_psd[i] = new double[fish_length];
-	//		gsl_interp_accel *accel = gsl_interp_accel_alloc();
-	//		gsl_spline *spline = gsl_spline_alloc(gsl_interp_linear, mcmc_data_length[i]);
-	//		gsl_spline_init(spline, mcmc_frequencies[i], mcmc_noise[i],mcmc_data_length[i]);
-	//		for(int j = 0 ; j<fish_length; j++){
-	//			fish_psd[i][j] = gsl_spline_eval(spline, fish_freqs[j],accel);
-	//		}
-	//		gsl_spline_free(spline);
-	//	}
-	//}
-	//######################################################
-	//######################################################
 	const gsl_rng_type *gsl_T;
 	gsl_rng **rvec = new gsl_rng*[chain_N];
 	gsl_rng_env_setup();	
@@ -3162,14 +2715,9 @@ void continue_RJPTMCMC_MH_dynamic_PT_alloc_comprehensive_2WF_GW(
 		user_parameters[i]->mod_prior_ranges = prior_ranges;
 		user_parameters[i]->mod_struct = mod_struct;
 
-		//user_parameters[i]->burn_freqs = mcmc_frequencies;
-		//user_parameters[i]->burn_data = mcmc_data;
-		//user_parameters[i]->burn_noise = mcmc_noise;
-		//user_parameters[i]->burn_lengths = mcmc_data_length;
 	}
+
 	//######################################################
-
-
 	continue_RJPTMCMC_MH_dynamic_PT_alloc_comprehensive(checkpoint_file_start,sampler_output,output,status, model_status, nested_model_number,
 		N_steps, 
 		max_chain_N_thermo_ensemble, chain_temps, 
@@ -3188,14 +2736,7 @@ void continue_RJPTMCMC_MH_dynamic_PT_alloc_comprehensive_2WF_GW(
 		delete [] burn_noise[i];
 		deallocate_FFTW_mem(&burn_plans[i]);
 	}
-	//if(mod_struct->GAUSS_QUAD){
-	//	delete [] fish_freqs;
-	//	delete [] fish_weights;
-	//	for(int i = 0 ;i<mcmc_num_detectors; i++){
-	//		delete [] fish_psd[i];
-	//	}
-	//	delete [] fish_psd;
-	//}
+
 	delete [] burn_data;
 	delete [] burn_lengths;
 	delete [] burn_noise;
@@ -3335,40 +2876,6 @@ void RJPTMCMC_MH_dynamic_PT_alloc_comprehensive_2WF_GW(
 		}
 	}
 	
-
-	//######################################################
-	//######################################################
-	//Fishers sometimes need AD, but that's slow and single 
-	//threaded -- use GAUSS quad with precomputed weights 
-	//and abscissa 
-	//double *fish_freqs = NULL;
-	//double *fish_weights = NULL;
-	//double **fish_psd = NULL; //Needs to be interpolated from data given
-	//int fish_length = 100;
-	//double flow = mcmc_frequencies[0][0];
-	//double fhigh = mcmc_frequencies[0][mcmc_data_length[0]-1];
-	//if(mod_struct->GAUSS_QUAD){
-	//	fish_freqs = new double[fish_length];	
-	//	fish_weights = new double[fish_length];	
-	//	fish_psd = new double*[mcmc_num_detectors];	
-	//	
-	//	gauleg(log10(flow), log10(fhigh), fish_freqs, fish_weights, fish_length);
-	//	for(int i = 0 ; i<fish_length; i++){
-	//		fish_freqs[i]=pow(10,fish_freqs[i]);
-	//	}
-	//	for(int i = 0 ; i<mcmc_num_detectors; i++){
-	//		fish_psd[i] = new double[fish_length];
-	//		gsl_interp_accel *accel = gsl_interp_accel_alloc();
-	//		gsl_spline *spline = gsl_spline_alloc(gsl_interp_linear, mcmc_data_length[i]);
-	//		gsl_spline_init(spline, mcmc_frequencies[i], mcmc_noise[i],mcmc_data_length[i]);
-	//		for(int j = 0 ; j<fish_length; j++){
-	//			fish_psd[i][j] = gsl_spline_eval(spline, fish_freqs[j],accel);
-	//		}
-	//		gsl_spline_free(spline);
-	//	}
-	//}
-	//######################################################
-	//######################################################
 	const gsl_rng_type *gsl_T;
 	gsl_rng **rvec = new gsl_rng*[chain_N];
 	gsl_rng_env_setup();	
@@ -3416,14 +2923,8 @@ void RJPTMCMC_MH_dynamic_PT_alloc_comprehensive_2WF_GW(
 
 		user_parameters[i]->mod_prior_ranges = prior_ranges;
 		user_parameters[i]->mod_struct = mod_struct;
-
-		//user_parameters[i]->burn_freqs = mcmc_frequencies;
-		//user_parameters[i]->burn_data = mcmc_data;
-		//user_parameters[i]->burn_noise = mcmc_noise;
-		//user_parameters[i]->burn_lengths = mcmc_data_length;
 	}
 	//######################################################
-
 
 	RJPTMCMC_MH_dynamic_PT_alloc_comprehensive(sampler_output,output,status, model_status, nested_model_number,
 		max_dimension,min_dimension, N_steps, chain_N, 
@@ -3443,14 +2944,6 @@ void RJPTMCMC_MH_dynamic_PT_alloc_comprehensive_2WF_GW(
 		delete [] burn_noise[i];
 		deallocate_FFTW_mem(&burn_plans[i]);
 	}
-	//if(mod_struct->GAUSS_QUAD){
-	//	delete [] fish_freqs;
-	//	delete [] fish_weights;
-	//	for(int i = 0 ;i<mcmc_num_detectors; i++){
-	//		delete [] fish_psd[i];
-	//	}
-	//	delete [] fish_psd;
-	//}
 	delete [] burn_data;
 	delete [] burn_lengths;
 	delete [] burn_noise;
@@ -3475,7 +2968,7 @@ void pack_local_mod_structure(mcmc_data_interface *interface,
 	MCMC_modification_struct *full_struct, 
 	MCMC_modification_struct *local_struct )	
 {
-	if(waveform_extended.find("gIMR") != std::string::npos){
+	if(has_substring(waveform_extended, "gIMR")){
 		int dimct = 0 ;
 		int dphi_boundary = full_struct->gIMR_Nmod_phi + interface->min_dim;
 		int dsigma_boundary = full_struct->gIMR_Nmod_sigma + dphi_boundary;
@@ -3580,17 +3073,12 @@ double RJMCMC_2WF_likelihood_wrapper(
 	//######################################################################
 	//#########################################################################
 	gen_params_base<double> gen_params;
-	//std::string local_gen = MCMC_prep_params(param, 
-	//	temp_params,&gen_params, dimct, gen_meth,&mod_struct_local);
 	std::string local_gen = MCMC_prep_params(temp_params, 
 		temp_params,&gen_params, dimct, gen_meth,&mod_struct_local);
 	//#########################################################################
 	//#########################################################################
-
-	//repack_non_parameters(temp_params, &gen_params, 
-		//"MCMC_"+mcmc_generation_method, dimension, NULL);
 	repack_parameters(temp_params, &gen_params, 
-		"MCMC_"+gen_meth, dimct, NULL);
+		"MCMC_"+gen_meth, dimct);
 	//#########################################################################
 	//#########################################################################
 	//return 1;
@@ -3602,18 +3090,11 @@ double RJMCMC_2WF_likelihood_wrapper(
 	fftw_outline *local_plans = mcmc_fftw_plans;
 	std::string local_integration_method="SIMPSONS";
 	//if(interface->burn_phase && user_param->burn_data){
-	if(false){
-		local_data = user_param->burn_data;
-		local_freqs = user_param->burn_freqs;
-		local_noise = user_param->burn_noise;
-		local_lengths = user_param->burn_lengths;
-		local_plans = user_param->burn_plans;
-	}
 	if(user_param->GAUSS_QUAD){
 		local_integration_method="GAUSSLEG";
 	}
 	if(mcmc_intrinsic){
-		if(gen_meth.find("IMRPhenomD") != std::string::npos){
+		if(has_substring(gen_meth, "IMRPhenomD")){
 			if(!mcmc_save_waveform){
 				for(int i=0; i < mcmc_num_detectors; i++){
 					gen_params.theta=0;	
@@ -3660,36 +3141,31 @@ double RJMCMC_2WF_likelihood_wrapper(
 			}
 
 		}
-		else if(gen_meth.find("IMRPhenomP")!=std::string::npos){
-			//if(!mcmc_save_waveform){
-			if(false){
+		else if (has_substring(gen_meth, "IMRPhenomP"))
+		{
+			gen_params.theta = 0;
+			gen_params.phi = 0;
+			gen_params.psi = 0;
+			gen_params.phiRef = 1;
+			gen_params.f_ref = 20;
+			gen_params.incl_angle = 0;
+			gen_params.tc = 1;
+			// fourier_waveform(local_freqs[0],local_lengths[0], hp,hc, local_gen, &gen_params);
+			waveform_polarizations<double> wp;
+			assign_polarizations(gen_meth, &wp);
+			wp.allocate_memory(local_lengths[0]);
+			fourier_waveform(local_freqs[0], local_lengths[0], &wp, local_gen, &gen_params);
+			for (int i = 0; i < mcmc_num_detectors; i++)
+			{
+				ll += maximized_Log_Likelihood_unaligned_spin_internal(local_data[i],
+																	   local_noise[i],
+																	   local_freqs[i],
+																	   wp.hplus,
+																	   wp.hcross,
+																	   (size_t)local_lengths[i],
+																	   &local_plans[i]);
 			}
-			else{
-				gen_params.theta=0;	
-				gen_params.phi=0;	
-				gen_params.psi=0;	
-				gen_params.phiRef = 1;
-				gen_params.f_ref = 20;
-				gen_params.incl_angle=0;	
-				gen_params.tc =1;
-				//fourier_waveform(local_freqs[0],local_lengths[0], hp,hc, local_gen, &gen_params);
-				waveform_polarizations<double> wp;
-				assign_polarizations(gen_meth, &wp);	
-				wp.allocate_memory(local_lengths[0]);	
-				fourier_waveform(local_freqs[0],local_lengths[0], &wp, local_gen, &gen_params);
-				for(int i=0; i < mcmc_num_detectors; i++){
-					ll += maximized_Log_Likelihood_unaligned_spin_internal(local_data[i], 
-							local_noise[i],
-							local_freqs[i],
-							wp.hplus,
-							wp.hcross,
-							(size_t) local_lengths[i],
-							&local_plans[i]
-							);
-				}
-				wp.deallocate_memory();	
-			}
-
+			wp.deallocate_memory();
 		}
 	}
 	else{
@@ -3707,12 +3183,12 @@ double RJMCMC_2WF_likelihood_wrapper(
 	//We DO need to delete gIMR index arrays because we're making a copy, unlike in 
 	//regular MCMC
 	if(check_mod(local_gen)){
-		if( local_gen.find("ppE") != std::string::npos ||
-			local_gen.find("dCS") != std::string::npos ||
-			local_gen.find("EdGB") != std::string::npos){
+		if( has_substring(local_gen, "ppE") ||
+			has_substring(local_gen, "dCS") ||
+			has_substring(local_gen, "EdGB")){
 			delete [] gen_params.betappe;
 		}
-		else if( local_gen.find("gIMR") != std::string::npos){
+		else if( has_substring(local_gen, "gIMR")){
 			if(mod_struct_local.gIMR_Nmod_phi !=0){
 				delete [] gen_params.delta_phi;
 				delete [] gen_params.phii;
@@ -3729,7 +3205,6 @@ double RJMCMC_2WF_likelihood_wrapper(
 				delete [] gen_params.delta_alpha;
 				delete [] gen_params.alphai;
 			}
-
 		}
 	}
 	return ll;
@@ -3762,7 +3237,7 @@ void RJMCMC_2WF_fisher_wrapper(
 	//#########################################################################
 	//#########################################################################
 	repack_parameters(param, &gen_parameters, 
-		"MCMC_"+mcmc_generation_method_base, min_dimension, NULL);
+		"MCMC_"+mcmc_generation_method_base, min_dimension);
 	//#########################################################################
 	//#########################################################################
 	for(int j =0; j<min_dimension; j++){
@@ -3778,9 +3253,6 @@ void RJMCMC_2WF_fisher_wrapper(
 		if(user_param->GAUSS_QUAD)
 		{	
 			std::unique_lock<std::mutex> lock{*(user_param->mFish)};
-			//fisher_autodiff(mcmc_frequencies[i], mcmc_data_length[i],
-			//	"MCMC_"+mcmc_generation_method, mcmc_detectors[i],mcmc_detectors[0],temp_out,dimension, 
-			//	(gen_params *)(&params),  "SIMPSONS",(double *)NULL,false,mcmc_noise[i]);
 			fisher_autodiff(user_param->fisher_freq[i], user_param->fisher_length[i],
 				"MCMC_"+mcmc_generation_method_base, mcmc_detectors[i],mcmc_detectors[0],temp_out,min_dimension, 
 				(gen_params *)(&gen_parameters),  "GAUSSLEG",user_param->fisher_weights[i],true,user_param->fisher_PSD[i]);
@@ -3795,10 +3267,6 @@ void RJMCMC_2WF_fisher_wrapper(
 			for(int k =0; k<min_dimension; k++)
 			{
 				fisher[j][k] +=temp_out[j][k];
-				//if(std::isnan(fisher[j][k]))
-				//{
-				//      std::cout<<j<<" "<<k<<" "<<temp_out[j][k]<<std::endl;
-				//}
 			}
 		} 
 	}
@@ -3814,7 +3282,7 @@ void RJMCMC_2WF_fisher_wrapper(
 		fisher[8][8] += 1./.25;//eta
 		fisher[9][9] += 1./4;//spin1
 		fisher[10][10] += 1./4;//spin2
-		if(mcmc_generation_method_base.find("PhenomPv2") != std::string::npos || mcmc_generation_method_base.find("PhenomPv3") != std::string::npos){
+		if(has_substring(mcmc_generation_method_base, "PhenomPv2") || has_substring(mcmc_generation_method_base, "PhenomPv3")){
 			fisher[11][11] += 1./4;//cos theta1
 			fisher[12][12] += 1./4;//cos theta2
 			fisher[13][13] += 1./(4*M_PI*M_PI);//phi1
@@ -3822,7 +3290,7 @@ void RJMCMC_2WF_fisher_wrapper(
 		}
 	}
 	else{
-		if(mcmc_generation_method_base.find("PhenomPv2") != std::string::npos || mcmc_generation_method_base.find("PhenomPv3") != std::string::npos){
+		if(has_substring(mcmc_generation_method_base, "PhenomPv2") || has_substring(mcmc_generation_method_base, "PhenomPv3")){
 			fisher[1][1] =1./(.25) ;//eta
 			fisher[2][2] =1./(4);//spin1
 			fisher[3][3] =1./(4);//spin2
@@ -3831,7 +3299,7 @@ void RJMCMC_2WF_fisher_wrapper(
 			fisher[6][6] =1./(4*M_PI*M_PI) ;//phi1
 			fisher[7][7] =1./(4*M_PI*M_PI) ;//phi2
 		}
-		else if (mcmc_generation_method_base.find("PhenomD")!=std::string::npos){
+		else if (has_substring(mcmc_generation_method_base, "PhenomD")){
 			fisher[1][1] =1./(.25) ;//eta
 			fisher[2][2] =1./(4) ;//spin1
 			fisher[3][3] =1./(4) ;//spin2
@@ -3839,34 +3307,16 @@ void RJMCMC_2WF_fisher_wrapper(
 		}
 	}
 	deallocate_2D_array(temp_out, min_dimension,min_dimension);
-	//////////////////////////////////////////////
-	//if(!interface->burn_phase)
-	//{
-	//	debugger_print(__FILE__,__LINE__,"Fisher MCMC");
-	//	double **cov = allocate_2D_array( dimension,dimension);
-	//	gsl_cholesky_matrix_invert(output, cov, dimension);
-	//	for(int i = 0 ; i<dimension; i++){
-	//		std::cout<<sqrt(cov[i][i])<<" ";	
-	//		//for(int j = 0 ; j<dimension; j++){
-	//		//	std::cout<<cov[i][j]<<" ";	
-	//		//}
-	//		//std::cout<<std::endl;	
-	//		
-	//	}
-	//	std::cout<<std::endl;	
-	//	deallocate_2D_array(cov, dimension,dimension);
-	//}
-	//////////////////////////////////////////////
 
 	//Cleanup
 	delete [] temp_params;
 	if(check_mod(local_gen)){
-		if(local_gen.find("ppE") != std::string::npos ||
-			local_gen.find("dCS")!=std::string::npos||
-			local_gen.find("EdGB")!=std::string::npos){
+		if(has_substring(local_gen, "ppE") ||
+			has_substring(local_gen, "dCS")||
+			has_substring(local_gen, "EdGB")){
 			delete [] gen_parameters.betappe;
 		}
-		else if( local_gen.find("gIMR") != std::string::npos){
+		else if( has_substring(local_gen, "gIMR")){
 			if(mcmc_mod_struct ->gIMR_Nmod_phi !=0){
 				delete [] gen_parameters.delta_phi;
 			}
@@ -3923,13 +3373,11 @@ void RJMCMC_2WF_RJ_proposal_wrapper(
 				if(current_status[i] == 0){
 					if(ct == beta){
 						proposed_status[i] = 1;
-						//proposed_param[i] = gsl_ran_gaussian(user_param->r,interface->RJ_step_width);
 						proposed_param[i] = gsl_rng_uniform(user_param->r) 
 							* (user_param->mod_prior_ranges[i-min_dimension][1]-user_param->mod_prior_ranges[i-min_dimension][0]) 
 							+ user_param->mod_prior_ranges[i-min_dimension][0];
 						*(MH_corrections)-=log(1./(user_param->mod_prior_ranges[i-min_dimension][1]
 							-user_param->mod_prior_ranges[i-min_dimension][0]));
-						//proposed_param[i] = gsl_ran_gaussian(user_param->r,10);
 						break;
 					}
 					ct++;
@@ -3963,13 +3411,11 @@ void RJMCMC_2WF_RJ_proposal_wrapper(
 			if(current_status[i] == 0){
 				if(ct == beta){
 					proposed_status[i] = 1;
-					//proposed_param[i] = gsl_ran_gaussian(user_param->r,interface->RJ_step_width);
 					proposed_param[i] = gsl_rng_uniform(user_param->r) 
 						* (user_param->mod_prior_ranges[i-min_dimension][1]-user_param->mod_prior_ranges[i-min_dimension][0]) 
 						+ user_param->mod_prior_ranges[i-min_dimension][0];
 					*(MH_corrections)-=log(1./.5/(user_param->mod_prior_ranges[i-min_dimension][1]
 						-user_param->mod_prior_ranges[i-min_dimension][0]));
-					//proposed_param[i] = gsl_ran_gaussian(user_param->r,10);
 					break;
 				}
 				ct++;
@@ -3992,24 +3438,6 @@ void RJMCMC_2WF_RJ_proposal_wrapper(
 			}
 		}
 	}
-	//#########################################################
-	//#########################################################
-	//TESTING
-	//if(proposed_status[max_dimension-1] == 0 ){
-	//	proposed_status[max_dimension-1] = 1;
-	//	proposed_param[max_dimension-1] = gsl_ran_gaussian(user_param->r,interface->RJ_step_width);
-	//}
-	//else{
-	//	proposed_status[max_dimension-1] = 0;
-	//	proposed_param[max_dimension-1] = 0;
-	//}
-	//#########################################################
-	//#########################################################
 	
 	return ;
 }
-
-
-
-
-

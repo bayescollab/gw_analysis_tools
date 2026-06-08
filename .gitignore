@@ -41,3 +41,4 @@ _templates/
 
 # Test Files
 tests/data/*
+/injections

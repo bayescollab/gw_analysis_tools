@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 	int *gIMR_alphai = NULL;
 	double *bppe = NULL;
 	std::cout<<"Generation method: "<<generation_method<<std::endl;
-	if(generation_method.find("ppE") != std::string::npos || check_theory_support(generation_method)){
+	if(has_substring(generation_method, "ppE") || check_theory_support(generation_method)){
 		Nmod = int_dict["Number of modifications"];
 		std::cout<<"Number of ppE modifications: "<<Nmod<<std::endl;
 		std::cout<<"ppE b parmeters: "<<Nmod<<std::endl;
@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
 		}
 		
 	}
-	if(generation_method.find("gIMR") != std::string::npos){
+	if(has_substring(generation_method, "gIMR")){
 		gNmod_phi = int_dict["Number of phi modifications"];
 		gNmod_sigma = int_dict["Number of sigma modifications"];
 		gNmod_beta = int_dict["Number of beta modifications"];
@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
 		delete [] fisher[i];
 
 	}
-	if(generation_method.find("ppE") != std::string::npos){
+	if(has_substring(generation_method, "ppE")){
 		delete [] bppe;	
 	}
 	delete [] fisher;

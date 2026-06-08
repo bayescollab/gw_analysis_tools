@@ -42,7 +42,7 @@
 template<class T>
 void extra_modifications(std::string generation_method,gen_params_base<T> *gp, source_parameters<T> *p, waveform_polarizations<T> *wp,T *freqs, int length)
 {
-  /*	if(generation_method.find("EA_fully_restricted_v1") != std::string::npos){
+  /*	if(has_substring(generation_method, "EA_fully_restricted_v1")){
 		//debugger_print(__FILE__,__LINE__,"POST");
 		source_parameters<T> temp_sp;
 		temp_sp.populate_source_parameters(gp);
@@ -64,15 +64,15 @@ template void extra_modifications(std::string, gen_params_base<adouble> * gp,sou
 
 bool check_mod(std::string generation_method)
 {
-	if(generation_method.find("ppE") != std::string::npos)
+	if(has_substring(generation_method, "ppE"))
 	{
 		return true;
 	}
-	if(generation_method.find("gIMR") != std::string::npos)
+	if(has_substring(generation_method, "gIMR"))
 	{
 		return true;
 	}
-	if(generation_method.find("EA") != std::string::npos)
+	if(has_substring(generation_method, "EA"))
 	{
 		return true;
 	}
@@ -83,51 +83,51 @@ bool check_mod(std::string generation_method)
 }
 bool check_theory_support(std::string generation_method)
 {
-	if(generation_method.find("dCS")!=std::string::npos){
+	if(has_substring(generation_method, "dCS")){
 		return true;
 	}
-	if(generation_method.find("EdGB")!=std::string::npos){
+	if(has_substring(generation_method, "EdGB")){
 		return true;
 	}
-	if(generation_method.find("EdGB_HO")!=std::string::npos){
+	if(has_substring(generation_method, "EdGB_HO")){
 		return true;
 	}
-	if(generation_method.find("EdGB_HO_LO")!=std::string::npos){
+	if(has_substring(generation_method, "EdGB_HO_LO")){
 		return true;
 	}
-	if(generation_method.find("EdGB_GHO")!=std::string::npos){
+	if(has_substring(generation_method, "EdGB_GHO")){
 		return true;
 	}
-	if(generation_method.find("ExtraDimension")!=std::string::npos){
+	if(has_substring(generation_method, "ExtraDimension")){
 		return true;
 	}
-	if(generation_method.find("BHEvaporation")!=std::string::npos){
+	if(has_substring(generation_method, "BHEvaporation")){
 		return true;
 	}
-	if(generation_method.find("TVG")!=std::string::npos){
+	if(has_substring(generation_method, "TVG")){
 		return true;
 	}
-	if(generation_method.find("DipRad")!=std::string::npos){
+	if(has_substring(generation_method, "DipRad")){
 		return true;
 	}
-	if(generation_method.find("NonComm")!=std::string::npos){
+	if(has_substring(generation_method, "NonComm")){
 		return true;
 	}
-	if(generation_method.find("ModDispersion")!=std::string::npos){
+	if(has_substring(generation_method, "ModDispersion")){
 		return true;
 	}
-	//if(generation_method.find("EA_fully_restricted")!=std::string::npos){
-	//if(generation_method.find("EA_IMRPhenomD_NRT")!=std::string::npos){
+	//if(has_substring(generation_method, "EA_fully_restricted")){
+	//if(has_substring(generation_method, "EA_IMRPhenomD_NRT")){
 	//        return true;
 	//}
-	if(generation_method.find("PNSeries_ppE")!=std::string::npos){
+	if(has_substring(generation_method, "PNSeries_ppE")){
 		return true;
 	}
-	if(generation_method.find("ppEAlt")!=std::string::npos){
+	if(has_substring(generation_method, "ppEAlt")){
 		return true;
 	}
 
-	if(generation_method.find("polarization_test")!=std::string::npos){
+	if(has_substring(generation_method, "polarization_test")){
 		return true;
 	}
 	return false;
@@ -159,7 +159,7 @@ void assign_mapping(std::string generation_method,theory_ppE_map<T> *mapping, ge
 {
 	mapping->extra_polarizations = check_extra_polarizations(generation_method);
 	bool ins=false;
-	if(generation_method.find("dCS")!= std::string::npos){
+	if(has_substring(generation_method, "dCS")){
 		mapping->Nmod = 1;
 		mapping->bppe = new double[1];
 		mapping->beta_fns = new beta_fn<T>[mapping->Nmod]; 
@@ -167,8 +167,8 @@ void assign_mapping(std::string generation_method,theory_ppE_map<T> *mapping, ge
 		mapping->beta_fns[0] = [](source_parameters<T> *p){return dCS_beta(p);} ;
 		ins = true;
 	}
-	else if(generation_method.find("EdGB")!= std::string::npos){
-		if(generation_method.find("EdGB_HO")!= std::string::npos){
+	else if(has_substring(generation_method, "EdGB")){
+		if(has_substring(generation_method, "EdGB_HO")){
 			mapping->Nmod = 3;
 			mapping->bppe = new double[3];
 			mapping->bppe[0] =-7;
@@ -179,14 +179,14 @@ void assign_mapping(std::string generation_method,theory_ppE_map<T> *mapping, ge
 			mapping->beta_fns[1] = [](source_parameters<T> *p){return EdGB_HO_1PN_beta(p);} ;
 			mapping->beta_fns[2] = [](source_parameters<T> *p){return EdGB_HO_2PN_beta(p);} ;
 		}
-		if(generation_method.find("EdGB_HO_LO")!= std::string::npos){
+		if(has_substring(generation_method, "EdGB_HO_LO")){
 			mapping->Nmod = 1;
 			mapping->bppe = new double[1];
 			mapping->bppe[0] =-7;
 			mapping->beta_fns = new beta_fn<T>[mapping->Nmod]; 
 			mapping->beta_fns[0] = [](source_parameters<T> *p){return EdGB_HO_0PN_beta(p);} ;
 		}
-		else if(generation_method.find("EdGB_GHOv1")!= std::string::npos){
+		else if(has_substring(generation_method, "EdGB_GHOv1")){
 			mapping->Nmod = 2;
 			mapping->bppe = new double[2];
 			mapping->bppe[0] =-7;
@@ -195,7 +195,7 @@ void assign_mapping(std::string generation_method,theory_ppE_map<T> *mapping, ge
 			mapping->beta_fns[0] = [](source_parameters<T> *p){return EdGB_beta(p);} ;
 			mapping->beta_fns[1] = [](source_parameters<T> *p){return EdGB_GHO_betav1(p);} ;
 		}
-		else if(generation_method.find("EdGB_GHOv2")!= std::string::npos){
+		else if(has_substring(generation_method, "EdGB_GHOv2")){
 			mapping->Nmod = 2;
 			mapping->bppe = new double[2];
 			mapping->bppe[0] =-7;
@@ -204,7 +204,7 @@ void assign_mapping(std::string generation_method,theory_ppE_map<T> *mapping, ge
 			mapping->beta_fns[0] = [](source_parameters<T> *p){return EdGB_beta(p);} ;
 			mapping->beta_fns[1] = [](source_parameters<T> *p){return EdGB_GHO_betav2(p);} ;
 		}
-		else if(generation_method.find("EdGB_GHOv3")!= std::string::npos){
+		else if(has_substring(generation_method, "EdGB_GHOv3")){
 			mapping->Nmod = 2;
 			mapping->bppe = new double[2];
 			mapping->bppe[0] =-7;
@@ -222,7 +222,7 @@ void assign_mapping(std::string generation_method,theory_ppE_map<T> *mapping, ge
 		}
 		ins = true;
 	}
-	else if(generation_method.find("ExtraDimension")!= std::string::npos){
+	else if(has_substring(generation_method, "ExtraDimension")){
 		mapping->Nmod = 1;
 		mapping->bppe = new double[1];
 		mapping->bppe[0] =-13;
@@ -230,8 +230,8 @@ void assign_mapping(std::string generation_method,theory_ppE_map<T> *mapping, ge
 		mapping->beta_fns[0] = [](source_parameters<T> *p){return ExtraDimension_beta(p);} ;
 		ins = true;
 	}
-	//else if(generation_method.find("EA_fully_restricted_v1")!= std::string::npos){
-	/*else if(generation_method.find("EA_IMRPhenomD_NRT")!= std::string::npos){
+	//else if(has_substring(generation_method, "EA_fully_restricted_v1")){
+	/*else if(has_substring(generation_method, "EA_IMRPhenomD_NRT")){
 		//Need to pre-calculate EA variables here -- Needs to actually be in waveform_generator file..
 		//pre_calculate_EA_factors(params_in);
 		mapping->Nmod = 2;
@@ -243,7 +243,7 @@ void assign_mapping(std::string generation_method,theory_ppE_map<T> *mapping, ge
 		mapping->beta_fns[1] = [](source_parameters<T> *p){return EA_fully_restricted_phase1(p);} ;
 		ins = true;
 		}*/
-	else if(generation_method.find("BHEvaporation")!= std::string::npos){
+	else if(has_substring(generation_method, "BHEvaporation")){
 		mapping->Nmod = 1;
 		mapping->bppe = new double[1];
 		mapping->bppe[0] =-13;
@@ -251,7 +251,7 @@ void assign_mapping(std::string generation_method,theory_ppE_map<T> *mapping, ge
 		mapping->beta_fns[0] = [](source_parameters<T> *p){return BHEvaporation_beta(p);} ;
 		ins = true;
 	}
-	else if(generation_method.find("TVG")!= std::string::npos){
+	else if(has_substring(generation_method, "TVG")){
 		mapping->Nmod = 1;
 		mapping->bppe = new double[1];
 		mapping->bppe[0] =-13;
@@ -259,7 +259,7 @@ void assign_mapping(std::string generation_method,theory_ppE_map<T> *mapping, ge
 		mapping->beta_fns[0] = [](source_parameters<T> *p){return TVG_beta(p);} ;
 		ins = true;
 	}
-	else if(generation_method.find("DipRad")!= std::string::npos){
+	else if(has_substring(generation_method, "DipRad")){
 		mapping->Nmod = 1;
 		mapping->bppe = new double[1];
 		mapping->bppe[0] =-7;
@@ -268,7 +268,7 @@ void assign_mapping(std::string generation_method,theory_ppE_map<T> *mapping, ge
 		ins = true;
 			
 	}
-	else if(generation_method.find("NonComm")!= std::string::npos){
+	else if(has_substring(generation_method, "NonComm")){
 		mapping->Nmod = 1;
 		mapping->bppe = new double[1];
 		mapping->bppe[0] =-1;
@@ -277,7 +277,7 @@ void assign_mapping(std::string generation_method,theory_ppE_map<T> *mapping, ge
 		ins = true;
 			
 	}
-	else if(generation_method.find("ModDispersion")!= std::string::npos){
+	else if(has_substring(generation_method, "ModDispersion")){
 		mapping->Nmod = 1;
 		mapping->bppe = new double[1];
 		mapping->bppe[0] =params_in->bppe[0];
@@ -286,7 +286,7 @@ void assign_mapping(std::string generation_method,theory_ppE_map<T> *mapping, ge
 		ins = false;
 			
 	}
-	else if(generation_method.find("PNSeries")!= std::string::npos){
+	else if(has_substring(generation_method, "PNSeries")){
 		mapping->Nmod = params_in->Nmod;
 		mapping->bppe = new double[params_in->Nmod];
 		for(int i = 0 ; i<params_in->Nmod; i++){
@@ -299,7 +299,7 @@ void assign_mapping(std::string generation_method,theory_ppE_map<T> *mapping, ge
 			mapping->beta_fns_ptrs[i] = lam;
 			mapping->beta_fns[i] = *(lam); 
 		}
-		if(generation_method.find("Inspiral")!= std::string::npos){
+		if(has_substring(generation_method, "Inspiral")){
 			ins = true;
 		}
 		else{
@@ -307,7 +307,7 @@ void assign_mapping(std::string generation_method,theory_ppE_map<T> *mapping, ge
 		}
 			
 	}
-	else if(generation_method.find("ppEAlt")!= std::string::npos){
+	else if(has_substring(generation_method, "ppEAlt")){
 		mapping->Nmod = params_in->Nmod;
 		mapping->bppe = new double[params_in->Nmod];
 		for(int i = 0 ; i<params_in->Nmod; i++){
@@ -320,7 +320,7 @@ void assign_mapping(std::string generation_method,theory_ppE_map<T> *mapping, ge
 			mapping->beta_fns_ptrs[i] = lam;
 			mapping->beta_fns[i] = *(lam); 
 		}
-		if(generation_method.find("Inspiral")!= std::string::npos){
+		if(has_substring(generation_method, "Inspiral")){
 			ins = true;
 		}
 		else{
@@ -328,11 +328,11 @@ void assign_mapping(std::string generation_method,theory_ppE_map<T> *mapping, ge
 		}
 			
 	}
-	else if(generation_method.find("polarization_test")!= std::string::npos){
+	else if(has_substring(generation_method, "polarization_test")){
 		mapping->Nmod = params_in->Nmod;
 		ins = true;
 	}
-	if(generation_method.find("Pv2")!=std::string::npos){
+	if(has_substring(generation_method, "Pv2")){
 		if(ins){
 			mapping->ppE_method = "ppE_IMRPhenomPv2_Inspiral";
 		}
@@ -340,17 +340,17 @@ void assign_mapping(std::string generation_method,theory_ppE_map<T> *mapping, ge
 			mapping->ppE_method = "ppE_IMRPhenomPv2_IMR";
 		}
 	}
-	else if(generation_method.find("PhenomD")!=std::string::npos){
-		if(ins && generation_method.find("NRT") == std::string::npos){
+	else if(has_substring(generation_method, "PhenomD")){
+		if(ins && !has_substring(generation_method, "NRT")){
 			mapping->ppE_method = "ppE_IMRPhenomD_Inspiral";
 		}
-		else if(!ins && generation_method.find("NRT") == std::string::npos){
+		else if(!ins && !has_substring(generation_method, "NRT")){
 			mapping->ppE_method = "ppE_IMRPhenomD_IMR";
 		}
-		else if(ins && generation_method.find("NRT") != std::string::npos){
+		else if(ins && has_substring(generation_method, "NRT")){
 			mapping->ppE_method = "ppE_IMRPhenomD_NRT_Inspiral";
 		}
-		else if(!ins && generation_method.find("NRT") != std::string::npos){
+		else if(!ins && has_substring(generation_method, "NRT")){
 			mapping->ppE_method = "ppE_IMRPhenomD_NRT_IMR";
 		}
 

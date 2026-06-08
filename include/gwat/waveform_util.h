@@ -291,28 +291,6 @@ void postmerger_params(gen_params_base<T>*params,
 	T *fdamp,
 	T *fRD
 	);
-void threshold_times(gen_params_base<double> *params,
-	std::string generation_method,
-	double T_obs, 
-	double T_wait,
-	double f_lower,
-	double f_upper,
-	std::string SN,
-	double SNR_thresh, 
-	double *threshold_times_out,
-	double tolerance
-	);
-void threshold_times(gen_params_base<double> *params,
-	std::string generation_method,
-	double T_obs, 
-	double T_wait, 
-	double *freqs,
-	double *SN,
-	int length,
-	double SNR_thresh, 
-	double *threshold_times_out,
-	double tolerance
-	);
 double integrand_threshold_subroutine(double f, void *subroutine_params);
 double snr_threshold_subroutine(double fmin, double fmax, double rel_err, gen_params_base<double> *params, std::string generation_method,std::string SN, gsl_integration_workspace *w, int np);
 int threshold_times_gsl(gen_params_base<double> *params,

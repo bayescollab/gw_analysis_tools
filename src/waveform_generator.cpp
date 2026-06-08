@@ -9,6 +9,7 @@
 #include "ppE_IMRPhenomP.h"
 #include "gIMRPhenomD.h"
 #include "IMRPhenomD_NRT.h"
+#include "IMRPhenomD_NRT_EOS.h"
 #include "EA_IMRPhenomD_NRT.h"
 #include "IMRPhenomP_NRT.h"
 #include "ppE_utilities.h"
@@ -43,7 +44,7 @@ int time_waveform(T *times, /**< double array of frequencies for the waveform to
 	source_parameters<T> params;
 
 	std::string local_method = prep_source_parameters(&params, parameters,generation_method);
-	if(local_method.find("Taylor")!=std::string::npos)
+	if(has_substring(local_method, "Taylor"))
 	{
 		//std::complex<T> ci = std::complex<T>(cos(params.incl_angle),0);
 		if(local_method == "TaylorT2")
@@ -126,7 +127,7 @@ int fourier_waveform(T *frequencies, /**< double array of frequencies for the wa
 	//params = params.populate_source_parameters(parameters);
 
 	std::string local_method = prep_source_parameters(&params, parameters,generation_method);
-	if(local_method.find("IMRPhenomD")!=std::string::npos)
+	if(has_substring(local_method, "IMRPhenomD"))
 	{
 		std::complex<T> ci = std::complex<T>(cos(params.incl_angle),0);
 		std::complex<T> si = std::complex<T>(sin(params.incl_angle),0);
@@ -166,6 +167,12 @@ int fourier_waveform(T *frequencies, /**< double array of frequencies for the wa
 		  {
 		    IMRPhenomD_NRT<T> modeldNRT;
 		    status = modeldNRT.construct_waveform(frequencies, length, wp->hplus, &params);
+
+		  }
+		else if(local_method == "IMRPhenomD_NRT_EOS")
+		  {
+		    IMRPhenomD_NRT_EOS<T> modeldNRTEOS;
+		    status = modeldNRTEOS.construct_waveform(frequencies, length, wp->hplus, &params);
 
 		  }
 		else if(local_method == "EA_IMRPhenomD_NRT")
@@ -224,7 +231,7 @@ int fourier_waveform(T *frequencies, /**< double array of frequencies for the wa
 			}	
 		}*/
 	}
-	else if(local_method.find("IMRPhenomPv2")!=std::string::npos)
+	else if(has_substring(local_method, "IMRPhenomPv2"))
 	{
 		if(local_method == "ppE_IMRPhenomPv2_Inspiral")
 		{
@@ -265,7 +272,7 @@ int fourier_waveform(T *frequencies, /**< double array of frequencies for the wa
 			wp->hcross[i] = c2z*tempCross-s2z*tempPlus;
 		}
 	}
-	else if(local_method.find("IMRPhenomPv3")!=std::string::npos)
+	else if(has_substring(local_method, "IMRPhenomPv3"))
 	{
 		if (local_method == "IMRPhenomPv3")
 		{
@@ -500,6 +507,12 @@ int fourier_waveform(double *frequencies, /**< double array of frequencies for t
 	    status = modeldNRT.construct_waveform(frequencies, length, waveform, &params);
 
 	  }
+	else if(generation_method == "IMRPhenomD_NRT_EOS")
+	  {
+	    IMRPhenomD_NRT_EOS<double> modeldNRTEOS;
+	    status = modeldNRTEOS.construct_waveform(frequencies, length, waveform, &params);
+
+	  }
 	//else if(generation_method == "IMRPhenomPv2")
 	//{
 	//	IMRPhenomPv2<double> modeld;
@@ -558,7 +571,7 @@ int fourier_amplitude(T *frequencies, /**< double array of frequencies for the w
 	params.populate_source_parameters(parameters);
 
 	std::string local_method = prep_source_parameters(&params, parameters,generation_method);
-	if(local_method.find("IMRPhenomD")!=std::string::npos)
+	if(has_substring(local_method, "IMRPhenomD"))
 	{
 		std::complex<T> ci = std::complex<T>(cos(params.incl_angle),0);
 		if(local_method == "ppE_IMRPhenomD_Inspiral")
@@ -583,6 +596,12 @@ int fourier_amplitude(T *frequencies, /**< double array of frequencies for the w
 		  {
 		    IMRPhenomD_NRT<T> modeldNRT;
 		    status = modeldNRT.construct_amplitude(frequencies, length, amplitude, &params);
+
+		  }
+		else if(local_method == "IMRPhenomD_NRT_EOS")
+		  {
+		    IMRPhenomD_NRT_EOS<T> modeldNRTEOS;
+		    status = modeldNRTEOS.construct_amplitude(frequencies, length, amplitude, &params);
 
 		  }
 		else if(local_method == "EA_IMRPhenomD_NRT")
@@ -791,9 +810,16 @@ int fourier_phase(T *frequencies, /**<double array of frequencies for the wavefo
 	else if(local_method == "IMRPhenomD_NRT")
 	  {
 	    IMRPhenomD_NRT<T> modeldNRT;
-	    params.tidal1 = parameters->tidal1; //Is this right?!?
+	    params.tidal1 = parameters->tidal1; 
 	    params.tidal2 = parameters->tidal2;
 	    status = modeldNRT.construct_phase(frequencies, length, phase, &params);
+	  }
+	else if(local_method == "IMRPhenomD_NRT_EOS")
+	  {
+	    IMRPhenomD_NRT_EOS<T> modeldNRTEOS;
+	    params.tidal1 = parameters->tidal1; 
+	    params.tidal2 = parameters->tidal2;
+	    status = modeldNRTEOS.construct_phase(frequencies, length, phase, &params);
 	  }
 	else if(local_method == "EA_IMRPhenomD_NRT")
 	  {
@@ -835,7 +861,7 @@ int fourier_phase(T *frequencies, /**<double array of frequencies for the wavefo
 	source_parameters<T> params;
 
 	std::string local_method = prep_source_parameters(&params, parameters,generation_method);
-	if(local_method.find("IMRPhenomD")!=std::string::npos)
+	if(has_substring(local_method, "IMRPhenomD"))
 	{
 		if(local_method == "ppE_IMRPhenomD_Inspiral")
 		{
@@ -861,6 +887,12 @@ int fourier_phase(T *frequencies, /**<double array of frequencies for the wavefo
 		    status = modeldNRT.construct_phase(frequencies, length, phase_plus, &params);
 
 		  }
+		else if(local_method == "IMRPhenomD_NRT_EOS")
+		  {
+		    IMRPhenomD_NRT_EOS<T> modeldNRTEOS;
+		    status = modeldNRTEOS.construct_phase(frequencies, length, phase_plus, &params);
+
+		  }
 		else if(local_method == "EA_IMRPhenomD_NRT")
 		  {
 		    EA_IMRPhenomD_NRT<T> EAmodeldNRT;
@@ -875,7 +907,7 @@ int fourier_phase(T *frequencies, /**<double array of frequencies for the wavefo
 			phase_cross[i] = phase_plus[i]+ M_PI/2.;
 		}
 	}
-	else if(local_method.find("IMRPhenomPv2")!=std::string::npos)
+	else if(has_substring(local_method, "IMRPhenomPv2"))
 	{
 		T *phase_plus_temp = new T[length];
 		T *phase_cross_temp = new T[length];
@@ -1268,7 +1300,7 @@ std::string prep_source_parameters(source_parameters<T> *out, gen_params_base<T>
 	out->NSflag2 = in->NSflag2;
 	out->dep_postmerger = in->dep_postmerger;
 	out->include_l1 = in->include_l1;
-	if(generation_method.find("Pv2")!=std::string::npos){
+	if(has_substring(generation_method, "Pv2")){
 		IMRPhenomPv2<T> model;
 		if((in->chip +1)>DOUBLE_COMP_THRESH){
 			out->chip = in->chip;
@@ -1281,7 +1313,7 @@ std::string prep_source_parameters(source_parameters<T> *out, gen_params_base<T>
 			model.PhenomPv2_Param_Transform(out);
 		}
 	}
-	else if(generation_method.find("Pv3")!=std::string::npos)
+	else if(has_substring(generation_method, "Pv3"))
 	{
 		if (in->mass1 < in->mass2)
 		{
@@ -1293,12 +1325,12 @@ std::string prep_source_parameters(source_parameters<T> *out, gen_params_base<T>
 
 		PhenomPv3_Param_Transform(out, in);
 	}
-	if(generation_method.find("ppE") != std::string::npos){
+	if(has_substring(generation_method, "ppE")){
 		out->Nmod = in->Nmod;
 		out->betappe = in->betappe;
 		out->bppe = in->bppe;
 	}
-	if(generation_method.find("gIMR") != std::string::npos){
+	if(has_substring(generation_method, "gIMR")){
 			out->delta_phi = in->delta_phi;
 			out->delta_sigma = in->delta_sigma;
 			out->delta_beta = in->delta_beta;
@@ -1313,7 +1345,7 @@ std::string prep_source_parameters(source_parameters<T> *out, gen_params_base<T>
 			out->Nmod_alpha = in->Nmod_alpha;
 	}
 
-	if(generation_method.find("NRT") != std::string::npos){
+	if(has_substring(generation_method, "NRT")){
 	  //if(in->tidal_s >=0)
 	  if(in->tidal_love )
 	    {
@@ -1356,7 +1388,15 @@ std::string prep_source_parameters(source_parameters<T> *out, gen_params_base<T>
 
 	  }
 	}
-	if(generation_method.find("EA_IMRPhenomD_NRT") != std::string::npos){
+	if(has_substring(generation_method, "EOS")){
+	  out->bump_mag = in->bump_mag;
+	  out->bump_width = in->bump_width;
+	  out->bump_offset = in->bump_offset;
+	  out->plat = in->plat;
+	  out->nbc1 = in->nbc1;
+	  out->nbc2 = in->nbc2;
+	}
+	if(has_substring(generation_method, "EA_IMRPhenomD_NRT")){
 	  out->alpha_param = in->alpha_param;
 	  out->EA_region1 = in->EA_region1;
 	  if(in->alpha_param){
@@ -1408,7 +1448,7 @@ std::string prep_source_parameters(source_parameters<T> *out, gen_params_base<T>
 		local_method = mapping.ppE_method;
 		deallocate_mapping(&mapping);
 	}
-	if(generation_method.find("TaylorT2") != std::string::npos){
+	if(has_substring(generation_method, "TaylorT2")){
 		out->x0 = in->x0;
 	}
 	return local_method;
@@ -1491,7 +1531,7 @@ bool check_extra_polarizations(std::string generation_method)
 	if(generation_method == "polarization_test_IMRPhenomD"){
 		return true;
 	}
-	if(generation_method.find("EA_IMRPhenomD_NRT") != std::string::npos){
+	if(has_substring(generation_method, "EA_IMRPhenomD_NRT")){
 		return true;
 	}
 	return false;
@@ -1508,7 +1548,7 @@ void assign_polarizations(std::string generation_method, waveform_polarizations<
 		wp->active_polarizations[4]=true;
 		wp->active_polarizations[5]=true;
 	}
-	else if(generation_method.find("EA_IMRPhenomD_NRT") != std::string::npos){
+	else if(has_substring(generation_method, "EA_IMRPhenomD_NRT")){
 		wp->active_polarizations[0]=true;
 		wp->active_polarizations[1]=true;
 		wp->active_polarizations[2]=true;

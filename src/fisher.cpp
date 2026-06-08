@@ -106,28 +106,29 @@ using namespace std;
  * NOT SAFE FOR LISA YET -- see hessian of phase for time derivative
  */
 void fisher_numerical(
-    double *frequency,
+    double* frequency,
     int length, /**< if 0, standard frequency range for the detector is used*/
     string generation_method, string detector, string reference_detector,
-    double **output, /**< double [dimension][dimension]*/
-    int dimension, gen_params_base<double> *parameters,
+    double** output, /**< double [dimension][dimension]*/
+    int dimension, gen_params_base<double>* parameters,
     int order, /**< Order of the numerical derivative (2 or 4)**/
     // double *parameters,
-    int *amp_tapes,   /**< if speed is required, precomputed tapes can be used -
+    int* amp_tapes,   /**< if speed is required, precomputed tapes can be used -
                                              assumed the user knows what they're
                          doing, no checks done   here to make sure that the number
-                         of tapes matches the   requirement by the generation_method
+                         of tapes matches the   requirement by the
+                         generation_method
                          -- if using   numerical derivatives or speed isn't that
                          important, just   set to NULL*/
-    int *phase_tapes, /**< if speed is required, precomputed tapes can be used -
+    int* phase_tapes, /**< if speed is required, precomputed tapes can be used -
                                              assumed the user knows what they're
                          doing, no checks done here to make sure that the number
                          of tapes matches the requirement by the
                          generation_method*/
-    double *noise, Quadrature *quadMethod /**< Quadrature method */
+    double* noise, Quadrature* quadMethod /**< Quadrature method */
 ) {
   // populate noise and frequency
-  double *internal_noise = new double[length];
+  double* internal_noise = new double[length];
   if (noise) {
     for (int i = 0; i < length; i++) {
       internal_noise[i] = noise[i];
@@ -139,7 +140,7 @@ void fisher_numerical(
   }
 
   // populate derivatives - Derivatives of DETECTOR RESPONSE
-  std::complex<double> **response_deriv = new std::complex<double> *[dimension];
+  std::complex<double>** response_deriv = new std::complex<double>*[dimension];
   for (int i = 0; i < dimension; i++) {
     response_deriv[i] = new std::complex<double>[length];
   }
@@ -156,7 +157,7 @@ void fisher_numerical(
     // Old method. Hard-coded to Simpsons
     bool log10_f = false;
     std::string integration_method = "SIMPSONS";
-    double *weights = NULL;
+    double* weights = NULL;
     calculate_fisher_elements(frequency, length, dimension, response_deriv,
                               output, internal_noise, integration_method,
                               weights, log10_f);
@@ -181,11 +182,11 @@ void fisher_numerical(
   delete[] internal_noise;
 }
 
-void calculate_derivatives(std::complex<double> **response_deriv,
-                           double *frequencies, int length, int dimension,
+void calculate_derivatives(std::complex<double>** response_deriv,
+                           double* frequencies, int length, int dimension,
                            string detector, string reference_detector,
                            string gen_method,
-                           gen_params_base<double> *parameters, int order) {
+                           gen_params_base<double>* parameters, int order) {
   double epsilon = 1e-8;
   // double epsilon = .01;
   // double epsilon = 1e-5;
@@ -194,8 +195,8 @@ void calculate_derivatives(std::complex<double> **response_deriv,
   bool log_factors[dimension];
   double param_p[dimension];
   double param_m[dimension];
-  double *param_pp;
-  double *param_mm;
+  double* param_pp;
+  double* param_mm;
   if (order >= 4) {
     param_pp = new double[dimension];
     param_mm = new double[dimension];
@@ -214,19 +215,19 @@ void calculate_derivatives(std::complex<double> **response_deriv,
 
   if (parameters->sky_average &&
       has_substring(local_gen_method, "IMRPhenomD")) {
-    double *amplitude_plus = new double[length];
-    double *phase_plus = new double[length];
-    double *phase_plusc = new double[length];
-    double *amplitude_minus = new double[length];
-    double *phase_minus = new double[length];
-    double *phase_minusc = new double[length];
-    double *amplitude = new double[length];
-    double *amplitude_plus_plus;
-    double *amplitude_minus_minus;
-    double *phase_plus_plus;
-    double *phase_minus_minus;
-    double *phase_plus_plusc;
-    double *phase_minus_minusc;
+    double* amplitude_plus = new double[length];
+    double* phase_plus = new double[length];
+    double* phase_plusc = new double[length];
+    double* amplitude_minus = new double[length];
+    double* phase_minus = new double[length];
+    double* phase_minusc = new double[length];
+    double* amplitude = new double[length];
+    double* amplitude_plus_plus;
+    double* amplitude_minus_minus;
+    double* phase_plus_plus;
+    double* phase_minus_minus;
+    double* phase_plus_plusc;
+    double* phase_minus_minusc;
     if (order >= 4) {
       amplitude_plus_plus = new double[length];
       amplitude_minus_minus = new double[length];
@@ -244,32 +245,28 @@ void calculate_derivatives(std::complex<double> **response_deriv,
       }
       param_p[i] = parameters_vec[i] + epsilon;
       param_m[i] = parameters_vec[i] - epsilon;
-      if (!has_substring(
-              local_gen_method,
-              "EOS")) { // the following code assumes parameter[8] = eta which
-                        // is not true for the IMRPhenomD_NRT_EOS template
-        if (i == 8 && parameters_vec[i] > .25 - epsilon) {
-          param_p[i] =
-              parameters_vec[i]; // instead of parameters_vec[i] + epsilon
-                                 // std::cout<<"eta close to boundary, using
-                                 // backward difference approximation to
-                                 // differentiate. See line "<<__LINE__<<" in
-                                 // "<<__FILE__<<" for more
-                                 // information."<<std::endl;
+      if (!has_substring(local_gen_method, "EOS") && i == 8 &&
+          parameters_vec[i] > .25 - epsilon) {
+        param_p[i] =
+            parameters_vec[i];  // instead of parameters_vec[i] + epsilon
+                                // std::cout<<"eta close to boundary, using
+                                // backward difference approximation to
+                                // differentiate. See line "<<__LINE__<<" in
+                                // "<<__FILE__<<" for more
+                                // information."<<std::endl;
+      }
+      if (order >= 4) {
+        for (int j = 0; j < dimension; j++) {
+          param_pp[j] = parameters_vec[j];
+          param_mm[j] = parameters_vec[j];
         }
-        if (order >= 4) {
-          for (int j = 0; j < dimension; j++) {
-            param_pp[j] = parameters_vec[j];
-            param_mm[j] = parameters_vec[j];
-          }
-          param_pp[i] = parameters_vec[i] + 2 * epsilon;
-          param_mm[i] = parameters_vec[i] - 2 * epsilon;
-          if (i == 8 && parameters_vec[i] > .25 - epsilon) {
-            param_pp[i] = parameters_vec[i];
-            // std::cout<<"eta close to boundary, using backward difference
-            // approximation to differentiate. See line "<<__LINE__<<" in
-            // "<<__FILE__<<" for more information."<<std::endl;
-          }
+        param_pp[i] = parameters_vec[i] + 2 * epsilon;
+        param_mm[i] = parameters_vec[i] - 2 * epsilon;
+        if (i == 8 && parameters_vec[i] > .25 - epsilon) {
+          param_pp[i] = parameters_vec[i];
+          // std::cout<<"eta close to boundary, using backward difference
+          // approximation to differentiate. See line "<<__LINE__<<" in
+          // "<<__FILE__<<" for more information."<<std::endl;
         }
       }
       repack_parameters(param_p, &waveform_params, gen_method, dimension);
@@ -299,7 +296,7 @@ void calculate_derivatives(std::complex<double> **response_deriv,
       double amplitude_deriv, phase_deriv;
       if (order == 2) {
         for (int l = 0; l < length; l++) {
-          if (i == 8 && !has_substring(local_gen_method, "EOS") &&
+          if (!has_substring(local_gen_method, "EOS") && i == 8 &&
               parameters_vec[i] > .25 - epsilon) {
             amplitude_deriv =
                 (amplitude_plus[l] - amplitude_minus[l]) / (epsilon);
@@ -315,7 +312,7 @@ void calculate_derivatives(std::complex<double> **response_deriv,
         }
       } else if (order == 4) {
         for (int l = 0; l < length; l++) {
-          if (i == 8 && !has_substring(local_gen_method, "EOS") &&
+          if (!has_substring(local_gen_method, "EOS") && i == 8 &&
               parameters_vec[i] > .25 - epsilon) {
             amplitude_deriv =
                 (-amplitude_plus_plus[l] + 8. * amplitude_plus[l] -
@@ -357,12 +354,12 @@ void calculate_derivatives(std::complex<double> **response_deriv,
   }
   // ##########################################################
   else {
-    std::complex<double> *response_plus = new std::complex<double>[length];
-    std::complex<double> *response_minus = new std::complex<double>[length];
-    std::complex<double> *response_plus_plus;
-    std::complex<double> *response_minus_minus;
-    double *times = NULL; // deprecated - assigned in previously used detector
-                          // == "LISA" block
+    std::complex<double>* response_plus = new std::complex<double>[length];
+    std::complex<double>* response_minus = new std::complex<double>[length];
+    std::complex<double>* response_plus_plus;
+    std::complex<double>* response_minus_minus;
+    double* times = NULL;  // deprecated - assigned in previously used detector
+                           // == "LISA" block
     int local_dimension = dimension;
     double DTOA = 0;
     if (detector == "LISA") {
@@ -380,8 +377,8 @@ void calculate_derivatives(std::complex<double> **response_deriv,
       }
       param_p[i] = parameters_vec[i] + epsilon;
       param_m[i] = parameters_vec[i] - epsilon;
-      if (i == 8 && parameters_vec[i] > .25 - epsilon &&
-          (local_gen_method.find("EOS") == std::string::npos)) {
+      if (!has_substring(local_gen_method, "EOS") && i == 8 &&
+          parameters_vec[i] > .25 - epsilon) {
         param_p[i] = parameters_vec[i];
         // std::cout<<"eta close to boundary, using backward difference
         // approximation to differentiate. See line "<<__LINE__<<" in
@@ -394,8 +391,8 @@ void calculate_derivatives(std::complex<double> **response_deriv,
         }
         param_pp[i] = parameters_vec[i] + 2 * epsilon;
         param_mm[i] = parameters_vec[i] - 2 * epsilon;
-        if (i == 8 && parameters_vec[i] > .25 - epsilon &&
-            (local_gen_method.find("EOS") == std::string::npos)) {
+        if (!has_substring(local_gen_method, "EOS") && i == 8 &&
+            parameters_vec[i] > .25 - epsilon) {
           param_pp[i] = parameters_vec[i];
           // std::cout<<"eta close to boundary, using backward difference
           // approximation to differentiate. See line "<<__LINE__<<" in
@@ -555,29 +552,29 @@ void calculate_derivatives(std::complex<double> **response_deriv,
  * modification at a time.
  */
 void fisher_autodiff_batch_mod(
-    double *frequency,
+    double* frequency,
     int length, /**< if 0, standard frequency range for the detector is used*/
     std::string generation_method, std::string detector,
     std::string reference_detector,
-    double **output,    /**< double [dimension][dimension]*/
+    double** output,    /**< double [dimension][dimension]*/
     int base_dimension, /**< GR dimensionality*/
     int full_dimension, /**< Total dimension of the output fisher (ie
                                                GR_dimension + Nmod)*/
-    gen_params *parameters,
+    gen_params* parameters,
     std::string integration_method, /**< Method of integration to use*/
-    double
-        *weights, /**< If using a gaussian quadrature method and the weights
-                     have been precomputed, the weights can be supplied here*/
+    double*
+        weights, /**< If using a gaussian quadrature method and the weights
+                    have been precomputed, the weights can be supplied here*/
     bool
         log10_f, /**< Boolean for logarithmically (base 10) spaced frequencies*/
-    double *noise, /**<Precomputed PSD array*/
+    double* noise, /**<Precomputed PSD array*/
     // double *parameters,
-    int *
-        amp_tapes,   /**< if speed is required, precomputed tapes can be used -
+    int* amp_tapes,  /**< if speed is required, precomputed tapes can be used -
                                             assumed the user knows what they're
-                        doing, no checks done   here to make sure that the number of
-                        tapes matches the   requirement by the generation_method*/
-    int *phase_tapes /**< if speed is required, precomputed tapes can be used -
+                        doing, no checks done   here to make sure that the number
+                        of  tapes matches the   requirement by the
+                        generation_method*/
+    int* phase_tapes /**< if speed is required, precomputed tapes can be used -
                                             assumed the user knows what they're
                         doing, no checks done here to make sure that the number
                         of tapes matches the requirement by the
@@ -587,7 +584,7 @@ void fisher_autodiff_batch_mod(
   // Fishers"<<std::endl;
 
   // populate noise and frequency
-  double *internal_noise;
+  double* internal_noise;
   bool local_noise = false;
   if (noise) {
     internal_noise = noise;
@@ -601,8 +598,8 @@ void fisher_autodiff_batch_mod(
 
   // populate derivatives
 
-  std::complex<double> **response_deriv =
-      new std::complex<double> *[full_dimension];
+  std::complex<double>** response_deriv =
+      new std::complex<double>*[full_dimension];
   for (int i = 0; i < full_dimension; i++) {
     response_deriv[i] = new std::complex<double>[length];
   }
@@ -670,27 +667,27 @@ void fisher_autodiff_batch_mod(
  * only gaussian quadrature routines are supported.
  */
 void fisher_autodiff(
-    double *frequency,
+    double* frequency,
     int length, /**< if 0, standard frequency range for the detector is used*/
     std::string generation_method, std::string detector,
     std::string reference_detector,
-    double **output,                /**< double [dimension][dimension]*/
+    double** output,                /**< double [dimension][dimension]*/
     int dimension,                  /**<dimension of the fisher*/
-    gen_params *parameters,         /**< Injection parameters*/
+    gen_params* parameters,         /**< Injection parameters*/
     std::string integration_method, /**< Method of integration to use*/
-    double
-        *weights, /**< If using a gaussian quadrature method and the weights
-                     have been precomputed, the weights can be supplied here*/
+    double*
+        weights, /**< If using a gaussian quadrature method and the weights
+                    have been precomputed, the weights can be supplied here*/
     bool
         log10_f, /**< Boolean for logarithmically (base 10) spaced frequencies*/
-    double *noise, /**<Precomputed PSD array*/
+    double* noise, /**<Precomputed PSD array*/
     // double *parameters,
-    int *
-        amp_tapes,   /**< if speed is required, precomputed tapes can be used -
+    int* amp_tapes,  /**< if speed is required, precomputed tapes can be used -
                                             assumed the user knows what they're
-                        doing, no checks done   here to make sure that the number of
-                        tapes matches the   requirement by the generation_method*/
-    int *phase_tapes /**< if speed is required, precomputed tapes can be used -
+                        doing, no checks done   here to make sure that the number
+                        of  tapes matches the   requirement by the
+                        generation_method*/
+    int* phase_tapes /**< if speed is required, precomputed tapes can be used -
                                             assumed the user knows what they're
                         doing, no checks done here to make sure that the number
                         of tapes matches the requirement by the
@@ -700,7 +697,7 @@ void fisher_autodiff(
   // Fishers"<<std::endl;
 
   // populate noise and frequency
-  double *internal_noise;
+  double* internal_noise;
   bool local_noise = false;
   if (noise) {
     internal_noise = noise;
@@ -714,7 +711,7 @@ void fisher_autodiff(
 
   // populate derivatives
 
-  std::complex<double> **response_deriv = new std::complex<double> *[dimension];
+  std::complex<double>** response_deriv = new std::complex<double>*[dimension];
   for (int i = 0; i < dimension; i++) {
     response_deriv[i] = new std::complex<double>[length];
   }
@@ -769,9 +766,9 @@ void fisher_autodiff(
  * numerical approximation (autodiff then numerical)
  */
 void calculate_derivatives_autodiff(
-    double *frequency, int length, int dimension, std::string generation_method,
-    gen_params *parameters, std::complex<double> **waveform_deriv,
-    int *waveform_tapes, std::string detector, bool autodiff_time_deriv,
+    double* frequency, int length, int dimension, std::string generation_method,
+    gen_params* parameters, std::complex<double>** waveform_deriv,
+    int* waveform_tapes, std::string detector, bool autodiff_time_deriv,
     std::string reference_detector) {
   // std::cout<<"Line "<<__LINE__<<":Using autodiff to calculate
   // Fishers"<<std::endl;
@@ -790,8 +787,8 @@ void calculate_derivatives_autodiff(
     std::cout << "Error -- unsupported generation method" << std::endl;
     exit(1);
   }
-  double *freq_boundaries = new double[boundary_num];
-  double *grad_freqs = new double[boundary_num];
+  double* freq_boundaries = new double[boundary_num];
+  double* grad_freqs = new double[boundary_num];
   std::string local_gen_method = local_generation_method(generation_method);
   assign_freq_boundaries(freq_boundaries, grad_freqs, boundary_num, parameters,
                          generation_method);
@@ -802,9 +799,9 @@ void calculate_derivatives_autodiff(
   vec_parameters[0] = grad_freqs[0];
   unpack_parameters(&vec_parameters[1], parameters, generation_method,
                     dimension, log_factors);
-  double *grad_times = NULL;
-  double **dt = NULL;
-  double *eval_times = NULL;
+  double* grad_times = NULL;
+  double** dt = NULL;
+  double* eval_times = NULL;
   if (detector == "LISA") {
     grad_times = new double[boundary_num];
     time_phase_corrected_autodiff(grad_times, boundary_num, grad_freqs,
@@ -890,10 +887,10 @@ void calculate_derivatives_autodiff(
     deallocate_non_param_options(&a_parameters, parameters, generation_method);
   }
   // Evaluate derivative tapes
-  int dep = 2;                  // Output is complex
-  int indep = vec_param_length; // First element is for frequency
-  bool eval = false;            // Keep track of when a boundary is hit
-  double **jacob = allocate_2D_array(dep, indep);
+  int dep = 2;                   // Output is complex
+  int indep = vec_param_length;  // First element is for frequency
+  bool eval = false;             // Keep track of when a boundary is hit
+  double** jacob = allocate_2D_array(dep, indep);
   for (int k = 0; k < length; k++) {
     vec_parameters[0] = frequency[k];
     for (int n = 0; n < boundary_num; n++) {
@@ -912,8 +909,8 @@ void calculate_derivatives_autodiff(
             waveform_deriv[i][k] +=
                 (jacob[0][vec_param_length - 1] +
                  std::complex<double>(0, 1) *
-                     jacob[1][vec_param_length - 1]) // Time derivative of WF
-                * dt[i + 1][k]; // Derivative of time wrt source parameter
+                     jacob[1][vec_param_length - 1])  // Time derivative of WF
+                * dt[i + 1][k];  // Derivative of time wrt source parameter
           }
         }
         // Mark successful derivative
@@ -970,12 +967,12 @@ void calculate_derivatives_autodiff(
  *
  */
 void time_phase_corrected_derivative_autodiff_numerical(
-    double **dt, int length, double *frequencies,
-    gen_params_base<double> *params, std::string generation_method,
+    double** dt, int length, double* frequencies,
+    gen_params_base<double>* params, std::string generation_method,
     int dimension, bool correct_time) {
   // calculate hessian of phase, take [0][j] components to get the derivative of
   // time
-  int vec_param_length = dimension + 1; //+1 for frequency
+  int vec_param_length = dimension + 1;  //+1 for frequency
   int boundary_num = boundary_number(generation_method);
   double freq_boundaries[boundary_num];
   double grad_freqs[boundary_num];
@@ -995,7 +992,7 @@ void time_phase_corrected_derivative_autodiff_numerical(
   // calculate derivative of phase
   int tapes[boundary_num];
   for (int i = 0; i < boundary_num; i++) {
-    tapes[i] = i * 12; // Random tape id
+    tapes[i] = i * 12;  // Random tape id
     trace_on(tapes[i]);
     adouble avec_parameters[vec_param_length];
     avec_parameters[0] <<= grad_freqs[i];
@@ -1025,11 +1022,11 @@ void time_phase_corrected_derivative_autodiff_numerical(
     trace_off();
     deallocate_non_param_options(&a_parameters, params, generation_method);
   }
-  int indep = vec_param_length; // First element is for frequency
-  bool eval = false;            // Keep track of when a boundary is hit
+  int indep = vec_param_length;  // First element is for frequency
+  bool eval = false;             // Keep track of when a boundary is hit
   int dep = 1;
-  double **jacob = allocate_2D_array(dep, indep);
-  double **source_param_deriv = allocate_2D_array(indep, length);
+  double** jacob = allocate_2D_array(dep, indep);
+  double** source_param_deriv = allocate_2D_array(indep, length);
   for (int k = 0; k < length; k++) {
     vec_parameters[0] = frequencies[k];
     for (int n = 0; n < boundary_num; n++) {
@@ -1099,12 +1096,12 @@ void time_phase_corrected_derivative_autodiff_numerical(
  *
  */
 void time_phase_corrected_derivative_autodiff_full_hess(
-    double **dt, int length, double *frequencies,
-    gen_params_base<double> *params, std::string generation_method,
+    double** dt, int length, double* frequencies,
+    gen_params_base<double>* params, std::string generation_method,
     int dimension, bool correct_time) {
   // calculate hessian of phase, take [0][j] components to get the derivative of
   // time
-  int vec_param_length = dimension + 1; //+1 for frequency
+  int vec_param_length = dimension + 1;  //+1 for frequency
   int boundary_num = boundary_number(generation_method);
   double freq_boundaries[boundary_num];
   double grad_freqs[boundary_num];
@@ -1119,7 +1116,7 @@ void time_phase_corrected_derivative_autodiff_full_hess(
   // calculate derivative of phase
   int tapes[boundary_num];
   for (int i = 0; i < boundary_num; i++) {
-    tapes[i] = i * 12; // Random tape id
+    tapes[i] = i * 12;  // Random tape id
     trace_on(tapes[i]);
     adouble avec_parameters[vec_param_length];
     avec_parameters[0] <<= grad_freqs[i];
@@ -1149,9 +1146,9 @@ void time_phase_corrected_derivative_autodiff_full_hess(
     trace_off();
     deallocate_non_param_options(&a_parameters, params, generation_method);
   }
-  int indep = vec_param_length; // First element is for frequency
-  bool eval = false;            // Keep track of when a boundary is hit
-  double **hess = allocate_2D_array(indep, indep);
+  int indep = vec_param_length;  // First element is for frequency
+  bool eval = false;             // Keep track of when a boundary is hit
+  double** hess = allocate_2D_array(indep, indep);
   for (int k = 0; k < length; k++) {
     vec_parameters[0] = frequencies[k];
     for (int n = 0; n < boundary_num; n++) {
@@ -1208,9 +1205,9 @@ std::string local_generation_method(std::string generation_method) {
  * specific parameters are taken care of in prep_fisher_calculation and detector
  * specific parameters are taken care of here.
  */
-void detect_adjust_parameters(double *freq_boundaries, double *grad_freqs,
-                              int *boundary_num,
-                              gen_params_base<double> *input_params,
+void detect_adjust_parameters(double* freq_boundaries, double* grad_freqs,
+                              int* boundary_num,
+                              gen_params_base<double>* input_params,
                               std::string generation_method,
                               std::string detector, int dim) {
   if (detector == "LISA") {
@@ -1278,10 +1275,10 @@ void detect_adjust_parameters(double *freq_boundaries, double *grad_freqs,
 /*! \brief Unpacks the input gen_params object into a double array for use with
  * the fisher routines
  */
-void unpack_parameters(double *parameters,
-                       gen_params_base<double> *input_params,
+void unpack_parameters(double* parameters,
+                       gen_params_base<double>* input_params,
                        std::string generation_method, int dimension,
-                       bool *log_factors) {
+                       bool* log_factors) {
   if (!input_params->sky_average) {
     if (has_substring(generation_method, "IMRPhenomPv2") ||
         has_substring(generation_method, "IMRPhenomPv3")) {
@@ -1318,8 +1315,8 @@ void unpack_parameters(double *parameters,
         for (int i = 0; i < dimension; i++) {
           log_factors[i] = false;
         }
-        log_factors[6] = true; // Distance
-        log_factors[7] = true; // chirpmass
+        log_factors[6] = true;  // Distance
+        log_factors[7] = true;  // chirpmass
 
         parameters[0] = input_params->RA;
         parameters[1] = input_params->DEC;
@@ -1396,8 +1393,8 @@ void unpack_parameters(double *parameters,
         for (int i = 0; i < dimension; i++) {
           log_factors[i] = false;
         }
-        log_factors[6] = true; // Distance
-        log_factors[7] = true; // chirpmass
+        log_factors[6] = true;  // Distance
+        log_factors[7] = true;  // chirpmass
 
         parameters[0] = input_params->RA;
         parameters[1] = input_params->DEC;
@@ -1466,9 +1463,9 @@ void unpack_parameters(double *parameters,
         for (int i = 0; i < dimension; i++) {
           log_factors[i] = false;
         }
-        log_factors[0] = true; // A0
-        log_factors[3] = true; // chirpmass
-        log_factors[4] = true; // eta
+        log_factors[0] = true;  // A0
+        log_factors[3] = true;  // chirpmass
+        log_factors[4] = true;  // eta
 
         parameters[3] =
             calculate_chirpmass(input_params->mass1, input_params->mass2);
@@ -1491,15 +1488,15 @@ void unpack_parameters(double *parameters,
         if ((input_params->tidal_love)) {
           log_factors[11] = false;
           if (!has_substring(generation_method, "MCMC")) {
-            log_factors[11] = true; // tidal_s
+            log_factors[11] = true;  // tidal_s
           }
           parameters[11] = log(input_params->tidal_s);
         } else {
           log_factors[11] = false;
           log_factors[12] = false;
           if (!has_substring(generation_method, "MCMC")) {
-            log_factors[11] = true; // tidal_1
-            log_factors[12] = true; // tidal_2
+            log_factors[11] = true;  // tidal_1
+            log_factors[12] = true;  // tidal_2
           }
           parameters[11] = log(input_params->tidal1);
           parameters[12] = log(input_params->tidal2);
@@ -1510,15 +1507,15 @@ void unpack_parameters(double *parameters,
         if ((input_params->tidal_love)) {
           log_factors[4] = false;
           if (!has_substring(generation_method, "MCMC")) {
-            log_factors[4] = true; // tidal_s
+            log_factors[4] = true;  // tidal_s
           }
           parameters[4] = log(input_params->tidal_s);
         } else {
           log_factors[4] = false;
           log_factors[5] = false;
           if (!has_substring(generation_method, "MCMC")) {
-            log_factors[4] = true; // tidal_1
-            log_factors[5] = true; // tidal_2
+            log_factors[4] = true;  // tidal_1
+            log_factors[5] = true;  // tidal_2
           }
           parameters[4] = log(input_params->tidal1);
           parameters[5] = log(input_params->tidal2);
@@ -1542,8 +1539,8 @@ void unpack_parameters(double *parameters,
         parameters[dimension - 2] = input_params->alpha2_EA;
         parameters[dimension - 1] = input_params->cbarw_EA;
       } else {
-        if (input_params->EA_region1) { // ctheta = 3c_a(1+delta_ctheta).
-                                        // Sample on ca, delta_ctheta, cw
+        if (input_params->EA_region1) {  // ctheta = 3c_a(1+delta_ctheta).
+                                         // Sample on ca, delta_ctheta, cw
           parameters[dimension - 3] = input_params->ca_EA;
           parameters[dimension - 2] = input_params->delta_ctheta_EA;
           parameters[dimension - 1] = input_params->cw_EA;
@@ -1606,7 +1603,7 @@ void unpack_parameters(double *parameters,
  * specific modifications should go
  */
 template <class T>
-void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params,
+void repack_parameters(T* avec_parameters, gen_params_base<T>* a_params,
                        std::string generation_method, int dim) {
   if (!a_params->sky_average) {
     if (has_substring(generation_method, "IMRPhenomPv2") ||
@@ -1875,8 +1872,8 @@ void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params,
         a_params->alpha2_EA = avec_parameters[dim - 2];
         a_params->cbarw_EA = avec_parameters[dim - 1];
       } else {
-        if (a_params->EA_region1) { // ctheta = 3ca(1 + delta_ctheta). Sample
-                                    // on ca, delta_ctheta, cw
+        if (a_params->EA_region1) {  // ctheta = 3ca(1 + delta_ctheta). Sample
+                                     // on ca, delta_ctheta, cw
           a_params->ca_EA = avec_parameters[dim - 3];
           a_params->delta_ctheta_EA = avec_parameters[dim - 2];
           a_params->cw_EA = avec_parameters[dim - 1];
@@ -1940,8 +1937,8 @@ void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params,
  * If ppE waveform ALLOCATES MEMORY -- MUST be deallocated
  */
 template <class T>
-void repack_non_parameter_options(gen_params_base<T> *waveform_params,
-                                  gen_params_base<double> *input_params,
+void repack_non_parameter_options(gen_params_base<T>* waveform_params,
+                                  gen_params_base<double>* input_params,
                                   std::string gen_method) {
   waveform_params->sky_average = input_params->sky_average;
   waveform_params->tidal_love = input_params->tidal_love;
@@ -1998,16 +1995,16 @@ void repack_non_parameter_options(gen_params_base<T> *waveform_params,
     }
   }
 }
-template void repack_non_parameter_options<double>(gen_params_base<double> *,
-                                                   gen_params_base<double> *,
+template void repack_non_parameter_options<double>(gen_params_base<double>*,
+                                                   gen_params_base<double>*,
                                                    std::string);
-template void repack_non_parameter_options<adouble>(gen_params_base<adouble> *,
-                                                    gen_params_base<double> *,
+template void repack_non_parameter_options<adouble>(gen_params_base<adouble>*,
+                                                    gen_params_base<double>*,
                                                     std::string);
 
 template <class T>
-void deallocate_non_param_options(gen_params_base<T> *waveform_params,
-                                  gen_params_base<double> *input_params,
+void deallocate_non_param_options(gen_params_base<T>* waveform_params,
+                                  gen_params_base<double>* input_params,
                                   std::string gen_method) {
   if (check_mod(gen_method)) {
     // if(has_substring(gen_method, "ppE") ||
@@ -2031,11 +2028,11 @@ void deallocate_non_param_options(gen_params_base<T> *waveform_params,
     }
   }
 }
-template void deallocate_non_param_options<double>(gen_params_base<double> *,
-                                                   gen_params_base<double> *,
+template void deallocate_non_param_options<double>(gen_params_base<double>*,
+                                                   gen_params_base<double>*,
                                                    std::string);
-template void deallocate_non_param_options<adouble>(gen_params_base<adouble> *,
-                                                    gen_params_base<double> *,
+template void deallocate_non_param_options<adouble>(gen_params_base<adouble>*,
+                                                    gen_params_base<double>*,
                                                     std::string);
 
 /*! \brief Subroutine to calculate fisher elements for a subset of the fisher
@@ -2046,19 +2043,19 @@ template void deallocate_non_param_options<adouble>(gen_params_base<adouble> *,
  * Sets non-computed elements to zero
  *
  */
-void calculate_fisher_elements_batch(double *frequency, int length,
+void calculate_fisher_elements_batch(double* frequency, int length,
                                      int base_dimension, int full_dimension,
-                                     std::complex<double> **response_deriv,
-                                     double **output, double *psd,
+                                     std::complex<double>** response_deriv,
+                                     double** output, double* psd,
                                      std::string integration_method,
-                                     double *weights, bool log10_f) {
+                                     double* weights, bool log10_f) {
   // list of modifications
   int mod_list[full_dimension - base_dimension];
   for (int i = base_dimension; i < full_dimension; i++) {
     mod_list[i - base_dimension] = i;
   }
 
-  double *integrand = new double[length];
+  double* integrand = new double[length];
   for (int j = 0; j < full_dimension; j++) {
     for (int k = 0; k < j; k++) {
       // Mod mod element of fisher, set to zero
@@ -2115,12 +2112,12 @@ void calculate_fisher_elements_batch(double *frequency, int length,
   }
   delete[] integrand;
 }
-void calculate_fisher_elements(double *frequency, int length, int dimension,
-                               std::complex<double> **response_deriv,
-                               double **output, double *psd,
-                               std::string integration_method, double *weights,
+void calculate_fisher_elements(double* frequency, int length, int dimension,
+                               std::complex<double>** response_deriv,
+                               double** output, double* psd,
+                               std::string integration_method, double* weights,
                                bool log10_f) {
-  double *integrand = new double[length];
+  double* integrand = new double[length];
   for (int j = 0; j < dimension; j++) {
     for (int k = 0; k < j; k++) {
       for (int i = 0; i < length; i++) {
@@ -2175,16 +2172,16 @@ void calculate_fisher_elements(double *frequency, int length, int dimension,
 }
 
 void calculate_fisher_elements(
-    double **output,                       //< [return] Fisher matrix
-    std::complex<double> **response_deriv, //< Derivatives of the response from
-                                           // calculate_derivatives
-    double *psd,                           //< PSD array
-    int dimension,                         //< Dimension of parameter space
-    Quadrature *quadMethod //< Quadrature class to compute integrals
+    double** output,                        //< [return] Fisher matrix
+    std::complex<double>** response_deriv,  //< Derivatives of the response from
+                                            // calculate_derivatives
+    double* psd,                            //< PSD array
+    int dimension,                          //< Dimension of parameter space
+    Quadrature* quadMethod  //< Quadrature class to compute integrals
 ) {
   // Array for integrand
   int length = quadMethod->get_length();
-  double *integrand = new double[length];
+  double* integrand = new double[length];
 
   // Loop over derivatives
   for (int j = 0; j < dimension; j++) {
@@ -2210,12 +2207,12 @@ void calculate_fisher_elements(
   delete[] integrand;
 }
 // #################################################################
-template void repack_parameters<adouble>(adouble *, gen_params_base<adouble> *,
+template void repack_parameters<adouble>(adouble*, gen_params_base<adouble>*,
                                          std::string, int);
-template void repack_parameters<double>(double *, gen_params_base<double> *,
+template void repack_parameters<double>(double*, gen_params_base<double>*,
                                         std::string, int);
 
-void prep_gsl_subroutine(gsl_subroutine *params_packed) {
+void prep_gsl_subroutine(gsl_subroutine* params_packed) {
   int dimension = params_packed->dim;
   std::string generation_method = params_packed->generation_method;
   std::string detector = params_packed->detector;
@@ -2232,10 +2229,10 @@ void prep_gsl_subroutine(gsl_subroutine *params_packed) {
     params_packed->time_tapes = new int[boundary_num];
     params_packed->phase_tapes = new int[boundary_num];
   }
-  double *freq_boundaries = params_packed->freq_boundaries;
-  double *grad_freqs = params_packed->grad_freqs;
-  bool *log_factors = params_packed->log_factors;
-  gen_params *params = params_packed->gen_params_in;
+  double* freq_boundaries = params_packed->freq_boundaries;
+  double* grad_freqs = params_packed->grad_freqs;
+  bool* log_factors = params_packed->log_factors;
+  gen_params* params = params_packed->gen_params_in;
   if (boundary_num == -1) {
     std::cout << "Error -- unsupported generation method" << std::endl;
     exit(1);
@@ -2247,19 +2244,19 @@ void prep_gsl_subroutine(gsl_subroutine *params_packed) {
   // unpack_parameters(&vec_parameters[1], params, generation_method, dimension,
   // log_factors);
 }
-void tape_phase_gsl_subroutine(gsl_subroutine *params_packed) {
+void tape_phase_gsl_subroutine(gsl_subroutine* params_packed) {
   int boundary_num = params_packed->boundary_num;
-  double *freq_boundaries = params_packed->freq_boundaries;
-  double *grad_freqs = params_packed->grad_freqs;
+  double* freq_boundaries = params_packed->freq_boundaries;
+  double* grad_freqs = params_packed->grad_freqs;
   std::string detector = params_packed->detector;
   std::string generation_method = params_packed->generation_method;
-  gen_params *params = params_packed->gen_params_in;
+  gen_params* params = params_packed->gen_params_in;
   // calculate hessian of phase, take [0][j] components to get the derivative of
   // time
   std::string local_gen_method = local_generation_method(generation_method);
 
   // calculate derivative of phase
-  int *tapes = params_packed->phase_tapes;
+  int* tapes = params_packed->phase_tapes;
   gen_params_base<adouble> aparams;
   transform_parameters(params, &aparams);
   for (int i = 0; i < boundary_num; i++) {
@@ -2301,29 +2298,29 @@ void tape_phase_gsl_subroutine(gsl_subroutine *params_packed) {
     }
   }
 }
-void tape_time_gsl_subroutine(gsl_subroutine *params_packed) {
+void tape_time_gsl_subroutine(gsl_subroutine* params_packed) {
   int id1 = params_packed->id1;
   int id2 = params_packed->id2;
   int dimension = params_packed->dim;
   int boundary_num = params_packed->boundary_num;
-  double *freq_boundaries = params_packed->freq_boundaries;
-  double *grad_freqs = params_packed->grad_freqs;
-  bool *log_factors = params_packed->log_factors;
+  double* freq_boundaries = params_packed->freq_boundaries;
+  double* grad_freqs = params_packed->grad_freqs;
+  bool* log_factors = params_packed->log_factors;
   std::string detector = params_packed->detector;
   std::string generation_method = params_packed->generation_method;
-  gen_params *params = params_packed->gen_params_in;
+  gen_params* params = params_packed->gen_params_in;
   // calculate hessian of phase, take [0][j] components to get the derivative of
   // time
-  int vec_param_length = dimension + 1; //+1 for frequency
+  int vec_param_length = dimension + 1;  //+1 for frequency
   std::string local_gen_method = local_generation_method(generation_method);
   double vec_parameters[vec_param_length];
   unpack_parameters(&vec_parameters[1], params, generation_method, dimension,
                     log_factors);
 
   // calculate derivative of phase
-  int *tapes = params_packed->time_tapes;
+  int* tapes = params_packed->time_tapes;
   for (int i = 0; i < boundary_num; i++) {
-    tapes[i] = (i + 1) * 17; // Random tape id
+    tapes[i] = (i + 1) * 17;  // Random tape id
     trace_on(tapes[i]);
     adouble avec_parameters[vec_param_length];
     avec_parameters[0] <<= grad_freqs[i];
@@ -2354,18 +2351,18 @@ void tape_time_gsl_subroutine(gsl_subroutine *params_packed) {
     deallocate_non_param_options(&a_parameters, params, generation_method);
   }
 }
-void tape_waveform_gsl_subroutine(gsl_subroutine *params_packed) {
+void tape_waveform_gsl_subroutine(gsl_subroutine* params_packed) {
   int id1 = params_packed->id1;
   int id2 = params_packed->id2;
   int dimension = params_packed->dim;
   int boundary_num = params_packed->boundary_num;
-  double *freq_boundaries = params_packed->freq_boundaries;
-  double *grad_freqs = params_packed->grad_freqs;
-  bool *log_factors = params_packed->log_factors;
+  double* freq_boundaries = params_packed->freq_boundaries;
+  double* grad_freqs = params_packed->grad_freqs;
+  bool* log_factors = params_packed->log_factors;
   std::string generation_method = params_packed->generation_method;
   std::string detector = params_packed->detector;
   std::string reference_detector = params_packed->reference_detector;
-  gen_params *parameters = params_packed->gen_params_in;
+  gen_params* parameters = params_packed->gen_params_in;
 
   int vec_param_length = dimension + 1;
   if (detector == "LISA") {
@@ -2377,14 +2374,14 @@ void tape_waveform_gsl_subroutine(gsl_subroutine *params_packed) {
   vec_parameters[0] = grad_freqs[0];
   unpack_parameters(&vec_parameters[1], parameters, generation_method,
                     dimension, log_factors);
-  double *grad_times = NULL;
+  double* grad_times = NULL;
   if (detector == "LISA") {
     grad_times = new double[boundary_num];
     time_phase_corrected_autodiff(grad_times, boundary_num, grad_freqs,
                                   parameters, generation_method, false);
   }
   // calculate_derivative tapes
-  int *tapes = params_packed->waveform_tapes;
+  int* tapes = params_packed->waveform_tapes;
   for (int i = 0; i < boundary_num; i++) {
     tapes[i] = (i + 1) * 7;
     trace_on(tapes[i]);
@@ -2468,19 +2465,19 @@ void tape_waveform_gsl_subroutine(gsl_subroutine *params_packed) {
  * Implements (GSL_INTEG_GAUSS15)
  */
 void fisher_autodiff_gsl_integration(
-    double *frequency_bounds,  /**<Bounds of integration in fourier space*/
+    double* frequency_bounds,  /**<Bounds of integration in fourier space*/
     string generation_method,  /**<Method of waveform generation*/
     string sensitivity_curve,  /**<Sensitivity curve to be used for the PSD --
                                                               MUST BE ANALYTIC*/
     string detector,           /**< Detector to use for the response function*/
     string reference_detector, /**< Detector to use for the response function*/
-    double **output, /**<[out] Output Fisher -- must be preallocated -- shape
+    double** output, /**<[out] Output Fisher -- must be preallocated -- shape
                                             [dimension][dimension]*/
-    double **error, /**<[out] Estimated error, as specified by GSL's integration
+    double** error, /**<[out] Estimated error, as specified by GSL's integration
                                            -- must be preallocated -- shape
                        [dimension][dimension]*/
     int dimension,  /**<Dimension of the Fisher */
-    gen_params *parameters, /**< Generation parameters specifying source
+    gen_params* parameters, /**< Generation parameters specifying source
                                                            parameters and
                                waveform options*/
     double abserr, /**<Target absolute error (0 if this should be ignored -- ONE
@@ -2519,19 +2516,19 @@ void fisher_autodiff_gsl_integration(
  * of errors
  */
 void fisher_autodiff_gsl_integration(
-    double *frequency_bounds,  /**<Bounds of integration in fourier space*/
+    double* frequency_bounds,  /**<Bounds of integration in fourier space*/
     string generation_method,  /**<Method of waveform generation*/
     string sensitivity_curve,  /**<Sensitivity curve to be used for the PSD --
                                                               MUST BE ANALYTIC*/
     string detector,           /**< Detector to use for the response function*/
     string reference_detector, /**< Detector to use for the response function*/
-    double **output, /**<[out] Output Fisher -- must be preallocated -- shape
+    double** output, /**<[out] Output Fisher -- must be preallocated -- shape
                                             [dimension][dimension]*/
-    double **error, /**<[out] Estimated error, as specified by GSL's integration
+    double** error, /**<[out] Estimated error, as specified by GSL's integration
                                            -- must be preallocated -- shape
                        [dimension][dimension]*/
     int dimension,  /**<Dimension of the Fisher */
-    gen_params *parameters, /**< Generation parameters specifying source
+    gen_params* parameters, /**< Generation parameters specifying source
                                                            parameters and
                                waveform options*/
     double abserr, /**<Target absolute error (0 if this should be ignored -- ONE
@@ -2555,7 +2552,7 @@ void fisher_autodiff_gsl_integration(
   double result;
   double err;
   int id1, id2;
-  size_t np = 1e5; // Max number of division
+  size_t np = 1e5;  // Max number of division
   std::ofstream log_file;
   // int *err_rows;
   // int *err_cols;
@@ -2565,7 +2562,7 @@ void fisher_autodiff_gsl_integration(
     // err_rows = new int [dimension];
     // err_cols = new int [dimension];
   }
-  gsl_integration_workspace *w = gsl_integration_workspace_alloc(np);
+  gsl_integration_workspace* w = gsl_integration_workspace_alloc(np);
   for (int i = 0; i < dimension; i++) {
     for (int j = 0; j <= i; j++) {
       // i>j
@@ -2666,20 +2663,20 @@ void fisher_autodiff_gsl_integration(
  * Implements (GSL_INTEG_GAUSS15)
  */
 void fisher_autodiff_gsl_integration_batch_mod(
-    double *frequency_bounds,  /**<Bounds of integration in fourier space*/
+    double* frequency_bounds,  /**<Bounds of integration in fourier space*/
     string generation_method,  /**<Method of waveform generation*/
     string sensitivity_curve,  /**<Sensitivity curve to be used for the PSD --
                                                               MUST BE ANALYTIC*/
     string detector,           /**< Detector to use for the response function*/
     string reference_detector, /**< Detector to use for the response function*/
-    double **output, /**<[out] Output Fisher -- must be preallocated -- shape
+    double** output, /**<[out] Output Fisher -- must be preallocated -- shape
                                             [full_dimension][full_dimension]*/
-    double **error, /**<[out] Estimated error, as specified by GSL's integration
+    double** error, /**<[out] Estimated error, as specified by GSL's integration
                                            -- must be preallocated -- shape
                                            [full_dimension][full_dimension]*/
     int base_dimension,     /**< Dimension of base model (ie GR dimension)*/
     int full_dimension,     /**< Full dimension (GR dimension + Nmod)*/
-    gen_params *parameters, /**< Generation parameters specifying source
+    gen_params* parameters, /**< Generation parameters specifying source
                                                            parameters and
                                waveform options*/
     double abserr, /**<Target absolute error (0 if this should be ignored -- ONE
@@ -2723,20 +2720,20 @@ void fisher_autodiff_gsl_integration_batch_mod(
  * of errors
  */
 void fisher_autodiff_gsl_integration_batch_mod(
-    double *frequency_bounds,  /**<Bounds of integration in fourier space*/
+    double* frequency_bounds,  /**<Bounds of integration in fourier space*/
     string generation_method,  /**<Method of waveform generation*/
     string sensitivity_curve,  /**<Sensitivity curve to be used for the PSD --
                                                               MUST BE ANALYTIC*/
     string detector,           /**< Detector to use for the response function*/
     string reference_detector, /**< Detector to use for the response function*/
-    double **output, /**<[out] Output Fisher -- must be preallocated -- shape
+    double** output, /**<[out] Output Fisher -- must be preallocated -- shape
                                             [full_dimension][full_dimension]*/
-    double **error, /**<[out] Estimated error, as specified by GSL's integration
+    double** error, /**<[out] Estimated error, as specified by GSL's integration
                                            -- must be preallocated -- shape
                                            [full_dimension][full_dimension]*/
     int base_dimension,     /**< Dimension of base model (ie GR dimension)*/
     int full_dimension,     /**< Full dimension (GR dimension + Nmod)*/
-    gen_params *parameters, /**< Generation parameters specifying source
+    gen_params* parameters, /**< Generation parameters specifying source
                                                            parameters and
                                waveform options*/
     double abserr, /**<Target absolute error (0 if this should be ignored -- ONE
@@ -2764,13 +2761,13 @@ void fisher_autodiff_gsl_integration_batch_mod(
   double result;
   double err;
   int id1, id2;
-  size_t np = 1e5; // Max number of division
+  size_t np = 1e5;  // Max number of division
   std::ofstream log_file;
   bool no_err = true;
   if (logerr) {
     log_file.open(error_log);
   }
-  gsl_integration_workspace *w = gsl_integration_workspace_alloc(np);
+  gsl_integration_workspace* w = gsl_integration_workspace_alloc(np);
   for (int i = 0; i < full_dimension; i++) {
     for (int j = 0; j <= i; j++) {
       // i>j
@@ -2860,19 +2857,19 @@ void fisher_autodiff_gsl_integration_batch_mod(
  * frequency deriv(time deriv)
  */
 double calculate_integrand_autodiff_gsl_subroutine(double frequency,
-                                                   void *params_in) {
+                                                   void* params_in) {
   // double start = clock();
-  gsl_subroutine params_packed = *(gsl_subroutine *)params_in;
+  gsl_subroutine params_packed = *(gsl_subroutine*)params_in;
   std::string detector = params_packed.detector;
   std::string reference_detector = params_packed.detector;
   std::string generation_method = params_packed.generation_method;
-  gen_params *parameters = params_packed.gen_params_in;
+  gen_params* parameters = params_packed.gen_params_in;
   std::string sensitivity_curve = params_packed.sensitivity_curve;
-  int *wf_tapes = params_packed.waveform_tapes;
-  int *time_tapes = params_packed.time_tapes;
+  int* wf_tapes = params_packed.waveform_tapes;
+  int* time_tapes = params_packed.time_tapes;
   int boundary_num = params_packed.boundary_num;
-  double *freq_boundaries = params_packed.freq_boundaries;
-  bool *log_factors = params_packed.log_factors;
+  double* freq_boundaries = params_packed.freq_boundaries;
+  bool* log_factors = params_packed.log_factors;
   int id1 = params_packed.id1;
   int id2 = params_packed.id2;
   int dimension = params_packed.dim;
@@ -2882,9 +2879,9 @@ double calculate_integrand_autodiff_gsl_subroutine(double frequency,
   int vec_param_length = dimension + 1;
   int indep;
   if (id1 != id2) {
-    indep = 3; // 2 plus frequency
+    indep = 3;  // 2 plus frequency
   } else {
-    indep = 2; // 1 plus frequency
+    indep = 2;  // 1 plus frequency
   }
   if (detector == "LISA") {
     // take derivative wrt time as well, for the chain rule
@@ -2902,10 +2899,10 @@ double calculate_integrand_autodiff_gsl_subroutine(double frequency,
                                   params_packed.phase_tapes);
   }
   // Evaluate derivative tapes
-  int dep = 2;       // Output is complex
-  bool eval = false; // Keep track of when a boundary is hit
+  int dep = 2;        // Output is complex
+  bool eval = false;  // Keep track of when a boundary is hit
   double indep_vec[indep];
-  double **jacob = allocate_2D_array(dep, indep);
+  double** jacob = allocate_2D_array(dep, indep);
   std::complex<double> dt;
   vec_parameters[0] = frequency;
   indep_vec[0] = frequency;
@@ -2916,13 +2913,13 @@ double calculate_integrand_autodiff_gsl_subroutine(double frequency,
   if (detector == "LISA") {
     indep_vec[indep - 1] = eval_time;
   }
-  double **dt_hess;
+  double** dt_hess;
   for (int n = 0; n < boundary_num; n++) {
     if (indep_vec[0] < freq_boundaries[n]) {
       jacobian(wf_tapes[n], dep, indep, indep_vec, jacob);
 
       if (detector == "LISA") {
-        dt_hess = new double *[indep - 1];
+        dt_hess = new double*[indep - 1];
         for (int j = 0; j < indep - 1; j++) {
           dt_hess[j] = new double[indep - 1];
         }
@@ -2949,10 +2946,10 @@ double calculate_integrand_autodiff_gsl_subroutine(double frequency,
           waveform_deriv[i] +=
               (jacob[0][indep - 1] +
                std::complex<double>(0, 1) *
-                   jacob[1][indep - 1]) // Time derivative of WF
+                   jacob[1][indep - 1])  // Time derivative of WF
               * dt_hess[i + 1][0] /
-              (2 * M_PI); // Derivative of time wrt source parameter -- 2 pi
-                          // from definition of time
+              (2 * M_PI);  // Derivative of time wrt source parameter -- 2 pi
+                           // from definition of time
         }
       }
       if (detector == "LISA") {
@@ -2998,7 +2995,7 @@ double calculate_integrand_autodiff_gsl_subroutine(double frequency,
  */
 void ppE_theory_transformation_calculate_derivatives(
     std::string original_method, std::string new_method, int dimension,
-    int base_dim, gen_params_base<double> *param, double **derivatives) {
+    int base_dim, gen_params_base<double>* param, double** derivatives) {
   double vec_parameters[dimension];
   bool log_factors[dimension];
   unpack_parameters(vec_parameters, param, new_method, dimension, log_factors);
@@ -3040,8 +3037,8 @@ void ppE_theory_transformation_calculate_derivatives(
  */
 void ppE_theory_transformation_jac(std::string original_method,
                                    std::string new_method, int dimension,
-                                   gen_params_base<double> *param,
-                                   double **jac) {
+                                   gen_params_base<double>* param,
+                                   double** jac) {
   // Figure out base dimension from generation method and sky_average flag
   int base_dim;
   if (has_substring(new_method, "PhenomPv2")) {
@@ -3064,7 +3061,7 @@ void ppE_theory_transformation_jac(std::string original_method,
       base_dim += 2;
     }
   }
-  double **derivatives = new double *[dimension - base_dim];
+  double** derivatives = new double*[dimension - base_dim];
   for (int i = 0; i < dimension - base_dim; i++) {
     derivatives[i] = new double[dimension];
   }
@@ -3104,12 +3101,12 @@ void ppE_theory_transformation_jac(std::string original_method,
  */
 void ppE_theory_fisher_transformation(std::string original_method,
                                       std::string new_method, int dimension,
-                                      gen_params_base<double> *param,
-                                      double **old_fisher,
-                                      double **new_fisher) {
-  double **jac = allocate_2D_array(dimension, dimension);
-  double **jacT = allocate_2D_array(dimension, dimension);
-  double **temp_fisher = allocate_2D_array(dimension, dimension);
+                                      gen_params_base<double>* param,
+                                      double** old_fisher,
+                                      double** new_fisher) {
+  double** jac = allocate_2D_array(dimension, dimension);
+  double** jacT = allocate_2D_array(dimension, dimension);
+  double** temp_fisher = allocate_2D_array(dimension, dimension);
   ppE_theory_transformation_jac(original_method, new_method, dimension, param,
                                 jac);
 
@@ -3145,12 +3142,12 @@ void ppE_theory_fisher_transformation(std::string original_method,
  */
 void ppE_theory_covariance_transformation(std::string original_method,
                                           std::string new_method, int dimension,
-                                          gen_params_base<double> *param,
-                                          double **old_cov, double **new_cov) {
-  double **jac = allocate_2D_array(dimension, dimension);
-  double **jac_inverse = allocate_2D_array(dimension, dimension);
-  double **jac_inverseT = allocate_2D_array(dimension, dimension);
-  double **temp_cov = allocate_2D_array(dimension, dimension);
+                                          gen_params_base<double>* param,
+                                          double** old_cov, double** new_cov) {
+  double** jac = allocate_2D_array(dimension, dimension);
+  double** jac_inverse = allocate_2D_array(dimension, dimension);
+  double** jac_inverseT = allocate_2D_array(dimension, dimension);
+  double** temp_cov = allocate_2D_array(dimension, dimension);
   ppE_theory_transformation_jac(original_method, new_method, dimension, param,
                                 jac);
 

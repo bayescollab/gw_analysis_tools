@@ -102,8 +102,19 @@ void IMRPhenomD_NRT_EOS<T>::get_m_love(source_parameters<T>* params) {
   ObservablesIntegrator* integrator =
       new ObservablesIntegrator(*p_of_e, ec1, ec2);
   bool CurvatureCheck;
+
+  /* auto start = std::chrono::system_clock::now(); */
+
   integrator->integrate_for_observables(observables1, observables2,
                                         CurvatureCheck);
+
+  // TODO: (Kaitlyn) Time tests for debugging, remove later.
+  /* auto end = std::chrono::system_clock::now();
+  auto elapsed =
+      std::chrono::duration_cast<std::chrono::milliseconds>(end - start); */
+  /* std::cout << "Integrate for observables elapsed time (milliseconds): "
+            << elapsed.count() << '\n'; */
+
   delete integrator;
   integrator = 0;
   delete p_of_e;
@@ -113,6 +124,12 @@ void IMRPhenomD_NRT_EOS<T>::get_m_love(source_parameters<T>* params) {
   if (CurvatureCheck) {
     std::cout << "This curvature... is bad. Sobs." << std::endl;
   }
+
+  // TODO: (Kaitlyn) For debugging, remove when done
+  /* std::cout << "Mass (1): " << observables1[1]
+            << ", Mass (2): " << observables2[1]
+            << ", Tidal (1): " << observables1[2]
+            << ", Tidal (2): " << observables2[2] << std::endl; */
 
   // Store observables into params structure
   params->mass1 = observables1[1] * MSOL_SEC;
@@ -208,6 +225,16 @@ EOS_Constructor::EOS_Constructor(string EOS_filepath) {
  */
 void EOS_Constructor::get_EOS(Interpolation& p_of_e, double& central_epsilon_1,
                               double& central_epsilon_2) {
+  // TODO: Remove! This is for debugging.
+  double** data = new double*[eos.cs2.size()];
+  for (int i = 0; i < eos.cs2.size(); ++i) {
+    data[i] = new double[2];
+    data[i][0] = eos.cs2[i];
+    data[i][1] = eos.nb[i];
+  }
+
+  write_file("test_eos.csv", data, eos.cs2.size(), 2);
+
   p_of_e.initialize((gsl_interp_type*)gsl_interp_steffen, eos.epsilon,
                     eos.pressure);
 
@@ -313,8 +340,6 @@ void EOS_Constructor::convert_cs2_to_eos() {
 /*                       Bumpy EOS Constructor Functions                      */
 /* -------------------------------------------------------------------------- */
 
-// TODO: (Kaitlyn) Look into optimizing bump injection.
-
 /* ----------------------------- Public Methods ----------------------------- */
 
 /**
@@ -355,6 +380,8 @@ void Bumpy_EOS_Constructor::store_EOS_params(
  *
  */
 void Bumpy_EOS_Constructor::construct_EOS() {
+  /* auto start = std::chrono::system_clock::now(); */
+
   // Get helpful values
   eos_params.bump_start = eos_params.bump_offset - (eos_params.bump_width / 2);
   eos_params.bump_end = eos_params.bump_offset + (eos_params.bump_width / 2);
@@ -384,6 +411,13 @@ void Bumpy_EOS_Constructor::construct_EOS() {
   eos.eps_c2 = e_of_nb->yofx(eos_params.n2);
   delete e_of_nb;
   e_of_nb = 0;
+
+  // TODO: (Kaitlyn) Time tests for debugging, remove later.
+  /* auto end = std::chrono::system_clock::now();
+  auto elapsed =
+      std::chrono::duration_cast<std::chrono::microseconds>(end - start); */
+  /* std::cout << "Build cs2 elapsed time (microseconds): " << elapsed.count()
+            << '\n'; */
 }
 
 /* --------------------------- Protected Functions -------------------------- */
@@ -405,6 +439,7 @@ void Bumpy_EOS_Constructor::build_cs2_one_quad_bump() {
                         eos.epsilon);
   Interpolation p_of_nb((gsl_interp_type*)gsl_interp_steffen, eos.nb,
                         eos.pressure);
+
   // Get value in cs2 of the crust EoS at the transition point
   double f1_n1 = p_of_nb.dyofx(eos_params.bump_start) /
                  e_of_nb.dyofx(eos_params.bump_start);
@@ -412,7 +447,7 @@ void Bumpy_EOS_Constructor::build_cs2_one_quad_bump() {
   // Define parameters for interpolation in nb
   double nb_start = eos.nb.front();
   // How much to step by during the bump
-  double nb_step_bump = 1e2;
+  double nb_step_bump = eos_params.bump_width / 1e3;
   // How much to step by during the plateau
   double nb_step_plat = 1e3;
   // Define an ending value slightly greater than the max central nb value, to
@@ -423,52 +458,35 @@ void Bumpy_EOS_Constructor::build_cs2_one_quad_bump() {
 
   // Simply use the crust prior to the start of the bump
   int i = 0;
-  while ((nb < eos_params.bump_start) && (nb <= eos_params.max_nb) &&
-         (i < eos.nb.size())) {
-    double cs2_value = p_of_nb.dyofx(nb) / e_of_nb.dyofx(nb);
-    eos.cs2.push_back(cs2_value);
+  while ((nb < (eos_params.bump_start - nb_step_bump)) && (nb <= nb_end) &&
+         (i < (eos.nb.size() - 1))) {
+    eos.cs2.push_back(p_of_nb.dyofx(nb) / e_of_nb.dyofx(nb));
     i += 1;
     nb = eos.nb[i];
   }
 
   // Clear rest of SLy nb vector to replace with interpolated points for bump
-  i -= 1;
-  nb += nb_step_bump;
+  nb = eos.nb[i - 1] + nb_step_bump;
   eos.nb.erase(eos.nb.begin() + i, eos.nb.end());
 
-  // Check where the baryon number density should be after the crust
-  if (nb <= eos_params.max_nb) {
-    // Interpolate through rest of nb values
-    while (nb <= nb_end) {
-      // Inject bump values between bump start and end
-      if ((nb >= eos_params.bump_start) && (nb <= eos_params.bump_end)) {
-        eos.cs2.push_back(get_quadratic_bump_point(nb, f1_n1));
-        eos.nb.push_back(nb);
-        nb += nb_step_bump;
-      }
-      // Use plateau values after bump
-      else {
-        eos.cs2.push_back(eos_params.plat);
-        eos.nb.push_back(nb);
-        nb += nb_step_plat;
-      }
+  while (nb <= nb_end) {
+    if (nb < eos_params.bump_start) {
+      eos.cs2.push_back(p_of_nb.dyofx(nb) / e_of_nb.dyofx(nb));
+      eos.nb.push_back(nb);
+      nb += nb_step_bump;
     }
-  } else if (nb >= eos_params.bump_end) {
-    // Add one point in the plateau region.
-    nb = eos_params.max_nb + 100;
-    eos.cs2.push_back(eos_params.plat);
-    eos.nb.push_back(nb);
-  } else if (nb >= eos_params.bump_start) {
-    // Add one point in the bump region.
-    nb = eos_params.max_nb + 100;
-    eos.cs2.push_back(get_quadratic_bump_point(nb, f1_n1));
-    eos.nb.push_back(nb);
-  } else {
-    // Add another crust point.
-    nb = eos_params.max_nb + 100;
-    double cs2_value = p_of_nb.dyofx(nb) / e_of_nb.dyofx(nb);
-    eos.cs2.push_back(cs2_value);
-    eos.nb.push_back(nb);
+    // Inject bump values between bump start and end
+    else if ((eos_params.bump_start <= nb) && (nb <= eos_params.bump_end)) {
+      eos.cs2.push_back(get_quadratic_bump_point(nb, f1_n1));
+      eos.nb.push_back(nb);
+      nb += nb_step_bump;
+    }
+    // Use plateau values after bump
+    else {
+      eos.cs2.push_back(eos_params.plat);
+      eos.nb.push_back(nb);
+      nb += nb_step_plat;
+    }
   }
 }
 
@@ -476,32 +494,52 @@ void Bumpy_EOS_Constructor::build_cs2_one_quad_bump() {
  * @brief Calculates cs^2 value from point in baryon number density for given
  * EoS parameters.
  *
+ * @details Defines a quadratic parabola to calculate cs2 points. The quadratic
+ * is piecewise due to 2 roots resulting from whether the bump magnitude is
+ * greater or less than the cs2 value at the start of the bump. For the purposes
+ * of defining the function, it is useful to consider that the bump_start
+ * parameter is "n1", the bump_end is "n2", and thus the cs2 value at n1 is
+ * "f1_n1" and the plateau is then equivalent to the cs2 value at n2, "f3_n2."
+ * Then, the quadratic is found by simply solving f1_n1 = a1 + a2 n_1 + a3
+ * n_1^2 and f3_n2 = a1 + a2 n_2 + a3 n_2^2 (with the condition that the bump
+ * magnitude is the peak of the parabola).
+ *
  * @param nb Baryon number density at which to evaluate
  * @param f1_n1 Transition point of the bump
  * @return double
  */
 double Bumpy_EOS_Constructor::get_quadratic_bump_point(const double& nb,
                                                        const double& f1_n1) {
-  return -0.25 *
-             ((8 * pow(eos_params.bump_offset, 2) *
-               (-1 + 6 * eos_params.bump_magnitude - 3 * f1_n1)) /
-                  (3. * eos_params.bump_width) -
-              (2 * eos_params.bump_width *
-               (-1 + 6 * eos_params.bump_magnitude - 3 * f1_n1)) /
-                  3. -
-              4 * eos_params.bump_offset * f1_n1 -
-              2 * eos_params.bump_width * f1_n1 +
-              4 * eos_params.bump_offset * eos_params.plat -
-              2 * eos_params.bump_width * eos_params.plat) /
-             eos_params.bump_width -
-         (((-4 * eos_params.bump_offset *
-            (-1 + 6 * eos_params.bump_magnitude - 3 * f1_n1)) /
-               (3. * eos_params.bump_width) +
-           f1_n1 - eos_params.plat) *
-          nb) /
-             eos_params.bump_width -
-         (2 * (-1 + 6 * eos_params.bump_magnitude - 3 * f1_n1) * pow(nb, 2)) /
-             (3. * pow(eos_params.bump_width, 2));
+  // Define helpful constants
+  const double x1 = (nb - eos_params.bump_start);
+  const double x1_2 = x1 * x1;
+
+  const double x2 = (nb - eos_params.bump_end);
+  const double x2_2 = x2 * x2;
+
+  const double x3 = (eos_params.bump_start - eos_params.bump_end);
+  const double x3_2 = x3 * x3;
+
+  // Define unchanged terms in the function
+  const double term1 = eos_params.plat * x1_2;
+  const double term2 = f1_n1 * x2_2;
+  const double term3 = 2 * eos_params.bump_magnitude * x1 * x2;
+  const double unchanged_terms = term1 + term2 - term3;
+
+  // Define the function roots (will change sign depending on conditions)
+  const double func_root = 2 * x1 * x2 *
+                           sqrt((eos_params.bump_magnitude - f1_n1) *
+                                (eos_params.bump_magnitude - eos_params.plat));
+
+  // Calculate value of piecewise function
+  double return_value;
+  if (f1_n1 < eos_params.bump_magnitude) {
+    return_value = (1 / x3_2) * (unchanged_terms - func_root);
+  } else {
+    return_value = (1 / x3_2) * (unchanged_terms + func_root);
+  }
+
+  return return_value;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -524,7 +562,16 @@ double Bumpy_EOS_Constructor::get_quadratic_bump_point(const double& nb,
  */
 ObservablesIntegrator::ObservablesIntegrator(Interpolation& p_of_e, double ec_1,
                                              double ec_2) {
+  /* auto start = std::chrono::system_clock::now(); */
+
   integrate_for_eos_of_h(p_of_e, ec_1, ec_2);
+
+  // TODO: (Kaitlyn) Time tests for debugging, remove later.
+  /* auto end = std::chrono::system_clock::now();
+  auto elapsed =
+      std::chrono::duration_cast<std::chrono::microseconds>(end - start); */
+  /* std::cout << "Integrate for eos(h) elapsed time (microseconds): "
+            << elapsed.count() << '\n'; */
 }
 
 /**
@@ -577,7 +624,7 @@ void ObservablesIntegrator::integrate_for_observables(
   const double M_shift_2 = x2 * e_of_h.yofx(h2_shift);
 
   // Define step sizes
-  double N_steps = 1e5;
+  double N_steps = 5e4;
   double h1_step = -h1 / N_steps;
   double h2_step = -h2 / N_steps;
 
@@ -742,12 +789,12 @@ void ObservablesIntegrator::integrate_for_eos_of_h(Interpolation& p_of_e,
   enthalpy.push_back(h);
 
   // Set step value and end value for integration
-  const double e_stop = std::max(ec_1, ec_2) + 0.01;
-  double delta_e = e_stop / 1e3;
+  const double e_stop = std::max(ec_1, ec_2);
+  double delta_e = 0.1;
 
   // Integrate until e_stop
   while (e < e_stop) {
-    if (e + delta_e >= e_stop) {
+    if (e + delta_e > e_stop) {
       delta_e = e_stop - e;
       // Exit if delta_e is too small to proceed
       if (delta_e < 1e-6) {
@@ -756,12 +803,12 @@ void ObservablesIntegrator::integrate_for_eos_of_h(Interpolation& p_of_e,
       }
     }
 
+    // Calculate needed step in enthalpy
+    double delta_h = delta_e * calculate_dh_of_de(e + delta_e, p_of_e);
+
     // Take a step in the EoS
     e += delta_e;
     p = p_of_e.yofx(e);
-
-    // Calculate needed step in enthalpy
-    double delta_h = delta_e * calculate_dh_of_de(e, p_of_e);
     h += delta_h;
 
     // Add *adimensionalized* values to vectors

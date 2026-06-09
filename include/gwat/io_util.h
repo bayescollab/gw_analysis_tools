@@ -3,6 +3,10 @@
 #include <string>
 #include <unordered_map>
 #include <complex>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <vector>
 
 /*! \file
  *
@@ -18,6 +22,7 @@ int find_datatype(std::string type);
 std::string trim(std::string str);
 void read_file(std::string filename,double **output, int rows, int cols );
 void read_file(std::string filename,int **output, int rows, int cols );
+void read_file(std::string filename, std::vector<std::vector<double>>& output, char delimiter );
 void read_file(std::string filename, double *output );
 void read_file(std::string filename, int *output );
 void write_file(std::string filename, double **input, int rows, int cols);
@@ -56,6 +61,42 @@ void free_LOSC_data(std::complex<double> **data,
 int count_lines_data_file(std::string file, int *count);
 int count_lines_LOSC_PSD_file(std::string file, int *count);
 int count_lines_LOSC_data_file(std::string file, int *count);
+
+
+/*!\brief Utility to read in data
+ *
+ * Takes filename and delimiter of file, and assigns to ROW MAJOR 2D output vector
+ *
+ * File must be delimiter separated entries of the same type as passed in
+ *
+ */
+template<typename T>
+void read_file(std::string filename, /**< input filename, relative to execution directory */
+	std::vector<std::vector<T>>& output, /*< output to store file read-in, passed in by reference*/
+	char delimiter /**< delimiter used in read-in data file */){
+	std::fstream file_in;
+	file_in.open(filename);
+	if(file_in.good()){	// Checks if the file was read in successfully with no errors
+		std::string line;
+		while(std::getline(file_in, line)){	// Reads the current line in the file
+			std::vector<T> row;	// Initializes a row vector to store values
+			std::stringstream lineStream(line);
+			T item;	// Initializes to read an item of value type T (based on the vector that is passed in)
+			while(lineStream >> item){	// Parses for itmes until a new line is read
+				row.push_back(item);	// Adds the currently parsed item to the row vector
+				if(lineStream.peek() == delimiter) // If the next item is the delimiter, ignore it
+				{
+					lineStream.ignore();
+				}
+			}
+			output.push_back(row);	// Adds the row vector to the output table
+		}
+	}
+	else{
+		std::cout<<"ERROR -- File "<<filename<<" not found"<<std::endl;
+		exit(1);
+	}
+}
 
 
 

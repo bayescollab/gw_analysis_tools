@@ -10,15 +10,10 @@
 #include <cmath>
 #include <cstdlib>
 #include <string>
-#include <valarray>
 #include <vector>
 
 #include "IMRPhenomD_NRT.h"
 #include "util.h"
-
-using std::string;
-using std::valarray;
-using std::vector;
 
 /**
  * @file Class that extends the IMRPhenomD_NRT waveform to sample directly on
@@ -84,33 +79,47 @@ class IMRPhenomD_NRT_EOS : public IMRPhenomD_NRT<T> {
 /*                    EoS Constructor Base Class Definition                   */
 /* -------------------------------------------------------------------------- */
 
-/* --------------- Defines a *base class* to construct an EoS. -------------- */
-class EOS_Constructor {
- public:
-  EOS_Constructor(string EOS_filepath);
+// TODO: Format this properly.
 
-  void get_EOS(Interpolation& p_of_e, double& central_epsilon_1,
-               double& central_epsilon_2);
-
- protected:
-  struct EoS_data {
+struct EoS_data {
     // Vectors
-    vector<double> pressure;
-    vector<double> epsilon;
-    vector<double> nb;
-    vector<double> cs2;
+    std::vector<double> pressure;
+    std::vector<double> epsilon;
+    std::vector<double> nb;
+    std::vector<double> cs2;
 
     // Central values to return
     double eps_c1;
     double eps_c2;
   };
 
+  struct crust_EoS {
+    // Vectors
+    std::vector<double> pressure;
+    std::vector<double> epsilon;
+    std::vector<double> nb;
+    std::vector<double> cs2;
+  };
+
+/* --------------- Defines a *base class* to construct an EoS. -------------- */
+class EOS_Constructor {
+ public:
+  // Object to store EoS information
   EoS_data eos;
+  static crust_EoS crust;
+
+  void get_crust(std::string EoS_filepath, std::string pressure_header,
+                 std::string epsilon_header, std::string nb_header);
+  void clear_crust();
+  void clear_EOS();
 
   // Conversion methods
-  void convert_cs2_to_eos();
   double convert_fm3_to_MeV(double x);
   double convert_nsat_to_MeV(double x);
+
+ protected:
+  void convert_crust_to_cs2();
+  void convert_cs2_to_eos(std::size_t start_index);
 };
 
 /* -------------------------------------------------------------------------- */
@@ -122,19 +131,6 @@ class EOS_Constructor {
 /* ----- Defines a class to construct a bumpy EoS from given parameters. ---- */
 class Bumpy_EOS_Constructor : public EOS_Constructor {
  public:
-  // Constructor stores EOS table and converts units
-  Bumpy_EOS_Constructor(string EOS_filepath) : EOS_Constructor(EOS_filepath) {};
-
-  // Functions to store parameters
-  // Need this because of whatever is even happening with GWAT's parameter
-  // objects
-  void store_EOS_params(source_parameters<adouble>* params);
-  void store_EOS_params(source_parameters<double>* params);
-
-  // Injects bump into the EOS
-  virtual void construct_EOS();
-
- protected:
   struct Bumpy_Params {
     double bump_magnitude;
     double bump_width;
@@ -146,10 +142,22 @@ class Bumpy_EOS_Constructor : public EOS_Constructor {
 
     double bump_start;
     double bump_end;
+    double f1_n1;
     double max_nb;
   };
 
   Bumpy_Params eos_params;
+
+  // Methods to store parameters
+  void store_EOS_params(source_parameters<adouble>* params);
+  void store_EOS_params(source_parameters<double>* params);
+  void get_additional_EOS_params();
+
+  // Injects bump into the EOS
+  virtual void construct_EOS();
+
+ protected:
+  std::size_t injection_index;
 
   // Methods to calculate points in cs2 for the quadratic bump
   void build_cs2_one_quad_bump();

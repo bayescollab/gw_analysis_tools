@@ -19,10 +19,12 @@
 #include <gsl/gsl_randist.h>
 #include <math.h>
 
+#include <algorithm>
 #include <cmath>
 #include <complex>
 #include <iostream>
 #include <stdexcept>
+#include <vector>
 
 #include "IMRPhenomD_NRT.h"
 #include "io_util.h"
@@ -77,10 +79,7 @@ int IMRPhenomD_NRT_EOS<T>::construct_waveform(T* frequencies, int length,
 template <class T>
 void IMRPhenomD_NRT_EOS<T>::get_m_love(source_parameters<T>* params) {
   // Define objects needed to store information
-  string eos_filepath = "/opt/gw_analysis_tools/data/eos.csv";
-
-  // Interpolated pressure in terms of epsilon
-  Interpolation* p_of_e = new Interpolation;
+  std::string eos_filepath = "/opt/gw_analysis_tools/data/eos.csv";
 
   // Central epsilon values
   double ec1;
@@ -91,12 +90,18 @@ void IMRPhenomD_NRT_EOS<T>::get_m_love(source_parameters<T>* params) {
   arma::vec::fixed<3> observables2;
 
   // Constructs the bumpy EoS and stores that information in interpolated object
-  Bumpy_EOS_Constructor* eos = new Bumpy_EOS_Constructor(eos_filepath);
-  eos->store_EOS_params(params);
-  eos->construct_EOS();
-  eos->get_EOS(*p_of_e, ec1, ec2);
-  delete eos;
-  eos = 0;
+  Bumpy_EOS_Constructor* bumpy_eos = new Bumpy_EOS_Constructor;
+  bumpy_eos->store_EOS_params(params);
+  bumpy_eos->get_additional_EOS_params();
+  bumpy_eos->construct_EOS();
+  // Interpolated pressure in terms of epsilon
+  Interpolation* p_of_e =
+      new Interpolation((gsl_interp_type*)gsl_interp_steffen,
+                        bumpy_eos->eos.epsilon, bumpy_eos->eos.pressure);
+  ec1 = bumpy_eos->eos.eps_c1;
+  ec2 = bumpy_eos->eos.eps_c2;
+  delete bumpy_eos;
+  bumpy_eos = 0;
 
   // Get observable values
   ObservablesIntegrator* integrator =
@@ -190,59 +195,56 @@ template class IMRPhenomD_NRT_EOS<adouble>;
 
 /* ---------------------------- Public Functions ---------------------------- */
 
+crust_EoS EOS_Constructor::crust;
+
 /**
- * @brief Constructs a new EoS object, initialized with an EoS table.
+ * @brief Read-in and store an EoS table
  *
- * @param EOS_filepath Filepath where the EoS table is stored.
+ * @details Assumes the EoS table is a CSV file with headers and contains
+ * pressure, energy density, and baryon number density.
+ *
+ * @param EoS_filepath Path to file relative to execution directory
+ * @param pressure_header Header for the pressure column in the CSV file
+ * @param epsilon_header Header for the energy density column in the CSV file
+ * @param nb_header Header for the baryon number density column in the CSV file
  */
-EOS_Constructor::EOS_Constructor(string EOS_filepath) {
+void EOS_Constructor::get_crust(std::string EoS_filepath,
+                                std::string pressure_header,
+                                std::string epsilon_header,
+                                std::string nb_header) {
   // Read in EOS table
-  std::vector<std::vector<double>> EOS_Table;
-  read_file(EOS_filepath, EOS_Table, ',');
-  transpose_data_to_column_major(EOS_Table);
+  std::unordered_map<std::string, std::vector<double>> EoS_Table;
+  read_csv(EoS_filepath, EoS_Table, ',', true);
 
   // Convert units to MeV
-  for (int i = 0; i < EOS_Table[4].size(); i++) {
-    EOS_Table[4][i] = convert_fm3_to_MeV(EOS_Table[4][i]);
-  }
+  std::transform(EoS_Table.at(nb_header).begin(), EoS_Table.at(nb_header).end(),
+                 EoS_Table.at(nb_header).begin(),
+                 std::bind(&EOS_Constructor::convert_fm3_to_MeV, this,
+                           std::placeholders::_1));
 
   // Store table information
-  eos.epsilon = EOS_Table[7];
-  eos.pressure = EOS_Table[8];
-  eos.nb = EOS_Table[4];
+  crust.pressure = EoS_Table.at(pressure_header);
+  crust.epsilon = EoS_Table.at(epsilon_header);
+  crust.nb = EoS_Table.at(nb_header);
+  convert_crust_to_cs2();
 }
 
-/**
- * @brief Grabs the EoS from the constructor and stores it in the passed-in
- * objects
- *
- * @param[out] p_of_e GSL object to store the interpolated EoS (pressure as a
- * function of energy density)
- * @param[out] central_epsilon_1 Double to store central energy density of the
- * first star.
- * @param[out] central_epsilon_2 Double to store central energy density of the
- * second star.
- */
-void EOS_Constructor::get_EOS(Interpolation& p_of_e, double& central_epsilon_1,
-                              double& central_epsilon_2) {
-  // TODO: Remove! This is for debugging.
-  /* double** data = new double*[eos.cs2.size()];
-  for (int i = 0; i < eos.cs2.size(); ++i) {
-    data[i] = new double[2];
-    data[i][0] = eos.cs2[i];
-    data[i][1] = eos.nb[i];
-  }
-
-  write_file("test_eos.csv", data, eos.cs2.size(), 2); */
-
-  p_of_e.initialize((gsl_interp_type*)gsl_interp_steffen, eos.epsilon,
-                    eos.pressure);
-
-  central_epsilon_1 = eos.eps_c1;
-  central_epsilon_2 = eos.eps_c2;
+// TODO: Add Doxygen comments.
+void EOS_Constructor::clear_crust() {
+  crust.pressure.clear();
+  crust.epsilon.clear();
+  crust.nb.clear();
+  crust.cs2.clear();
 }
 
-/* --------------------------- Protected Functions -------------------------- */
+void EOS_Constructor::clear_EOS() {
+  eos.pressure.clear();
+  eos.epsilon.clear();
+  eos.nb.clear();
+  eos.cs2.clear();
+  eos.eps_c1 = std::nan("");
+  eos.eps_c2 = std::nan("");
+}
 
 /**
  * @brief Convert value from units of fm^-3 to MeV.
@@ -266,28 +268,42 @@ double EOS_Constructor::convert_nsat_to_MeV(double x) {
   return convert_fm3_to_MeV(x);
 }
 
+/* --------------------------- Protected Functions -------------------------- */
+
+/**
+ * @brief Calculate the speed of sound squared for each entry in the provided
+ * EoS table.
+ *
+ */
+void EOS_Constructor::convert_crust_to_cs2() {
+  Interpolation p_of_e((gsl_interp_type*)gsl_interp_steffen, crust.epsilon,
+                       crust.pressure);
+
+  for (double epsilon : crust.epsilon) {
+    crust.cs2.push_back(p_of_e.dyofx(epsilon));
+  }
+}
+
 /**
  * @brief Convert speed of sound squared values to pressure and energy density
  * values.
  *
- * @details Takes in the pressure and energy density to start calculating for
- * and a list of the baryon number density and cs^2 values to evaluate for. The
- * output vectors are assumed to be empty prior to pass-in. Algorithm assumes
- * that p_base, epsilon_base, and nb_list are all given in units of MeV. All
- * inputs must start at the same baryon number density value.
+ * @param start_index Starting index for the baryon number density
  */
-void EOS_Constructor::convert_cs2_to_eos() {
+void EOS_Constructor::convert_cs2_to_eos(std::size_t start_index) {
   // Get starting points for integration
-  double nb = eos.nb[0];
-  double pressure = eos.pressure[0];
-  double epsilon = eos.epsilon[0];
+  double nb = eos.nb.at(start_index);
+  double pressure = crust.pressure.at(start_index);
+  double epsilon = crust.epsilon.at(start_index);
 
-  // Clear vectors to fill with new EoS data
-  eos.pressure.erase(eos.pressure.begin() + 1, eos.pressure.end());
-  eos.epsilon.erase(eos.epsilon.begin() + 1, eos.epsilon.end());
+  // Copy existing crust data
+  eos.pressure.insert(eos.pressure.begin(), crust.pressure.begin(),
+                       crust.pressure.begin() + start_index);
+  eos.epsilon.insert(eos.epsilon.begin(), crust.epsilon.begin(),
+                      crust.epsilon.begin() + start_index);
 
   // Loop through all baryon number density values and perform integration
-  for (int i = 1; i < eos.nb.size(); i++) {
+  for (int i = (start_index + 1); i < eos.nb.size(); i++) {
     double delta_nb = eos.nb[i] - nb;  // Calculate step size
     double delta_e =
         delta_nb * (epsilon + pressure) / nb;  // Calculate energy delta at step
@@ -341,6 +357,19 @@ void Bumpy_EOS_Constructor::store_EOS_params(
   eos_params.n2 = convert_nsat_to_MeV(params->nbc2);
 }
 
+void Bumpy_EOS_Constructor::get_additional_EOS_params() {
+  // Get additional helpful values to define the bump
+  eos_params.bump_start = eos_params.bump_offset - (eos_params.bump_width / 2);
+  eos_params.bump_end = eos_params.bump_offset + (eos_params.bump_width / 2);
+  eos_params.max_nb = std::max(eos_params.n1, eos_params.n2);
+  Interpolation p_of_nb((gsl_interp_type*)gsl_interp_steffen, crust.nb,
+                        crust.pressure);
+  Interpolation e_of_nb((gsl_interp_type*)gsl_interp_steffen, crust.nb,
+                        crust.epsilon);
+  eos_params.f1_n1 = p_of_nb.dyofx(eos_params.bump_start) /
+                     e_of_nb.dyofx(eos_params.bump_start);
+}
+
 /**
  * @brief Constructs and stores a GSL interpolation object for a bumpy EoS from
  * a given set of parameters.
@@ -349,13 +378,8 @@ void Bumpy_EOS_Constructor::store_EOS_params(
 void Bumpy_EOS_Constructor::construct_EOS() {
   /* auto start = std::chrono::system_clock::now(); */
 
-  // Get helpful values
-  eos_params.bump_start = eos_params.bump_offset - (eos_params.bump_width / 2);
-  eos_params.bump_end = eos_params.bump_offset + (eos_params.bump_width / 2);
-  eos_params.max_nb = std::max(eos_params.n1, eos_params.n2);
-
   // Check for valid inputs
-  if (eos_params.max_nb > eos.nb.back()) {
+  if (eos_params.max_nb > crust.nb.back()) {
     throw std::invalid_argument(
         "Encountered central baryon number density greater than the max value "
         "given in the EOS table. Aborting.");
@@ -365,10 +389,10 @@ void Bumpy_EOS_Constructor::construct_EOS() {
         "interpolation for SLy EoS tables. Aborting.");
   }
 
-  // Build bump in the speed of sound
+  // Build bump in the speed of sound 
   build_cs2_one_quad_bump();
   // Convert speed of sound bump to pressure and epsilon values.
-  convert_cs2_to_eos();
+  convert_cs2_to_eos(injection_index);
 
   // Get central epsilon values
   Interpolation* e_of_nb = new Interpolation;
@@ -401,18 +425,7 @@ void Bumpy_EOS_Constructor::construct_EOS() {
  *
  */
 void Bumpy_EOS_Constructor::build_cs2_one_quad_bump() {
-  // Define interpolations to calculate cs2
-  Interpolation e_of_nb((gsl_interp_type*)gsl_interp_steffen, eos.nb,
-                        eos.epsilon);
-  Interpolation p_of_nb((gsl_interp_type*)gsl_interp_steffen, eos.nb,
-                        eos.pressure);
-
-  // Get value in cs2 of the crust EoS at the transition point
-  double f1_n1 = p_of_nb.dyofx(eos_params.bump_start) /
-                 e_of_nb.dyofx(eos_params.bump_start);
-
   // Define parameters for interpolation in nb
-  double nb_start = eos.nb.front();
   // How much to step by during the bump
   double nb_step_bump = eos_params.bump_width / 1e3;
   // How much to step by during the plateau
@@ -421,30 +434,29 @@ void Bumpy_EOS_Constructor::build_cs2_one_quad_bump() {
   // prevent interpolation errors
   double nb_end = eos_params.max_nb +
                   std::fmod(eos_params.max_nb, nb_step_plat) * nb_step_plat;
-  double nb = nb_start;
+  double nb;
 
   // Simply use the crust prior to the start of the bump
-  int i = 0;
-  while ((nb < (eos_params.bump_start - nb_step_bump)) && (nb <= nb_end) &&
-         (i < (eos.nb.size() - 1))) {
-    eos.cs2.push_back(p_of_nb.dyofx(nb) / e_of_nb.dyofx(nb));
-    i += 1;
-    nb = eos.nb[i];
+  for (int i = 0; i < crust.nb.size(); i++) {
+    nb = crust.nb[i];
+    if (nb >= eos_params.bump_start) {
+      nb = eos_params.bump_start;
+      injection_index = i - 1;
+      break;
+    } else if (nb >= nb_end) {
+      nb = nb_end;
+      injection_index = i - 1;
+      break;
+    } else {
+      eos.cs2.push_back(crust.cs2[i]);
+      eos.nb.push_back(nb);
+    }
   }
 
-  // Clear rest of SLy nb vector to replace with interpolated points for bump
-  nb = eos.nb[i - 1] + nb_step_bump;
-  eos.nb.erase(eos.nb.begin() + i, eos.nb.end());
-
   while (nb <= nb_end) {
-    if (nb < eos_params.bump_start) {
-      eos.cs2.push_back(p_of_nb.dyofx(nb) / e_of_nb.dyofx(nb));
-      eos.nb.push_back(nb);
-      nb += nb_step_bump;
-    }
     // Inject bump values between bump start and end
-    else if ((eos_params.bump_start <= nb) && (nb <= eos_params.bump_end)) {
-      eos.cs2.push_back(get_quadratic_bump_point(nb, f1_n1));
+    if ((eos_params.bump_start <= nb) && (nb <= eos_params.bump_end)) {
+      eos.cs2.push_back(get_quadratic_bump_point(nb, eos_params.f1_n1));
       eos.nb.push_back(nb);
       nb += nb_step_bump;
     }

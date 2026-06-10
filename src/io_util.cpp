@@ -216,53 +216,6 @@ void read_file(
   free(temp);
 }
 
-/*!\brief Utility to read in data
- *
- * Takes filename and delimiter of file, and assigns to ROW MAJOR 2D output
- * vector
- *
- * File must be delimiter separated numerical entries, but can contain NaNs
- *
- * double version
- */
-void read_file(
-    std::string filename, /**< input filename, relative to execution directory*/
-    std::vector<std::vector<double>>&
-        output, /**<[out] vector to store output, dynamic dimensions to store
-                   full table*/
-    char delimiter /**< input delimiter based on data file*/) {
-  std::fstream file_in;
-  file_in.open(filename);
-
-  if (file_in.good()) {  // Checks if the file was read in successfully with no
-                         // errors
-    std::string line;
-    while (std::getline(file_in, line)) {  // Runs until entire file is read
-      std::vector<double> row;             // Row vector to store values
-      std::stringstream lineStream(line);
-      std::string token;
-      while (std::getline(lineStream, token,
-                          delimiter))  // Reads items in line between delimiters
-      {
-        try {
-          double item =
-              std::stod(token);  // Attemps to convert the read item to a double
-          row.push_back(item);
-        } catch (...) {
-          row.push_back(
-              std::nan(""));  // If double conversion fails, inputs NaN
-        }
-      }
-      output.push_back(row);  // Adds the row vector to the output table
-    }
-  }
-
-  else {
-    std::cout << "ERROR -- File " << filename << " not found" << std::endl;
-    exit(1);
-  }
-}
-
 /*!\brief Utility to read in data (single dimension vector)
  *
  * Takes filename, and assigns to output[i*rows + cols]
@@ -327,6 +280,129 @@ void read_file(
     exit(1);
   }
 }
+
+/**
+ * @brief Utility to read in numerical data separated by delimiters
+ *
+ * @details  Due to C++ file reading, this will assign
+ * data to a ROW-MAJOR 2D output vector. Non-numerical data in the input file
+ * will be interpreted as NaN (i.e. any string inputs will be converted to NaN).
+ * THIS MEANS HEADERS IN A CSV FILE WILL BE INPUT AS NAN. To read in CSV files,
+ * you can specify the starting line to skip to or use read_csv.
+ *
+ * @param filename Path to file relative to execution directory
+ * @param output 2D vector to store file data
+ * @param delimiter Character separating data entries
+ * @param skip_line Line to skip to in the file (optional)
+ */
+void read_file(std::string filename, std::vector<std::vector<double>>& output,
+               char delimiter, int start_line) {
+  std::fstream file_in;
+  file_in.open(filename);
+
+  if (file_in.good()) {
+    int skip_count = 0;
+    std::string line;
+    while (std::getline(file_in, line)) {
+      if (skip_count < start_line) {
+        skip_count += 1;
+      } else {
+        std::vector<double> row;
+        std::stringstream lineStream(line);
+        std::string token;
+        while (
+            std::getline(lineStream, token,
+                         delimiter))  // Reads items in line between delimiters
+        {
+          try {
+            double item = std::stod(
+                token);  // Attempt to convert the read item to a double
+            row.push_back(item);
+          } catch (...) {
+            row.push_back(
+                std::nan(""));  // If double conversion fails, input NaN
+          }
+        }
+        output.push_back(row);
+      }
+    }
+  }
+
+  else {
+    std::cout << "ERROR -- File " << filename << " not found" << std::endl;
+    exit(1);
+  }
+}
+
+// TODO: Figure out how to properly document this
+void read_file(std::string filename, std::vector<std::vector<double>>& output,
+               char delimiter) {
+  read_file(filename, output, delimiter, 0);
+}
+
+/**
+ * @brief Utility to read in numerical data in CSV format
+ *
+ * @details Assumes CSV only has one line of headers and data is in numerical
+ * format. Essentially a wrap of @ref read_file(std::string filename,
+ * std::vector<std::vector<double>>& output, char delimiter, int start_line)
+ * "read_file". The header strings are only cleansed for new-line characters,
+ * otherwise they are read as-is between delimiters.
+ *
+ * @param filename Path to file relative to execution directory
+ * @param output Unordered map to store double vectors of data and header string
+ * @param delimiter Character separating data entries
+ * @param headers Bool setting whether or not there are headers
+ */
+void read_csv(std::string filename,
+              std::unordered_map<std::string, std::vector<double>>& output,
+              char delimiter, bool headers) {
+  if (headers) {
+    std::fstream file_in;
+    file_in.open(filename);
+
+    if (file_in.good()) {
+      // Read line of headers, use as keys for unordered map
+      std::vector<std::string> keys;
+      std::string line;
+      std::getline(file_in, line);
+
+      std::stringstream lineStream(line);
+      std::string token;
+      while (std::getline(lineStream, token, delimiter)) {
+        token.erase(std::remove(token.begin(), token.end(), '\n'),
+                    token.cend());
+        token.erase(std::remove(token.begin(), token.end(), '\r'),
+                    token.cend());
+        keys.push_back(token);
+      }
+
+      // Read data, skipping headers
+      std::vector<std::vector<double>> file_data;
+      read_file(filename, file_data, delimiter, 1);
+      transpose_data_to_column_major(file_data);
+
+      for (int i = 0; i < file_data.size(); i++) {
+        output.insert({keys[i], file_data[i]});
+      }
+    } else {
+      std::cout << "ERROR -- File " << filename << " not found" << std::endl;
+      exit(1);
+    }
+  } else {
+    std::vector<std::vector<double>> file_data;
+    read_file(filename, file_data, delimiter);
+    transpose_data_to_column_major(file_data);
+
+    for (int i = 0; i < file_data.size(); i++) {
+      std::string key = std::to_string(i);
+      std::vector<double> value = file_data[i];
+
+      output.insert({key, value});
+    }
+  }
+}
+
 /*! \brief Utility to write 2D array to file
  *
  * Grid of data, comma separated
@@ -833,7 +909,7 @@ void transpose_data_to_column_major(
 //		this->plist = new H5::DSetCreatPropList;
 //		this->plist->setChunk((hsize_t)chunkdims_outer,(hsize_t
 //*)chunkdims); 		if(this->deflate){
-//this->plist->setDeflate(6);
+// this->plist->setDeflate(6);
 //		}
 //		this->DFILE_NAME = DFILE_NAME;
 //		this->DFILE = H5::H5File(this->DFILE_NAME, H5F_ACC_TRUNC);

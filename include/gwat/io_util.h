@@ -22,10 +22,15 @@ int find_datatype(std::string type);
 std::string trim(std::string str);
 void read_file(std::string filename, double** output, int rows, int cols);
 void read_file(std::string filename, int** output, int rows, int cols);
-void read_file(std::string filename, std::vector<std::vector<double>>& output,
-               char delimiter);
 void read_file(std::string filename, double* output);
 void read_file(std::string filename, int* output);
+void read_file(std::string filename, std::vector<std::vector<double>>& output,
+               char delimiter, int start_line);
+void read_file(std::string filename, std::vector<std::vector<double>>& output,
+               char delimiter);
+void read_csv(std::string filename,
+              std::unordered_map<std::string, std::vector<double>>& output,
+              char delimiter, bool headers);
 void write_file(std::string filename, double** input, int rows, int cols);
 void write_file(std::string filename, int** input, int rows, int cols);
 void write_file(std::string filename, double* input, int length);

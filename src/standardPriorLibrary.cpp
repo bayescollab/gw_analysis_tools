@@ -279,14 +279,14 @@ double logPriorStandard_D::eval(bayesship::positionInfo *position, int chainID)
 	//###########
 	if ((pos[0])<PD->RA_bounds[0] || (pos[0])>PD->RA_bounds[1]){ return bayesship::limitInf;}//RA
 	if ((pos[1])<PD->sinDEC_bounds[0] || (pos[1])>PD->sinDEC_bounds[1]){return bayesship::limitInf;}//sinDEC
-	if ((pos[2])<0 || (pos[2])>M_PI){return bayesship::limitInf;}//PSI
-	if ((pos[3])<-1 || (pos[3])>1){return bayesship::limitInf;}//cos \iota
-	if ((pos[4])<0 || (pos[4])>2*M_PI){return bayesship::limitInf;}//phiRef
-	if( pos[5] < (PD->T_merger - .1) || pos[5] > (PD->T_merger + .1)) { return bayesship::limitInf; }
+	if ((pos[2])<PD->PSI_bounds[0] || (pos[2])>PD->PSI_bounds[1]){return bayesship::limitInf;}//PSI
+	if ((pos[3])<PD->ciota_bounds[0] || (pos[3])>PD->ciota_bounds[1]){return bayesship::limitInf;}//cos \iota
+	if ((pos[4])<PD->phi_ref_bounds[0] || (pos[4])>PD->phi_ref_bounds[1]){return bayesship::limitInf;}//phiRef
+	// T_merger
+	if( pos[5] < (PD->T_merger - PD->T_merger_bounds[0]) || pos[5] > (PD->T_merger + PD->T_merger_bounds[1])) { return bayesship::limitInf; }
 	if (std::exp(pos[6])<PD->DL_prior[0] || std::exp(pos[6])>PD->DL_prior[1]){return bayesship::limitInf;}//DL
 	if ((pos[9])<PD->spin1_prior[0] || (pos[9])>PD->spin1_prior[1]){return bayesship::limitInf;}//chi1
 	if ((pos[10])<PD->spin2_prior[0] || (pos[10])>PD->spin2_prior[1]){return bayesship::limitInf;}//chi2
-	//return log(chirpmass_eta_jac(chirp,eta))+3*pos[6] ;
 	return log(aligned_spin_prior(pos[9]))+log(aligned_spin_prior(pos[10])) + log(chirpmass_eta_jac(chirp,eta))+3*pos[6] ;
 
 }
@@ -341,20 +341,20 @@ double logPriorStandard_P::eval(bayesship::positionInfo *position, int chainID)
 	if(m1<PD->mass1_prior[0] || m1>PD->mass1_prior[1]){return bayesship::limitInf;}
 	if(m2<PD->mass2_prior[0] || m2>PD->mass2_prior[1]){return bayesship::limitInf;}
 	//###########
-	if ((pos[0])<PD->RA_bounds[0] || (pos[0])>PD->RA_bounds[1]){ return a;}//RA
-	if ((pos[1])<PD->sinDEC_bounds[0] || (pos[1])>PD->sinDEC_bounds[1]){return a;}//sinDEC
-	if ((pos[2])<PD->PSI_bounds[0] || (pos[2])>PD->PSI_bounds[1]){return a;}//PSI
-	if ((pos[3])<PD->ciota_bounds[0] || (pos[3])>PD->ciota_bounds[1]){return a;}//cos \iota
-	if ((pos[4])<PD->phi_ref_bounds[0] || (pos[4])>PD->phi_ref_bounds[1]){return a;}//phiRef
+	if ((pos[0])<PD->RA_bounds[0] || (pos[0])>PD->RA_bounds[1]){ return bayesship::limitInf;}//RA
+	if ((pos[1])<PD->sinDEC_bounds[0] || (pos[1])>PD->sinDEC_bounds[1]){return bayesship::limitInf;}//sinDEC
+	if ((pos[2])<PD->PSI_bounds[0] || (pos[2])>PD->PSI_bounds[1]){return bayesship::limitInf;}//PSI
+	if ((pos[3])<PD->ciota_bounds[0] || (pos[3])>PD->ciota_bounds[1]){return bayesship::limitInf;}//cos \iota
+	if ((pos[4])<PD->phi_ref_bounds[0] || (pos[4])>PD->phi_ref_bounds[1]){return bayesship::limitInf;}//phiRef
 	// T_merger
-	if( pos[5] < (PD->T_merger - PD->T_merger_bounds[0]) || pos[5] > (PD->T_merger + PD->T_merger_bounds[1])) { return a; }
-	if (std::exp(pos[6])<PD->DL_prior[0] || std::exp(pos[6])>PD->DL_prior[1]){return a;}//DL
-	if ((pos[9])<PD->a1_prior[0] || (pos[9])>PD->a1_prior[1]){return a;}//mag1
-	if ((pos[10])<PD->a2_prior[0] || (pos[10])>PD->a2_prior[1]){return a;}//mag2
-	if ((pos[11])<PD->ctheta1_prior[0] || (pos[11])>PD->ctheta1_prior[1]){return a;}//ctheta1
-	if ((pos[12])<PD->ctheta2_prior[0] || (pos[12])>PD->ctheta2_prior[1]){return a;}//ctheta2
-	if ((pos[13])<PD->phi1_prior[0] || (pos[13])>PD->phi1_prior[1]){return a;}//phi1
-	if ((pos[14])<PD->phi2_prior[0] || (pos[14])>PD->phi2_prior[1]){return a;}//phi2
+	if( pos[5] < (PD->T_merger - PD->T_merger_bounds[0]) || pos[5] > (PD->T_merger + PD->T_merger_bounds[1])) { return bayesship::limitInf; }
+	if (std::exp(pos[6])<PD->DL_prior[0] || std::exp(pos[6])>PD->DL_prior[1]){return bayesship::limitInf;}//DL
+	if ((pos[9])<PD->a1_prior[0] || (pos[9])>PD->a1_prior[1]){return bayesship::limitInf;}//mag1
+	if ((pos[10])<PD->a2_prior[0] || (pos[10])>PD->a2_prior[1]){return bayesship::limitInf;}//mag2
+	if ((pos[11])<PD->ctheta1_prior[0] || (pos[11])>PD->ctheta1_prior[1]){return bayesship::limitInf;}//ctheta1
+	if ((pos[12])<PD->ctheta2_prior[0] || (pos[12])>PD->ctheta2_prior[1]){return bayesship::limitInf;}//ctheta2
+	if ((pos[13])<PD->phi1_prior[0] || (pos[13])>PD->phi1_prior[1]){return bayesship::limitInf;}//phi1
+	if ((pos[14])<PD->phi2_prior[0] || (pos[14])>PD->phi2_prior[1]){return bayesship::limitInf;}//phi2
 	
 	return log(chirpmass_eta_jac(chirp,eta))+3*pos[6] ;
 	

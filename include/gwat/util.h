@@ -10,6 +10,27 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_rng.h>
 //#define adouble double
+
+// libc++ (LLVM/Apple) requires std::complex<T>'s T to satisfy is_floating_point, which adouble
+// does not. This explicit specialization routes std::exp(complex<adouble>) through ADOL-C's
+// global-namespace overloads using the standard Euler-formula definition.
+// libstdc++ (GCC) handles this correctly already, so the guard limits it to libc++ builds.
+#ifdef _LIBCPP_VERSION
+namespace std {
+    // libc++ requires std::complex<T>'s T to satisfy is_floating_point, which adouble does not.
+    // These specializations use unqualified calls so ADL finds ADOL-C's hidden friend overloads
+    // for exp, cos, sin, and atan2 declared inside badouble.
+    template<>
+    inline complex<adouble> exp(const complex<adouble>& z) {
+        adouble r = exp(z.real());
+        return complex<adouble>(r * cos(z.imag()), r * sin(z.imag()));
+    }
+    template<>
+    inline adouble arg(const complex<adouble>& z) {
+        return atan2(z.imag(), z.real());
+    }
+}
+#endif
 /*! \file
  *General utilities (functions and structures) independent of modelling method
  */

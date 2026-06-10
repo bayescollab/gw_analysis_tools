@@ -226,14 +226,14 @@ EOS_Constructor::EOS_Constructor(string EOS_filepath) {
 void EOS_Constructor::get_EOS(Interpolation& p_of_e, double& central_epsilon_1,
                               double& central_epsilon_2) {
   // TODO: Remove! This is for debugging.
-  double** data = new double*[eos.cs2.size()];
+  /* double** data = new double*[eos.cs2.size()];
   for (int i = 0; i < eos.cs2.size(); ++i) {
     data[i] = new double[2];
     data[i][0] = eos.cs2[i];
     data[i][1] = eos.nb[i];
   }
 
-  write_file("test_eos.csv", data, eos.cs2.size(), 2);
+  write_file("test_eos.csv", data, eos.cs2.size(), 2); */
 
   p_of_e.initialize((gsl_interp_type*)gsl_interp_steffen, eos.epsilon,
                     eos.pressure);
@@ -243,39 +243,6 @@ void EOS_Constructor::get_EOS(Interpolation& p_of_e, double& central_epsilon_1,
 }
 
 /* --------------------------- Protected Functions -------------------------- */
-
-/**
- * @brief Converts a row-major 2D vector of doubles to column-major order.
- *
- * @details This is intended primarily for converting read-in CSV file data to
- * column-major order, since default for file-read in is row-major order.
- *
- * @param[inout] vector_to_convert 2D vector of data in row-major order.
- */
-void EOS_Constructor::transpose_data_to_column_major(
-    vector<vector<double>>& vector_to_convert) {
-  // If the row-major vector passed in is empty, exits the function
-  if (vector_to_convert.empty()) {
-    return;
-  }
-
-  std::vector<std::vector<double>> converted_vector;
-
-  // Grab size information
-  size_t num_rows = vector_to_convert.size();
-  size_t num_cols = vector_to_convert[0].size();
-
-  converted_vector.resize(num_cols, vector<double>(num_rows));
-
-  // Perform the transposition
-  for (size_t i = 0; i < num_rows; ++i) {
-    for (size_t j = 0; j < num_cols; ++j) {
-      converted_vector[j][i] = vector_to_convert[i][j];
-    }
-  }
-
-  vector_to_convert = converted_vector;
-}
 
 /**
  * @brief Convert value from units of fm^-3 to MeV.

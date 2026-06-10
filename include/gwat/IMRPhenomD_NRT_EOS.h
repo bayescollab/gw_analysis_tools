@@ -107,8 +107,6 @@ class EOS_Constructor {
 
   EoS_data eos;
 
-  void transpose_data_to_column_major(vector<vector<double>>& vector);
-
   // Conversion methods
   void convert_cs2_to_eos();
   double convert_fm3_to_MeV(double x);

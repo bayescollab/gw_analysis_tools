@@ -1564,13 +1564,6 @@ bayesship::bayesshipSampler *  PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
 		for(int j = 0 ; j<proposalFnN; j++){
 			propProb[i][j]/=sum;
 		}
-		for(int j = 0 ; j<proposalFnN; j++){
-			std::cout<<propProb[i][j]<<", ";
-		}
-		std::cout<<"\n";
-	
-		//std::cout<<propProb[i][0]<<" "<<propProb[i][1]<<" "<<propProb[i][3]<<std::endl;
-
 	}
 	
 	//propProb[0] = 0.05;

@@ -1,9 +1,11 @@
 #include "standardPriorLibrary.h"
+
+#include <bayesship/bayesshipSampler.h>
+#include <bayesship/dataUtilities.h>
+
 #include "EA_IMRPhenomD_NRT.h"
 #include "ppE_utilities.h"
 #include "waveform_generator.h"
-#include <bayesship/bayesshipSampler.h>
-#include <bayesship/dataUtilities.h>
 
 double chirpmass_eta_jac(double chirpmass, double eta) {
   double epsilon = 1e-12;
@@ -35,15 +37,15 @@ bool tidal_love_boundary_violation(double q, double lambda_s) {
   return false;
 }
 
-double EA_current_constraints(bayesship::positionInfo *position,
-                              priorData *PD) {
+double EA_current_constraints(bayesship::positionInfo* position,
+                              priorData* PD) {
   // std::cout<<"Checking EA_constraints"<<std::endl;
 
-  double *pos = position->parameters;
+  double* pos = position->parameters;
   int dim = position->dimension;
 
   source_parameters<double> sp;
-  double lnChirpmass = pos[7]; // ln(M_sol)
+  double lnChirpmass = pos[7];  // ln(M_sol)
   double eta = pos[8];
 
   sp.mass1 = calculate_mass1(std::exp(lnChirpmass) * MSOL_SEC, eta);
@@ -60,23 +62,23 @@ double EA_current_constraints(bayesship::positionInfo *position,
 
   if (PD->tidal_love) {
     if (PD->alpha_param) {
-      sp.alpha1_EA = pos[12]; // alpha1
-      sp.alpha2_EA = pos[13]; // alpha2
-      sp.cbarw_EA = pos[14];  // cbarw
+      sp.alpha1_EA = pos[12];  // alpha1
+      sp.alpha2_EA = pos[13];  // alpha2
+      sp.cbarw_EA = pos[14];   // cbarw
     } else {
-      sp.ca_EA = pos[12];     // ca
-      sp.ctheta_EA = pos[13]; // ctheta
-      sp.cw_EA = pos[14];     // cw
+      sp.ca_EA = pos[12];      // ca
+      sp.ctheta_EA = pos[13];  // ctheta
+      sp.cw_EA = pos[14];      // cw
     }
   } else {
     if (PD->alpha_param) {
-      sp.alpha1_EA = pos[13]; // alpha1
-      sp.alpha2_EA = pos[14]; // alpha2
-      sp.cbarw_EA = pos[15];  // cbarw
+      sp.alpha1_EA = pos[13];  // alpha1
+      sp.alpha2_EA = pos[14];  // alpha2
+      sp.cbarw_EA = pos[15];   // cbarw
     } else {
-      sp.ca_EA = pos[13];     // ca
-      sp.ctheta_EA = pos[14]; // ctheta
-      sp.cw_EA = pos[15];     // cw
+      sp.ca_EA = pos[13];      // ca
+      sp.ctheta_EA = pos[14];  // ctheta
+      sp.cw_EA = pos[15];      // cw
     }
   }
   sp.EA_nan_error_message = false;
@@ -188,10 +190,10 @@ double EA_current_constraints(bayesship::positionInfo *position,
 
 /*! /Brief For adding ppE priors to IMRPhenomD
  */
-double logPriorStandard_D_mod::eval(bayesship::positionInfo *position,
+double logPriorStandard_D_mod::eval(bayesship::positionInfo* position,
                                     int chainID) {
   int dim = position->dimension;
-  double *pos = position->parameters;
+  double* pos = position->parameters;
   int initial_nongr_id = 11;
   for (int i = initial_nongr_id; i < dim; i++) {
     if (pos[i] < PD->mod_priors[i - initial_nongr_id][0] ||
@@ -206,10 +208,10 @@ double logPriorStandard_D_mod::eval(bayesship::positionInfo *position,
 
 /*! /Brief For adding ppE priors to IMRPhenomD_NRT
  */
-double logPriorStandard_D_NRT_mod::eval(bayesship::positionInfo *position,
+double logPriorStandard_D_NRT_mod::eval(bayesship::positionInfo* position,
                                         int chainID) {
   int dim = position->dimension;
-  double *pos = position->parameters;
+  double* pos = position->parameters;
   int initial_nongr_id = 12;
   if (!PD->tidal_love) {
     initial_nongr_id = 13;
@@ -229,30 +231,30 @@ double logPriorStandard_D_NRT_mod::eval(bayesship::positionInfo *position,
 /*! /Brief Adding Einstein-Aether (AE) priors -- more complicated as constraints
  * are on functions of the AE parameters
  */
-double logPriorStandard_D_NRT_EA::eval(bayesship::positionInfo *position,
+double logPriorStandard_D_NRT_EA::eval(bayesship::positionInfo* position,
                                        int chainID) {
   int dim = position->dimension;
-  double *pos = position->parameters;
+  double* pos = position->parameters;
   if (PD->tidal_love) {
     if (pos[12] < PD->EA_prior[0] || pos[12] > PD->EA_prior[1]) {
       return bayesship::limitInf;
-    } // ca or alpha1
+    }  // ca or alpha1
     if (pos[13] < PD->EA_prior[2] || pos[13] > PD->EA_prior[3]) {
       return bayesship::limitInf;
-    } // ctheta or alpha2
+    }  // ctheta or alpha2
     if (pos[14] < PD->EA_prior[4] || pos[14] > PD->EA_prior[5]) {
       return bayesship::limitInf;
-    } // cw or cbarw
+    }  // cw or cbarw
   } else {
     if (pos[13] < PD->EA_prior[0] || pos[13] > PD->EA_prior[1]) {
       return bayesship::limitInf;
-    } // ca or alpha1
+    }  // ca or alpha1
     if (pos[14] < PD->EA_prior[2] || pos[14] > PD->EA_prior[3]) {
       return bayesship::limitInf;
-    } // ctheta or alpha2
+    }  // ctheta or alpha2
     if (pos[15] < PD->EA_prior[4] || pos[15] > PD->EA_prior[5]) {
       return bayesship::limitInf;
-    } // cw or cbarw
+    }  // cw or cbarw
   }
 
   double NS = logPriorStandard_D_NRT::eval(position, chainID);
@@ -269,14 +271,14 @@ double logPriorStandard_D_NRT_EA::eval(bayesship::positionInfo *position,
 
 /*! /Brief Sampling on the log tidal_s (universal relations give you tidal_a)
  */
-double logPriorStandard_D_NRT::eval(bayesship::positionInfo *position,
+double logPriorStandard_D_NRT::eval(bayesship::positionInfo* position,
                                     int chainID) {
   int dim = position->dimension;
-  double *pos = position->parameters;
+  double* pos = position->parameters;
   double chirp = exp(pos[7]);
   double m1 = calculate_mass1(chirp, pos[8]);
   double m2 = calculate_mass2(chirp, pos[8]);
-  double q = m2 / m1; //<1
+  double q = m2 / m1;  //<1
   double factor = 0;
   if (PD->tidal_love) {
     if (exp(pos[11]) < PD->tidal_s_prior[0] ||
@@ -303,17 +305,17 @@ double logPriorStandard_D_NRT::eval(bayesship::positionInfo *position,
   return logPriorStandard_D::eval(position, chainID) + factor;
 }
 
-double logPriorStandard_D::eval(bayesship::positionInfo *position,
+double logPriorStandard_D::eval(bayesship::positionInfo* position,
                                 int chainID) {
   int dim = position->dimension;
 
-  double *pos = position->parameters;
+  double* pos = position->parameters;
   // ###########
   double chirp = exp(pos[7]);
   double eta = pos[8];
   if (eta < .0 || eta > .25) {
     return bayesship::limitInf;
-  } // eta
+  }  // eta
   double m1 = calculate_mass1(chirp, eta);
   double m2 = calculate_mass2(chirp, eta);
   if (m1 < PD->mass1_prior[0] || m1 > PD->mass1_prior[1]) {
@@ -325,42 +327,43 @@ double logPriorStandard_D::eval(bayesship::positionInfo *position,
   // ###########
   if ((pos[0]) < PD->RA_bounds[0] || (pos[0]) > PD->RA_bounds[1]) {
     return bayesship::limitInf;
-  } // RA
+  }  // RA
   if ((pos[1]) < PD->sinDEC_bounds[0] || (pos[1]) > PD->sinDEC_bounds[1]) {
     return bayesship::limitInf;
-  } // sinDEC
-  if ((pos[2]) < 0 || (pos[2]) > M_PI) {
+  }  // sinDEC
+  if ((pos[2]) < PD->PSI_bounds[0] || (pos[2]) > PD->PSI_bounds[1]) {
     return bayesship::limitInf;
-  } // PSI
-  if ((pos[3]) < -1 || (pos[3]) > 1) {
+  }  // PSI
+  if ((pos[3]) < PD->ciota_bounds[0] || (pos[3]) > PD->ciota_bounds[1]) {
     return bayesship::limitInf;
-  } // cos \iota
-  if ((pos[4]) < 0 || (pos[4]) > 2 * M_PI) {
+  }  // cos \iota
+  if ((pos[4]) < PD->phi_ref_bounds[0] || (pos[4]) > PD->phi_ref_bounds[1]) {
     return bayesship::limitInf;
-  } // phiRef
-  if (pos[5] < (PD->T_merger - .1) || pos[5] > (PD->T_merger + .1)) {
+  }  // phiRef
+  // T_merger
+  if (pos[5] < (PD->T_merger - PD->T_merger_bounds[0]) ||
+      pos[5] > (PD->T_merger + PD->T_merger_bounds[1])) {
     return bayesship::limitInf;
   }
   if (std::exp(pos[6]) < PD->DL_prior[0] ||
       std::exp(pos[6]) > PD->DL_prior[1]) {
     return bayesship::limitInf;
-  } // DL
+  }  // DL
   if ((pos[9]) < PD->spin1_prior[0] || (pos[9]) > PD->spin1_prior[1]) {
     return bayesship::limitInf;
-  } // chi1
+  }  // chi1
   if ((pos[10]) < PD->spin2_prior[0] || (pos[10]) > PD->spin2_prior[1]) {
     return bayesship::limitInf;
-  } // chi2
-  // return log(chirpmass_eta_jac(chirp,eta))+3*pos[6] ;
+  }  // chi2
   return log(aligned_spin_prior(pos[9])) + log(aligned_spin_prior(pos[10])) +
          log(chirpmass_eta_jac(chirp, eta)) + 3 * pos[6];
 }
 
-double logPriorStandard_D_NRT_EOS::eval(bayesship::positionInfo *position,
+double logPriorStandard_D_NRT_EOS::eval(bayesship::positionInfo* position,
                                         int chainID) {
   int dim = position->dimension;
 
-  double *pos = position->parameters;
+  double* pos = position->parameters;
   // ###########
   // double chirp = exp(pos[7]);
   // double eta = pos[8];
@@ -376,46 +379,46 @@ double logPriorStandard_D_NRT_EOS::eval(bayesship::positionInfo *position,
   // ###########
   if ((pos[0]) < PD->RA_bounds[0] || (pos[0]) > PD->RA_bounds[1]) {
     return bayesship::limitInf;
-  } // RA
+  }  // RA
   if ((pos[1]) < PD->sinDEC_bounds[0] || (pos[1]) > PD->sinDEC_bounds[1]) {
     return bayesship::limitInf;
-  } // sinDEC
+  }  // sinDEC
   if ((pos[2]) < 0 || (pos[2]) > M_PI) {
     return bayesship::limitInf;
-  } // PSI
+  }  // PSI
   if ((pos[3]) < -1 || (pos[3]) > 1) {
     return bayesship::limitInf;
-  } // cos \iota
+  }  // cos \iota
   if ((pos[4]) < 0 || (pos[4]) > 2 * M_PI) {
     return bayesship::limitInf;
-  } // phiRef
+  }  // phiRef
   if (pos[5] < (PD->T_merger - .1) || pos[5] > (PD->T_merger + .1)) {
     return bayesship::limitInf;
   }
   if (std::exp(pos[6]) < PD->DL_prior[0] ||
       std::exp(pos[6]) > PD->DL_prior[1]) {
     return bayesship::limitInf;
-  } // DL
+  }  // DL
   if ((pos[9]) < PD->spin1_prior[0] || (pos[9]) > PD->spin1_prior[1]) {
     return bayesship::limitInf;
-  } // chi1
+  }  // chi1
   if ((pos[10]) < PD->spin2_prior[0] || (pos[10]) > PD->spin2_prior[1]) {
     return bayesship::limitInf;
-  } // chi2
+  }  // chi2
   // ###########
   if ((pos[11]) < PD->EOS_prior[0] || (pos[11]) > PD->EOS_prior[1]) {
     return bayesship::limitInf;
-  } // bump_mag
+  }  // bump_mag
   if ((pos[12]) < PD->EOS_prior[2] || (pos[12]) > PD->EOS_prior[3]) {
     return bayesship::limitInf;
-  } // bump_width
+  }  // bump_width
   if ((pos[13]) < PD->EOS_prior[4] || (pos[13]) > PD->EOS_prior[5]) {
     return bayesship::limitInf;
-  } // bump_offset
+  }  // bump_offset
   if (PD->EOS_plat_flag) {
     if ((pos[14]) < PD->EOS_prior[6] || (pos[14]) > PD->EOS_prior[7]) {
       return bayesship::limitInf;
-    } // plat
+    }  // plat
   }
   if ((pos[13] - (pos[12] / 2)) <= 0.500) {
     return bayesship::limitInf;
@@ -425,17 +428,17 @@ double logPriorStandard_D_NRT_EOS::eval(bayesship::positionInfo *position,
          3 * pos[6];
 }
 
-double logPriorStandard_P::eval(bayesship::positionInfo *position,
+double logPriorStandard_P::eval(bayesship::positionInfo* position,
                                 int chainID) {
   int dim = position->dimension;
 
-  double *pos = position->parameters;
+  double* pos = position->parameters;
   // ###########
   double chirp = exp(pos[7]);
   double eta = pos[8];
   if (eta < .0 || eta > .25) {
     return bayesship::limitInf;
-  } // eta
+  }  // eta
   double m1 = calculate_mass1(chirp, eta);
   double m2 = calculate_mass2(chirp, eta);
   if (m1 < PD->mass1_prior[0] || m1 > PD->mass1_prior[1]) {
@@ -447,19 +450,19 @@ double logPriorStandard_P::eval(bayesship::positionInfo *position,
   // ###########
   if ((pos[0]) < PD->RA_bounds[0] || (pos[0]) > PD->RA_bounds[1]) {
     return bayesship::limitInf;
-  } // RA
+  }  // RA
   if ((pos[1]) < PD->sinDEC_bounds[0] || (pos[1]) > PD->sinDEC_bounds[1]) {
     return bayesship::limitInf;
-  } // sinDEC
+  }  // sinDEC
   if ((pos[2]) < PD->PSI_bounds[0] || (pos[2]) > PD->PSI_bounds[1]) {
     return bayesship::limitInf;
-  } // PSI
+  }  // PSI
   if ((pos[3]) < PD->ciota_bounds[0] || (pos[3]) > PD->ciota_bounds[1]) {
     return bayesship::limitInf;
-  } // cos \iota
+  }  // cos \iota
   if ((pos[4]) < PD->phi_ref_bounds[0] || (pos[4]) > PD->phi_ref_bounds[1]) {
     return bayesship::limitInf;
-  } // phiRef
+  }  // phiRef
   // T_merger
   if (pos[5] < (PD->T_merger - PD->T_merger_bounds[0]) ||
       pos[5] > (PD->T_merger + PD->T_merger_bounds[1])) {
@@ -468,33 +471,33 @@ double logPriorStandard_P::eval(bayesship::positionInfo *position,
   if (std::exp(pos[6]) < PD->DL_prior[0] ||
       std::exp(pos[6]) > PD->DL_prior[1]) {
     return bayesship::limitInf;
-  } // DL
+  }  // DL
   if ((pos[9]) < PD->a1_prior[0] || (pos[9]) > PD->a1_prior[1]) {
     return bayesship::limitInf;
-  } // mag1
+  }  // mag1
   if ((pos[10]) < PD->a2_prior[0] || (pos[10]) > PD->a2_prior[1]) {
     return bayesship::limitInf;
-  } // mag2
+  }  // mag2
   if ((pos[11]) < PD->ctheta1_prior[0] || (pos[11]) > PD->ctheta1_prior[1]) {
     return bayesship::limitInf;
-  } // ctheta1
+  }  // ctheta1
   if ((pos[12]) < PD->ctheta2_prior[0] || (pos[12]) > PD->ctheta2_prior[1]) {
     return bayesship::limitInf;
-  } // ctheta2
+  }  // ctheta2
   if ((pos[13]) < PD->phi1_prior[0] || (pos[13]) > PD->phi1_prior[1]) {
     return bayesship::limitInf;
-  } // phi1
+  }  // phi1
   if ((pos[14]) < PD->phi2_prior[0] || (pos[14]) > PD->phi2_prior[1]) {
     return bayesship::limitInf;
-  } // phi2
+  }  // phi2
 
   return log(chirpmass_eta_jac(chirp, eta)) + 3 * pos[6];
 }
 
-double logPriorStandard_P_mod::eval(bayesship::positionInfo *position,
+double logPriorStandard_P_mod::eval(bayesship::positionInfo* position,
                                     int chainID) {
   int dim = position->dimension;
-  double *pos = position->parameters;
+  double* pos = position->parameters;
   int initial_nongr_id = 15;
   for (int i = initial_nongr_id; i < dim; i++) {
     if (pos[i] < PD->mod_priors[i - initial_nongr_id][0] ||
@@ -507,14 +510,14 @@ double logPriorStandard_P_mod::eval(bayesship::positionInfo *position,
   return PhenomP;
 }
 
-double logPriorStandard_P_NRT::eval(bayesship::positionInfo *position,
+double logPriorStandard_P_NRT::eval(bayesship::positionInfo* position,
                                     int chainID) {
   int dim = position->dimension;
-  double *pos = position->parameters;
+  double* pos = position->parameters;
   double chirp = exp(pos[7]);
   double m1 = calculate_mass1(chirp, pos[8]);
   double m2 = calculate_mass2(chirp, pos[8]);
-  double q = m2 / m1; //<1
+  double q = m2 / m1;  //<1
   double factor = 0;
   if (PD->tidal_love) {
     if (exp(pos[15]) < PD->tidal_s_prior[0] ||
@@ -541,10 +544,10 @@ double logPriorStandard_P_NRT::eval(bayesship::positionInfo *position,
   return logPriorStandard_P::eval(position, chainID) + factor;
 }
 
-double logPriorStandard_P_NRT_mod::eval(bayesship::positionInfo *position,
+double logPriorStandard_P_NRT_mod::eval(bayesship::positionInfo* position,
                                         int chainID) {
   int dim = position->dimension;
-  double *pos = position->parameters;
+  double* pos = position->parameters;
   int initial_nongr_id = 16;
   if (!PD->tidal_love) {
     initial_nongr_id = 17;

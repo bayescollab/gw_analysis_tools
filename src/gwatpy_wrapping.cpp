@@ -10,7 +10,7 @@
 #include "mcmc_sampler.h"
 #include "mcmc_sampler_internals.h"
 #include "fisher.h"
-#include <bits/stdc++.h> 
+#include <cstring>
 
 
 void detector_response_equatorial_py(char *detector,

@@ -584,7 +584,7 @@ int mcmc_sampler_output::write_flat_thin_output(std::string filename, bool use_s
 		H5::DataSpace *dataspace=NULL ;
 		H5::DataSet *dataset=NULL;
 		H5::DSetCreatPropList *plist=NULL;
-		hsize_t chunk_dims[2] = {chunk_steps,dimension};	
+		hsize_t chunk_dims[2] = {(hsize_t)chunk_steps,(hsize_t)dimension};
 		int RANK=2;
 		hsize_t dims[RANK];
 		dims[0]= indep_samples;
@@ -711,10 +711,10 @@ int mcmc_sampler_output::create_data_dump(bool cold_only, bool trim,std::string 
 		H5::DSetCreatPropList *plist_ll_lp=NULL;
 		H5::DSetCreatPropList *plist_status=NULL;
 		H5::DSetCreatPropList *plist_model_status=NULL;
-		hsize_t chunk_dims[2] = {chunk_steps,dimension};	
-		hsize_t chunk_dims_ll_lp[2] = {chunk_steps,2};	
-		hsize_t chunk_dims_status[2] = {chunk_steps,2};	
-		hsize_t chunk_dims_model_status[2] = {chunk_steps,2};	
+		hsize_t chunk_dims[2] = {(hsize_t)chunk_steps,(hsize_t)dimension};
+		hsize_t chunk_dims_ll_lp[2] = {(hsize_t)chunk_steps,2};
+		hsize_t chunk_dims_status[2] = {(hsize_t)chunk_steps,2};
+		hsize_t chunk_dims_model_status[2] = {(hsize_t)chunk_steps,2};
 		hsize_t max_dims[2] = {H5S_UNLIMITED,H5S_UNLIMITED};
 		for(int i = 0 ; i<chains; i++){
 			int RANK=2;
@@ -1049,10 +1049,10 @@ int mcmc_sampler_output::append_to_data_dump( std::string filename)
 		H5::DSetCreatPropList *plist_ll_lp=NULL;
 		H5::DSetCreatPropList *plist_status=NULL;
 		H5::DSetCreatPropList *plist_model_status=NULL;
-		hsize_t chunk_dims[2] = {chunk_steps,dimension};	
-		hsize_t chunk_dims_ll_lp[2] = {chunk_steps,2};	
-		hsize_t chunk_dims_status[2] = {chunk_steps,dimension};	
-		hsize_t chunk_dims_model_status[2] = {chunk_steps,nested_model_number};	
+		hsize_t chunk_dims[2] = {(hsize_t)chunk_steps,(hsize_t)dimension};
+		hsize_t chunk_dims_ll_lp[2] = {(hsize_t)chunk_steps,2};
+		hsize_t chunk_dims_status[2] = {(hsize_t)chunk_steps,(hsize_t)dimension};
+		hsize_t chunk_dims_model_status[2] = {(hsize_t)chunk_steps,(hsize_t)nested_model_number};
 		hsize_t max_dims[2] = {H5S_UNLIMITED,H5S_UNLIMITED};
 		for(int i = 0 ; i<chains; i++){
 			dataset = new H5::DataSet(output_group.openDataSet("CHAIN "+std::to_string(ids[i])));

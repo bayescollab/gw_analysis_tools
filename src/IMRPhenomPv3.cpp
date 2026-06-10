@@ -28,6 +28,10 @@ int IMRPhenomPv3<T>::construct_waveform(T *frequencies, /**< T array of frequenc
     const std::complex<T> I (0.,1.);
     const T half = 0.5;
 
+    // Zero out the polarization arrays
+    std::fill(waveform_plus, waveform_plus+length, std::complex<T> (0.));
+    std::fill(waveform_cross, waveform_cross+length, std::complex<T> (0.));
+
     /* Store useful variables and compute derived and frequency independent variables */
     PhenomPv3Storage<T> *pv3storage;
     pv3storage = (PhenomPv3Storage<T> *)malloc(sizeof(PhenomPv3Storage<T>));
@@ -38,13 +42,21 @@ int IMRPhenomPv3<T>::construct_waveform(T *frequencies, /**< T array of frequenc
     T deltaF = -1; // for PhenomPv3Storage
     T m1 = params->mass1 / MSOL_SEC;
     T m2 = params->mass2 / MSOL_SEC;
-    init_PhenomPv3_Storage(pv3storage, pAngles,
+    int status = init_PhenomPv3_Storage(pv3storage, pAngles,
         m1, m2,
         params->spin1x, params->spin1y, params->spin1z,
         params->spin2x, params->spin2y, params->spin2z,
         params->DL, params->incl_angle, params->phiRef,
-        deltaF, frequencies[0], frequencies[length-1], params->f_ref);
+        deltaF, frequencies[0], frequencies[length-1], params->f_ref
+    );
+    if (!status)
+    {
+        std::cerr << "Error at init_PhenomPv3_Storage\n";
+        return 0;
+    }
+    
 
+    
     T phiHarm = 0.;
     sph_harm<T> *Y2m = (sph_harm<T> *)malloc(sizeof(sph_harm<T>));
     IMRPhenomPv3InitY2m(Y2m, params->thetaJN, phiHarm);
@@ -70,10 +82,6 @@ int IMRPhenomPv3<T>::construct_waveform(T *frequencies, /**< T array of frequenc
 	this->assign_static_pn_phase_coeff(params, pn_phase_coeffs);	
 	this->amp_connection_coeffs(params,&lambda,pn_amp_coeffs,deltas);
 	this->phase_connection_coefficients(params,&lambda,pn_phase_coeffs);
-
-    // Zero out the polarization arrays
-    std::fill(waveform_plus, waveform_plus+length, std::complex<T> (0.));
-    std::fill(waveform_cross, waveform_cross+length, std::complex<T> (0.));
 
     // Set up useful quantities
     const T Msec = params->M; // total mass in sec
@@ -128,7 +136,7 @@ int IMRPhenomPv3<T>::construct_waveform(T *frequencies, /**< T array of frequenc
         std::complex<T> Ystar = conj(Y2m->Y2m2);
         hp_proj = Y + Ystar;
         hc_proj = Y - Ystar;
-        hc_proj *= I;
+        hc_proj *= -I;
 
         // Store the polarizations
         for (int j = 0; j<lengthCut; j++)
@@ -163,7 +171,7 @@ int IMRPhenomPv3<T>::construct_waveform(T *frequencies, /**< T array of frequenc
 
             // Store the polarizations
             waveform_plus[j] += half_amp_eps * hp_proj;
-            waveform_cross[j] += half_amp_eps * hc_proj;
+            waveform_cross[j] -= half_amp_eps * hc_proj;
         }
     }
     

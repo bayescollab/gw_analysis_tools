@@ -149,13 +149,13 @@ template <class T> void PhenomP_ParametersFromSourceFrame(
 
 template <class T> void PhenomPv3_Param_Transform(source_parameters<T> *out, gen_params_base<T> *in);
 
-template <class T> void InitializePrecession(
+template <class T> int InitializePrecession(
     sysprecquant<T>* system,
     const T m1, const T m2, const T mul, const T phl, const T mu1, const T ph1,
     const T ch1, const T mu2, const T ph2, const T ch2, const T f_0,
     const int ExpansionOrder);
 
-template <class T> void init_PhenomPv3_Storage(PhenomPv3Storage<T> *p,  sysprecquant<T> *pAngles,
+template <class T> int init_PhenomPv3_Storage(PhenomPv3Storage<T> *p,  sysprecquant<T> *pAngles,
     T m1, T m2,
     T S1x, T S1y, T S1z,
     T S2x, T S2y, T S2z,

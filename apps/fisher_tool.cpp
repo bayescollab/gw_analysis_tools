@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 	}
 	//std::cout<<std::endl;
 	int Nmod = 0; double *bppe = NULL; double *betappe = NULL;
-	if(gen_method.find("ppE") != std::string::npos){
+	if(has_substring(gen_method, "ppE")){
 		Nmod = int_dict["Number of Modifications"];	
 		bppe = new double[Nmod];
 		betappe = new double[Nmod];
@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
 	
 	write_file(str_dict["Output File Path"], fisher, dim,dim);
 
-	if(gen_method.find("ppE") != std::string::npos){
+	if(has_substring(gen_method, "ppE")){
 		delete [] bppe;
 		delete [] betappe;
 	}

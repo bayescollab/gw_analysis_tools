@@ -1754,8 +1754,10 @@ void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params, std::st
 				a_params->phip = avec_parameters[12];
 			}
 		}
-		else if(has_substring(generation_method, "EFPE"){
-		    if(has_substring(generation_method, "MCMC"){
+		else if(has_substring(generation_method, "EFPE"))
+		{
+		  if(has_substring(generation_method, "MCMC"))
+		    {
 				a_params->mass1 = calculate_mass1(exp(avec_parameters[7]),
 					avec_parameters[8]);
 				a_params->mass2 = calculate_mass2(exp(avec_parameters[7]),

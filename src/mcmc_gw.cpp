@@ -3284,7 +3284,6 @@ void RJMCMC_2WF_fisher_wrapper(
 		fisher[9][9] += 1./4;//spin1
 		fisher[10][10] += 1./4;//spin2
 		if(has_substring(mcmc_generation_method_base, "PhenomPv2") || has_substring(mcmc_generation_method_base, "PhenomPv3") || has_substring(mcmc_generation_method_base, "EFPE")){
->>>>>>> master
 			fisher[11][11] += 1./4;//cos theta1
 			fisher[12][12] += 1./4;//cos theta2
 			fisher[13][13] += 1./(4*M_PI*M_PI);//phi1

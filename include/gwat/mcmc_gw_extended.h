@@ -5,7 +5,7 @@
 #include "mcmc_gw.h"
 #include <bayesship/bayesshipSampler.h>
 #include <bayesship/dataUtilities.h>
-#include "adaptivelikelihoods.h"
+#include "likelihoods.h"
 
 struct mcmcVariables 
 {
@@ -30,7 +30,7 @@ struct mcmcVariables
 	MCMC_user_param *user_parameters = nullptr;	
 	double maxDim;
 	bool mcmc_adaptive = false;
-	AdaptiveLikelihood *adaptivell=nullptr;
+	GWATLikelihoods::Likelihood *adaptivell=nullptr;
 	Quadrature *QuadMethod = NULL;
 };
 struct mcmcVariablesRJ

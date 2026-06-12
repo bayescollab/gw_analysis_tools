@@ -12,7 +12,7 @@
 #include <mutex>
 #include "mcmc_sampler.h"
 #include "quadrature.h"
-#include "adaptivelikelihoods.h"
+#include "likelihoods.h"
 /*! \file 
  *
  * Header file for the Graviational Wave specific MCMC routines
@@ -89,9 +89,9 @@ struct MCMC_modification_struct
 	bool fisher_log10F = false;
 
 	// Quadrature method to be used for Fisher and likelihood calculations
-	// (unless an AdaptiveLikelihood is being used for the latter).
+	// (unless an Likelihood is being used for the latter).
 	Quadrature *QuadMethod = NULL;
-	AdaptiveLikelihood *adaptivell = NULL;
+	GWATLikelihoods::Likelihood *adaptivell = NULL;
 
 	// Refererence frequency for waveform generation.
 	// Not as trivial as you might think!

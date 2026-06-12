@@ -1,9 +1,12 @@
-#include "adaptivelikelihoods.h"
+#include "likelihoods.h"
 #include <algorithm>
 #include <cmath>
 #include <assert.h>
 #include <numeric>
 
+
+namespace GWATLikelihoods
+{
 
 using std::conj;
 
@@ -18,7 +21,7 @@ void RelativeBinningPrinter(std::string message)
 /**
  * Initialize relative binning
 */
-RelativeBinningLikelihood::RelativeBinningLikelihood(
+RelativeBinningPNansatzLikelihood::RelativeBinningPNansatzLikelihood(
     double chi, /**< size of PN perturbation */
     double epsilon, /**< size of dephasing */
     const std::vector<ifo_data_struct> &ifos_data, /**< Vector of signal data */
@@ -74,7 +77,7 @@ RelativeBinningLikelihood::RelativeBinningLikelihood(
  * which will determine the binning.
  * Defined as the last frequency where the fiducial data is non-zero
 */
-double RelativeBinningLikelihood::find_max_frequency(
+double RelativeBinningPNansatzLikelihood::find_max_frequency(
     const cpl *const *fiducial_data_in,
     const double *frequencies, const int data_length,
     const int num_detectors
@@ -110,7 +113,7 @@ double RelativeBinningLikelihood::find_max_frequency(
  * Setup frequency bins based on PN ansatz.
  * See Binning Criterion in arxiv:2312.06009
 */
-void RelativeBinningLikelihood::setup_bins(
+void RelativeBinningPNansatzLikelihood::setup_bins(
     const double *frequencies, /**< Frequency array */
     const int data_length /**< Size of frequency array */
 )
@@ -220,7 +223,7 @@ void RelativeBinningLikelihood::setup_bins(
  * Store fiducial waveforms at bin edges
  * Saved within ifos_fiducial_data
 */
-void RelativeBinningLikelihood::setup_fiducial_data(
+void RelativeBinningPNansatzLikelihood::setup_fiducial_data(
     const cpl *const *fiducial_data_in, /**< Fiducial data of each interferometer */
     const int num_detectors /** Number of detectors */
 )
@@ -248,7 +251,7 @@ void RelativeBinningLikelihood::setup_fiducial_data(
  * Compute the A0, A1, B0, and B2 summary data for each bin in each interferometer.
  * See Eq. 5 of 2312.06009
 */
-void RelativeBinningLikelihood::compute_summary_data(
+void RelativeBinningPNansatzLikelihood::compute_summary_data(
     const cpl *const *fiducial_data,
     const std::vector<ifo_data_struct> &ifos_data
 )
@@ -319,7 +322,7 @@ void RelativeBinningLikelihood::compute_summary_data(
     }
 }
 
-void RelativeBinningLikelihood::compute_waveform_ratios(
+void RelativeBinningPNansatzLikelihood::compute_waveform_ratios(
     vectorcpl &r0, /**< [out] Array of r0 coefficients in each bin */
     vectorcpl &r1, /**< [out] Array of r1 coefficients in each bin */
     const cpl *h, /**< Template waveform evaluated at bin edges */
@@ -343,7 +346,7 @@ void RelativeBinningLikelihood::compute_waveform_ratios(
     }
 }
 
-double RelativeBinningLikelihood::log_likelihood_per_detector(
+double RelativeBinningPNansatzLikelihood::log_likelihood_per_detector(
     const cpl *h, /**< Template waveform. Must be evaluated at the bin edges only */
     const fiducial_data_struct *fiducial /**< Interferometer data */
 )
@@ -371,7 +374,7 @@ double RelativeBinningLikelihood::log_likelihood_per_detector(
     return -0.5*h_h + d_h;
 }
 
-double RelativeBinningLikelihood::log_likelihood(
+double RelativeBinningPNansatzLikelihood::log_likelihood(
     std::string *detectors, /**< Detector names */
     int num_detectors, /**< Number of detectors */
     gen_params_base<double> *params, /**< Template parameters */
@@ -438,3 +441,5 @@ double RelativeBinningLikelihood::log_likelihood(
 
     return logL;
 }
+
+} // namespace GWATLikelihoods

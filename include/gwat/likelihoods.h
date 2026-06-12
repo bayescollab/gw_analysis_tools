@@ -1,17 +1,19 @@
-#ifndef ADAPTIVE_LIKELIHOODS_H
-#define ADAPTIVE_LIKELIHOODS_H
+#ifndef LIKELIHOODS_H
+#define LIKELIHOODS_H
 
 
 #include "waveform_util.h"
 #include <vector>
 
 
+namespace GWATLikelihoods
+{
+
 using cpl = std::complex<double>;
 using vectordbl = std::vector<double>;
 using vectorint = std::vector<int>;
 using vectorcpl = std::vector<cpl>;
 
-const vectordbl gammasDefault = {-5./3., -2./3., 1., 5./3., 7./3.};
 
 // Struct for an interferometer's strain and PSD at specific frequencies
 struct ifo_data_struct
@@ -39,11 +41,11 @@ struct fiducial_data_struct
 /** 
  * Base class for adaptive likelihoods
 */
-class AdaptiveLikelihood
+class Likelihood
 {
 public:
-    AdaptiveLikelihood() = default;
-    virtual ~AdaptiveLikelihood() = default;
+    Likelihood() = default;
+    virtual ~Likelihood() = default;
 
 	// Compute the log likelihood -1/2[(h|h) - 2(d|h)] over all detectors
 	virtual double log_likelihood(
@@ -56,15 +58,15 @@ public:
 
 // RELATIVE BINNING
 
-class RelativeBinningLikelihood: public AdaptiveLikelihood
+class RelativeBinningPNansatzLikelihood: public Likelihood
 {
 public:
-	RelativeBinningLikelihood(
+	RelativeBinningPNansatzLikelihood(
 		double chi, double epsilon,
 		const std::vector<ifo_data_struct> &ifos_data,
 		const cpl *const *fiducial_data, int num_detectors,
 		const double *frequencies, int data_length,
-		const vectordbl gammas = gammasDefault
+		const vectordbl gammas = vectordbl{-5./3., -2./3., 1., 5./3., 7./3.}
 	);
 
 	double log_likelihood(
@@ -126,4 +128,6 @@ private:
 	);
 };
 
-#endif // ADAPTIVE_LIKELIHOODS_H
+} // namespace GWATLikelihoods
+
+#endif // LIKELIHOODS_H

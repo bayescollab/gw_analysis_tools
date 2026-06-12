@@ -1399,8 +1399,8 @@ void unpack_parameters(double *parameters, gen_params_base<double> *input_params
 			}
 
 		}
-		else if(generation_method.find("EFPE") != std::string::npos){
-			if(generation_method.find("MCMC") != std::string::npos){
+		else if(has_substring(generation_method, "EFPE") != std::string::npos){
+			if(has_substring(generation_method, "MCMC") != std::string::npos){
 				for(int i = 0 ; i<dimension; i++){
 					log_factors[i] = false;
 				}
@@ -1425,7 +1425,7 @@ void unpack_parameters(double *parameters, gen_params_base<double> *input_params
 				parameters[12]=cos(spin2sph[1]);
 				parameters[13]=spin1sph[2];
 				parameters[14]=spin2sph[2];
-				if(dimension > 15 && generation_method.find("circular") == std::string::npos){
+				if(dimension > 15 && has_substring(generation_method, "circular") == std::string::npos){
 					parameters[15]=input_params->e_start;
 					parameters[16]=input_params->mean_anomaly_start;
 				}
@@ -1466,8 +1466,8 @@ void unpack_parameters(double *parameters, gen_params_base<double> *input_params
 			}
 
 		}
-		else if(generation_method.find("EFPE") != std::string::npos){
-			if(generation_method.find("MCMC") != std::string::npos){
+		else if(has_substring(generation_method, "EFPE") != std::string::npos){
+			if(has_substring(generation_method, "MCMC") != std::string::npos){
 				for(int i = 0; i < dimension; i++) log_factors[i] = false;
 				parameters[0] = log(calculate_chirpmass(input_params->mass1,
 					input_params->mass2));
@@ -1483,7 +1483,7 @@ void unpack_parameters(double *parameters, gen_params_base<double> *input_params
 				parameters[5] = cos(spin2sph[1]);
 				parameters[6] = spin1sph[2];
 				parameters[7] = spin2sph[2];
-				if(dimension > 8 && generation_method.find("circular") == std::string::npos){
+				if(dimension > 8 && has_substring(generation_method, "circular") == std::string::npos){
 					parameters[8]  = input_params->e_start;
 					parameters[9]  = input_params->mean_anomaly_start;
 				}
@@ -1788,7 +1788,7 @@ void repack_parameters(T *avec_parameters, gen_params_base<T> *a_params, std::st
 				a_params->spin2[0] = spin2cart[0];
 				a_params->spin2[1] = spin2cart[1];
 				a_params->spin2[2] = spin2cart[2];
-				if(generation_method.find("circular") != std::string::npos){
+				if(has_substring(generation_method, "circular") != std::string::npos){
 					a_params->e_start = 0;
 					a_params->mean_anomaly_start = 0;
 				}

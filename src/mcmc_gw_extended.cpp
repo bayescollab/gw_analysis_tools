@@ -538,7 +538,7 @@ public:
 			local_integration_method="GAUSSLEG";
 		}
 		if(mcmcVar->mcmc_intrinsic){
-			if(mcmcVar->mcmc_generation_method.find("IMRPhenomD") != std::string::npos){
+			if(mcmcVar->mcmc_has_substring(generation_method, "IMRPhenomD") != std::string::npos){
 				if(!mcmcVar->mcmc_save_waveform){
 					for(int i=0; i < mcmcVar->mcmc_num_detectors; i++){
 						gen_params.theta=0;	
@@ -619,7 +619,7 @@ public:
 				}
 	
 			}
-			else if(mcmcVar->mcmc_generation_method.find("IMRPhenomP")!=std::string::npos){
+			else if(mcmcVar->mcmc_has_substring(generation_method, "IMRPhenomP")!=std::string::npos){
 				//if(!mcmc_save_waveform){
 				gen_params.theta=0;	
 				gen_params.phi=0;	

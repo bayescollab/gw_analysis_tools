@@ -2197,7 +2197,7 @@ std::string MCMC_prep_params(double *param, double *temp_params, gen_params_base
 	}
 	int base = dimension;
 	if(check_mod(generation_method)){
-		if(generation_method.find("ppE") != std::string::npos ||
+		if(has_substring(generation_method, "ppE") != std::string::npos ||
 			check_theory_support(generation_method)){
 			gen_params->bppe=mod_struct->bppe;
 			gen_params->Nmod=mod_struct->ppE_Nmod;
@@ -3272,7 +3272,7 @@ void RJMCMC_2WF_fisher_wrapper(
 		} 
 	}
 	//Add prior information to fisher
-	//if(mcmc_generation_method.find("Pv2") && !mcmc_intrinsic){
+	//if(mcmc_has_substring(generation_method, "Pv2") && !mcmc_intrinsic){
 	if(!mcmc_intrinsic){
 		fisher[0][0] += 1./(4*M_PI*M_PI);//RA
 		fisher[1][1] += 1./4;//sin DEC

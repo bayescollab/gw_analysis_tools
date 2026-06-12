@@ -58,6 +58,8 @@ int mvn_sample(
 	r= gsl_rng_alloc(T);	
 	mvn_sample(samples, mean, cov, dim , r, output);	
 	gsl_rng_free(r);
+
+	return 0;
 }
 
 /*! \brief Samples from a multivariate-gaussian with covariance cov and mean mean, with dimension dim and puts the output in output

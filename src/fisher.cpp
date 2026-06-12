@@ -1581,7 +1581,40 @@ void unpack_parameters(double* parameters,
         parameters[9] = input_params->spin1[2];
         parameters[10] = input_params->spin2[2];
       }
+
+    } else if (generation_method.find("EFPE") != std::string::npos) {
+      if (generation_method.find("MCMC") != std::string::npos) {
+        for (int i = 0; i < dimension; i++) {
+          log_factors[i] = false;
+        }
+        parameters[0] = input_params->RA;
+        parameters[1] = sin(input_params->DEC);
+        parameters[2] = input_params->psi;
+        parameters[3] = cos(input_params->incl_angle);
+        parameters[4] = input_params->phiRef;
+        parameters[5] = input_params->tc;
+        parameters[6] = log(input_params->Luminosity_Distance);
+        parameters[7] =
+            log(calculate_chirpmass(input_params->mass1, input_params->mass2));
+        parameters[8] = calculate_eta(input_params->mass1, input_params->mass2);
+        double spin1sph[3];
+        double spin2sph[3];
+        transform_cart_sph(input_params->spin1, spin1sph);
+        transform_cart_sph(input_params->spin2, spin2sph);
+        parameters[9] = spin1sph[0];
+        parameters[10] = spin2sph[0];
+        parameters[11] = cos(spin1sph[1]);
+        parameters[12] = cos(spin2sph[1]);
+        parameters[13] = spin1sph[2];
+        parameters[14] = spin2sph[2];
+        if (dimension > 15 &&
+            generation_method.find("circular") == std::string::npos) {
+          parameters[15] = input_params->e_start;
+          parameters[16] = input_params->mean_anomaly_start;
+        }
+      }
     }
+
   } else {
     if (has_substring(generation_method, "IMRPhenomPv2") ||
         has_substring(generation_method, "IMRPhenomPv3")) {
@@ -1605,10 +1638,37 @@ void unpack_parameters(double* parameters,
         // parameters[6]=spin1sph[2]-spin2sph[2];
         parameters[6] = spin1sph[2];
         parameters[7] = spin2sph[2];
+
       } else {
         std::cout
             << "Sky averaged IMRPhenomP is not supported for regular fishers."
             << std::endl;
+      }
+
+    } else if (generation_method.find("EFPE") != std::string::npos) {
+      if (generation_method.find("MCMC") != std::string::npos) {
+        for (int i = 0; i < dimension; i++) log_factors[i] = false;
+        parameters[0] =
+            log(calculate_chirpmass(input_params->mass1, input_params->mass2));
+        parameters[1] = calculate_eta(input_params->mass1, input_params->mass2);
+        double spin1sph[3];
+        double spin2sph[3];
+        transform_cart_sph(input_params->spin1, spin1sph);
+        transform_cart_sph(input_params->spin2, spin2sph);
+        parameters[2] = spin1sph[0];
+        parameters[3] = spin2sph[0];
+        parameters[4] = cos(spin1sph[1]);
+        parameters[5] = cos(spin2sph[1]);
+        parameters[6] = spin1sph[2];
+        parameters[7] = spin2sph[2];
+        if (dimension > 8 &&
+            generation_method.find("circular") == std::string::npos) {
+          parameters[8] = input_params->e_start;
+          parameters[9] = input_params->mean_anomaly_start;
+        }
+      } else {
+        std::cout << "Sky averaged EFPE is not supported for regular fishers."
+                  << std::endl;
       }
     } else if (has_substring(generation_method, "IMRPhenomD")) {
       if (has_substring(generation_method, "MCMC")) {
@@ -1828,6 +1888,7 @@ void repack_parameters(T* avec_parameters, gen_params_base<T>* a_params,
         a_params->spin2[0] = spin2cart[0];
         a_params->spin2[1] = spin2cart[1];
         a_params->spin2[2] = spin2cart[2];
+
       } else {
         a_params->mass1 =
             calculate_mass1(avec_parameters[7], avec_parameters[8]);
@@ -1849,6 +1910,55 @@ void repack_parameters(T* avec_parameters, gen_params_base<T>* a_params,
         a_params->spin2[2] = avec_parameters[10];
         a_params->chip = avec_parameters[11];
         a_params->phip = avec_parameters[12];
+      }
+    } else if (has_substring(generation_method, "EFPE")) {
+      if (has_substring(generation_method, "MCMC")) {
+        a_params->mass1 =
+            calculate_mass1(exp(avec_parameters[7]), avec_parameters[8]);
+        a_params->mass2 =
+            calculate_mass2(exp(avec_parameters[7]), avec_parameters[8]);
+        a_params->Luminosity_Distance = exp(avec_parameters[6]);
+        a_params->RA = avec_parameters[0];
+        a_params->DEC = asin(avec_parameters[1]);
+        a_params->psi = avec_parameters[2];
+        a_params->incl_angle = acos(avec_parameters[3]);
+        a_params->phiRef = avec_parameters[4];
+        a_params->tc = avec_parameters[5];
+        T local_theta1;
+        if (avec_parameters[11] > 1) {
+          local_theta1 = 0;
+        } else if (avec_parameters[11] < -1) {
+          local_theta1 = M_PI;
+        } else {
+          local_theta1 = acos(avec_parameters[11]);
+        }
+        T local_theta2;
+        if (avec_parameters[12] > 1) {
+          local_theta2 = 0;
+        } else if (avec_parameters[12] < -1) {
+          local_theta2 = M_PI;
+        } else {
+          local_theta2 = acos(avec_parameters[12]);
+        }
+        T spin1sph[3] = {avec_parameters[9], local_theta1, avec_parameters[13]};
+        T spin2sph[3] = {avec_parameters[10], local_theta2,
+                         avec_parameters[14]};
+        T spin1cart[3], spin2cart[3];
+        transform_sph_cart(spin1sph, spin1cart);
+        transform_sph_cart(spin2sph, spin2cart);
+        a_params->spin1[0] = spin1cart[0];
+        a_params->spin1[1] = spin1cart[1];
+        a_params->spin1[2] = spin1cart[2];
+        a_params->spin2[0] = spin2cart[0];
+        a_params->spin2[1] = spin2cart[1];
+        a_params->spin2[2] = spin2cart[2];
+        if (generation_method.find("circular") != std::string::npos) {
+          a_params->e_start = 0;
+          a_params->mean_anomaly_start = 0;
+        } else {
+          a_params->e_start = avec_parameters[15];
+          a_params->mean_anomaly_start = avec_parameters[16];
+        }
       }
     } else if (has_substring(generation_method, "EOS")) {
       a_params->RA = avec_parameters[0];
@@ -1962,7 +2072,56 @@ void repack_parameters(T* avec_parameters, gen_params_base<T>* a_params,
         a_params->psi = 0;
         a_params->incl_angle = M_PI / 4.;
         a_params->Luminosity_Distance = 100;
+
       } else {
+      }
+    } else if (has_substring(generation_method, "EFPE")) {
+      if (has_substring(generation_method, "MCMC")) {
+        a_params->mass1 =
+            calculate_mass1(exp(avec_parameters[0]), avec_parameters[1]);
+        a_params->mass2 =
+            calculate_mass2(exp(avec_parameters[0]), avec_parameters[1]);
+        T local_theta1;
+        if (avec_parameters[4] > 1) {
+          local_theta1 = 0;
+        } else if (avec_parameters[4] < -1) {
+          local_theta1 = M_PI;
+        } else {
+          local_theta1 = acos(avec_parameters[4]);
+        }
+        T local_theta2;
+        if (avec_parameters[5] > 1) {
+          local_theta2 = 0;
+        } else if (avec_parameters[5] < -1) {
+          local_theta2 = M_PI;
+        } else {
+          local_theta2 = acos(avec_parameters[5]);
+        }
+        T spin1sph[3] = {avec_parameters[2], local_theta1, avec_parameters[6]};
+        T spin2sph[3] = {avec_parameters[3], local_theta2, avec_parameters[7]};
+        T spin1cart[3], spin2cart[3];
+        transform_sph_cart(spin1sph, spin1cart);
+        transform_sph_cart(spin2sph, spin2cart);
+        a_params->spin1[0] = spin1cart[0];
+        a_params->spin1[1] = spin1cart[1];
+        a_params->spin1[2] = spin1cart[2];
+        a_params->spin2[0] = spin2cart[0];
+        a_params->spin2[1] = spin2cart[1];
+        a_params->spin2[2] = spin2cart[2];
+        a_params->tc = 0;
+        a_params->phiRef = 0;
+        a_params->RA = 0;
+        a_params->DEC = 0;
+        a_params->psi = 0;
+        a_params->incl_angle = M_PI / 4.;
+        a_params->Luminosity_Distance = 100;
+        if (has_substring(generation_method, "circular")) {
+          a_params->e_start = 0;
+          a_params->mean_anomaly_start = 0;
+        } else if (dim > 8) {
+          a_params->e_start = avec_parameters[8];
+          a_params->mean_anomaly_start = avec_parameters[9];
+        }
       }
     } else if (has_substring(generation_method, "IMRPhenomD")) {
       if (has_substring(generation_method, "MCMC")) {

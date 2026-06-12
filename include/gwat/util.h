@@ -184,6 +184,11 @@ public:
 	T diss_tidal_a=-1;
 	T diss_tidal_weighted=-1;
 
+	/*! Orbital eccentricity at f22_start (0 = circular) */
+	T e_start = 0;
+	/*! Mean anomaly at f22_start */
+	T mean_anomaly_start = 0;
+
 	//Polarization angle
 	T psi =0 ;
 	/*!*angle between angular momentum and the total momentum */

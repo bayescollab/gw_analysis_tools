@@ -1955,7 +1955,8 @@ void MCMC_fisher_transformations(
 		fisher[8][8] += 1./.25;//eta
 		fisher[9][9] += 1./4;//spin1
 		fisher[10][10] += 1./4;//spin2
-		if(has_substring(generation_method, "PhenomPv2") || has_substring(generation_method, "PhenomPv3")){
+
+		if(has_substring(generation_method, "PhenomPv2") || has_substring(generation_method, "PhenomPv3") || has_substring(generation_method, "EFPE")){
 			fisher[11][11] += 1./4;//cos theta1
 			fisher[12][12] += 1./4;//cos theta2
 			fisher[13][13] += 1./(4*M_PI*M_PI);//phi1
@@ -1963,7 +1964,7 @@ void MCMC_fisher_transformations(
 		}
 	}
 	else{
-		if(has_substring(generation_method, "PhenomPv2") || has_substring(generation_method, "PhenomPv3")){
+		if(has_substring(generation_method, "PhenomPv2") || has_substring(generation_method, "PhenomPv3") || has_substring(generation_method, "EFPE")){
 			fisher[1][1] =1./(.25) ;//eta
 			fisher[2][2] =1./(4);//spin1
 			fisher[3][3] =1./(4);//spin2
@@ -3282,7 +3283,7 @@ void RJMCMC_2WF_fisher_wrapper(
 		fisher[8][8] += 1./.25;//eta
 		fisher[9][9] += 1./4;//spin1
 		fisher[10][10] += 1./4;//spin2
-		if(has_substring(mcmc_generation_method_base, "PhenomPv2") || has_substring(mcmc_generation_method_base, "PhenomPv3")){
+		if(has_substring(mcmc_generation_method_base, "PhenomPv2") || has_substring(mcmc_generation_method_base, "PhenomPv3") || has_substring(mcmc_generation_method_base, "EFPE")){
 			fisher[11][11] += 1./4;//cos theta1
 			fisher[12][12] += 1./4;//cos theta2
 			fisher[13][13] += 1./(4*M_PI*M_PI);//phi1
@@ -3290,7 +3291,7 @@ void RJMCMC_2WF_fisher_wrapper(
 		}
 	}
 	else{
-		if(has_substring(mcmc_generation_method_base, "PhenomPv2") || has_substring(mcmc_generation_method_base, "PhenomPv3")){
+		if(has_substring(mcmc_generation_method_base, "PhenomPv2") || has_substring(mcmc_generation_method_base, "PhenomPv3") || has_substring(mcmc_generation_method_base, "EFPE")){
 			fisher[1][1] =1./(.25) ;//eta
 			fisher[2][2] =1./(4);//spin1
 			fisher[3][3] =1./(4);//spin2

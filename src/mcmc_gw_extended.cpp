@@ -1853,7 +1853,38 @@ void PTMCMC_method_specific_prep_v2(std::string generation_method, int dimension
 	if(has_substring(generation_method, "EA")){totalmod+=3;}
 	if(has_substring(generation_method, "EA")){totalmod+=2;} // two dissipative tidal dissipation numbers
 	debugger_print(__FILE__,__LINE__,totalmod);
-	if(has_substring(generation_method, "PhenomD") && (dimension - totalmod) == 4)
+	const int nonModDim = dimension - totalmod;
+	// EFPE branches checked before other models to avoid false matches from find()
+	if(has_substring(generation_method, "EFPE"))
+	{
+	  if (nonModDim == 15)
+	    {
+		std::cout << "Sampling in parameters: RA, sin DEC, psi, cos iota, phi_ref, tc, "
+		             "ln DL, ln chirpmass, eta, a1, a2, cos tilt1, cos tilt2, phi1, phi2\n";
+		*intrinsic=false;
+		return;
+	    }
+	  else if(nonModDim == 17)
+	    {
+		std::cout<<"Sampling in parameters: RA, sin DEC, psi, cos iota, phi_ref, tc, "
+		  "ln DL, ln chirpmass, eta, a1, a2, cos tilt1, cos tilt2, phi1, phi2, e, mean anomaly\n";
+		*intrinsic=false;
+		return;
+	    }
+	  else if(nonModDim == 8)
+	    {
+		std::cout<<"Sampling in parameters: ln chirpmass, eta, a1, a2, cos tilt1, cos tilt2, phi1, phi2\n";
+		*intrinsic=true;
+		return;
+	    }
+	  else if(nonModDim == 10)
+	    {
+		std::cout<<"Sampling in parameters: ln chirpmass, eta, a1, a2, cos tilt1, cos tilt2, phi1, phi2, e, mean anomaly\n";
+		*intrinsic=true;
+		return;
+	    }
+	}
+	if (has_substring(generation_method, "PhenomD") && nonModDim == 4)
 	{
 		std::cout<<"Sampling in parameters: ln chirpmass, eta, chi1, chi2";
 		for(int i =0; i<totalmod; i++){
@@ -1862,7 +1893,7 @@ void PTMCMC_method_specific_prep_v2(std::string generation_method, int dimension
 		std::cout<<std::endl;
 		*intrinsic=true;
 	} 
-	else if(has_substring(generation_method, "PhenomD_NRT") && (dimension - totalmod) == 6)
+        else if (has_substring(generation_method, "PhenomD_NRT") && nonModDim == 6)
 	{
 		std::cout<<"Sampling in parameters: ln chirpmass, eta, chi1, chi2, ln tidal1,  ln tidal2";
 		for(int i =0; i<totalmod; i++){
@@ -1870,8 +1901,8 @@ void PTMCMC_method_specific_prep_v2(std::string generation_method, int dimension
 		}
 		std::cout<<std::endl;
 		*intrinsic=true;
-	} 
-	else if(has_substring(generation_method, "PhenomD_NRT") && (dimension - totalmod) == 8)
+	}
+	else if(has_substring(generation_method, "PhenomD_NRT") && nonModDim == 8)
 	{
 		std::cout<<"Sampling in parameters: ln chirpmass, eta, chi1, chi2, ln tidal1,  ln tidal2, diss_tidal1, diss_tidal2";
 		for(int i =0; i<totalmod; i++){
@@ -1879,9 +1910,9 @@ void PTMCMC_method_specific_prep_v2(std::string generation_method, int dimension
 		}
 		std::cout<<std::endl;
 		*intrinsic=true;
-	} 
+	}
 	else if((has_substring(generation_method, "PhenomPv2") || has_substring(generation_method, "PhenomPv3"))
-		&& (dimension - totalmod) == 8)
+		&& nonModDim == 8)
 	{
 		std::cout<<"Sampling in parameters: ln chirpmass, eta, a1, a2, tilt1, tilt2, phi1, phi2";
 		for(int i =0; i<totalmod; i++){
@@ -1889,8 +1920,8 @@ void PTMCMC_method_specific_prep_v2(std::string generation_method, int dimension
 		}
 		std::cout<<std::endl;
 		*intrinsic=true;
-	} 
-	else if(has_substring(generation_method, "PhenomD") && (dimension - totalmod) == 11)
+	}
+	else if(has_substring(generation_method, "PhenomD") && nonModDim == 11)
 	{
 		std::cout<<"Sampling in parameters: RA, sin DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2"<<std::endl;
 		for(int i =0; i<totalmod; i++){
@@ -1901,7 +1932,7 @@ void PTMCMC_method_specific_prep_v2(std::string generation_method, int dimension
 	}
 	else if (has_substring(generation_method, "PhenomD_NRT"))
 	{
-		if ((dimension - totalmod) == 13)
+		if (nonModDim == 13)
 		{
 			std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2, ln tidal1, ln tidal2" << std::endl;
 			for (int i = 0; i < totalmod; i++)
@@ -1911,7 +1942,7 @@ void PTMCMC_method_specific_prep_v2(std::string generation_method, int dimension
 			std::cout << std::endl;
 			*intrinsic = false;
 		}
-		else if ((dimension - totalmod) == 12)
+		else if (nonModDim == 12)
 		{
 			std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, chi1, chi2, ln tidal_s" << std::endl;
 			for (int i = 0; i < totalmod; i++)
@@ -1921,9 +1952,9 @@ void PTMCMC_method_specific_prep_v2(std::string generation_method, int dimension
 			std::cout << std::endl;
 			mcmc_intrinsic = false;
 		}
-		else if (has_substring(generation_method, "EOS") && (dimension - totalmod) == 14)
+		else if (has_substring(generation_method, "EOS") && nonModDim == 14)
 		{
-			std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota, phi_ref, tc,  ln DL, nbc1, nbc2, chi1, chi2, bump_mag, bump_width, bump_offset" << std::endl;
+			std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota, phi_ref, tc, ln DL, nbc1, nbc2, chi1, chi2, bump_mag, bump_width, bump_offset" << std::endl;
 			for (int i = 0; i < totalmod; i++)
 			{
 				std::cout << ", mod_" << i;
@@ -1931,9 +1962,9 @@ void PTMCMC_method_specific_prep_v2(std::string generation_method, int dimension
 			std::cout << std::endl;
 			*intrinsic = false;
 		}
-		else if (has_substring(generation_method, "EOS") && (dimension - totalmod) == 15)
+		else if (has_substring(generation_method, "EOS") && nonModDim == 15)
 		{
-			std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota, phi_ref, tc,  ln DL, nbc1, nbc2, chi1, chi2, bump_mag, bump_width, bump_offset, plat" << std::endl;
+			std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota, phi_ref, tc, ln DL, nbc1, nbc2, chi1, chi2, bump_mag, bump_width, bump_offset, plat" << std::endl;
 			for (int i = 0; i < totalmod; i++)
 			{
 				std::cout << ", mod_" << i;
@@ -1942,9 +1973,10 @@ void PTMCMC_method_specific_prep_v2(std::string generation_method, int dimension
 			*intrinsic = false;
 		}
 	}
-	else if(has_substring(generation_method, "PhenomPv2") && (dimension - totalmod) == 15)
+	else if(has_substring(generation_method, "PhenomPv2") || has_substring(generation_method, "PhenomPv3")
+		&& nonModDim == 15)
 	{
-		std::cout<<"Sampling in parameters: RA, sin DEC, psi, cos iota,phi_ref, tc,  ln DL, ln chirpmass, eta, a1, a2,cos tilt1, cos tilt2, phi1, phi2"<<std::endl;
+		std::cout<<"Sampling in parameters: RA, sin DEC, psi, cos iota,phi_ref, tc, ln DL, ln chirpmass, eta, a1, a2,cos tilt1, cos tilt2, phi1, phi2"<<std::endl;
 		for(int i =0; i<totalmod; i++){
 			std::cout<<", mod_"<<i;
 		}
@@ -2064,7 +2096,7 @@ void MCMC_fisher_transformations_v2(
 		fisher[8][8] += 1./.25;//eta
 		fisher[9][9] += 1./4;//spin1
 		fisher[10][10] += 1./4;//spin2
-		if(has_substring(generation_method, "PhenomPv2") || has_substring(generation_method, "PhenomPv3")){
+		if(has_substring(generation_method, "PhenomPv2") || has_substring(generation_method, "PhenomPv3") || has_substring(generation_method, "EFPE")){
 			fisher[11][11] += 1./4;//cos theta1
 			fisher[12][12] += 1./4;//cos theta2
 			fisher[13][13] += 1./(4*M_PI*M_PI);//phi1
@@ -2072,7 +2104,7 @@ void MCMC_fisher_transformations_v2(
 		}
 	}
 	else{
-		if(has_substring(generation_method, "PhenomPv2") || has_substring(generation_method, "PhenomPv3")){
+		if(has_substring(generation_method, "PhenomPv2") || has_substring(generation_method, "PhenomPv3") || has_substring(generation_method, "EFPE")){
 			fisher[1][1] =1./(.25) ;//eta
 			fisher[2][2] =1./(4);//spin1
 			fisher[3][3] =1./(4);//spin2

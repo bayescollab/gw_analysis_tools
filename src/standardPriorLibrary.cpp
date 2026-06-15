@@ -404,7 +404,7 @@ double logPriorStandard_D_NRT_EOS::eval(bayesship::positionInfo* position,
     return bayesship::limitInf;
   }
 
-  // Check if a parabola can actually be created for this set of points.
+  // Checks if a parabola can actually be created for this set of points.
   Bumpy_EOS_Constructor* bumpy_eos = new Bumpy_EOS_Constructor;
   bumpy_eos->eos_params.n1 = bumpy_eos->convert_nsat_to_MeV(pos[7]);
   bumpy_eos->eos_params.n2 = bumpy_eos->convert_nsat_to_MeV(pos[8]);
@@ -412,8 +412,9 @@ double logPriorStandard_D_NRT_EOS::eval(bayesship::positionInfo* position,
   bumpy_eos->eos_params.bump_width = bumpy_eos->convert_nsat_to_MeV(pos[12]);
   bumpy_eos->get_additional_EOS_params();
 
-  if (bumpy_eos->eos_params.f1_n1 > bumpy_eos->eos_params.bump_magnitude >
-      bumpy_eos->eos_params.plat) {
+  if ((bumpy_eos->eos_params.f1_n1 > bumpy_eos->eos_params.bump_magnitude >
+      bumpy_eos->eos_params.plat) || (bumpy_eos->eos_params.f1_n1 < bumpy_eos->eos_params.bump_magnitude <
+      bumpy_eos->eos_params.plat)) {
     delete bumpy_eos;
     bumpy_eos = 0;
     return bayesship::limitInf;

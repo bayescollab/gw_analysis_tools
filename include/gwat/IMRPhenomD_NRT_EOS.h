@@ -28,11 +28,10 @@
 /* -------- Defines a class to create an interpolated function y(x). -------- */
 class Interpolation {
  public:
-  // Calls initialize()
+  // Constructors and destructors
   Interpolation(gsl_interp_type* interp_type, std::vector<double> x,
                 std::vector<double> y);
   Interpolation();
-  // Calls free()
   ~Interpolation();
 
   // Initializes GSL splines for interpolation
@@ -42,7 +41,7 @@ class Interpolation {
   // Frees GSL spline and accelerator memory
   void free();
 
-  // Methods to evaluate interpolated function at point x
+  // Evaluation functions
   double yofx(double x);
   double dyofx(double x);
 
@@ -52,7 +51,7 @@ class Interpolation {
   gsl_spline* spline;
   gsl_interp_type* type;
 
-  // Size of data to be interpolated
+  // Size of data
   size_t size;
 };
 
@@ -82,30 +81,40 @@ class IMRPhenomD_NRT_EOS : public IMRPhenomD_NRT<T> {
 // TODO: Format this properly.
 
 struct EoS_data {
-    // Vectors
-    std::vector<double> pressure;
-    std::vector<double> epsilon;
-    std::vector<double> nb;
-    std::vector<double> cs2;
+  // Vectors
+  std::vector<double> pressure;
+  std::vector<double> epsilon;
+  std::vector<double> nb;
+  std::vector<double> cs2;
 
-    // Central values to return
-    double eps_c1;
-    double eps_c2;
-  };
+  // Central values to return
+  double eps_c1;
+  double eps_c2;
+};
 
-  struct crust_EoS {
-    // Vectors
-    std::vector<double> pressure;
-    std::vector<double> epsilon;
-    std::vector<double> nb;
-    std::vector<double> cs2;
-  };
+struct crust_EoS {
+  // Vectors
+  std::vector<double> pressure;
+  std::vector<double> epsilon;
+  std::vector<double> nb;
+  std::vector<double> cs2;
+};
 
 /* --------------- Defines a *base class* to construct an EoS. -------------- */
 class EOS_Constructor {
  public:
-  // Object to store EoS information
+  // Constructor and destructor for inheritance, if necessary
+  EOS_Constructor() {}
+  ~EOS_Constructor() {}
+
+  // Object to store built EoS information
   EoS_data eos;
+
+  // Static object to store the crust
+  // For new users: Static objects will share this data across *all* instances
+  // of the class. This memory is more-or-less global, but this is necessary for
+  // the EoS classes as the crust table must be read and accessed *every time a
+  // point is sampled*.
   static crust_EoS crust;
 
   void get_crust(std::string EoS_filepath, std::string pressure_header,
@@ -151,7 +160,7 @@ class Bumpy_EOS_Constructor : public EOS_Constructor {
   // Methods to store parameters
   void store_EOS_params(source_parameters<adouble>* params);
   void store_EOS_params(source_parameters<double>* params);
-  void get_additional_EOS_params();
+  virtual void get_additional_EOS_params();
 
   // Injects bump into the EOS
   virtual void construct_EOS();

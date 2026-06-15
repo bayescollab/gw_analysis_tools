@@ -94,12 +94,12 @@ void IMRPhenomD_NRT_EOS<T>::get_m_love(source_parameters<T>* params) {
   bumpy_eos->store_EOS_params(params);
   bumpy_eos->get_additional_EOS_params();
   bumpy_eos->construct_EOS();
+  ec1 = bumpy_eos->eos.eps_c1;
+  ec2 = bumpy_eos->eos.eps_c2;
   // Interpolated pressure in terms of epsilon
   Interpolation* p_of_e =
       new Interpolation((gsl_interp_type*)gsl_interp_steffen,
                         bumpy_eos->eos.epsilon, bumpy_eos->eos.pressure);
-  ec1 = bumpy_eos->eos.eps_c1;
-  ec2 = bumpy_eos->eos.eps_c2;
   delete bumpy_eos;
   bumpy_eos = 0;
 

@@ -9,21 +9,21 @@
 namespace GWATLikelihoods
 {
 
-using cpl = std::complex<double>;
-using vectordbl = std::vector<double>;
-using vectorint = std::vector<int>;
-using vectorcpl = std::vector<cpl>;
+using CPL = std::complex<double>;
+using VECDBL = std::vector<double>;
+using VECINT = std::vector<int>;
+using VECCPL = std::vector<CPL>;
 
 
 // Struct for an interferometer's strain and PSD at specific frequencies
 struct ifo_data_struct
 {
 	// Interferometer strain
-	vectorcpl strain;
+	VECCPL strain;
 	// Frequency array
-	vectordbl freqs;
+	VECDBL freqs;
 	// PSD
-	vectordbl psd;
+	VECDBL psd;
 	// Signal duration
 	double duration;
 };
@@ -32,9 +32,9 @@ struct ifo_data_struct
 // Holds their binned strain and summary data.
 struct fiducial_data_struct
 {
-	vectorcpl strain;
+	VECCPL strain;
 	// Summary data
-	vectorcpl A0, A1, B0, B1;
+	VECCPL A0, A1, B0, B1;
 };
 
 
@@ -64,9 +64,9 @@ public:
 	RelativeBinningPNansatzLikelihood(
 		double chi, double epsilon,
 		const std::vector<ifo_data_struct> &ifos_data,
-		const cpl *const *fiducial_data, int num_detectors,
+		const CPL *const *fiducial_data, int num_detectors,
 		const double *frequencies, int data_length,
-		const vectordbl gammas = vectordbl{-5./3., -2./3., 1., 5./3., 7./3.}
+		const VECDBL gammas = VECDBL{-5./3., -2./3., 1., 5./3., 7./3.}
 	);
 
 	double log_likelihood(
@@ -75,7 +75,7 @@ public:
 		bool reuse_WF
 	);
 
-	vectordbl get_bin_freqs() { return bin_freqs; }
+	VECDBL get_bin_freqs() { return bin_freqs; }
 
 private:
 	double chi, epsilon;
@@ -90,40 +90,40 @@ private:
 	// Maximum frequency 
 	double max_frequency;
 	// Array of frequency powers for binning criterion
-	vectordbl gammas;
+	VECDBL gammas;
 	// Frequency array bin edge indices
-	vectorint bin_inds;
+	VECINT bin_inds;
 	// Frequencies at bin edges
-	vectordbl bin_freqs;
+	VECDBL bin_freqs;
 	// Distances between bin indices
-	vectordbl bin_sizes;
+	VECDBL bin_sizes;
 	// Distances between edge frequencies
-	vectordbl bin_widths;
+	VECDBL bin_widths;
 	// Frequency at bin centers
-	vectordbl bin_centers;
+	VECDBL bin_centers;
 
-	double find_max_frequency(const cpl *const *fiducial_data_in,
+	double find_max_frequency(const CPL *const *fiducial_data_in,
 		const double *frequencies, const int data_length,
 		const int num_detectors);
 	void setup_bins(const double *frequencies, const int data_length);
 	void setup_fiducial_data(
-		const cpl *const *fiducial_data_in,
+		const CPL *const *fiducial_data_in,
 		const int num_detectors
 	);
 	void compute_summary_data(
-		const cpl *const *fiducial_data,
+		const CPL *const *fiducial_data,
 		const std::vector<ifo_data_struct> &ifos_data
 	);
 
 
 	void compute_waveform_ratios(
-		vectorcpl &r0,
-		vectorcpl &r1,
-		const cpl *h,
+		VECCPL &r0,
+		VECCPL &r1,
+		const CPL *h,
 		const fiducial_data_struct *fiducial
 	);
 	double log_likelihood_per_detector(
-		const cpl *h,
+		const CPL *h,
 		const fiducial_data_struct *fiducial
 	);
 };

@@ -25,11 +25,11 @@ RelativeBinningPNansatzLikelihood::RelativeBinningPNansatzLikelihood(
     double chi, /**< size of PN perturbation */
     double epsilon, /**< size of dephasing */
     const std::vector<ifo_data_struct> &ifos_data, /**< Vector of signal data */
-    const cpl *const *fiducial_data, /**< Strain of fiducial data for each interferometer */
+    const CPL *const *fiducial_data, /**< Strain of fiducial data for each interferometer */
     int num_detectors, /**< Number of detectors */
     const double *frequencies, /**< Frequency array shared among all interferometers */
     int data_length, /**< length of each fiducial array */
-    const vectordbl gammas /**< Vector of gammas for binning criterion */
+    const VECDBL gammas /**< Vector of gammas for binning criterion */
 )
 {
     std::cout << "RELATIVE BINNING INITIALIZING\n";
@@ -61,7 +61,7 @@ RelativeBinningPNansatzLikelihood::RelativeBinningPNansatzLikelihood(
 
     // Calculate likelihood
     double logL = 0.;
-    cpl *data;
+    CPL *data;
     for (int i = 0; i < num_detectors; i++)
     {
         data = ifos_fiducial_data.at(i).strain.data();
@@ -78,24 +78,24 @@ RelativeBinningPNansatzLikelihood::RelativeBinningPNansatzLikelihood(
  * Defined as the last frequency where the fiducial data is non-zero
 */
 double RelativeBinningPNansatzLikelihood::find_max_frequency(
-    const cpl *const *fiducial_data_in,
+    const CPL *const *fiducial_data_in,
     const double *frequencies, const int data_length,
     const int num_detectors
 )
 {
-    vectorcpl fiducial_data;
-    vectorcpl::reverse_iterator ref;
+    VECCPL fiducial_data;
+    VECCPL::reverse_iterator ref;
     int idx;
     double maxFreq = frequencies[data_length-1];
     
     for (int d = 0; d < num_detectors; d++)
     {
-        fiducial_data = vectorcpl(
+        fiducial_data = VECCPL(
             fiducial_data_in[d], fiducial_data_in[d] + data_length
         );
 
         ref = std::find_if(fiducial_data.rbegin(), fiducial_data.rend(),
-            [](cpl &dat) {return dat != cpl(0.);});
+            [](CPL &dat) {return dat != CPL(0.);});
         if (ref == fiducial_data.rbegin())
         {
             // If the last data point is non-zero
@@ -128,8 +128,8 @@ void RelativeBinningPNansatzLikelihood::setup_bins(
     // Eqs. 15-16 of 2312.06009
     // To optimize computing the sum in Eq. 16 we do not solve for \Delta_\alpha
     // but rather find the f_{k*} for each k
-    vectordbl freqs_gamma;
-    vectorint signs_gamma;
+    VECDBL freqs_gamma;
+    VECINT signs_gamma;
     double freq_gamma;
     bool negative_gamma;
     for (const double &gamma : gammas)
@@ -141,7 +141,7 @@ void RelativeBinningPNansatzLikelihood::setup_bins(
     }
 
     // Eq. 16, second line instead of first
-    vectordbl d_phis;
+    VECDBL d_phis;
     double d_phi_f, f;
     size_t k;
     for (int i = 0; i < data_length; i++)
@@ -162,7 +162,7 @@ void RelativeBinningPNansatzLikelihood::setup_bins(
     }
 
     // \Delta\Psi(f) - \Delta\Psi(f_{\min})
-    vectordbl d_phi_from_start;
+    VECDBL d_phi_from_start;
     for (const double &d_phi : d_phis)
     {
         d_phi_from_start.push_back(d_phi-d_phis[0]);
@@ -174,10 +174,10 @@ void RelativeBinningPNansatzLikelihood::setup_bins(
     );
 
     // Find bin edges
-    vectordbl::iterator bin_itr;
+    VECDBL::iterator bin_itr;
     // last_* variables to avoid starting the find_if searches from the beginning
     const double *last_base_ptr = frequencies;
-    vectordbl::iterator last_itr = d_phi_from_start.begin();
+    VECDBL::iterator last_itr = d_phi_from_start.begin();
     int bin_ind, last_ind = -1;
     double d_phi_lower, bin_freq;
     double d_phi_lower_den = d_phi_from_start.back() / (double)num_bins;
@@ -224,13 +224,13 @@ void RelativeBinningPNansatzLikelihood::setup_bins(
  * Saved within ifos_fiducial_data
 */
 void RelativeBinningPNansatzLikelihood::setup_fiducial_data(
-    const cpl *const *fiducial_data_in, /**< Fiducial data of each interferometer */
+    const CPL *const *fiducial_data_in, /**< Fiducial data of each interferometer */
     const int num_detectors /** Number of detectors */
 )
 {
     assert(bins_are_setup);
 
-    const cpl *det_wf;
+    const CPL *det_wf;
     int d;
 
     for (d = 0; d < num_detectors; d++)
@@ -252,18 +252,18 @@ void RelativeBinningPNansatzLikelihood::setup_fiducial_data(
  * See Eq. 5 of 2312.06009
 */
 void RelativeBinningPNansatzLikelihood::compute_summary_data(
-    const cpl *const *fiducial_data,
+    const CPL *const *fiducial_data,
     const std::vector<ifo_data_struct> &ifos_data
 )
 {
     const ifo_data_struct *ifo;
-    const cpl *fiducial;
+    const CPL *fiducial;
     fiducial_data_struct* ifo_fiducial;
-    vectorint ifo_bin_ends;
-    vectorcpl data, h0;
-    vectordbl psd, freqs;
+    VECINT ifo_bin_ends;
+    VECCPL data, h0;
+    VECDBL psd, freqs;
     int start_ind, end_ind;
-    cpl A_fac, B_fac, A0_b, A1_b, B0_b, B1_b;
+    CPL A_fac, B_fac, A0_b, A1_b, B0_b, B1_b;
     double delta_f, inner_product_weight;
 
     // Compute summary data for each interferometer
@@ -278,7 +278,7 @@ void RelativeBinningPNansatzLikelihood::compute_summary_data(
 
         inner_product_weight = 4./ifo->duration;
         
-        ifo_bin_ends = vectorint(bin_inds);
+        ifo_bin_ends = VECINT(bin_inds);
         // Cover the last frequency in the bin array
         ifo_bin_ends.end() += 1;
 
@@ -290,13 +290,13 @@ void RelativeBinningPNansatzLikelihood::compute_summary_data(
             end_ind = ifo_bin_ends[b+1];
 
             // Grab the data for each bin
-            data = vectorcpl(ifo->strain.begin() + start_ind,
+            data = VECCPL(ifo->strain.begin() + start_ind,
                 ifo->strain.begin() + end_ind);
-            psd = vectordbl(ifo->psd.begin() + start_ind,
+            psd = VECDBL(ifo->psd.begin() + start_ind,
                 ifo->psd.begin() + end_ind);
-            h0 = vectorcpl(fiducial + start_ind,
+            h0 = VECCPL(fiducial + start_ind,
                 fiducial + end_ind);
-            freqs = vectordbl(ifo->freqs.begin() + start_ind,
+            freqs = VECDBL(ifo->freqs.begin() + start_ind,
                 ifo->freqs.begin() + end_ind);
 
             // Compute the Riemann sums
@@ -323,16 +323,16 @@ void RelativeBinningPNansatzLikelihood::compute_summary_data(
 }
 
 void RelativeBinningPNansatzLikelihood::compute_waveform_ratios(
-    vectorcpl &r0, /**< [out] Array of r0 coefficients in each bin */
-    vectorcpl &r1, /**< [out] Array of r1 coefficients in each bin */
-    const cpl *h, /**< Template waveform evaluated at bin edges */
+    VECCPL &r0, /**< [out] Array of r0 coefficients in each bin */
+    VECCPL &r1, /**< [out] Array of r1 coefficients in each bin */
+    const CPL *h, /**< Template waveform evaluated at bin edges */
     const fiducial_data_struct *fiducial /**< Interferometer data */
 )
 {
     // Ratios at left edge
-    cpl ratio_left = h[0]/fiducial->strain.front();
+    CPL ratio_left = h[0]/fiducial->strain.front();
     // Ratio at right edge
-    cpl ratio_right;
+    CPL ratio_right;
 
     for (int i = 0; i < number_of_bins; i++)
     {
@@ -347,7 +347,7 @@ void RelativeBinningPNansatzLikelihood::compute_waveform_ratios(
 }
 
 double RelativeBinningPNansatzLikelihood::log_likelihood_per_detector(
-    const cpl *h, /**< Template waveform. Must be evaluated at the bin edges only */
+    const CPL *h, /**< Template waveform. Must be evaluated at the bin edges only */
     const fiducial_data_struct *fiducial /**< Interferometer data */
 )
 {
@@ -355,7 +355,7 @@ double RelativeBinningPNansatzLikelihood::log_likelihood_per_detector(
     double h_h = 0.;
 
     // Obtain the waveform ratios
-    vectorcpl r0, r1;
+    VECCPL r0, r1;
     compute_waveform_ratios(r0, r1, h, fiducial);
 
     for (int b = 0; b < number_of_bins; b++)
@@ -385,21 +385,15 @@ double RelativeBinningPNansatzLikelihood::log_likelihood(
     // Set up template arrays a là MCMC_likelihood_extrinsic (mcmc_gw.cpp)
     int i;
     int *data_lengths = new int[num_detectors];
-    cpl **responses = new cpl*[num_detectors];
+    CPL **responses = new CPL*[num_detectors];
     double **frequencies = new double*[num_detectors];
 
     for (int i = 0; i < num_detectors; i++)
     {
         data_lengths[i] = bin_freqs.size();
-        responses[i] = new cpl[data_lengths[i]];
+        responses[i] = new CPL[data_lengths[i]];
         frequencies[i] = bin_freqs.data();
     }
-
-    // Time shift
-    // TODO: How important is shifting tc as in MCMC_likelihood_extrinsic? If not, delete this block.
-    //double T = duration;
-    //double tc_ref = T - params->tc;
-    //params->tc = tc_ref;
 
     // Obtain the data
     if (num_detectors == 1)

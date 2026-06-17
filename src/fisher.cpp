@@ -477,10 +477,9 @@ void CentralDifferenceShifts_O4::calculate_parameters_shift(
 
   param_pp[i] = parameters_vec[i] + 2 * epsilon;
   param_mm[i] = parameters_vec[i] - 2 * epsilon;
-  if (!has_substring(
-          local_gen_method,
-          "EOS")) {  // the following code assumes parameter[8] = eta which is
-                     // not true for the IMRPhenomD_NRT_EOS template
+  if (!has_substring(local_gen_method, "EOS")) {
+    // the following code assumes parameter[8] = eta which is
+    // not true for the IMRPhenomD_NRT_EOS template
     if (i == 8 && parameters_vec[i] > .25 - epsilon) {
       param_pp[i] = parameters_vec[i];
       // std::cout<<"eta close to boundary, using backward difference
@@ -1582,8 +1581,8 @@ void unpack_parameters(double* parameters,
         parameters[10] = input_params->spin2[2];
       }
 
-    } else if (generation_method.find("EFPE") != std::string::npos) {
-      if (generation_method.find("MCMC") != std::string::npos) {
+    } else if (has_substring(generation_method, "EFPE")) {
+      if (has_substring(generation_method, "MCMC")) {
         for (int i = 0; i < dimension; i++) {
           log_factors[i] = false;
         }
@@ -1645,8 +1644,8 @@ void unpack_parameters(double* parameters,
             << std::endl;
       }
 
-    } else if (generation_method.find("EFPE") != std::string::npos) {
-      if (generation_method.find("MCMC") != std::string::npos) {
+    } else if (has_substring(generation_method, "EFPE")) {
+      if (has_substring(generation_method, "MCMC")) {
         for (int i = 0; i < dimension; i++) log_factors[i] = false;
         parameters[0] =
             log(calculate_chirpmass(input_params->mass1, input_params->mass2));
@@ -1708,7 +1707,7 @@ void unpack_parameters(double* parameters,
     }
   }
   if (has_substring(generation_method, "NRT") &&
-      (!has_substring(generation_method, "EOS"))) {
+      !has_substring(generation_method, "EOS")) {
     // debugger_print(__FILE__,__LINE__,generation_method);
     if (!input_params->sky_average) {
       if (has_substring(generation_method, "PhenomD")) {
@@ -2920,7 +2919,6 @@ void fisher_autodiff_gsl_integration(
           // err_rows[
         } else {
           std::cout << "Error -- not roundoff" << std::endl;
-          ;
           exit(-1);
         }
       }
@@ -3132,7 +3130,6 @@ void fisher_autodiff_gsl_integration_batch_mod(
             no_err = false;
           } else {
             std::cout << "Error -- not roundoff" << std::endl;
-            ;
             exit(-1);
           }
         }

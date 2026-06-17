@@ -16,7 +16,7 @@ using VECCPL = std::vector<CPL>;
 
 
 // Struct for an interferometer's strain and PSD at specific frequencies
-struct ifo_data_struct
+struct IfoData
 {
 	// Interferometer strain
 	VECCPL strain;
@@ -30,7 +30,7 @@ struct ifo_data_struct
 
 // Struct for each interferometer.
 // Holds their binned strain and summary data.
-struct fiducial_data_struct
+struct SummaryData
 {
 	VECCPL strain;
 	// Summary data
@@ -63,7 +63,7 @@ class RelativeBinningPNansatzLikelihood: public Likelihood
 public:
 	RelativeBinningPNansatzLikelihood(
 		double chi, double epsilon,
-		const std::vector<ifo_data_struct> &ifos_data,
+		const std::vector<IfoData> &ifos_data,
 		const CPL *const *fiducial_data, int num_detectors,
 		const double *frequencies, int data_length,
 		const VECDBL gammas = VECDBL{-5./3., -2./3., 1., 5./3., 7./3.}
@@ -85,7 +85,7 @@ private:
 	// Check that bins have been setup
 	bool bins_are_setup = false;
 	// Interferometers
-	std::vector<fiducial_data_struct> ifos_fiducial_data;
+	std::vector<SummaryData> ifos_fiducial_data;
 
 	// Maximum frequency 
 	double max_frequency;
@@ -112,7 +112,7 @@ private:
 	);
 	void compute_summary_data(
 		const CPL *const *fiducial_data,
-		const std::vector<ifo_data_struct> &ifos_data
+		const std::vector<IfoData> &ifos_data
 	);
 
 
@@ -120,11 +120,90 @@ private:
 		VECCPL &r0,
 		VECCPL &r1,
 		const CPL *h,
-		const fiducial_data_struct *fiducial
+		const SummaryData *fiducial
 	);
 	double log_likelihood_per_detector(
 		const CPL *h,
-		const fiducial_data_struct *fiducial
+		const SummaryData *fiducial
+	);
+};
+
+// BISECTION RELATIVE BINNING
+//
+// Bins are placed by recursively bisecting frequency intervals until the
+// absolute log-likelihood error within each bin (exact minus approximate,
+// evaluated on the test waveform and summed over detectors) falls below
+// epsilon.  This makes bin placement data-adaptive rather than PN-ansatz-
+// driven.
+
+class RelativeBinningBisectionLikelihood : public Likelihood
+{
+public:
+	RelativeBinningBisectionLikelihood(
+		const std::vector<IfoData> &ifos_data,
+		const std::vector<VECCPL> &fiducial_data,
+		const std::vector<VECCPL> &test_data,
+		const double *frequencies,
+		double epsilon
+	);
+
+	double log_likelihood(
+		std::string *detectors, int num_detectors,
+		gen_params_base<double> *params, std::string generation_method,
+		bool reuse_WF
+	);
+
+	VECDBL get_bin_freqs() { return bin_freqs; }
+	VECINT get_bin_inds()  { return bin_inds;  }
+
+	// Evaluate RB logL from waveforms already extracted at bin edges.
+	// h_at_bins[det] must have exactly bin_inds.size() entries.
+	double log_likelihood_from_waveform(
+		const std::vector<VECCPL> &h_at_bins
+	);
+
+private:
+	int number_of_bins;
+	std::vector<SummaryData> ifos_summary_data;
+
+	VECINT bin_inds;
+	VECDBL bin_freqs;
+	VECDBL bin_sizes;
+	VECDBL bin_widths;
+	VECDBL bin_centers;
+
+	int find_max_index(
+		const std::vector<VECCPL> &fiducial_data
+	);
+
+	// Returns the absolute logL error (exact minus approximate, summed over
+	// detectors) for the proposed bin [left_idx, right_idx).
+	double bin_log_likelihood_error(
+		int left_idx, int right_idx,
+		const std::vector<IfoData> &ifos_data,
+		const std::vector<VECCPL> &fiducial_data,
+		const std::vector<VECCPL> &test_data
+	);
+
+	int bin_bisection(
+		const std::vector<IfoData> &ifos_data,
+		const std::vector<VECCPL> &fiducial_data,
+		const std::vector<VECCPL> &test_data,
+		const double *frequencies,
+		double epsilon
+	);
+
+	void setup_summary_data(
+		const std::vector<IfoData> &ifos_data,
+		const std::vector<VECCPL> &fiducial_data
+	);
+
+	std::pair<VECCPL, VECCPL> compute_waveform_ratios(
+		const CPL *h, const SummaryData &fiducial
+	);
+
+	double log_likelihood_per_detector(
+		const CPL *h, const SummaryData &fiducial
 	);
 };
 

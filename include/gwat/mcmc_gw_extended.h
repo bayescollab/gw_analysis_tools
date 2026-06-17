@@ -131,4 +131,28 @@ bayesship::bayesshipSampler *  RJPTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
 	bool restrictSwapTemperatures,
 	bool coldChainStorageOnly);
 
+// Runs a short Metropolis-Hastings chain from initial_params to locate
+// a good fiducial waveform for relative binning initialization.
+// Outputs full-resolution detector responses (same size as data arrays):
+//   fiducial_out  — response at the maximum-likelihood point found
+//   test_out      — response at the last accepted point in the chain
+// Caller must pre-allocate both output arrays as [num_detectors][data_length[i]].
+void find_fiducial(
+	int dimension,
+	double *initial_params,
+	double **prior_ranges,
+	int num_mh_steps,
+	int num_detectors,
+	std::complex<double> **data,
+	double **noise_psd,
+	double **frequencies,
+	int *data_length,
+	double gps_time,
+	std::string *detectors,
+	std::string generation_method,
+	MCMC_modification_struct *mod_struct,
+	std::complex<double> **fiducial_out,
+	std::complex<double> **test_out
+);
+
 #endif

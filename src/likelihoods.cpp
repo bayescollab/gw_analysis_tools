@@ -3,6 +3,9 @@
 #include <cmath>
 #include <assert.h>
 #include <numeric>
+#include <set>
+#include <array>
+#include <utility>
 
 
 namespace GWATLikelihoods
@@ -24,7 +27,7 @@ void RelativeBinningPrinter(std::string message)
 RelativeBinningPNansatzLikelihood::RelativeBinningPNansatzLikelihood(
     double chi, /**< size of PN perturbation */
     double epsilon, /**< size of dephasing */
-    const std::vector<ifo_data_struct> &ifos_data, /**< Vector of signal data */
+    const std::vector<IfoData> &ifos_data, /**< Vector of signal data */
     const CPL *const *fiducial_data, /**< Strain of fiducial data for each interferometer */
     int num_detectors, /**< Number of detectors */
     const double *frequencies, /**< Frequency array shared among all interferometers */
@@ -235,7 +238,7 @@ void RelativeBinningPNansatzLikelihood::setup_fiducial_data(
 
     for (d = 0; d < num_detectors; d++)
     {
-        fiducial_data_struct ifo;
+        SummaryData ifo;
         det_wf = fiducial_data_in[d];
 
         for (int &ind : bin_inds)
@@ -253,12 +256,12 @@ void RelativeBinningPNansatzLikelihood::setup_fiducial_data(
 */
 void RelativeBinningPNansatzLikelihood::compute_summary_data(
     const CPL *const *fiducial_data,
-    const std::vector<ifo_data_struct> &ifos_data
+    const std::vector<IfoData> &ifos_data
 )
 {
-    const ifo_data_struct *ifo;
+    const IfoData *ifo;
     const CPL *fiducial;
-    fiducial_data_struct* ifo_fiducial;
+    SummaryData* ifo_fiducial;
     VECINT ifo_bin_ends;
     VECCPL data, h0;
     VECDBL psd, freqs;
@@ -326,7 +329,7 @@ void RelativeBinningPNansatzLikelihood::compute_waveform_ratios(
     VECCPL &r0, /**< [out] Array of r0 coefficients in each bin */
     VECCPL &r1, /**< [out] Array of r1 coefficients in each bin */
     const CPL *h, /**< Template waveform evaluated at bin edges */
-    const fiducial_data_struct *fiducial /**< Interferometer data */
+    const SummaryData *fiducial /**< Interferometer data */
 )
 {
     // Ratios at left edge
@@ -348,7 +351,7 @@ void RelativeBinningPNansatzLikelihood::compute_waveform_ratios(
 
 double RelativeBinningPNansatzLikelihood::log_likelihood_per_detector(
     const CPL *h, /**< Template waveform. Must be evaluated at the bin edges only */
-    const fiducial_data_struct *fiducial /**< Interferometer data */
+    const SummaryData *fiducial /**< Interferometer data */
 )
 {
     double d_h = 0.;
@@ -432,6 +435,337 @@ double RelativeBinningPNansatzLikelihood::log_likelihood(
     delete [] frequencies;
     delete [] responses;
     delete [] data_lengths;
+
+    return logL;
+}
+
+// ============================================================
+// RelativeBinningBisectionLikelihood
+// ============================================================
+
+RelativeBinningBisectionLikelihood::RelativeBinningBisectionLikelihood(
+    const std::vector<IfoData> &ifos_data,
+    const std::vector<VECCPL> &fiducial_data,
+    const std::vector<VECCPL> &test_data,
+    const double *frequencies,
+    double epsilon
+)
+{
+    std::cout << "\nRELATIVE BINNING (BISECTION) INITIALIZING\n";
+
+    if (
+        bin_bisection(ifos_data, fiducial_data, test_data, frequencies, epsilon)
+    )
+    {
+        RelativeBinningPrinter(std::to_string(number_of_bins) + " bins setup");
+
+        setup_summary_data(ifos_data, fiducial_data);
+
+        double logL = 0.;
+        int num_edges = (int)bin_inds.size();
+        CPL *ht = new CPL[num_edges];
+        for (size_t i = 0; i < ifos_summary_data.size(); i++)
+        {
+            for (int k = 0; k < num_edges; k++)
+                ht[k] = test_data[i][bin_inds[k]];
+
+            logL += log_likelihood_per_detector(ht, ifos_summary_data.at(i));
+        }
+        RelativeBinningPrinter("Test logL: " + std::to_string(logL));
+
+        delete [] ht;
+    }
+}
+
+int RelativeBinningBisectionLikelihood::find_max_index(
+    const std::vector<VECCPL> &fiducial_data
+)
+{
+    int max_idx = (int)fiducial_data.front().size() - 1;
+
+    for (const auto &data : fiducial_data)
+    {
+        auto it = std::find_if(
+            data.begin(), data.end(),
+            [](const CPL &v) { return std::norm(v) == 0.; }
+        );
+
+        if (it != data.end())
+        {
+            int zero_idx = (int)std::distance(data.begin(), it);
+            max_idx = std::min(max_idx, zero_idx-1);
+        }
+    }
+    return max_idx;
+}
+
+double RelativeBinningBisectionLikelihood::bin_log_likelihood_error(
+    int left_idx, int right_idx,
+    const std::vector<IfoData> &ifos_data,
+    const std::vector<VECCPL> &fiducial_data,
+    const std::vector<VECCPL> &test_data
+)
+{
+    double exact_logL = 0., approx_logL = 0.;
+    int num_det = (int)ifos_data.size();
+
+    for (int det = 0; det < num_det; det++)
+    {
+        const IfoData &ifo = ifos_data[det];
+        const VECCPL   &h0 = fiducial_data[det];
+        const VECCPL   &ht = test_data[det];
+        double weight = 4. / ifo.duration;
+        double f_m = (ifo.freqs[left_idx] + ifo.freqs[right_idx]) * 0.5;
+
+        CPL    A0 = 0., A1 = 0., B0 = 0., B1 = 0.;
+        double exact_dh = 0., exact_hh = 0.;
+
+        for (int j = left_idx; j < right_idx; j++)
+        {
+            double delta   = ifo.freqs[j] - f_m;
+            double psd     = ifo.psd[j];
+            CPL    strain  = ifo.strain[j];
+
+            // Summary data from h0 (fiducial)
+            CPL A_fac = conj(h0[j]) / psd;
+            CPL B_fac = h0[j] * A_fac;
+            A_fac *= strain;
+            A0 += A_fac;
+            A1 += A_fac * delta;
+            B0 += B_fac;
+            B1 += B_fac * delta;
+
+            // Exact inner products with h_test
+            exact_dh += real(strain * conj(ht[j])) / psd;
+            exact_hh += std::norm(ht[j]) / psd;
+        }
+        A0 *= weight; A1 *= weight; B0 *= weight; B1 *= weight;
+        exact_dh *= weight; exact_hh *= weight;
+
+        // Ratio r(f) = h_test(f) / h0(f) at bin edges
+        CPL r_left  = (h0[left_idx]  != CPL(0.)) ? ht[left_idx]  / h0[left_idx]  : CPL(0.);
+        CPL r_right = (h0[right_idx] != CPL(0.)) ? ht[right_idx] / h0[right_idx] : CPL(0.);
+        double bin_width = ifo.freqs[right_idx] - ifo.freqs[left_idx];
+        CPL r0 = 0.5 * (r_left + r_right);
+        CPL r1 = (bin_width > 0.) ? (r_right - r_left) / bin_width : CPL(0.);
+
+        double approx_dh = real(A0 * conj(r0) + A1 * conj(r1));
+        double approx_hh = real(B0) * std::norm(r0)
+                         + 2. * real(r0 * conj(r1)) * real(B1);
+
+        exact_logL  += -0.5 * exact_hh  + exact_dh;
+        approx_logL += -0.5 * approx_hh + approx_dh;
+    }
+
+    return std::abs(exact_logL - approx_logL);
+}
+
+int RelativeBinningBisectionLikelihood::bin_bisection(
+    const std::vector<IfoData> &ifos_data,
+    const std::vector<VECCPL> &fiducial_data,
+    const std::vector<VECCPL> &test_data,
+    const double *frequencies,
+    double epsilon
+)
+{
+    int max_idx = find_max_index(fiducial_data);
+    RelativeBinningPrinter("Max frequency: " + std::to_string(frequencies[max_idx]));
+
+    // Collect sorted bin boundary indices via iterative DFS bisection.
+    // The set always contains 0 (left edge of the first bin); each accepted
+    // interval [left, right) contributes its right index.
+    std::set<int> boundaries;
+    boundaries.insert(0);
+
+    std::vector<std::pair<int,int>> stack;
+    stack.push_back(std::make_pair(0, max_idx));
+
+    while (!stack.empty())
+    {
+        int left  = stack.back().first;
+        int right = stack.back().second;
+        stack.pop_back();
+
+        if (right - left <= 1)
+        {
+            boundaries.insert(right);
+            continue;
+        }
+
+        double err = bin_log_likelihood_error(
+            left, right, ifos_data, fiducial_data, test_data
+        );
+
+        if (err <= epsilon)
+        {
+            boundaries.insert(right);
+        }
+        else
+        {
+            int mid = (left + right) / 2;
+            stack.push_back(std::make_pair(left, mid));
+            stack.push_back(std::make_pair(mid, right));
+        }
+    }
+
+    for (int idx : boundaries)
+    {
+        bin_inds.push_back(idx);
+        bin_freqs.push_back(frequencies[idx]);
+    }
+
+    number_of_bins = (int)bin_inds.size() - 1;
+    for (int i = 1; i < (int)bin_inds.size(); i++)
+    {
+        bin_sizes.push_back(bin_inds[i] - bin_inds[i-1]);
+        bin_widths.push_back(bin_freqs[i] - bin_freqs[i-1]);
+        bin_centers.push_back((bin_freqs[i] + bin_freqs[i-1]) * 0.5);
+    }
+
+    return 1;
+}
+
+void RelativeBinningBisectionLikelihood::setup_summary_data(
+    const std::vector<IfoData> &ifos_data,
+    const std::vector<VECCPL> &fiducial_data
+)
+{
+    int num_det = (int)ifos_data.size();
+    for (int det = 0; det < num_det; det++)
+    {
+        SummaryData det_summary_data;
+        
+        const IfoData &ifo = ifos_data[det];
+        const VECCPL   &h0 = fiducial_data[det];
+        double weight = 4. / ifo.duration;
+
+        for (int b = 0; b < number_of_bins; b++)
+        {            
+            int start = bin_inds[b];
+            int end   = bin_inds[b + 1];
+
+            det_summary_data.strain.push_back(h0[start]);
+
+            CPL A0 = 0., A1 = 0., B0 = 0., B1 = 0.;
+            for (int j = start; j < end; j++)
+            {
+                double delta  = ifo.freqs[j] - bin_centers[b];
+                double psd = ifo.psd[j];
+                CPL    d   = ifo.strain[j];
+
+                CPL A_fac = conj(h0[j]) / psd;
+                CPL B_fac = h0[j] * A_fac;
+                A_fac *= d;
+
+                A0 += A_fac;
+                A1 += A_fac * delta;
+                B0 += B_fac;
+                B1 += B_fac * delta;
+            }
+            det_summary_data.A0.push_back(weight * A0);
+            det_summary_data.A1.push_back(weight * A1);
+            det_summary_data.B0.push_back(weight * B0);
+            det_summary_data.B1.push_back(weight * B1);
+        }
+        det_summary_data.strain.push_back(h0[bin_inds.back()]);
+
+        ifos_summary_data.push_back(det_summary_data);
+    }
+}
+
+std::pair<VECCPL, VECCPL> RelativeBinningBisectionLikelihood::compute_waveform_ratios(
+    const CPL *h, const SummaryData &fiducial
+)
+{
+    // Output vectors
+    VECCPL r0, r1;
+
+    CPL ratio_left = h[0] / fiducial.strain.front();
+    CPL ratio_right;
+
+    for (int i = 0; i < number_of_bins; i++)
+    {
+        ratio_right = h[i + 1] / fiducial.strain[i + 1];
+
+        r0.push_back(0.5 * (ratio_right + ratio_left));
+        r1.push_back((ratio_right - ratio_left) / bin_widths[i]);
+
+        ratio_left = ratio_right;
+    }
+
+    return std::make_pair(r0, r1);
+}
+
+double RelativeBinningBisectionLikelihood::log_likelihood_per_detector(
+    const CPL *h, const SummaryData &fiducial
+)
+{
+    double d_h = 0., h_h = 0.;
+
+    const auto ratios = compute_waveform_ratios(h, fiducial);
+    const auto r0 = ratios.first, r1 = ratios.second;
+
+    for (int b = 0; b < number_of_bins; b++)
+    {
+        d_h += real(fiducial.A0[b] * conj(r0[b]) + fiducial.A1[b] * conj(r1[b]));
+        h_h += real(fiducial.B0[b] * r0[b] * conj(r0[b])
+                    + 2. * fiducial.B1[b] * real(r0[b] * conj(r1[b])));
+    }
+
+    return -0.5 * h_h + d_h;
+}
+
+double RelativeBinningBisectionLikelihood::log_likelihood_from_waveform(
+    const std::vector<VECCPL> &h_at_bins
+)
+{
+    int num_det = (int)ifos_summary_data.size();
+    double logL = 0.;
+    for (int i = 0; i < num_det; i++)
+        logL += log_likelihood_per_detector(h_at_bins[i].data(), ifos_summary_data[i]);
+    return logL;
+}
+
+double RelativeBinningBisectionLikelihood::log_likelihood(
+    std::string *detectors, int num_detectors,
+    gen_params_base<double> *params, std::string generation_method,
+    bool reuse_WF
+)
+{
+    int     *data_lengths = new int[num_detectors];
+    CPL    **responses    = new CPL*[num_detectors];
+    double **frequencies  = new double*[num_detectors];
+
+    for (int i = 0; i < num_detectors; i++)
+    {
+        data_lengths[i] = (int)bin_freqs.size();
+        responses[i]    = new CPL[data_lengths[i]];
+        frequencies[i]  = bin_freqs.data();
+    }
+
+    if (num_detectors == 1)
+    {
+        create_single_GW_detection(
+            responses[0], detectors[0], frequencies[0], data_lengths[0],
+            params, generation_method
+        );
+    }
+    else
+    {
+        create_coherent_GW_detection(
+            detectors, num_detectors, frequencies, data_lengths,
+            reuse_WF, params, generation_method, responses
+        );
+    }
+
+    double logL = 0.;
+    for (int i = 0; i < num_detectors; i++)
+        logL += log_likelihood_per_detector(responses[i], ifos_summary_data[i]);
+
+    for (int i = 0; i < num_detectors; i++) delete[] responses[i];
+    delete[] frequencies;
+    delete[] responses;
+    delete[] data_lengths;
 
     return logL;
 }

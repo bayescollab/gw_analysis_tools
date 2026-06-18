@@ -65,6 +65,8 @@ void RJPTMCMC_method_specific_prep_v2(std::string generation_method, int dimensi
 std::string MCMC_prep_params_v2(double *param, double *temp_params, gen_params_base<double> *gen_params, int dimension, std::string generation_method, MCMC_modification_struct *mod_struct, bool intrinsic, double gmst);
 
 
+
+
 bayesship::bayesshipSampler *  PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
 	int dimension,
 	int independentSamples,
@@ -130,5 +132,55 @@ bayesship::bayesshipSampler *  RJPTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
 	bool ignoreExistingCheckpoint,
 	bool restrictSwapTemperatures,
 	bool coldChainStorageOnly);
+
+double maximized_Log_Likelihood_aligned_spin_internal(std::complex<double> *data,
+				double *psd,
+				double *frequencies,
+				std::complex<double> *detector_response,
+				size_t length,
+				fftw_outline *plan
+				);
+
+double maximized_Log_Likelihood_unaligned_spin_internal(std::complex<double> *data,
+				double *psd,
+				double *frequencies,
+				std::complex<double> *hplus,
+				std::complex<double> *hcross,
+				size_t length,
+				fftw_outline *plan
+				);
+
+double Log_Likelihood_internal(std::complex<double> *data,
+			double *psd,
+			double *frequencies,
+			double *weights,
+			std::complex<double> *detector_response,
+			int length,
+			bool log10F,
+			std::string integration_method
+			);
+double Log_Likelihood_internal(std::complex<double> *data,
+	double *psd,
+	std::complex<double> *detector_response,
+	Quadrature *QuadMethod
+);
+
+
+
+double MCMC_likelihood_extrinsic(bool save_waveform, 
+	gen_params_base<double> *parameters,
+	std::string generation_method, 
+	int *data_length, 
+	double **frequencies, 
+	std::complex<double> **data, 
+	double **psd,  
+	double **weights, 
+	std::string integration_method, 
+	bool log10F,
+	std::string *detectors, 
+	int num_detectors,
+	Quadrature *QuadMethod = NULL
+	);
+
 
 #endif

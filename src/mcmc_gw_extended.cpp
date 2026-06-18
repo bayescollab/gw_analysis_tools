@@ -219,15 +219,6 @@ public:
 								(size_t) local_lengths[i],
 								&local_plans[i]
 								);
-						//ll += maximized_Log_Likelihood(mcmc_data[i], 
-						//		mcmc_noise[i],
-						//		mcmc_frequencies[i],
-						//		(size_t) mcmc_data_length[i],
-						//		&gen_params,
-						//		mcmc_detectors[i],
-						//		local_gen,
-						//		&mcmc_fftw_plans[i]
-						//		);
 						free(response);
 					}
 				}
@@ -255,15 +246,6 @@ public:
 								(size_t) local_lengths[i],
 								&local_plans[i]
 								);
-						//ll += maximized_Log_Likelihood(mcmc_data[i], 
-						//		mcmc_noise[i],
-						//		mcmc_frequencies[i],
-						//		(size_t) mcmc_data_length[i],
-						//		&gen_params,
-						//		mcmc_detectors[i],
-						//		local_gen,
-						//		&mcmc_fftw_plans[i]
-						//		);
 						//ll += maximized_Log_Likelihood_unaligned_spin_internal(mcmc_data[i], 
 						//		mcmc_noise[i],
 						//		mcmc_frequencies[i],
@@ -318,15 +300,6 @@ public:
 				 mcmcVarRJ->mcmc_num_detectors);
 			//ll=2;
 	
-			//ll = Log_Likelihood(mcmc_data[0], 
-			//		mcmc_noise[0],
-			//		mcmc_frequencies[0],
-			//		mcmc_data_length[0],
-			//		&gen_params,
-			//		mcmc_detectors[0],
-			//		local_gen,
-			//		&mcmc_fftw_plans[0]
-			//		);
 	
 			//}
 			//else if(has_substring(mcmc_generation_method, "IMRPhenomP")){
@@ -558,15 +531,6 @@ public:
 								(size_t) local_lengths[i],
 								&local_plans[i]
 								);
-						//ll += maximized_Log_Likelihood(mcmc_data[i], 
-						//		mcmc_noise[i],
-						//		mcmc_frequencies[i],
-						//		(size_t) mcmc_data_length[i],
-						//		&gen_params,
-						//		mcmc_detectors[i],
-						//		local_gen,
-						//		&mcmc_fftw_plans[i]
-						//		);
 						free(response);
 					}
 				}
@@ -594,15 +558,6 @@ public:
 								(size_t) local_lengths[i],
 								&local_plans[i]
 								);
-						//ll += maximized_Log_Likelihood(mcmc_data[i], 
-						//		mcmc_noise[i],
-						//		mcmc_frequencies[i],
-						//		(size_t) mcmc_data_length[i],
-						//		&gen_params,
-						//		mcmc_detectors[i],
-						//		local_gen,
-						//		&mcmc_fftw_plans[i]
-						//		);
 						//ll += maximized_Log_Likelihood_unaligned_spin_internal(mcmc_data[i], 
 						//		mcmc_noise[i],
 						//		mcmc_frequencies[i],
@@ -665,15 +620,6 @@ public:
 				 mcmcVar->mcmc_num_detectors, mcmcVar->QuadMethod);
 			//ll=2;
 	
-			//ll = Log_Likelihood(mcmc_data[0], 
-			//		mcmc_noise[0],
-			//		mcmc_frequencies[0],
-			//		mcmc_data_length[0],
-			//		&gen_params,
-			//		mcmc_detectors[0],
-			//		local_gen,
-			//		&mcmc_fftw_plans[0]
-			//		);
 	
 			//}
 			//else if(has_substring(mcmc_generation_method, "IMRPhenomP")){
@@ -920,7 +866,6 @@ bayesship::bayesshipSampler *  RJPTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
 	//i.max_dim = 11; 
 	//i.chain_id  = 0; 
 	//i.chain_number  = 11; 
-	//double ll = MCMC_likelihood_wrapper(trial, &i ,user_parameters[0]);
 	//debugger_print(__FILE__,__LINE__,ll);
 	//###########################################################
 	
@@ -1300,7 +1245,6 @@ bayesship::bayesshipSampler *  PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
 	}
 
 
-	//PTMCMC_method_specific_prep(generation_method, dimension, seeding_var_ptr, local_seeding);
 	PTMCMC_method_specific_prep_v2(generation_method, dimension, &(mcmcVar.mcmc_intrinsic), mcmcVar.mcmc_mod_struct);
 	
 	//######################################################
@@ -1389,7 +1333,6 @@ bayesship::bayesshipSampler *  PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
 	//i.max_dim = 11; 
 	//i.chain_id  = 0; 
 	//i.chain_number  = 11; 
-	//double ll = MCMC_likelihood_wrapper(trial, &i ,user_parameters[0]);
 	//debugger_print(__FILE__,__LINE__,ll);
 	//###########################################################
 	
@@ -1679,16 +1622,6 @@ bayesship::bayesshipSampler *  PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
 		delete [] propProb[i];
 	}
 	delete [] propProb;
-
-
-	//PTMCMC_MH_dynamic_PT_alloc_uncorrelated(sampler_output,output, dimension, N_steps, chain_N, 
-	//	max_chain_N_thermo_ensemble,initial_pos,seeding_var,ensemble_initial_pos, chain_temps, 
-	//	swp_freq, t0, nu,max_chunk_size,chain_distribution_scheme,
-	//	log_prior,MCMC_likelihood_wrapper, MCMC_fisher_wrapper,(void**)user_parameters,numThreads, pool, 
-	//	//log_prior,MCMC_likelihood_wrapper, NULL,(void**)user_parameters,numThreads, pool, 
-	//	show_prog,statistics_filename,
-	//	chain_filename, likelihood_log_filename,checkpoint_filename);
-	
 	
 
 	if(!mcmcVar.mcmc_mod_struct->fisher_weights){
@@ -2607,4 +2540,361 @@ void MCMC_fisher_wrapper_v2(bayesship::positionInfo *pos,   double **output, voi
 	}
 
 
+}
+
+
+/*! \brief Maximized match over coalescence variables - returns log likelihood NOT NORMALIZED for aligned spins
+ *
+ * Note: this function is not properly normalized for an absolute comparison. This is made for MCMC sampling, so to minimize time, constant terms like (Data|Data), which would cancel in the Metropolis-Hasting ratio, are left out for efficiency
+ */
+double maximized_Log_Likelihood_aligned_spin_internal(std::complex<double> *data,
+				double *psd,
+				double *frequencies,
+				std::complex<double> *detector_response,
+				size_t length,
+				fftw_outline *plan
+				)
+{
+	//Calculate template snr and scale it to match the data snr
+	//later, upgrade to non uniform spacing, cause why not
+	double delta_f = frequencies[1]-frequencies[0];
+	double sum = 0.;
+	double *integrand = (double *)malloc(sizeof(double)*length);
+	for (int i =0;i< length;i++)
+		integrand[i] = real(detector_response[i]*std::conj(detector_response[i]))/psd[i];
+	//double integral = 4.*trapezoidal_sum_uniform(delta_f, length, integrand);
+	double integral = 4.*simpsons_sum(delta_f, length, integrand);
+	double HH = integral;
+
+	
+	//calculate the fourier transform that corresponds to maximizing over phic and tc
+	//Use malloc at some point, not sure how long these arrays will be 
+	std::complex<double> g_tilde;
+
+	fftw_complex *in = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * length);	
+	fftw_complex *out = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * length);	
+	for (int i=0;i<length; i++)
+	{
+		g_tilde = 4.*conj(data[i]) * detector_response[i] / psd[i]; 
+		in[i][0] = real(g_tilde);
+		in[i][1] = imag(g_tilde);
+	}
+
+	double *g = (double *)malloc(sizeof(double)*length);
+
+	fftw_execute_dft(plan->p, in, out);
+	
+	for (int i=0;i<length; i++)
+	{
+		g[i] = out[i][0]*out[i][0]+out[i][1]*out[i][1] ;
+	}
+
+	double max = *std::max_element(g, g+length)*delta_f*delta_f; 
+
+	free(integrand);
+	free(g);
+	fftw_free(in);
+	fftw_free(out);
+	return .5*(max)/HH;
+}
+
+/*! \brief log likelihood function that maximizes over extrinsic parameters tc, phic, D, and phiRef, the reference frequency - for unaligned spins 
+ *
+ * Ref: arXiv 1603.02444v2
+ *
+ * NOTE: Only works for +/x polarizations
+ */
+double maximized_Log_Likelihood_unaligned_spin_internal(std::complex<double> *data,
+				double *psd,
+				double *frequencies,
+				std::complex<double> *hplus,
+				std::complex<double> *hcross,
+				size_t length,
+				fftw_outline *plan
+				)
+{
+	double delta_f = frequencies[1]-frequencies[0];
+	double *integrand = (double *)malloc(sizeof(double)*length);
+	double integral;
+
+	//Calculate template snr for plus polarization sqrt(<H+|H+>)
+	for (int i =0;i< length;i++){
+		integrand[i] = real(hplus[i]*std::conj(hplus[i]))/psd[i];
+	}
+	integral = 4.*simpsons_sum(delta_f, length, integrand);
+	double HpHproot = sqrt(integral);
+
+	//Calculate template snr for cross polarization sqrt(<Hx|Hx>)
+	for (int i =0;i< length;i++)
+		integrand[i] = real(hcross[i]*std::conj(hcross[i]))/psd[i];
+	integral = 4.*simpsons_sum(delta_f, length, integrand);
+	double HcHcroot = sqrt(integral);
+	
+	//Rescale waveforms from hplus/cross to \hat{hplus/cross} 
+	std::complex<double> *hpnorm = 
+		(std::complex<double> *)malloc(sizeof(std::complex<double>)*length);
+	std::complex<double> *hcnorm = 
+		(std::complex<double> *)malloc(sizeof(std::complex<double>)*length);
+	for (int i =0 ;i<length;i++)
+	{
+		hpnorm[i] = hplus[i]/HpHproot;
+		hcnorm[i] = hcross[i]/HcHcroot;
+	}
+
+	//calculate \hat{rhoplus/cross} (just denoted rhoplus/cross) <d|hpnorm> 
+	//To maximize of coalescence phase, this is an FFT (so its a vector of 
+	//<d|h> at discrete tc
+	double *rhoplus2 = 
+		(double *)malloc(sizeof(double)*length);
+	double *rhocross2 = 
+		(double *)malloc(sizeof(double)*length);
+	std::complex<double> *rhoplus = 
+		(std::complex<double> *)malloc(sizeof(std::complex<double>)*length);
+	std::complex<double> *rhocross = 
+		(std::complex<double> *)malloc(sizeof(std::complex<double>)*length);
+	double *gammahat = 
+		(double *)malloc(sizeof(double)*length);
+	std::complex<double> g_tilde;
+	fftw_complex *in = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * length);	
+	fftw_complex *out = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * length);	
+
+	for (int i=0;i<length; i++)
+	{
+		g_tilde = 4.*conj(data[i]) * hpnorm[i] / psd[i]; 
+		in[i][0] = real(g_tilde);
+		in[i][1] = imag(g_tilde);
+	}
+	//fftw_execute(plan->p);
+	fftw_execute_dft(plan->p, in, out);
+	for (int i=0;i<length; i++)
+	{
+		rhoplus[i] = delta_f*(std::complex<double>(out[i][0],out[i][1]));
+		//Norm of the output, squared (Re{g}^2 + Im{g}^2)
+		rhoplus2[i] = delta_f*delta_f*(out[i][0]* out[i][0]+ out[i][1]* out[i][1]);
+		
+	}
+	for (int i=0;i<length; i++)
+	{
+		g_tilde = 4.*conj(data[i]) * hcnorm[i] / psd[i]; 
+		in[i][0] = real(g_tilde);
+		in[i][1] = imag(g_tilde);
+	}
+	//fftw_execute(plan->p);
+	fftw_execute_dft(plan->p, in, out);
+	for (int i=0;i<length; i++)
+	{
+		rhocross[i] = delta_f*(std::complex<double>(out[i][0],out[i][1]));
+		//Norm of the output, squared (Re{g}^2 + Im{g}^2)
+		rhocross2[i] = delta_f*delta_f*(out[i][0]* out[i][0]+ out[i][1]* out[i][1]);
+	}
+	
+	for (int i = 0; i <length;i++)
+		gammahat[i] = real(rhoplus[i] * conj(rhocross[i]));
+	
+	
+	for (int i =0;i< length;i++)
+		integrand[i] = real(hpnorm[i]*std::conj(hcnorm[i]))/psd[i];
+	integral = 4.*simpsons_sum(delta_f, length, integrand);
+	double Ipc = integral;
+
+	double *lambda = (double *)malloc(sizeof(double) * length);
+	for(int i = 0; i < length; i++){
+		lambda[i] =  (rhoplus2[i] + rhocross2[i] - 2*gammahat[i] * Ipc +
+			sqrt( (rhoplus2[i] -rhocross2[i])*(rhoplus2[i] -rhocross2[i]) +
+			4. * (Ipc*rhoplus2[i] - gammahat[i] ) * (Ipc*rhocross2[i] - gammahat[i])))
+			/(1. - Ipc*Ipc);
+	}
+	double max = .25 * (*std::max_element(lambda, lambda+length)); 
+
+	free(integrand);
+	free(hpnorm);
+	free(hcnorm);
+	free(rhoplus2);
+	free(rhoplus);
+	free(rhocross);
+	free(rhocross2);
+	free(gammahat);
+	free(lambda);
+	fftw_free(in);
+	fftw_free(out);
+
+	return max;
+}
+
+/*! \brief Internal function for the unmarginalized log of the likelihood 
+ *
+ * .5 * ( ( h | h ) - 2 ( D | h ) )
+ */
+double Log_Likelihood_internal(std::complex<double> *data,
+			double *psd,
+			double *frequencies,
+			double *weights,
+			std::complex<double> *detector_response,
+			int length,
+			bool log10F,
+			std::string integration_method
+			)
+{
+	double delta_f = frequencies[length/2]-frequencies[length/2-1];
+	double sum = 0.;
+	double *integrand = (double *)malloc(sizeof(double)*length);
+	for (int i =0;i< length;i++){
+		integrand[i] = real(detector_response[i]*std::conj(detector_response[i]))/psd[i];
+	}
+	double integral = 0;
+	if(integration_method=="SIMPSONS"){
+		integral = 4.*simpsons_sum(delta_f, length, integrand);
+	}
+	else if(integration_method=="GAUSSLEG"){
+		if(log10F){
+			for(int i = 0 ; i<length; i++){
+				integral+=weights[i]*integrand[i]*frequencies[i]*LOG10;	
+			}
+		}
+		else{
+			for(int i = 0 ; i<length; i++){
+				integral+=weights[i]*integrand[i];	
+			}
+		}
+		integral *= 4;
+	}
+	double HH = integral;
+	integral = 0;
+
+	for (int i =0;i< length;i++){
+		integrand[i] = real(data[i]*std::conj(detector_response[i]))/psd[i];
+	}
+	if(integration_method=="SIMPSONS"){
+		integral = 4.*simpsons_sum(delta_f, length, integrand);
+	}
+	else if(integration_method=="GAUSSLEG"){
+		
+		if(log10F){
+			for(int i = 0 ; i<length; i++){
+				integral+=weights[i]*integrand[i]*frequencies[i]*LOG10;	
+			}
+		}
+		else{
+			for(int i = 0 ; i<length; i++){
+				integral+=weights[i]*integrand[i];	
+			}
+		}
+		integral *= 4;
+	}
+	double DH = integral;
+
+	free(integrand);
+	return -0.5*(HH- 2*DH);
+}
+
+//! \brief Compute unmarginalized likelihood with a specified Quadrature method
+double Log_Likelihood_internal(
+	std::complex<double> *data,
+	double *psd,
+	std::complex<double> *detector_response,
+	Quadrature *QuadMethod
+)
+{
+	// Length of integrand
+	int length = QuadMethod->get_length();
+	// Hold the integrand values
+	double *integrand = new double [length];
+	// Array index, to be used for all loops
+	int i;
+
+	// (h|h) integral
+	for (i=0; i<length; i++)
+	{
+		integrand[i] = real(
+			detector_response[i] * std::conj(detector_response[i]) / psd[i]
+		);
+	}
+	double hh = 4.*QuadMethod->integrate(integrand);
+
+	// (d|h) integral
+	for (i=0; i<length; i++)
+	{
+		integrand[i] = real(
+			data[i] * std::conj(detector_response[i]) / psd[i]
+		);
+	}
+	double dh = 4.*QuadMethod->integrate(integrand);
+
+	// Clean up
+	delete [] integrand;
+
+	return -0.5*hh + dh;
+}
+
+
+struct skysearch_params{
+	std::complex<double> *hplus;
+	std::complex<double> *hcross;
+};
+
+
+//RA, DEC, and PSI were absorbed into gen_params structure -- remove from arguments
+double MCMC_likelihood_extrinsic(bool save_waveform, 
+	gen_params_base<double> *parameters,
+	std::string generation_method, 
+	int *data_length, 
+	double **frequencies, 
+	std::complex<double> **data, 
+	double **psd, 
+	double **weights, 
+	std::string integration_method, 
+	bool log10F, 
+	std::string *detectors, 
+	int num_detectors,
+	Quadrature *QuadMethod
+	)
+{
+	double ll=0;
+	std::complex<double> **responses = new std::complex<double>*[num_detectors];	
+	for(int i = 0 ; i<num_detectors; i++){
+		responses[i] = new std::complex<double>[data_length[i]];
+	}
+	//parameters->tc = -(parameters->tc);	
+	if (num_detectors == 1)
+	{
+		create_single_GW_detection(
+            responses[0],
+            detectors[0],
+            frequencies[0],
+            data_length[0],
+            parameters,
+            generation_method
+        );
+	}
+	else
+	{
+		create_coherent_GW_detection(detectors, num_detectors, frequencies,data_length, save_waveform, parameters, generation_method, responses);
+	}
+	
+	if (QuadMethod == NULL)
+	{
+		// Scott's way
+		for(int i = 0 ;i<num_detectors; i++){
+		ll += Log_Likelihood_internal(data[i],psd[i],frequencies[i],weights[i],responses[i],data_length[i], log10F,integration_method);	
+		}
+	}
+	else
+	{
+		// New way. Would be nice to make this the standard.
+		for(int i=0; i<num_detectors; i++)
+		{
+			ll += Log_Likelihood_internal(
+				data[i], psd[i], responses[i], QuadMethod
+			);
+		}
+	}
+	
+	for(int i = 0 ; i<num_detectors; i++){
+		delete [] responses[i];
+	}
+	delete [] responses;
+	//#################################################################################
+	//#################################################################################
+	
+	return ll;
 }

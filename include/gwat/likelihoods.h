@@ -157,8 +157,8 @@ class RelativeBinningBisectionLikelihood : public Likelihood {
   void setup_summary_data(const std::vector<IfoData>& ifos_data,
                           const std::vector<VECCPL>& fiducial_data);
 
-  std::pair<VECCPL, VECCPL> compute_waveform_ratios(
-      const CPL* h, const SummaryData& fiducial);
+  void compute_waveform_ratios(
+      VECCPL& r0, VECCPL& r1, const CPL* h, const SummaryData& fiducial);
 
   double log_likelihood_per_detector(const CPL* h, const SummaryData& fiducial);
 };

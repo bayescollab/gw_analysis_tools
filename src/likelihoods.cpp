@@ -594,11 +594,9 @@ void RelativeBinningBisectionLikelihood::setup_summary_data(
   }
 }
 
-std::pair<VECCPL, VECCPL>
-RelativeBinningBisectionLikelihood::compute_waveform_ratios(
-    const CPL* h, const SummaryData& fiducial) {
-  // Output vectors
-  VECCPL r0, r1;
+void RelativeBinningBisectionLikelihood::compute_waveform_ratios(
+    VECCPL& r0, VECCPL& r1, const CPL* h, const SummaryData& fiducial) {
+  r0.clear(); r1.clear();
 
   CPL ratio_left = h[0] / fiducial.strain.front();
   CPL ratio_right;
@@ -611,16 +609,14 @@ RelativeBinningBisectionLikelihood::compute_waveform_ratios(
 
     ratio_left = ratio_right;
   }
-
-  return std::make_pair(r0, r1);
 }
 
 double RelativeBinningBisectionLikelihood::log_likelihood_per_detector(
     const CPL* h, const SummaryData& fiducial) {
   double d_h = 0., h_h = 0.;
 
-  const auto ratios = compute_waveform_ratios(h, fiducial);
-  const auto r0 = ratios.first, r1 = ratios.second;
+  VECCPL r0, r1;
+  compute_waveform_ratios(r0, r1, h, fiducial);
 
   for (int b = 0; b < number_of_bins; b++) {
     d_h += real(fiducial.A0[b] * conj(r0[b]) + fiducial.A1[b] * conj(r1[b]));

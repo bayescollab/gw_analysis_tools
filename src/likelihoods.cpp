@@ -675,4 +675,27 @@ double RelativeBinningBisectionLikelihood::log_likelihood(
   return logL;
 }
 
+RelativeBinningBisectionLikelihood RelBinBisectLL_from_c_arrays(
+    double** freq, CPL** data, double** psds, CPL** fiducials, CPL** test_wfs,
+    int length, int n_detect, double duration, double epsilon) {
+  std::vector<IfoData> ifos_data;
+  std::vector<VECCPL> fiducial_vecs;
+  std::vector<VECCPL> test_vecs;
+
+  for (int i = 0; i < n_detect; i++) {
+    IfoData ifo;
+    ifo.duration = duration;
+    ifo.freqs = VECDBL(freq[i], freq[i] + length);
+    ifo.psd = VECDBL(psds[i], psds[i] + length);
+    ifo.strain = VECCPL(data[i], data[i] + length);
+    ifos_data.push_back(ifo);
+
+    fiducial_vecs.push_back(VECCPL(fiducials[i], fiducials[i] + length));
+    test_vecs.push_back(VECCPL(test_wfs[i], test_wfs[i] + length));
+  }
+
+  return RelativeBinningBisectionLikelihood(ifos_data, fiducial_vecs, test_vecs,
+                                            freq[0], epsilon);
+}
+
 }  // namespace GWATLikelihoods

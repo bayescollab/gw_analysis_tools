@@ -137,22 +137,14 @@ bayesship::bayesshipSampler *  RJPTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
 //   fiducial_out  — response at the maximum-likelihood point found
 //   test_out      — response at the last accepted point in the chain
 // Caller must pre-allocate both output arrays as [num_detectors][data_length[i]].
-void find_fiducial(
-	int dimension,
-	double *initial_params,
-	double **prior_ranges,
-	int num_mh_steps,
-	int num_detectors,
-	std::complex<double> **data,
-	double **noise_psd,
-	double **frequencies,
-	int *data_length,
-	double gps_time,
-	std::string *detectors,
-	std::string generation_method,
-	MCMC_modification_struct *mod_struct,
-	std::complex<double> **fiducial_out,
-	std::complex<double> **test_out
-);
+void find_fiducial(int dimension, double* initial_params,
+                   const std::vector<std::array<double, 2>>& prior_ranges,
+                   int num_mh_steps, int num_detectors,
+                   std::complex<double>** data, double** noise_psd,
+                   double** frequencies, int* data_length, double gps_time,
+                   std::string* detectors, std::string generation_method,
+                   MCMC_modification_struct* mod_struct,
+                   std::complex<double>** fiducial_out,
+                   std::complex<double>** test_out);
 
 #endif

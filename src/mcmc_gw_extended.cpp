@@ -2629,81 +2629,74 @@ static void cleanup_gen_params_rb(const std::string &local_gen,
     }
 }
 
-void find_fiducial(
-    int dimension,
-    double *initial_params,
-    double **prior_ranges,
-    int num_mh_steps,
-    int num_detectors,
-    std::complex<double> **data,
-    double **noise_psd,
-    double **frequencies,
-    int *data_length,
-    double gps_time,
-    std::string *detectors,
-    std::string generation_method,
-    MCMC_modification_struct *mod_struct,
-    std::complex<double> **fiducial_out,
-    std::complex<double> **test_out
-)
-{
-    // Mirror mcmcVariables setup from PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2
-    mcmcVariables mcmcVar;
-    mcmcVar.mcmc_noise             = noise_psd;
-    mcmcVar.mcmc_frequencies       = frequencies;
-    mcmcVar.mcmc_data              = data;
-    mcmcVar.mcmc_data_length       = data_length;
-    mcmcVar.mcmc_detectors         = detectors;
-    mcmcVar.mcmc_generation_method = generation_method;
-    mcmcVar.mcmc_num_detectors     = num_detectors;
-    mcmcVar.mcmc_gps_time          = gps_time;
-    mcmcVar.mcmc_gmst              = gps_to_GMST_radian(gps_time);
-    mcmcVar.mcmc_mod_struct        = mod_struct;
-    mcmcVar.mcmc_save_waveform     = true;
-    mcmcVar.maxDim                 = dimension;
-    mcmcVar.QuadMethod             = mod_struct->QuadMethod;
+void find_fiducial(int dimension, double* initial_params,
+                   const std::vector<std::array<double, 2>>& prior_ranges,
+                   int num_mh_steps, int num_detectors,
+                   std::complex<double>** data, double** noise_psd,
+                   double** frequencies, int* data_length, double gps_time,
+                   std::string* detectors, std::string generation_method,
+                   MCMC_modification_struct* mod_struct,
+                   std::complex<double>** fiducial_out,
+                   std::complex<double>** test_out) {
+  // Mirror mcmcVariables setup from
+  // PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2
+  mcmcVariables mcmcVar;
+  mcmcVar.mcmc_noise = noise_psd;
+  mcmcVar.mcmc_frequencies = frequencies;
+  mcmcVar.mcmc_data = data;
+  mcmcVar.mcmc_data_length = data_length;
+  mcmcVar.mcmc_detectors = detectors;
+  mcmcVar.mcmc_generation_method = generation_method;
+  mcmcVar.mcmc_num_detectors = num_detectors;
+  mcmcVar.mcmc_gps_time = gps_time;
+  mcmcVar.mcmc_gmst = gps_to_GMST_radian(gps_time);
+  mcmcVar.mcmc_mod_struct = mod_struct;
+  mcmcVar.mcmc_save_waveform = true;
+  mcmcVar.maxDim = dimension;
+  mcmcVar.QuadMethod = mod_struct->QuadMethod;
 
-    for (int i = 1; i < num_detectors; i++) {
-        if (data_length[i] != data_length[0] ||
-            frequencies[i][0] != frequencies[0][0] ||
-            frequencies[i][data_length[i]-1] != frequencies[0][data_length[0]-1])
-            mcmcVar.mcmc_save_waveform = false;
-    }
-    PTMCMC_method_specific_prep_v2(generation_method, dimension,
-        &mcmcVar.mcmc_intrinsic, mcmcVar.mcmc_mod_struct);
+  for (int i = 1; i < num_detectors; i++) {
+    if (data_length[i] != data_length[0] ||
+        frequencies[i][0] != frequencies[0][0] ||
+        frequencies[i][data_length[i] - 1] !=
+            frequencies[0][data_length[0] - 1])
+      mcmcVar.mcmc_save_waveform = false;
+  }
+  PTMCMC_method_specific_prep_v2(generation_method, dimension,
+                                 &mcmcVar.mcmc_intrinsic,
+                                 mcmcVar.mcmc_mod_struct);
 
-    MCMC_user_param user_param;
-    user_param.weights = new double*[num_detectors];
-    for (int j = 0; j < num_detectors; j++) user_param.weights[j] = nullptr;
-    user_param.GAUSS_QUAD  = mod_struct->GAUSS_QUAD;
-    user_param.log10F      = mod_struct->log10F;
-    user_param.mod_struct  = mod_struct;
-    user_param.QuadMethod  = mod_struct->QuadMethod;
-    mcmcVar.user_parameters = &user_param;
+  MCMC_user_param user_param;
+  user_param.weights = new double*[num_detectors];
+  for (int j = 0; j < num_detectors; j++) user_param.weights[j] = nullptr;
+  user_param.GAUSS_QUAD = mod_struct->GAUSS_QUAD;
+  user_param.log10F = mod_struct->log10F;
+  user_param.mod_struct = mod_struct;
+  user_param.QuadMethod = mod_struct->QuadMethod;
+  mcmcVar.user_parameters = &user_param;
 
-    gsl_rng *rng = gsl_rng_alloc(gsl_rng_default);
+  gsl_rng* rng = gsl_rng_alloc(gsl_rng_default);
 
-    // Evaluate log-likelihood at a parameter vector
-    auto eval_ll = [&](double *params) -> double {
-        double *tmp = new double[dimension];
-        gen_params_base<double> gp;
-        std::string local_gen = MCMC_prep_params_v2(
-            params, tmp, &gp, dimension,
-            generation_method, mod_struct,
-            mcmcVar.mcmc_intrinsic, mcmcVar.mcmc_gmst);
-        repack_parameters(tmp, &gp, "MCMC_" + generation_method, dimension);
-        double ll = MCMC_likelihood_extrinsic(
-            mcmcVar.mcmc_save_waveform, &gp, local_gen,
-            data_length, frequencies, data, noise_psd,
-            user_param.weights, "SIMPSONS", user_param.log10F,
-            detectors, num_detectors, mod_struct->QuadMethod);
-        delete[] tmp;
-        cleanup_gen_params_rb(local_gen, gp, mod_struct);
-        return std::isnan(ll) ? -std::numeric_limits<double>::infinity() : ll;
-    };
+  // Evaluate log-likelihood at a parameter vector
+  auto eval_ll = [&](double* params) -> double {
+    double* tmp = new double[dimension];
+    gen_params_base<double> gp;
+    std::string local_gen = MCMC_prep_params_v2(
+        params, tmp, &gp, dimension, generation_method, mod_struct,
+        mcmcVar.mcmc_intrinsic, mcmcVar.mcmc_gmst);
+    repack_parameters(tmp, &gp, "MCMC_" + generation_method, dimension);
+    double ll = MCMC_likelihood_extrinsic(
+        mcmcVar.mcmc_save_waveform, &gp, local_gen, data_length, frequencies,
+        data, noise_psd, user_param.weights, "SIMPSONS", user_param.log10F,
+        detectors, num_detectors, mod_struct->QuadMethod);
+    delete[] tmp;
+    cleanup_gen_params_rb(local_gen, gp, mod_struct);
+    return std::isnan(ll) ? -std::numeric_limits<double>::infinity() : ll;
+  };
 
-    // Generate detector responses at a parameter vector
-    auto gen_resp = [&](double *params, std::complex<double> **out) {
+  // Generate detector responses at a parameter vector
+  auto gen_resp =
+      [&](double* params, std::complex<double>** out) {
         double *tmp = new double[dimension];
         gen_params_base<double> gp;
         std::string local_gen = MCMC_prep_params_v2(
@@ -2716,127 +2709,128 @@ void find_fiducial(
             true, &gp, local_gen, out);
         delete[] tmp;
         cleanup_gen_params_rb(local_gen, gp, mod_struct);
-    };
+      };
 
-    // Chain state
-    double *current  = new double[dimension];
-    double *proposed = new double[dimension];
-    double *best     = new double[dimension];
-    std::memcpy(current, initial_params, dimension * sizeof(double));
-    double current_ll = eval_ll(current);
-    std::memcpy(best, current, dimension * sizeof(double));
-    double best_ll = current_ll;
+  // Chain state
+  double* current = new double[dimension];
+  double* proposed = new double[dimension];
+  double* best = new double[dimension];
+  std::memcpy(current, initial_params, dimension * sizeof(double));
+  double current_ll = eval_ll(current);
+  std::memcpy(best, current, dimension * sizeof(double));
+  double best_ll = current_ll;
 
-    // Proposal scales: sigma_i = (2.38/sqrt(dim)) / sqrt(Gamma_ii)
-    // Gamma_ii estimated via central finite differences of the network response
-    // w.r.t. each MCMC parameter directly, avoiding any Jacobian transform.
-    double delta_f = (data_length[0] > 1) ?
-        frequencies[0][1] - frequencies[0][0] : 1.0;
+  // Proposal scales: sigma_i = (2.38/sqrt(dim)) / sqrt(Gamma_ii)
+  // Gamma_ii estimated via central finite differences of the network response
+  // w.r.t. each MCMC parameter directly, avoiding any Jacobian transform.
+  double delta_f =
+      (data_length[0] > 1) ? frequencies[0][1] - frequencies[0][0] : 1.0;
 
-    std::complex<double> **h_plus  = new std::complex<double>*[num_detectors];
-    std::complex<double> **h_minus = new std::complex<double>*[num_detectors];
+  std::complex<double>** h_plus = new std::complex<double>*[num_detectors];
+  std::complex<double>** h_minus = new std::complex<double>*[num_detectors];
+  for (int d = 0; d < num_detectors; d++) {
+    h_plus[d] = new std::complex<double>[data_length[d]];
+    h_minus[d] = new std::complex<double>[data_length[d]];
+  }
+  double* theta_p = new double[dimension];
+  double* theta_m = new double[dimension];
+
+  double* sigma = new double[dimension];
+  const double c_mh = 2.38 / std::sqrt((double)dimension);
+  const double fd_eps = 1e-5;
+
+  std::cout << "Fiducial Fisher diagonal (MCMC params):\n";
+  for (int i = 0; i < dimension; i++) {
+    std::memcpy(theta_p, current, dimension * sizeof(double));
+    std::memcpy(theta_m, current, dimension * sizeof(double));
+
+    // Step size: fd_eps * prior range, clamped so both points stay in-prior
+    double dtheta = fd_eps * (prior_ranges[i][1] - prior_ranges[i][0]);
+    if (dtheta == 0.0) dtheta = fd_eps;
+    dtheta = std::min(dtheta, prior_ranges[i][1] - current[i]);
+    dtheta = std::min(dtheta, current[i] - prior_ranges[i][0]);
+    if (dtheta <= 0.0) dtheta = fd_eps;  // current is on boundary; best effort
+
+    theta_p[i] = current[i] + dtheta;
+    theta_m[i] = current[i] - dtheta;
+
+    gen_resp(theta_p, h_plus);
+    gen_resp(theta_m, h_minus);
+
+    double gamma_ii = 0.0;
     for (int d = 0; d < num_detectors; d++) {
-        h_plus[d]  = new std::complex<double>[data_length[d]];
-        h_minus[d] = new std::complex<double>[data_length[d]];
+      for (int j = 0; j < data_length[d]; j++) {
+        std::complex<double> deriv =
+            (h_plus[d][j] - h_minus[d][j]) / (2.0 * dtheta);
+        gamma_ii += std::norm(deriv) / noise_psd[d][j];
+      }
     }
-    double *theta_p = new double[dimension];
-    double *theta_m = new double[dimension];
+    gamma_ii *= 4.0 * delta_f;
+    sigma[i] = (gamma_ii > 0.0)
+                   ? c_mh / std::sqrt(gamma_ii)
+                   : 0.1 * (prior_ranges[i][1] - prior_ranges[i][0]);
+    std::cout << "  param " << i << ": Gamma_ii=" << gamma_ii
+              << "  sigma=" << sigma[i] << "\n";
+  }
 
-    double *sigma = new double[dimension];
-    const double c_mh   = 2.38 / std::sqrt((double)dimension);
-    const double fd_eps = 1e-5;
+  for (int d = 0; d < num_detectors; d++) {
+    delete[] h_plus[d];
+    delete[] h_minus[d];
+  }
+  delete[] h_plus;
+  delete[] h_minus;
+  delete[] theta_p;
+  delete[] theta_m;
 
-    std::cout << "Fiducial Fisher diagonal (MCMC params):\n";
+  std::cout << "Fiducial M-H start logL = " << current_ll << "\n";
+
+  int proposals_in_prior = 0;
+  int proposals_accepted = 0;
+  auto mh_t0 = std::chrono::steady_clock::now();
+  for (int step = 0; step < num_mh_steps; step++) {
+    bool in_prior = true;
     for (int i = 0; i < dimension; i++) {
-        std::memcpy(theta_p, current, dimension * sizeof(double));
-        std::memcpy(theta_m, current, dimension * sizeof(double));
-
-        // Step size: fd_eps * prior range, clamped so both points stay in-prior
-        double dtheta = fd_eps * (prior_ranges[i][1] - prior_ranges[i][0]);
-        if (dtheta == 0.0) dtheta = fd_eps;
-        dtheta = std::min(dtheta, prior_ranges[i][1] - current[i]);
-        dtheta = std::min(dtheta, current[i] - prior_ranges[i][0]);
-        if (dtheta <= 0.0) dtheta = fd_eps; // current is on boundary; best effort
-
-        theta_p[i] = current[i] + dtheta;
-        theta_m[i] = current[i] - dtheta;
-
-        gen_resp(theta_p, h_plus);
-        gen_resp(theta_m, h_minus);
-
-        double gamma_ii = 0.0;
-        for (int d = 0; d < num_detectors; d++) {
-            for (int j = 0; j < data_length[d]; j++) {
-                std::complex<double> deriv =
-                    (h_plus[d][j] - h_minus[d][j]) / (2.0 * dtheta);
-                gamma_ii += std::norm(deriv) / noise_psd[d][j];
-            }
-        }
-        gamma_ii *= 4.0 * delta_f;
-        sigma[i] = (gamma_ii > 0.0) ? c_mh / std::sqrt(gamma_ii)
-                                     : 0.1 * (prior_ranges[i][1] - prior_ranges[i][0]);
-        std::cout << "  param " << i << ": Gamma_ii=" << gamma_ii
-                  << "  sigma=" << sigma[i] << "\n";
+      proposed[i] = current[i] + gsl_ran_gaussian(rng, sigma[i]);
+      if (proposed[i] < prior_ranges[i][0] ||
+          proposed[i] > prior_ranges[i][1]) {
+        in_prior = false;
+        break;
+      }
     }
+    if (!in_prior) continue;
+    proposals_in_prior++;
 
-    for (int d = 0; d < num_detectors; d++) {
-        delete[] h_plus[d];
-        delete[] h_minus[d];
+    double proposed_ll = eval_ll(proposed);
+    double log_alpha = proposed_ll - current_ll;
+
+    if (log_alpha >= 0. || std::log(gsl_rng_uniform(rng)) < log_alpha) {
+      std::memcpy(current, proposed, dimension * sizeof(double));
+      current_ll = proposed_ll;
+      proposals_accepted++;
+      if (current_ll > best_ll) {
+        std::memcpy(best, current, dimension * sizeof(double));
+        best_ll = current_ll;
+      }
     }
-    delete[] h_plus;
-    delete[] h_minus;
-    delete[] theta_p;
-    delete[] theta_m;
+  }
 
-    std::cout << "Fiducial M-H start logL = " << current_ll << "\n";
+  auto mh_t1 = std::chrono::steady_clock::now();
+  double mh_ms =
+      std::chrono::duration<double, std::milli>(mh_t1 - mh_t0).count();
+  std::cout << "Fiducial M-H MAP logL   = " << best_ll << "\n";
+  std::cout << "Fiducial M-H final logL = " << current_ll << "\n";
+  std::cout << "M-H loop time: " << mh_ms << " ms\n";
+  std::cout << "Proposal acceptance fraction: " << proposals_accepted << "/"
+            << proposals_in_prior << " in-prior proposals accepted\n";
 
-    int proposals_in_prior = 0;
-    int proposals_accepted = 0;
-    auto mh_t0 = std::chrono::steady_clock::now();
-    for (int step = 0; step < num_mh_steps; step++)
-    {
-        bool in_prior = true;
-        for (int i = 0; i < dimension; i++) {
-            proposed[i] = current[i] + gsl_ran_gaussian(rng, sigma[i]);
-            if (proposed[i] < prior_ranges[i][0] || proposed[i] > prior_ranges[i][1]) {
-                in_prior = false;
-                break;
-            }
-        }
-        if (!in_prior) continue;
-        proposals_in_prior++;
+  gen_resp(best, fiducial_out);
+  gen_resp(current, test_out);
 
-        double proposed_ll = eval_ll(proposed);
-        double log_alpha   = proposed_ll - current_ll;
-
-        if (log_alpha >= 0. || std::log(gsl_rng_uniform(rng)) < log_alpha) {
-            std::memcpy(current, proposed, dimension * sizeof(double));
-            current_ll = proposed_ll;
-            proposals_accepted++;
-            if (current_ll > best_ll) {
-                std::memcpy(best, current, dimension * sizeof(double));
-                best_ll = current_ll;
-            }
-        }
-    }
-
-    auto mh_t1 = std::chrono::steady_clock::now();
-    double mh_ms = std::chrono::duration<double, std::milli>(mh_t1 - mh_t0).count();
-    std::cout << "Fiducial M-H MAP logL   = " << best_ll << "\n";
-    std::cout << "Fiducial M-H final logL = " << current_ll << "\n";
-    std::cout << "M-H loop time: " << mh_ms << " ms\n";
-    std::cout << "Proposal acceptance fraction: "
-              << proposals_accepted << "/" << proposals_in_prior
-              << " in-prior proposals accepted\n";
-
-    gen_resp(best,    fiducial_out);
-    gen_resp(current, test_out);
-
-    // Cleanup
-    delete[] sigma;
-    delete[] current;
-    delete[] proposed;
-    delete[] best;
-    delete[] user_param.weights;
-    gsl_rng_free(rng);
+  // Cleanup
+  delete[] sigma;
+  delete[] current;
+  delete[] proposed;
+  delete[] best;
+  delete[] user_param.weights;
+  gsl_rng_free(rng);
 }

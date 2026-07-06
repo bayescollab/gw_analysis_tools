@@ -163,6 +163,13 @@ class RelativeBinningBisectionLikelihood : public Likelihood {
   double log_likelihood_per_detector(const CPL* h, const SummaryData& fiducial);
 };
 
+/// Initialize a RelativeBinningBisectionLikelihood object from standard
+/// C-arrays. GWAT standard for waveform structures are C-arrays so this wraps
+/// them to instantiate the likelihood object, which uses C++ vectors.
+RelativeBinningBisectionLikelihood RelBinBisectLL_from_c_arrays(
+    double** freq, CPL** data, double** psds, CPL** fiducials, CPL** test_wfs,
+    int length, int n_detect, double duration, double epsilon);
+
 }  // namespace GWATLikelihoods
 
 #endif  // LIKELIHOODS_H

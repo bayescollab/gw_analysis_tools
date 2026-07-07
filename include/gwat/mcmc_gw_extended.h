@@ -145,6 +145,7 @@ void find_fiducial(int dimension, double* initial_params,
                    std::string* detectors, std::string generation_method,
                    MCMC_modification_struct* mod_struct,
                    std::complex<double>** fiducial_out,
-                   std::complex<double>** test_out);
+                   std::complex<double>** test_out,
+                   gen_params_base<double>* test_gp_out = nullptr);
 
 #endif

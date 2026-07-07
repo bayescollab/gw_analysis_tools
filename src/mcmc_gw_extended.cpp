@@ -2637,7 +2637,8 @@ void find_fiducial(int dimension, double* initial_params,
                    std::string* detectors, std::string generation_method,
                    MCMC_modification_struct* mod_struct,
                    std::complex<double>** fiducial_out,
-                   std::complex<double>** test_out) {
+                   std::complex<double>** test_out,
+                   gen_params_base<double>* test_gp_out) {
   // Mirror mcmcVariables setup from
   // PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2
   mcmcVariables mcmcVar;
@@ -2825,6 +2826,15 @@ void find_fiducial(int dimension, double* initial_params,
 
   gen_resp(best, fiducial_out);
   gen_resp(current, test_out);
+
+  if (test_gp_out != nullptr) {
+    double* tmp = new double[dimension];
+    std::string local_gen = MCMC_prep_params_v2(
+        current, tmp, test_gp_out, dimension, generation_method, mod_struct,
+        mcmcVar.mcmc_intrinsic, mcmcVar.mcmc_gmst);
+    repack_parameters(tmp, test_gp_out, "MCMC_" + generation_method, dimension);
+    delete[] tmp;
+  }
 
   // Cleanup
   delete[] sigma;

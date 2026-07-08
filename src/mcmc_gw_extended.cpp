@@ -2760,6 +2760,7 @@ void find_fiducial(int dimension, double* initial_params,
   const double c_mh = 2.38 / std::sqrt((double)dimension);
   const double fd_eps = 1e-5;
 
+  // Compute the Fisher elements
   std::cout << "Fiducial Fisher diagonal (MCMC params):\n";
   for (int i = 0; i < dimension; i++) {
     std::memcpy(theta_p, current, dimension * sizeof(double));
@@ -2802,6 +2803,7 @@ void find_fiducial(int dimension, double* initial_params,
 
   std::cout << "Fiducial M-H start logL = " << current_ll << "\n";
 
+  // The M-H loop
   int proposals_in_prior = 0;
   int proposals_accepted = 0;
   auto mh_t0 = std::chrono::steady_clock::now();

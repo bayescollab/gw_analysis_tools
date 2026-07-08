@@ -37,7 +37,7 @@
 /* ----------------------------- Public Methods ----------------------------- */
 
 /**
- * @brief Overrides the IMRPhenomD_NRT waveform creation to add EoS
+ * @brief Overrides the IMRPhenomD_NRT waveform constructor to add EoS
  * functionality
  *
  * @details Calculates the EoS using the specified parameters, then integrates
@@ -108,17 +108,8 @@ void IMRPhenomD_NRT_EOS<T>::get_m_love(source_parameters<T>* params) {
       new ObservablesIntegrator(*p_of_e, ec1, ec2);
   bool CurvatureCheck;
 
-  /* auto start = std::chrono::system_clock::now(); */
-
   integrator->integrate_for_observables(observables1, observables2,
                                         CurvatureCheck);
-
-  // TODO: (Kaitlyn) Time tests for debugging, remove later.
-  /* auto end = std::chrono::system_clock::now();
-  auto elapsed =
-      std::chrono::duration_cast<std::chrono::milliseconds>(end - start); */
-  /* std::cout << "Integrate for observables elapsed time (milliseconds): "
-            << elapsed.count() << '\n'; */
 
   delete integrator;
   integrator = 0;
@@ -195,7 +186,7 @@ template class IMRPhenomD_NRT_EOS<adouble>;
 
 /* ---------------------------- Public Functions ---------------------------- */
 
-crust_EoS EOS_Constructor::crust;
+CrustEoS EOS_Constructor::crust;
 
 /**
  * @brief Read-in and store an EoS table
@@ -229,7 +220,10 @@ void EOS_Constructor::get_crust(std::string EoS_filepath,
   convert_crust_to_cs2();
 }
 
-// TODO: Add Doxygen comments.
+/**
+ * @brief Function to clear the crust EoS vectors
+ *
+ */
 void EOS_Constructor::clear_crust() {
   crust.pressure.clear();
   crust.epsilon.clear();
@@ -237,6 +231,10 @@ void EOS_Constructor::clear_crust() {
   crust.cs2.clear();
 }
 
+/**
+ * @brief Function to clear the built EoS vectors and central values
+ *
+ */
 void EOS_Constructor::clear_EOS() {
   eos.pressure.clear();
   eos.epsilon.clear();
@@ -292,18 +290,18 @@ void EOS_Constructor::convert_crust_to_cs2() {
  */
 void EOS_Constructor::convert_cs2_to_eos(std::size_t start_index) {
   // Get starting points for integration
-  double nb = eos.nb.at(start_index);
-  double pressure = crust.pressure.at(start_index);
-  double epsilon = crust.epsilon.at(start_index);
+  double nb = eos.nb.at(start_index - 1);
+  double pressure = crust.pressure.at(start_index - 1);
+  double epsilon = crust.epsilon.at(start_index - 1);
 
   // Copy existing crust data
   eos.pressure.insert(eos.pressure.begin(), crust.pressure.begin(),
-                       crust.pressure.begin() + start_index);
+                      crust.pressure.begin() + start_index);
   eos.epsilon.insert(eos.epsilon.begin(), crust.epsilon.begin(),
-                      crust.epsilon.begin() + start_index);
+                     crust.epsilon.begin() + start_index);
 
   // Loop through all baryon number density values and perform integration
-  for (int i = (start_index + 1); i < eos.nb.size(); i++) {
+  for (int i = start_index; i < eos.nb.size(); i++) {
     double delta_nb = eos.nb[i] - nb;  // Calculate step size
     double delta_e =
         delta_nb * (epsilon + pressure) / nb;  // Calculate energy delta at step
@@ -362,12 +360,9 @@ void Bumpy_EOS_Constructor::get_additional_EOS_params() {
   eos_params.bump_start = eos_params.bump_offset - (eos_params.bump_width / 2);
   eos_params.bump_end = eos_params.bump_offset + (eos_params.bump_width / 2);
   eos_params.max_nb = std::max(eos_params.n1, eos_params.n2);
-  Interpolation p_of_nb((gsl_interp_type*)gsl_interp_steffen, crust.nb,
-                        crust.pressure);
-  Interpolation e_of_nb((gsl_interp_type*)gsl_interp_steffen, crust.nb,
-                        crust.epsilon);
-  eos_params.f1_n1 = p_of_nb.dyofx(eos_params.bump_start) /
-                     e_of_nb.dyofx(eos_params.bump_start);
+  Interpolation cs2_of_nb((gsl_interp_type*)gsl_interp_steffen, crust.nb,
+                          crust.cs2);
+  eos_params.f1_n1 = cs2_of_nb.yofx(eos_params.bump_start);
 }
 
 /**
@@ -376,8 +371,6 @@ void Bumpy_EOS_Constructor::get_additional_EOS_params() {
  *
  */
 void Bumpy_EOS_Constructor::construct_EOS() {
-  /* auto start = std::chrono::system_clock::now(); */
-
   // Check for valid inputs
   if (eos_params.max_nb > crust.nb.back()) {
     throw std::invalid_argument(
@@ -389,26 +382,20 @@ void Bumpy_EOS_Constructor::construct_EOS() {
         "interpolation for SLy EoS tables. Aborting.");
   }
 
-  // Build bump in the speed of sound 
+  // Build bump in the speed of sound
   build_cs2_one_quad_bump();
   // Convert speed of sound bump to pressure and epsilon values.
   convert_cs2_to_eos(injection_index);
 
   // Get central epsilon values
   Interpolation* e_of_nb = new Interpolation;
+
   e_of_nb->initialize((gsl_interp_type*)gsl_interp_steffen, eos.nb,
                       eos.epsilon);
   eos.eps_c1 = e_of_nb->yofx(eos_params.n1);
   eos.eps_c2 = e_of_nb->yofx(eos_params.n2);
   delete e_of_nb;
   e_of_nb = 0;
-
-  // TODO: (Kaitlyn) Time tests for debugging, remove later.
-  /* auto end = std::chrono::system_clock::now();
-  auto elapsed =
-      std::chrono::duration_cast<std::chrono::microseconds>(end - start); */
-  /* std::cout << "Build cs2 elapsed time (microseconds): " << elapsed.count()
-            << '\n'; */
 }
 
 /* --------------------------- Protected Functions -------------------------- */
@@ -429,30 +416,42 @@ void Bumpy_EOS_Constructor::build_cs2_one_quad_bump() {
   // How much to step by during the bump
   double nb_step_bump = eos_params.bump_width / 1e3;
   // How much to step by during the plateau
-  double nb_step_plat = 1e3;
+  double nb_step_plat = 10 * nb_step_bump;
   // Define an ending value slightly greater than the max central nb value, to
   // prevent interpolation errors
-  double nb_end = eos_params.max_nb +
-                  std::fmod(eos_params.max_nb, nb_step_plat) * nb_step_plat;
+  double nb_end = eos_params.max_nb + nb_step_plat;
   double nb;
 
   // Simply use the crust prior to the start of the bump
   for (int i = 0; i < crust.nb.size(); i++) {
-    nb = crust.nb[i];
-    if (nb >= eos_params.bump_start) {
-      nb = eos_params.bump_start;
+    nb = crust.nb.at(i);
+    if ((nb > nb_end) || (nb >= eos_params.bump_start)) {
       injection_index = i - 1;
-      break;
-    } else if (nb >= nb_end) {
-      nb = nb_end;
-      injection_index = i - 1;
+      nb = crust.nb.at(i - 1) + nb_step_bump;
       break;
     } else {
-      eos.cs2.push_back(crust.cs2[i]);
+      eos.cs2.push_back(crust.cs2.at(i));
       eos.nb.push_back(nb);
     }
   }
 
+  // Interpolate up to the bump start (this is a separate loop to prevent
+  // creating an interpolation object when it's not necessary)
+  if (nb < eos_params.bump_start) {
+    // Get central epsilon values
+    Interpolation* cs2_of_nb = new Interpolation;
+    cs2_of_nb->initialize((gsl_interp_type*)gsl_interp_steffen, crust.nb,
+                          crust.cs2);
+    while ((nb < eos_params.bump_start) && (nb <= nb_end)) {
+      double cs2_val = cs2_of_nb->yofx(nb);
+      eos.cs2.push_back(cs2_val);
+      eos.nb.push_back(nb);
+      nb += nb_step_bump;
+    }
+    delete cs2_of_nb;
+  }
+
+  // Inject bump if maximum value has not yet been reached
   while (nb <= nb_end) {
     // Inject bump values between bump start and end
     if ((eos_params.bump_start <= nb) && (nb <= eos_params.bump_end)) {
@@ -528,7 +527,8 @@ double Bumpy_EOS_Constructor::get_quadratic_bump_point(const double& nb,
 /* ---------------------------- Public Functions ---------------------------- */
 
 /**
- * @brief Construct a new Observables Integrator object, set eos(h)
+ * @brief Construct a new Observables Integrator object, initialize the EoS in
+ terms of enthalpy
  *
  * @details Takes in the current EoS (p(e)) and uses it to find e(h) and p(h),
  * where h is the pseudo-enthalpy. Formulation is based on doi:10.1086/171882.
@@ -541,16 +541,7 @@ double Bumpy_EOS_Constructor::get_quadratic_bump_point(const double& nb,
  */
 ObservablesIntegrator::ObservablesIntegrator(Interpolation& p_of_e, double ec_1,
                                              double ec_2) {
-  /* auto start = std::chrono::system_clock::now(); */
-
   integrate_for_eos_of_h(p_of_e, ec_1, ec_2);
-
-  // TODO: (Kaitlyn) Time tests for debugging, remove later.
-  /* auto end = std::chrono::system_clock::now();
-  auto elapsed =
-      std::chrono::duration_cast<std::chrono::microseconds>(end - start); */
-  /* std::cout << "Integrate for eos(h) elapsed time (microseconds): "
-            << elapsed.count() << '\n'; */
 }
 
 /**
@@ -1010,7 +1001,7 @@ void Interpolation::initialize(gsl_interp_type* interp_type,
   if (!acc) {
     std::cerr << "Error: Failed to allocate memory for accelerator."
               << std::endl;
-    exit(EXIT_FAILURE);
+    std::exit(EXIT_FAILURE);
   }
 
   // Allocating GSL spline of specified type and size

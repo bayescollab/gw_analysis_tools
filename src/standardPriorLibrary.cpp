@@ -406,21 +406,34 @@ double logPriorStandard_D_NRT_EOS::eval(bayesship::positionInfo* position,
 
   // Checks if a parabola can actually be created for this set of points.
   Bumpy_EOS_Constructor* bumpy_eos = new Bumpy_EOS_Constructor;
+  bumpy_eos->eos_params.bump_magnitude = pos[11];
+  bumpy_eos->eos_params.bump_width = bumpy_eos->convert_nsat_to_MeV(pos[12]);
+  bumpy_eos->eos_params.bump_offset = bumpy_eos->convert_nsat_to_MeV(pos[13]);
+  if (PD->EOS_plat_flag) {
+    bumpy_eos->eos_params.plat = pos[14];
+  } else {
+    bumpy_eos->eos_params.plat = 1. / 3.;
+  }
   bumpy_eos->eos_params.n1 = bumpy_eos->convert_nsat_to_MeV(pos[7]);
   bumpy_eos->eos_params.n2 = bumpy_eos->convert_nsat_to_MeV(pos[8]);
-  bumpy_eos->eos_params.bump_offset = bumpy_eos->convert_nsat_to_MeV(pos[13]);
-  bumpy_eos->eos_params.bump_width = bumpy_eos->convert_nsat_to_MeV(pos[12]);
+
   bumpy_eos->get_additional_EOS_params();
 
-  if ((bumpy_eos->eos_params.f1_n1 > bumpy_eos->eos_params.bump_magnitude >
-      bumpy_eos->eos_params.plat) || (bumpy_eos->eos_params.f1_n1 < bumpy_eos->eos_params.bump_magnitude <
-      bumpy_eos->eos_params.plat)) {
-    delete bumpy_eos;
-    bumpy_eos = 0;
-    return bayesship::limitInf;
-  }
+  bool leq_check1 =
+      (bumpy_eos->eos_params.f1_n1 < bumpy_eos->eos_params.bump_magnitude);
+  bool leq_check2 =
+      (bumpy_eos->eos_params.bump_magnitude < bumpy_eos->eos_params.plat);
+  bool geq_check1 =
+      (bumpy_eos->eos_params.f1_n1 > bumpy_eos->eos_params.bump_magnitude);
+  bool geq_check2 =
+      (bumpy_eos->eos_params.bump_magnitude > bumpy_eos->eos_params.plat);
+
   delete bumpy_eos;
   bumpy_eos = 0;
+
+  if ((leq_check1 && leq_check2) || (geq_check1 && geq_check2)) {
+    return bayesship::limitInf;
+  }
 
   return log(aligned_spin_prior(pos[9])) + log(aligned_spin_prior(pos[10])) +
          3 * pos[6];

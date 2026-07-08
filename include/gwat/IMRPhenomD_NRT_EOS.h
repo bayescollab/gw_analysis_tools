@@ -18,14 +18,16 @@
 /**
  * @file Class that extends the IMRPhenomD_NRT waveform to sample directly on
  * equation of state (EOS) parameters.
- *
  */
 
 /* -------------------------------------------------------------------------- */
 /*                       Interpolation Class Definition                       */
 /* -------------------------------------------------------------------------- */
 
-/* -------- Defines a class to create an interpolated function y(x). -------- */
+/**
+ * @class Interpolation IMRPhenomD_NRT_EOS.h "include/gwat/IMRPhenomD_NRT_EOS.h"
+ * @brief Defines a class to create an interpolated function y(x).
+ */
 class Interpolation {
  public:
   // Constructors and destructors
@@ -34,14 +36,14 @@ class Interpolation {
   Interpolation();
   ~Interpolation();
 
-  // Initializes GSL splines for interpolation
+  // Function to initialize GSL splines for interpolation
   void initialize(gsl_interp_type* interp_type, std::vector<double> x,
                   std::vector<double> y);
 
-  // Frees GSL spline and accelerator memory
+  // Function to free GSL spline and accelerator memory
   void free();
 
-  // Evaluation functions
+  // Functions to evaluate points
   double yofx(double x);
   double dyofx(double x);
 
@@ -59,18 +61,24 @@ class Interpolation {
 /*                     IMRPhenomD_NRT_EOS Class Definition                    */
 /* -------------------------------------------------------------------------- */
 
-/* ------ Defines a class to construct a waveform with EoS parameters. ------ */
+/**
+ * @class IMRPhenomD_NRT_EOS IMRPhenomD_NRT_EOS.h
+ * "include/gwat/IMRPhenomD_NRT_EOS.h"
+ * @brief Defines a class to construct a waveform with EoS parameters.
+ */
 template <class T>
 class IMRPhenomD_NRT_EOS : public IMRPhenomD_NRT<T> {
  public:
-  // Overrides IMRPhenomD_NRT construct_waveform
+  // Function to override IMRPhenomD_NRT construct_waveform
   virtual int construct_waveform(T* frequencies, int length,
                                  std::complex<T>* waveform,
                                  source_parameters<T>* params) override;
 
+  // Function to calculate and update masses and tidal love numbers
   void get_m_love(source_parameters<T>* params);
 
  protected:
+  // Function to update mass-dependent parameters
   void get_observable_params(source_parameters<T>* params);
 };
 
@@ -78,9 +86,11 @@ class IMRPhenomD_NRT_EOS : public IMRPhenomD_NRT<T> {
 /*                    EoS Constructor Base Class Definition                   */
 /* -------------------------------------------------------------------------- */
 
-// TODO: Format this properly.
-
-struct EoS_data {
+/**
+ * @struct EoSData IMRPhenomD_NRT_EOS.h "include/gwat/IMRPhenomD_NRT_EOS.h"
+ * @brief Struct to store data about an EoS for the EoS-based waveform.
+ */
+struct EoSData {
   // Vectors
   std::vector<double> pressure;
   std::vector<double> epsilon;
@@ -92,7 +102,12 @@ struct EoS_data {
   double eps_c2;
 };
 
-struct crust_EoS {
+/**
+ * @struct CrustEoS IMRPhenomD_NRT_EOS.h "include/gwat/IMRPhenomD_NRT_EOS.h"
+ * @brief Struct to store data about a crust EoS table for the EoS-based
+ * waveform.
+ */
+struct CrustEoS {
   // Vectors
   std::vector<double> pressure;
   std::vector<double> epsilon;
@@ -100,34 +115,42 @@ struct crust_EoS {
   std::vector<double> cs2;
 };
 
-/* --------------- Defines a *base class* to construct an EoS. -------------- */
+/**
+ * @class EOS_Constructor IMRPhenomD_NRT_EOS.h
+ * "include/gwat/IMRPhenomD_NRT_EOS.h"
+ * @brief Defines a base class to construct an equation of state.
+ */
 class EOS_Constructor {
  public:
+  // Object to store built EoS information
+  EoSData eos;
+
+  // Static object to store the crust table
+  static CrustEoS crust;
+
   // Constructor and destructor for inheritance, if necessary
   EOS_Constructor() {}
-  ~EOS_Constructor() {}
+  virtual ~EOS_Constructor() {}
 
-  // Object to store built EoS information
-  EoS_data eos;
-
-  // Static object to store the crust
-  // For new users: Static objects will share this data across *all* instances
-  // of the class. This memory is more-or-less global, but this is necessary for
-  // the EoS classes as the crust table must be read and accessed *every time a
-  // point is sampled*.
-  static crust_EoS crust;
-
+  // Function to load a file of crust table data
   void get_crust(std::string EoS_filepath, std::string pressure_header,
                  std::string epsilon_header, std::string nb_header);
+
+  // Function to clear the vectors in the structs storing the EoS information
   void clear_crust();
   void clear_EOS();
 
-  // Conversion methods
+  // Functions for unit conversion
   double convert_fm3_to_MeV(double x);
   double convert_nsat_to_MeV(double x);
 
  protected:
+  // Function to create a cs2 column for the crust table using GSL spline
+  // derivative calculations
   void convert_crust_to_cs2();
+
+  // Function to convert a stored cs2(nb) EoS into pressure and epsilon using a
+  // simple integration routine
   void convert_cs2_to_eos(std::size_t start_index);
 };
 
@@ -135,12 +158,20 @@ class EOS_Constructor {
 /*               Bumpy EoS Constructor Derived Class Definition               */
 /* -------------------------------------------------------------------------- */
 
-/* ------------------ Implementation of constructor is WIP ------------------ */
-
-/* ----- Defines a class to construct a bumpy EoS from given parameters. ---- */
+/**
+ * @class Bumpy_EOS_Constructor IMRPhenomD_NRT_EOS.h
+ * "include/gwat/IMRPhenomD_NRT_EOS.h"
+ * @brief Defines a class to construct an equation of state with a parabolic
+ * bump in cs2 from given parameters.
+ */
 class Bumpy_EOS_Constructor : public EOS_Constructor {
  public:
-  struct Bumpy_Params {
+  /**
+   * @struct BumpyParams IMRPhenomD_NRT_EOS.h
+   * "include/gwat/IMRPhenomD_NRT_EOS.h"
+   * @brief Struct to store parameters describing a parabolic bump in cs2.
+   */
+  struct BumpyParams {
     double bump_magnitude;
     double bump_width;
     double bump_offset;
@@ -149,26 +180,28 @@ class Bumpy_EOS_Constructor : public EOS_Constructor {
     double n1;
     double n2;
 
+    // Additional params
     double bump_start;
     double bump_end;
     double f1_n1;
     double max_nb;
   };
 
-  Bumpy_Params eos_params;
+  BumpyParams eos_params;
 
-  // Methods to store parameters
+  // Functions to store parameters
   void store_EOS_params(source_parameters<adouble>* params);
   void store_EOS_params(source_parameters<double>* params);
   virtual void get_additional_EOS_params();
 
-  // Injects bump into the EOS
+  // Function to inject a parabolic bump into a crust EoS
   virtual void construct_EOS();
 
  protected:
+  // Injection point of the bump
   std::size_t injection_index;
 
-  // Methods to calculate points in cs2 for the quadratic bump
+  // Functinos to calculate points in cs2 for the quadratic bump
   void build_cs2_one_quad_bump();
   double get_quadratic_bump_point(const double& nb, const double& f1_n1);
 };
@@ -176,11 +209,21 @@ class Bumpy_EOS_Constructor : public EOS_Constructor {
 /* -------------------------------------------------------------------------- */
 /*                    TOV/Tidal Integrator Class Definition                   */
 /* -------------------------------------------------------------------------- */
-
+/**
+ * @class ObservablesIntegrator IMRPhenomD_NRT_EOS.h
+ * "include/gwat/IMRPhenomD_NRT_EOS.h"
+ * @brief Defines a class to integrate for observable values mass, radius, and
+ * tidal deformability for a given EoS.
+ *
+ * @details Integrates in terms of enthalpy, according to 10.1086/171882. Uses
+ * the classic Runge-Kutta method.
+ */
 class ObservablesIntegrator {
  public:
+  // Function to initialize the integrator with enthalpy and central values
   ObservablesIntegrator(Interpolation& p_of_e, double ec_1, double ec_2);
 
+  // Function to drive integration for the observable values
   void integrate_for_observables(arma::vec::fixed<3>& first_observables,
                                  arma::vec::fixed<3>& second_observables,
                                  bool& CurveIsNegative);

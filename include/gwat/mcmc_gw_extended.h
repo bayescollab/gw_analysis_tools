@@ -131,18 +131,42 @@ bayesship::bayesshipSampler *  RJPTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
 	bool restrictSwapTemperatures,
 	bool coldChainStorageOnly);
 
-// Runs a short Metropolis-Hastings chain from initial_params to locate
-// a good fiducial waveform for relative binning initialization.
-// Outputs full-resolution detector responses (same size as data arrays):
-//   fiducial_out  — response at the maximum-likelihood point found
-//   test_out      — response at the last accepted point in the chain
-// Caller must pre-allocate both output arrays as [num_detectors][data_length[i]].
+/// Runs a  Metropolis-Hastings chain from initial_params to locate
+/// a good fiducial waveform for relative binning initialization.
+/// Outputs detector responses:
+///   fiducial_out  — response at the maximum-likelihood point found
+///   test_out      — response at the last accepted point in the chain
+/// Caller must pre-allocate both output arrays as
+/// [num_detectors][data_length[i]]. If waveform generation fails for
+/// fiducial_out, it is set to the initial parameter point. If it fails for
+/// test_out, it is set to the max-likelihood point.
+///
+/// \param dimension      Size of parameter space.
+/// \param initial_params Array of parameters to begin exploration.
+/// \param log_prior      Log-prior probability function for the model.
+/// \param param_scales   Typical scale for each parameter (e.g. prior width);
+///  used to size finite-difference steps for the Fisher diagonal.
+/// \param num_mh_steps   Number of M-H steps to be taken.
+/// \param num_detectors  Number of detectors.
+/// \param data           The signal at each detector whose fiducial waveform
+/// will be found for.
+/// \param noise_psd      The PSD for each detector.
+/// \param frequencies    Frequency arrays for each detector.
+/// \param data_length    Length of the signal for each detector.
+/// \param gps_time       GPS time of the signal.
+/// \param detectors      Names of the detectors.
+/// \param generation_method Model name for the output waveforms.
+/// \param mod_struct     MCMC_modification_struct
+/// \param fiducial_out  [out] The fiducial signal.
+/// \param test_out	     [out] The signal at the final M-H step.
+/// \param test_gp_out   [out] The parameters at the final M-H step.
 void find_fiducial(int dimension, double* initial_params,
-                   const std::vector<std::array<double, 2>>& prior_ranges,
-                   int num_mh_steps, int num_detectors,
-                   std::complex<double>** data, double** noise_psd,
-                   double** frequencies, int* data_length, double gps_time,
-                   std::string* detectors, std::string generation_method,
+                   bayesship::probabilityFn* log_prior,
+                   const std::vector<double>& param_scales, int num_mh_steps,
+                   int num_detectors, std::complex<double>** data,
+                   double** noise_psd, double** frequencies, int* data_length,
+                   double gps_time, std::string* detectors,
+                   std::string generation_method,
                    MCMC_modification_struct* mod_struct,
                    std::complex<double>** fiducial_out,
                    std::complex<double>** test_out,

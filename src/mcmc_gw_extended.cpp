@@ -2630,7 +2630,8 @@ static void cleanup_gen_params_rb(const std::string &local_gen,
 }
 
 void find_fiducial(int dimension, double* initial_params,
-                   const std::vector<std::array<double, 2>>& prior_ranges,
+                   bayesship::probabilityFn* log_prior,
+                   const std::vector<double>& param_scales,
                    int num_mh_steps, int num_detectors,
                    std::complex<double>** data, double** noise_psd,
                    double** frequencies, int* data_length, double gps_time,
@@ -2680,36 +2681,50 @@ void find_fiducial(int dimension, double* initial_params,
 
   // Evaluate log-likelihood at a parameter vector
   auto eval_ll = [&](double* params) -> double {
-    double* tmp = new double[dimension];
-    gen_params_base<double> gp;
-    std::string local_gen = MCMC_prep_params_v2(
-        params, tmp, &gp, dimension, generation_method, mod_struct,
-        mcmcVar.mcmc_intrinsic, mcmcVar.mcmc_gmst);
-    repack_parameters(tmp, &gp, "MCMC_" + generation_method, dimension);
-    double ll = MCMC_likelihood_extrinsic(
-        mcmcVar.mcmc_save_waveform, &gp, local_gen, data_length, frequencies,
-        data, noise_psd, user_param.weights, "SIMPSONS", user_param.log10F,
-        detectors, num_detectors, mod_struct->QuadMethod);
-    delete[] tmp;
-    cleanup_gen_params_rb(local_gen, gp, mod_struct);
-    return std::isnan(ll) ? -std::numeric_limits<double>::infinity() : ll;
+    try {
+      double* tmp = new double[dimension];
+      gen_params_base<double> gp;
+      std::string local_gen = MCMC_prep_params_v2(
+          params, tmp, &gp, dimension, generation_method, mod_struct,
+          mcmcVar.mcmc_intrinsic, mcmcVar.mcmc_gmst);
+      repack_parameters(tmp, &gp, "MCMC_" + generation_method, dimension);
+      double ll = MCMC_likelihood_extrinsic(
+          mcmcVar.mcmc_save_waveform, &gp, local_gen, data_length, frequencies,
+          data, noise_psd, user_param.weights, "SIMPSONS", user_param.log10F,
+          detectors, num_detectors, mod_struct->QuadMethod);
+      delete[] tmp;
+      cleanup_gen_params_rb(local_gen, gp, mod_struct);
+      return std::isnan(ll) ? -std::numeric_limits<double>::infinity() : ll;
+    } catch (const std::exception&) {
+      return -std::numeric_limits<double>::infinity();
+    }
   };
 
-  // Generate detector responses at a parameter vector
+  // Generate detector responses at a parameter vector.
+  // Returns true on success; on waveform generation failure zeros out and
+  // returns false so the Fisher diagonal entry degrades gracefully.
   auto gen_resp =
-      [&](double* params, std::complex<double>** out) {
-        double *tmp = new double[dimension];
-        gen_params_base<double> gp;
-        std::string local_gen = MCMC_prep_params_v2(
-            params, tmp, &gp, dimension,
-            generation_method, mod_struct,
-            mcmcVar.mcmc_intrinsic, mcmcVar.mcmc_gmst);
-        repack_parameters(tmp, &gp, "MCMC_" + generation_method, dimension);
-        create_coherent_GW_detection(
-            detectors, num_detectors, frequencies, data_length,
-            true, &gp, local_gen, out);
-        delete[] tmp;
-        cleanup_gen_params_rb(local_gen, gp, mod_struct);
+      [&](double* params, std::complex<double>** out) -> bool {
+        try {
+          double *tmp = new double[dimension];
+          gen_params_base<double> gp;
+          std::string local_gen = MCMC_prep_params_v2(
+              params, tmp, &gp, dimension,
+              generation_method, mod_struct,
+              mcmcVar.mcmc_intrinsic, mcmcVar.mcmc_gmst);
+          repack_parameters(tmp, &gp, "MCMC_" + generation_method, dimension);
+          create_coherent_GW_detection(
+              detectors, num_detectors, frequencies, data_length,
+              true, &gp, local_gen, out);
+          delete[] tmp;
+          cleanup_gen_params_rb(local_gen, gp, mod_struct);
+          return true;
+        } catch (const std::exception&) {
+          for (int d = 0; d < num_detectors; d++)
+            std::fill(out[d], out[d] + data_length[d],
+                      std::complex<double>(0., 0.));
+          return false;
+        }
       };
 
   // Chain state
@@ -2718,8 +2733,13 @@ void find_fiducial(int dimension, double* initial_params,
   double* best = new double[dimension];
   std::memcpy(current, initial_params, dimension * sizeof(double));
   double current_ll = eval_ll(current);
+  // Single positionInfo reused for all prior evaluations (avoids double-free
+  // from swapping objects that have raw pointer members).
+  bayesship::positionInfo pos_tmp(dimension);
+  for (int i = 0; i < dimension; i++) pos_tmp.parameters[i] = current[i];
+  double current_lp = log_prior->eval(&pos_tmp, 0);
   std::memcpy(best, current, dimension * sizeof(double));
-  double best_ll = current_ll;
+  double best_ll = current_ll + current_lp;
 
   // Proposal scales: sigma_i = (2.38/sqrt(dim)) / sqrt(Gamma_ii)
   // Gamma_ii estimated via central finite differences of the network response
@@ -2745,12 +2765,9 @@ void find_fiducial(int dimension, double* initial_params,
     std::memcpy(theta_p, current, dimension * sizeof(double));
     std::memcpy(theta_m, current, dimension * sizeof(double));
 
-    // Step size: fd_eps * prior range, clamped so both points stay in-prior
-    double dtheta = fd_eps * (prior_ranges[i][1] - prior_ranges[i][0]);
-    if (dtheta == 0.0) dtheta = fd_eps;
-    dtheta = std::min(dtheta, prior_ranges[i][1] - current[i]);
-    dtheta = std::min(dtheta, current[i] - prior_ranges[i][0]);
-    if (dtheta <= 0.0) dtheta = fd_eps;  // current is on boundary; best effort
+    // Step size: fd_eps * typical parameter scale
+    double dtheta = fd_eps * param_scales[i];
+    if (dtheta <= 0.0) dtheta = fd_eps;
 
     theta_p[i] = current[i] + dtheta;
     theta_m[i] = current[i] - dtheta;
@@ -2769,7 +2786,7 @@ void find_fiducial(int dimension, double* initial_params,
     gamma_ii *= 4.0 * delta_f;
     sigma[i] = (gamma_ii > 0.0)
                    ? c_mh / std::sqrt(gamma_ii)
-                   : 0.1 * (prior_ranges[i][1] - prior_ranges[i][0]);
+                   : 0.1 * param_scales[i];
     std::cout << "  param " << i << ": Gamma_ii=" << gamma_ii
               << "  sigma=" << sigma[i] << "\n";
   }
@@ -2789,28 +2806,25 @@ void find_fiducial(int dimension, double* initial_params,
   int proposals_accepted = 0;
   auto mh_t0 = std::chrono::steady_clock::now();
   for (int step = 0; step < num_mh_steps; step++) {
-    bool in_prior = true;
     for (int i = 0; i < dimension; i++) {
       proposed[i] = current[i] + gsl_ran_gaussian(rng, sigma[i]);
-      if (proposed[i] < prior_ranges[i][0] ||
-          proposed[i] > prior_ranges[i][1]) {
-        in_prior = false;
-        break;
-      }
+      pos_tmp.parameters[i] = proposed[i];
     }
-    if (!in_prior) continue;
+    double proposed_lp = log_prior->eval(&pos_tmp, 0);
+    if (!std::isfinite(proposed_lp)) continue;
     proposals_in_prior++;
 
     double proposed_ll = eval_ll(proposed);
-    double log_alpha = proposed_ll - current_ll;
+    double log_alpha = (proposed_ll + proposed_lp) - (current_ll + current_lp);
 
     if (log_alpha >= 0. || std::log(gsl_rng_uniform(rng)) < log_alpha) {
       std::memcpy(current, proposed, dimension * sizeof(double));
       current_ll = proposed_ll;
+      current_lp = proposed_lp;
       proposals_accepted++;
-      if (current_ll > best_ll) {
+      if (current_ll + current_lp > best_ll) {
         std::memcpy(best, current, dimension * sizeof(double));
-        best_ll = current_ll;
+        best_ll = current_ll + current_lp;
       }
     }
   }
@@ -2824,8 +2838,10 @@ void find_fiducial(int dimension, double* initial_params,
   std::cout << "Proposal acceptance fraction: " << proposals_accepted << "/"
             << proposals_in_prior << " in-prior proposals accepted\n";
 
-  gen_resp(best, fiducial_out);
-  gen_resp(current, test_out);
+  if (!gen_resp(best, fiducial_out))
+    gen_resp(initial_params, fiducial_out);
+  if (!gen_resp(current, test_out))
+    gen_resp(best, test_out);
 
   if (test_gp_out != nullptr) {
     double* tmp = new double[dimension];

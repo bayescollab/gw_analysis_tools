@@ -423,15 +423,22 @@ int RelativeBinningBisectionLikelihood::find_max_index(
   int max_idx = (int)fiducial_data.front().size() - 1;
 
   for (const auto& data : fiducial_data) {
-    auto it = std::find_if(data.begin(), data.end(),
-                           [](const CPL& v) { return std::norm(v) == 0.; });
+    // Skip leading zeros: some waveforms (e.g. EFPE) are exactly zero at
+    // f = f_start due to a floating-point boundary in the SPA frequency check.
+    auto first_nz = std::find_if(data.begin(), data.end(),
+                                 [](const CPL& v) { return std::norm(v) > 0.; });
+    if (first_nz == data.end()) continue;  // all zeros — no cutoff from this IFO
 
+    // Find the first zero after the waveform has become non-zero (merger cutoff).
+    auto it = std::find_if(first_nz, data.end(),
+                           [](const CPL& v) { return std::norm(v) == 0.; });
     if (it != data.end()) {
       int zero_idx = (int)std::distance(data.begin(), it);
       max_idx = std::min(max_idx, zero_idx - 1);
     }
   }
-  return max_idx;
+  // Require at least index 1 so bin_freqs always has at least two distinct edges.
+  return std::max(max_idx, 1);
 }
 
 double RelativeBinningBisectionLikelihood::bin_log_likelihood_error(
@@ -505,14 +512,26 @@ int RelativeBinningBisectionLikelihood::bin_bisection(
   RelativeBinningPrinter("Max frequency: " +
                          std::to_string(frequencies[max_idx]));
 
+  // Find the first index where ALL detectors have non-zero fiducial amplitude.
+  // Waveforms like EFPE are exactly zero at f = f_start due to a floating-point
+  // boundary in the SPA evaluation; starting bins there gives NaN ratios.
+  int min_idx = 0;
+  for (const auto& data : fiducial_data) {
+    auto it = std::find_if(data.begin(), data.end(),
+                           [](const CPL& v) { return std::norm(v) > 0.; });
+    if (it != data.end())
+      min_idx = std::max(min_idx, (int)std::distance(data.begin(), it));
+  }
+  min_idx = std::min(min_idx, max_idx - 1);  // always leave room for ≥1 bin
+
   // Collect sorted bin boundary indices via iterative DFS bisection.
-  // The set always contains 0 (left edge of the first bin); each accepted
+  // The set always contains min_idx (left edge of the first bin); each accepted
   // interval [left, right) contributes its right index.
   std::set<int> boundaries;
-  boundaries.insert(0);
+  boundaries.insert(min_idx);
 
   std::vector<std::pair<int, int>> stack;
-  stack.push_back(std::make_pair(0, max_idx));
+  stack.push_back(std::make_pair(min_idx, max_idx));
 
   while (!stack.empty()) {
     int left = stack.back().first;

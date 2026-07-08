@@ -149,10 +149,10 @@ class RelativeBinningBisectionLikelihood : public Likelihood {
                                   const std::vector<VECCPL>& fiducial_data,
                                   const std::vector<VECCPL>& test_data);
 
-  int bin_bisection(const std::vector<IfoData>& ifos_data,
-                    const std::vector<VECCPL>& fiducial_data,
-                    const std::vector<VECCPL>& test_data,
-                    const double* frequencies, double epsilon);
+  void bin_bisection(const std::vector<IfoData>& ifos_data,
+                     const std::vector<VECCPL>& fiducial_data,
+                     const std::vector<VECCPL>& test_data,
+                     const double* frequencies, double epsilon);
 
   void setup_summary_data(const std::vector<IfoData>& ifos_data,
                           const std::vector<VECCPL>& fiducial_data);

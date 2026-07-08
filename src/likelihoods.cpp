@@ -391,6 +391,58 @@ double RelativeBinningPNansatzLikelihood::log_likelihood(
 // RelativeBinningBisectionLikelihood
 // ============================================================
 
+/// @brief Compute the summary data of a bin with the trapezoidal
+/// rule.
+/// @param A0 [out]
+/// @param A1 [out]
+/// @param B0 [out]
+/// @param B1 [out]
+/// @param bin_m     The central frequency point of the bin.
+/// @param left_idx  Array index of the left bin edge.
+/// @param right_idx Array index of the right bin edge.
+/// @param freqs     Full frequency array.
+/// @param psd       Full PSD array.
+/// @param h0        Full fiducial array.
+/// @param d         Full data array.
+/// @param overall_factor Overall factor of the inner product, usually 4 ∆f.
+void compute_summary_data_per_bin_trapezoid_rule(
+    CPL& A0, CPL& A1, CPL& B0, CPL& B1, double bin_m, int left_idx,
+    int right_idx, const VECDBL& freqs, const VECDBL& psd, const VECCPL& h0,
+    const VECCPL& d, double overall_factor = 1.0) {
+  A0 = A1 = B0 = B1 = 0.;
+
+  for (int i = left_idx + 1; i < right_idx; i++) {
+    double delta = freqs[i] - bin_m;
+
+    CPL A_fac = conj(h0[i]) / psd[i];
+    CPL B_fac = h0[i] * A_fac;
+    A_fac *= d[i];
+    A0 += A_fac;
+    A1 += A_fac * delta;
+    B0 += B_fac;
+    B1 += B_fac * delta;
+  }
+
+  for (int i : {left_idx, right_idx}) {
+    double delta = freqs[i] - bin_m;
+
+    CPL A_fac = conj(h0[i]) / psd[i];
+    CPL B_fac = h0[i] * A_fac;
+    A_fac *= d[i];
+    A0 += 0.5 * A_fac;
+    A1 += 0.5 * A_fac * delta;
+    B0 += 0.5 * B_fac;
+    B1 += 0.5 * B_fac * delta;
+  }
+
+  if (overall_factor != 1.0) {
+    A0 *= overall_factor;
+    A1 *= overall_factor;
+    B0 *= overall_factor;
+    B1 *= overall_factor;
+  }
+}
+
 RelativeBinningBisectionLikelihood::RelativeBinningBisectionLikelihood(
     const std::vector<IfoData>& ifos_data,
     const std::vector<VECCPL>& fiducial_data,
@@ -398,24 +450,21 @@ RelativeBinningBisectionLikelihood::RelativeBinningBisectionLikelihood(
     double epsilon) {
   std::cout << "\nRELATIVE BINNING (BISECTION) INITIALIZING\n";
 
-  if (bin_bisection(ifos_data, fiducial_data, test_data, frequencies,
-                    epsilon)) {
-    RelativeBinningPrinter(std::to_string(number_of_bins) + " bins setup");
+  bin_bisection(ifos_data, fiducial_data, test_data, frequencies, epsilon);
+  RelativeBinningPrinter(std::to_string(number_of_bins) + " bins setup");
 
-    setup_summary_data(ifos_data, fiducial_data);
+  setup_summary_data(ifos_data, fiducial_data);
 
-    double logL = 0.;
-    int num_edges = (int)bin_inds.size();
-    CPL* ht = new CPL[num_edges];
-    for (size_t i = 0; i < ifos_summary_data.size(); i++) {
-      for (int k = 0; k < num_edges; k++) ht[k] = test_data[i][bin_inds[k]];
+  double logL = 0.;
+  int num_edges = (int)bin_inds.size();
+  VECCPL ht;
+  for (size_t i = 0; i < ifos_summary_data.size(); i++) {
+    ht.clear();
+    for (int k = 0; k < num_edges; k++) ht.push_back(test_data[i][bin_inds[k]]);
 
-      logL += log_likelihood_per_detector(ht, ifos_summary_data.at(i));
-    }
-    RelativeBinningPrinter("Test logL: " + std::to_string(logL));
-
-    delete[] ht;
+    logL += log_likelihood_per_detector(ht.data(), ifos_summary_data.at(i));
   }
+  RelativeBinningPrinter("logL of test data: " + std::to_string(logL));
 }
 
 int RelativeBinningBisectionLikelihood::find_max_index(
@@ -456,30 +505,19 @@ double RelativeBinningBisectionLikelihood::bin_log_likelihood_error(
     double f_m = (ifo.freqs[left_idx] + ifo.freqs[right_idx]) * 0.5;
 
     CPL A0 = 0., A1 = 0., B0 = 0., B1 = 0.;
+
+    compute_summary_data_per_bin_trapezoid_rule(A0, A1, B0, B1, f_m, left_idx,
+                                                right_idx, ifo.freqs, ifo.psd,
+                                                h0, ifo.strain, weight);
     double exact_dh = 0., exact_hh = 0.;
-
-    for (int j = left_idx; j < right_idx; j++) {
-      double delta = ifo.freqs[j] - f_m;
-      double psd = ifo.psd[j];
-      CPL strain = ifo.strain[j];
-
-      // Summary data from h0 (fiducial)
-      CPL A_fac = conj(h0[j]) / psd;
-      CPL B_fac = h0[j] * A_fac;
-      A_fac *= strain;
-      A0 += A_fac;
-      A1 += A_fac * delta;
-      B0 += B_fac;
-      B1 += B_fac * delta;
-
-      // Exact inner products with h_test
-      exact_dh += real(strain * conj(ht[j])) / psd;
-      exact_hh += std::norm(ht[j]) / psd;
+    for (int j = left_idx + 1; j < right_idx; j++) {
+      exact_dh += real(ifo.strain[j] * conj(ht[j])) / ifo.psd[j];
+      exact_hh += std::norm(ht[j]) / ifo.psd[j];
     }
-    A0 *= weight;
-    A1 *= weight;
-    B0 *= weight;
-    B1 *= weight;
+    for (int j : {left_idx, right_idx}) {
+      exact_dh += 0.5 * real(ifo.strain[j] * conj(ht[j])) / ifo.psd[j];
+      exact_hh += 0.5 * std::norm(ht[j]) / ifo.psd[j];
+    }
     exact_dh *= weight;
     exact_hh *= weight;
 
@@ -503,7 +541,7 @@ double RelativeBinningBisectionLikelihood::bin_log_likelihood_error(
   return std::abs(exact_logL - approx_logL);
 }
 
-int RelativeBinningBisectionLikelihood::bin_bisection(
+void RelativeBinningBisectionLikelihood::bin_bisection(
     const std::vector<IfoData>& ifos_data,
     const std::vector<VECCPL>& fiducial_data,
     const std::vector<VECCPL>& test_data, const double* frequencies,
@@ -566,8 +604,6 @@ int RelativeBinningBisectionLikelihood::bin_bisection(
     bin_widths.push_back(bin_freqs[i] - bin_freqs[i - 1]);
     bin_centers.push_back((bin_freqs[i] + bin_freqs[i - 1]) * 0.5);
   }
-
-  return 1;
 }
 
 void RelativeBinningBisectionLikelihood::setup_summary_data(
@@ -588,24 +624,13 @@ void RelativeBinningBisectionLikelihood::setup_summary_data(
       det_summary_data.strain.push_back(h0[start]);
 
       CPL A0 = 0., A1 = 0., B0 = 0., B1 = 0.;
-      for (int j = start; j < end; j++) {
-        double delta = ifo.freqs[j] - bin_centers[b];
-        double psd = ifo.psd[j];
-        CPL d = ifo.strain[j];
-
-        CPL A_fac = conj(h0[j]) / psd;
-        CPL B_fac = h0[j] * A_fac;
-        A_fac *= d;
-
-        A0 += A_fac;
-        A1 += A_fac * delta;
-        B0 += B_fac;
-        B1 += B_fac * delta;
-      }
-      det_summary_data.A0.push_back(weight * A0);
-      det_summary_data.A1.push_back(weight * A1);
-      det_summary_data.B0.push_back(weight * B0);
-      det_summary_data.B1.push_back(weight * B1);
+      compute_summary_data_per_bin_trapezoid_rule(
+          A0, A1, B0, B1, bin_centers[b], start, end, ifo.freqs, ifo.psd, h0,
+          ifo.strain, weight);
+      det_summary_data.A0.push_back(A0);
+      det_summary_data.A1.push_back(A1);
+      det_summary_data.B0.push_back(B0);
+      det_summary_data.B1.push_back(B1);
     }
     det_summary_data.strain.push_back(h0[bin_inds.back()]);
 

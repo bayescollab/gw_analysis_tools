@@ -37,30 +37,19 @@ SimpsonsQuad::SimpsonsQuad(
 
 double SimpsonsQuad::integrate(const double *integrand) const
 {
-    // Integrand array index
-    int i = 1;
-    // Result of sum
-    double integral = 4.*integrand[i++]; // First term of inner sum
+  // Inner sum: odd indices get weight 4, even indices get weight 2.
+  double integral = 0.;
+  for (int i = 1; i < SimpsonsEnd; i++)
+    integral += (i % 2 == 1 ? 4. : 2.) * integrand[i];
 
-    // Inner sum, 2*f(k) + 4*f(k+1) for even k
-    while (i < SimpsonsEnd)
-    {
-        integral += 2.*integrand[i++];
-        integral += 4.*integrand[i++];
-    }
+  // Add endpoints and multiply by overall factor
+  integral += integrand[0] + integrand[SimpsonsEnd];
+  integral *= del;
 
-    // Add in endpoints
-    integral += integrand[0] + integrand[SimpsonsEnd];
-    // Multiply by overall factor
-    integral *= del;
-
-    if (evenFlag)
-    {
-        // Integrate final interval with trapezoidal rule.
-        // Inaccurate compared to Simpson's,
-        // but should be enough for small-enough spacing.
-        integral += TrapDel*(integrand[SimpsonsEnd] + integrand[SimpsonsEnd+1]);
-    }
+  if (evenFlag) {
+    // Integrate final interval with trapezoidal rule.
+    integral += TrapDel * (integrand[SimpsonsEnd] + integrand[SimpsonsEnd + 1]);
+  }
 
     return integral;
 }

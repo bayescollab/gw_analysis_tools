@@ -2785,11 +2785,12 @@ void find_fiducial(int dimension, double* initial_params,
       }
     }
     gamma_ii *= 4.0 * delta_f;
-    sigma[i] = (gamma_ii > 0.0)
-                   ? c_mh / std::sqrt(gamma_ii)
-                   : 0.1 * param_scales[i];
+    double fisher_sigma = (gamma_ii > 0.0) ? c_mh / std::sqrt(gamma_ii) : 0.1 * param_scales[i];
+    double prior_half   = 0.5 * param_scales[i];
+    sigma[i] = std::min(fisher_sigma, prior_half);
     std::cout << "  param " << i << ": Gamma_ii=" << gamma_ii
-              << "  sigma=" << sigma[i] << "\n";
+              << "  sigma=" << sigma[i]
+              << "  [" << (sigma[i] < fisher_sigma ? "prior" : "Fisher") << "]\n";
   }
 
   for (int d = 0; d < num_detectors; d++) {

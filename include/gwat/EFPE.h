@@ -72,4 +72,48 @@ int efpe_fourier_waveform_uniform<double>(double *frequencies, int length,
                                           waveform_polarizations<double> *wp,
                                           gen_params_base<double> *params);
 
+/*! \brief Frequency-domain waveform for the EFPE model using the FastProduction preset.
+ *
+ * Identical to efpe_fourier_waveform() but applies
+ * pyefpe::ParameterPreset::FastProduction (sua_kmax=2, amplitude_interp_nodes=8),
+ * which gives ~1.8x speedup over Production with <2e-4 relative logL error across
+ * the LISA circular validation suite.
+ */
+template<class T>
+int efpe_fast_fourier_waveform(T * /*frequencies*/, int /*length*/,
+                               waveform_polarizations<T> * /*wp*/,
+                               gen_params_base<T> * /*params*/)
+{
+    throw std::runtime_error(
+        "EFPE waveform model only supports double precision; "
+        "automatic differentiation (ADOL-C) is not supported.");
+    return 0;
+}
+
+template<>
+int efpe_fast_fourier_waveform<double>(double *frequencies, int length,
+                                       waveform_polarizations<double> *wp,
+                                       gen_params_base<double> *params);
+
+/*! \brief Uniform-grid frequency-domain waveform for the EFPE model using the FastProduction preset.
+ *
+ * Identical to efpe_fourier_waveform_uniform() but applies
+ * pyefpe::ParameterPreset::FastProduction (sua_kmax=2, amplitude_interp_nodes=8).
+ */
+template<class T>
+int efpe_fast_fourier_waveform_uniform(T * /*frequencies*/, int /*length*/,
+                                       waveform_polarizations<T> * /*wp*/,
+                                       gen_params_base<T> * /*params*/)
+{
+    throw std::runtime_error(
+        "EFPE waveform model only supports double precision; "
+        "automatic differentiation (ADOL-C) is not supported.");
+    return 0;
+}
+
+template<>
+int efpe_fast_fourier_waveform_uniform<double>(double *frequencies, int length,
+                                               waveform_polarizations<double> *wp,
+                                               gen_params_base<double> *params);
+
 #endif

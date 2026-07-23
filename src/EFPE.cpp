@@ -89,3 +89,47 @@ int efpe_fourier_waveform_uniform<double>(double *frequencies, int length,
 
     return 1;
 }
+
+template<>
+int efpe_fast_fourier_waveform<double>(double *frequencies, int length,
+                                       waveform_polarizations<double> *wp,
+                                       gen_params_base<double> *p)
+{
+    pyefpe::Parameters ep = build_efpe_params(p, frequencies[0], frequencies[length-1]);
+    pyefpe::apply_preset(ep, pyefpe::ParameterPreset::FastProduction);
+    pyefpe::Model model(ep);
+
+    std::vector<double> freq_vec(frequencies, frequencies + length);
+    pyefpe::FrequencyWaveform fw = model.generate_waveform(freq_vec);
+
+    for (int i = 0; i < length; i++) {
+        wp->hplus[i]  = fw.plus[i];
+        wp->hcross[i] = fw.cross[i];
+    }
+
+    if (p->shift_time && p->tc != 0.0)
+        apply_time_shift(frequencies, length, wp, p->tc);
+
+    return 1;
+}
+
+template<>
+int efpe_fast_fourier_waveform_uniform<double>(double *frequencies, int length,
+                                               waveform_polarizations<double> *wp,
+                                               gen_params_base<double> *p)
+{
+    double f_min   = frequencies[0];
+    double delta_f = frequencies[1] - frequencies[0];
+
+    pyefpe::Parameters ep = build_efpe_params(p, f_min, frequencies[length-1]);
+    pyefpe::apply_preset(ep, pyefpe::ParameterPreset::FastProduction);
+    pyefpe::Model model(ep);
+
+    model.generate_waveform_uniform(f_min, delta_f, static_cast<std::size_t>(length),
+                                    wp->hplus, wp->hcross);
+
+    if (p->shift_time && p->tc != 0.0)
+        apply_time_shift(frequencies, length, wp, p->tc);
+
+    return 1;
+}

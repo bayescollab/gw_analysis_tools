@@ -62,38 +62,38 @@ namespace std {
 #define GWAT_MRSUN_SI 1.476625038050124729627979840144936351e3
 
 /*! Euler number*/
-const double gamma_E = 0.5772156649015328606065120900824024310421;
+constexpr double gamma_E = 0.5772156649015328606065120900824024310421;
 /*!Speed of light m/s*/
-const double c = 299792458.;
+constexpr double c = 299792458.;
 /*!Gravitational constant in m**3/(s**2 SolMass)*/
 //const double G =6.67430e-11*(1.98855e30);
-const double G = GWAT_G_SI*(1.988409902147041637325262574352366540e30);
+constexpr double G = GWAT_G_SI * (1.988409902147041637325262574352366540e30);
 /*! G/c**3 seconds per solar mass*/
 //const double MSOL_SEC =492549095.e-14;
 //const double MSOL_SEC =492549095.e-14;
-const double MSOL_SEC =4.925491025543575903411922162094833998e-6 ;
+constexpr double MSOL_SEC = 4.925491025543575903411922162094833998e-6;
 /*! Meters in a megaparsec */
-const double GWAT_MPC_SI = 3.085677581491367278913937957796471611e22;
+constexpr double GWAT_MPC_SI = 3.085677581491367278913937957796471611e22;
 /*!consts.kpc.to('m')*1000/c Mpc in sec*/
 //const double MPC_SEC = 3085677581.e13/c;
-const double MPC_SEC = GWAT_MPC_SI/c;
+constexpr double MPC_SEC = GWAT_MPC_SI / c;
 /*!1 year in seconds -- ie seconds/year */
-const double T_year = 31557600.;
+constexpr double T_year = 31557600.;
 /*!1 day in seconds*/
-const double T_day = 24*3600.;
+constexpr double T_day = 24 * 3600.;
 /*! Earth's Axial tilt in radian*/
-const double AXIAL_TILT=0.409092627749;
+constexpr double AXIAL_TILT = 0.409092627749;
 //const double AXIAL_TILT=0.4075;
 /*! 1AU in seconds*/
-const double AU_SEC = 499.005;
+constexpr double AU_SEC = 499.005;
 
 /*! Planck's constant (unbarred) in ev sec*/
-const double h_planck = 4.135667696e-15;
+constexpr double h_planck = 4.135667696e-15;
 
 /*! Sqrt(3) comes up often, precompute it*/
-const double ROOT_THREE = std::sqrt(3.);
+constexpr double ROOT_THREE = 1.73205080756887729;
 
-const double LOG10=std::log(10.);
+constexpr double LOG10 = 2.302585092994045684;
 
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
 #define PBWIDTH 60

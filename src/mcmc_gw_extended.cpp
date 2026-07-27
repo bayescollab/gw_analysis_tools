@@ -2744,8 +2744,6 @@ void find_fiducial(int dimension, double* initial_params,
   // Proposal scales: sigma_i = (2.38/sqrt(dim)) / sqrt(Gamma_ii)
   // Gamma_ii estimated via central finite differences of the network response
   // w.r.t. each MCMC parameter directly, avoiding any Jacobian transform.
-  double delta_f =
-      (data_length[0] > 1) ? frequencies[0][1] - frequencies[0][0] : 1.0;
 
   std::complex<double>** h_plus = new std::complex<double>*[num_detectors];
   std::complex<double>** h_minus = new std::complex<double>*[num_detectors];
@@ -2778,13 +2776,13 @@ void find_fiducial(int dimension, double* initial_params,
 
     double gamma_ii = 0.0;
     for (int d = 0; d < num_detectors; d++) {
+      std::vector<std::complex<double>> deriv;
       for (int j = 0; j < data_length[d]; j++) {
-        std::complex<double> deriv =
-            (h_plus[d][j] - h_minus[d][j]) / (2.0 * dtheta);
-        gamma_ii += std::norm(deriv) / noise_psd[d][j];
+        deriv.push_back((h_plus[d][j] - h_minus[d][j]) / (2.0 * dtheta));
       }
+      gamma_ii += mod_struct->QuadMethod->inner_product(
+          deriv.data(), deriv.data(), noise_psd[d]);
     }
-    gamma_ii *= 4.0 * delta_f;
     double fisher_sigma = (gamma_ii > 0.0) ? c_mh / std::sqrt(gamma_ii) : 0.1 * param_scales[i];
     double prior_half   = 0.5 * param_scales[i];
     sigma[i] = std::min(fisher_sigma, prior_half);

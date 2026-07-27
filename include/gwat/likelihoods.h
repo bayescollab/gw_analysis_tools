@@ -20,8 +20,6 @@ struct IfoData {
   VECDBL freqs;
   // PSD
   VECDBL psd;
-  // Signal duration
-  double duration;
 };
 
 // Struct for each interferometer.
@@ -29,7 +27,8 @@ struct IfoData {
 struct SummaryData {
   VECCPL strain;
   // Summary data
-  VECCPL A0, A1, B0, B1;
+  VECCPL A0, A1;
+  VECDBL B0, B1;
 };
 
 /**
@@ -117,7 +116,8 @@ class RelativeBinningBisectionLikelihood : public Likelihood {
   RelativeBinningBisectionLikelihood(const std::vector<IfoData>& ifos_data,
                                      const std::vector<VECCPL>& fiducial_data,
                                      const std::vector<VECCPL>& test_data,
-                                     const double* frequencies, double epsilon);
+                                     const double* frequencies, double epsilon,
+                                     bool log_spacing = false);
 
   double log_likelihood(std::string* detectors, int num_detectors,
                         gen_params_base<double>* params,
@@ -136,7 +136,6 @@ class RelativeBinningBisectionLikelihood : public Likelihood {
 
   VECINT bin_inds;
   VECDBL bin_freqs;
-  VECDBL bin_sizes;
   VECDBL bin_widths;
   VECDBL bin_centers;
 
@@ -147,15 +146,18 @@ class RelativeBinningBisectionLikelihood : public Likelihood {
   double bin_log_likelihood_error(int left_idx, int right_idx,
                                   const std::vector<IfoData>& ifos_data,
                                   const std::vector<VECCPL>& fiducial_data,
-                                  const std::vector<VECCPL>& test_data);
+                                  const std::vector<VECCPL>& test_data,
+                                  bool log_spacing);
 
   void bin_bisection(const std::vector<IfoData>& ifos_data,
                      const std::vector<VECCPL>& fiducial_data,
                      const std::vector<VECCPL>& test_data,
-                     const double* frequencies, double epsilon);
+                     const double* frequencies, double epsilon,
+                     bool log_spacing);
 
   void setup_summary_data(const std::vector<IfoData>& ifos_data,
-                          const std::vector<VECCPL>& fiducial_data);
+                          const std::vector<VECCPL>& fiducial_data,
+                          bool log_spacing);
 
   void compute_waveform_ratios(
       VECCPL& r0, VECCPL& r1, const CPL* h, const SummaryData& fiducial);
@@ -168,7 +170,8 @@ class RelativeBinningBisectionLikelihood : public Likelihood {
 /// them to instantiate the likelihood object, which uses C++ vectors.
 RelativeBinningBisectionLikelihood RelBinBisectLL_from_c_arrays(
     double** freq, CPL** data, double** psds, CPL** fiducials, CPL** test_wfs,
-    int length, int n_detect, double duration, double epsilon);
+    int length, int n_detect, double duration, double epsilon,
+    bool log_spacing = false);
 
 }  // namespace GWATLikelihoods
 

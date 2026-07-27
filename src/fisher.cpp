@@ -2396,25 +2396,13 @@ void calculate_fisher_elements(
 	Quadrature *quadMethod	//< Quadrature class to compute integrals
 )
 {
-	// Array for integrand
-	int length = quadMethod->get_length();
-	double *integrand = new double [length];
-
 	// Loop over derivatives
 	for (int j=0; j<dimension; j++)
 	{
 		for (int k=0; k<=j; k++)
 		{
-			// Set up integrand
-			for (int i=0; i < length; i++)
-			{
-				integrand[i] = real(
-					(response_deriv[j][i] * std::conj(response_deriv[k][i]))
-					/psd[i]);
-			}
-
-			// Compute the (j,k) Fisher element
-			output[j][k] = 4.*quadMethod->integrate(integrand);
+			output[j][k] = quadMethod->inner_product(
+				response_deriv[j], response_deriv[k], psd);
 
 			// Off-diagonal elements
 			if (k != j)
@@ -2424,9 +2412,6 @@ void calculate_fisher_elements(
 			}
 		}
 	}
-
-	// Clean-up
-	delete [] integrand;
 }
 //#################################################################
 template void repack_parameters<adouble>(adouble *, gen_params_base<adouble> *, std::string, int);

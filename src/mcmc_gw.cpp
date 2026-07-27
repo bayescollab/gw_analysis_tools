@@ -772,35 +772,11 @@ double Log_Likelihood_internal(
 	Quadrature *QuadMethod
 )
 {
-	// Length of integrand
-	int length = QuadMethod->get_length();
-	// Hold the integrand values
-	double *integrand = new double [length];
-	// Array index, to be used for all loops
-	int i;
+  double hh =
+      QuadMethod->inner_product(detector_response, detector_response, psd);
+  double dh = QuadMethod->inner_product(data, detector_response, psd);
 
-	// (h|h) integral
-	for (i=0; i<length; i++)
-	{
-		integrand[i] = real(
-			detector_response[i] * std::conj(detector_response[i]) / psd[i]
-		);
-	}
-	double hh = 4.*QuadMethod->integrate(integrand);
-
-	// (d|h) integral
-	for (i=0; i<length; i++)
-	{
-		integrand[i] = real(
-			data[i] * std::conj(detector_response[i]) / psd[i]
-		);
-	}
-	double dh = 4.*QuadMethod->integrate(integrand);
-
-	// Clean up
-	delete [] integrand;
-
-	return -0.5*hh + dh;
+  return -0.5 * hh + dh;
 }
 
 

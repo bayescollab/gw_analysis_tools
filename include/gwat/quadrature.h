@@ -2,6 +2,7 @@
 #define QUADRATURE_H
 
 
+#include <complex>
 #include <vector>
 
 
@@ -16,7 +17,13 @@ protected:
 public:
     virtual ~Quadrature() = default;
 
-    virtual double integrate(const double *integrand) const = 0;
+    /// @brief Compute the inner product 4•∫ h1(f)•h2*(f) / psd(f) df.
+    /// @param h1
+    /// @param h2
+    /// @param psd
+    virtual double inner_product(const std::complex<double>* h1,
+                                 const std::complex<double>* h2,
+                                 const double* psd) const = 0;
     virtual int get_length() const {return length;}
 };
 
@@ -36,7 +43,9 @@ private:
 public:
     SimpsonsQuad(int length, double delta);
 
-    virtual double integrate(const double *integrand) const;
+    virtual double inner_product(const std::complex<double>* h1,
+                                 const std::complex<double>* h2,
+                                 const double* psd) const;
 };
 
 SimpsonsQuad CreateSimpsonsQuad(
@@ -60,7 +69,9 @@ private:
 
 public:
     SimpsonsLogQuad(int length, double logdelta, const double *xArray);
-    double integrate(const double *integrand) const override;
+    double inner_product(const std::complex<double>* h1,
+                         const std::complex<double>* h2,
+                         const double* psd) const override;
 };
 
 SimpsonsLogQuad CreateSimpsonsLogQuad(

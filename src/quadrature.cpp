@@ -12,21 +12,21 @@ SimpsonsQuad::SimpsonsQuad(
     double delta    //< Spacing of integrand
 )
 {
-    del = delta/3.;
-    this->length = length;
+  del = 4.0 * delta / 3.;
+  this->length = length;
 
-    // Check if there are not enough samples
-    if (length < 3)
-    {
-        std::cerr << SIMPSONS_ERANGE_MESSAGE << "\n";
-    }
+  // Check if there are not enough samples
+  if (length < 3) {
+    std::cerr << SIMPSONS_ERANGE_MESSAGE << "\n";
+  }
 
     if ((length % 2) == 0)
     {
         // If length is even, set up trapezoidal rule for the last interval
         evenFlag = true;
         SimpsonsEnd = length-2;
-        TrapDel = 0.5*delta;
+        TrapDel =
+            2.0 * delta;  // 4(inner product factor) * 0.5(trapezoid factor)
     }
     else
     {
@@ -35,20 +35,24 @@ SimpsonsQuad::SimpsonsQuad(
     }
 }
 
-double SimpsonsQuad::integrate(const double *integrand) const
-{
+double SimpsonsQuad::inner_product(const std::complex<double>* h1,
+                                   const std::complex<double>* h2,
+                                   const double* psd) const {
   // Inner sum: odd indices get weight 4, even indices get weight 2.
   double integral = 0.;
   for (int i = 1; i < SimpsonsEnd; i++)
-    integral += (i % 2 == 1 ? 4. : 2.) * integrand[i];
+    integral +=
+        (i % 2 == 1 ? 4. : 2.) * std::real(h1[i] * std::conj(h2[i])) / psd[i];
 
   // Add endpoints and multiply by overall factor
-  integral += integrand[0] + integrand[SimpsonsEnd];
+  for (int i : {0, SimpsonsEnd})
+    integral += std::real(h1[i] * std::conj(h2[i])) / psd[i];
   integral *= del;
 
   if (evenFlag) {
     // Integrate final interval with trapezoidal rule.
-    integral += TrapDel * (integrand[SimpsonsEnd] + integrand[SimpsonsEnd + 1]);
+    for (int i : {SimpsonsEnd, SimpsonsEnd + 1})
+      integral += TrapDel * std::real(h1[i] * std::conj(h2[i])) / psd[i];
   }
 
     return integral;
@@ -98,17 +102,17 @@ SimpsonsLogQuad::SimpsonsLogQuad(
     this->xArray.shrink_to_fit();
 }
 
-double SimpsonsLogQuad::integrate(const double *integrand) const
-{
-    // Integrand weighted by the x points
-    std::vector<double> wintegrand;
+// Use SimpsonsQuad method by weighting the PSD array
+double SimpsonsLogQuad::inner_product(const std::complex<double>* h1,
+                                      const std::complex<double>* h2,
+                                      const double* psd) const {
+  std::vector<double> weighted_psd;
 
-    for (int i=0; i < length; i++)
-    {
-        wintegrand.push_back(xArray.at(i)*integrand[i]);
-    }
+  for (int i = 0; i < length; i++) {
+    weighted_psd.push_back(psd[i] / xArray.at(i));
+  }
 
-    return SimpsonsQuad::integrate(wintegrand.data());
+  return SimpsonsQuad::inner_product(h1, h2, weighted_psd.data());
 }
 
 //! Create a SimpsonsLogQuad given the endpoints of the integral and number of 

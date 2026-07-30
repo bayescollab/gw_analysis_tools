@@ -2802,31 +2802,46 @@ void find_fiducial(int dimension, double* initial_params,
 
   std::cout << "Fiducial M-H start logL = " << current_ll << "\n";
 
-  // The M-H loop
+  // Per-parameter (Gibbs-style) M-H: one parameter is proposed per step,
+  // cycling through all dimensions. This avoids joint prior rejections and
+  // exposes per-parameter acceptance rates for diagnostics.
   int proposals_in_prior = 0;
   int proposals_accepted = 0;
+  std::vector<int> param_in_prior(dimension, 0);
+  std::vector<int> param_accepted(dimension, 0);
   auto mh_t0 = std::chrono::steady_clock::now();
   for (int step = 0; step < num_mh_steps; step++) {
-    for (int i = 0; i < dimension; i++) {
-      proposed[i] = current[i] + gsl_ran_gaussian(rng, sigma[i]);
-      pos_tmp.parameters[i] = proposed[i];
-    }
-    double proposed_lp = log_prior->eval(&pos_tmp, 0);
-    if (!std::isfinite(proposed_lp)) continue;
-    proposals_in_prior++;
+    int i = step % dimension;
 
+    double old_val = current[i];
+    double new_val = old_val + gsl_ran_gaussian(rng, sigma[i]);
+    pos_tmp.parameters[i] = new_val;
+
+    double proposed_lp = log_prior->eval(&pos_tmp, 0);
+    if (!std::isfinite(proposed_lp)) {
+      pos_tmp.parameters[i] = old_val;
+      continue;
+    }
+    proposals_in_prior++;
+    param_in_prior[i]++;
+
+    std::memcpy(proposed, current, dimension * sizeof(double));
+    proposed[i] = new_val;
     double proposed_ll = eval_ll(proposed);
     double log_alpha = (proposed_ll + proposed_lp) - (current_ll + current_lp);
 
     if (log_alpha >= 0. || std::log(gsl_rng_uniform(rng)) < log_alpha) {
-      std::memcpy(current, proposed, dimension * sizeof(double));
+      current[i] = new_val;
       current_ll = proposed_ll;
       current_lp = proposed_lp;
       proposals_accepted++;
+      param_accepted[i]++;
       if (current_ll + current_lp > best_ll) {
         std::memcpy(best, current, dimension * sizeof(double));
         best_ll = current_ll + current_lp;
       }
+    } else {
+      pos_tmp.parameters[i] = old_val;
     }
   }
 
@@ -2838,6 +2853,15 @@ void find_fiducial(int dimension, double* initial_params,
   std::cout << "M-H loop time: " << mh_ms << " ms\n";
   std::cout << "Proposal acceptance fraction: " << proposals_accepted << "/"
             << proposals_in_prior << " in-prior proposals accepted\n";
+  std::cout << "Per-parameter acceptance (in-prior):\n";
+  for (int i = 0; i < dimension; i++) {
+    int tot = param_in_prior[i];
+    int acc = param_accepted[i];
+    std::cout << "  param " << i << ": " << acc << "/" << tot;
+    if (tot > 0)
+      std::cout << "  (" << (100 * acc / tot) << "%)";
+    std::cout << "\n";
+  }
 
   if (!gen_resp(best, fiducial_out))
     gen_resp(initial_params, fiducial_out);

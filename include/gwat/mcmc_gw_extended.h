@@ -131,8 +131,9 @@ bayesship::bayesshipSampler *  RJPTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
 	bool restrictSwapTemperatures,
 	bool coldChainStorageOnly);
 
-/// Runs a  Metropolis-Hastings chain from initial_params to locate
-/// a good fiducial waveform for relative binning initialization.
+/// @brief Runs a Metropolis-Hastings chain from initial_params to locate
+/// good fiducial and test waveforms relative binning initialization.
+///
 /// Outputs detector responses:
 ///   fiducial_out  — response at the maximum-likelihood point found
 ///   test_out      — response at the last accepted point in the chain

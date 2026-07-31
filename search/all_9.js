@@ -95,7 +95,7 @@ var searchData=
   ['interp_5fpsd_5fmodels_5fn_92',['interp_PSD_models_N',['../detector__util_8h.html#ad336cb0268c3a45e094ade73c38cbdd7',1,'detector_util.h']]],
   ['interpolation_93',['Interpolation',['../classInterpolation.html',1,'']]],
   ['invalidexpansionorder_94',['invalidExpansionOrder',['../IMRPhenomPv3utils_8h.html#a6552f468522fd6372ae75aa2e96e39c7',1,'invalidExpansionOrder(const int ExpansionOrder):&#160;IMRPhenomPv3utils.cpp'],['../IMRPhenomPv3utils_8cpp.html#a6552f468522fd6372ae75aa2e96e39c7',1,'invalidExpansionOrder(const int ExpansionOrder):&#160;IMRPhenomPv3utils.cpp']]],
-  ['invertfisherblock_95',['invertFisherBlock',['../mcmc__gw__extended_8cpp.html#a5500b1bb80be6bffd4f9c47f409d43dc',1,'mcmc_gw_extended.cpp']]],
+  ['invertfisherblock_95',['invertFisherBlock',['../mcmc__gw_8cpp.html#a5500b1bb80be6bffd4f9c47f409d43dc',1,'mcmc_gw.cpp']]],
   ['io_5futil_2ecpp_96',['io_util.cpp',['../io__util_8cpp.html',1,'']]],
   ['io_5futil_2eh_97',['io_util.h',['../io__util_8h.html',1,'']]],
   ['isolate_5fensembles_98',['isolate_ensembles',['../classsampler.html#ac34514a11560daafb0e958e2d6727d6c',1,'sampler']]],

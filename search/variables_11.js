@@ -7,7 +7,7 @@ var searchData=
   ['s2_5fea_4',['s2_EA',['../structsource__parameters.html#ab6cb0f7ecd777bd7bee66b562012ad35',1,'source_parameters']]],
   ['s2_5fnorm_5f2_5',['S2_norm_2',['../structsysprecquant.html#a7f07d31d7edc4a4c20dbc7768c0e2b98',1,'sysprecquant']]],
   ['s_5fea_6',['S_EA',['../structsource__parameters.html#a476ee53cecdfd8ae48417c43d82a4dc2',1,'source_parameters']]],
-  ['sampler_7',['sampler',['../classMCMC__likelihood__wrapper__v2__RJ.html#a84f5638e57a661a07b6e147ba03dc024',1,'MCMC_likelihood_wrapper_v2_RJ::sampler'],['../classMCMC__likelihood__wrapper__v2.html#add05d2f529a8ba45c440e9083c46ee42',1,'MCMC_likelihood_wrapper_v2::sampler']]],
+  ['sampler_7',['sampler',['../classMCMC__likelihood__wrapper__RJ.html#adb02f3dfeffea99d9d664beaa3d101e2',1,'MCMC_likelihood_wrapper_RJ::sampler'],['../classMCMC__likelihood__wrapper.html#a2840d2a4d0c54b639eb09f0afe5f18bb',1,'MCMC_likelihood_wrapper::sampler']]],
   ['sampler_5fref_8',['sampler_ref',['../mcmc__sampler_8cpp.html#a50049361770bb5cf6c25809268dd4aa2',1,'mcmc_sampler.cpp']]],
   ['samplerptr_9',['samplerptr',['../mcmc__sampler_8cpp.html#a9444c4d7be8892563729b205b7f0a4ba',1,'mcmc_sampler.cpp']]],
   ['samplerptr_5fglobal_10',['samplerptr_global',['../mcmc__sampler_8cpp.html#ae200a0707b439513b5d8e84732990210',1,'mcmc_sampler.cpp']]],

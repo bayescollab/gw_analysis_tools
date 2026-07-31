@@ -108,9 +108,12 @@ document.addEventListener('DOMContentLoaded', () => {
   <div class="headertitle"><div class="title">mcmc_gw.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;complex&gt;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="util_8h_source.html">util.h</a>&quot;</code><br />
+<code>#include &lt;bayesship/bayesshipSampler.h&gt;</code><br />
+<code>#include &lt;bayesship/dataUtilities.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="adaptivelikelihoods_8h_source.html">adaptivelikelihoods.h</a>&quot;</code><br />
+<code>#include &lt;complex&gt;</code><br />
 <code>#include &lt;fftw3.h&gt;</code><br />
-<code>#include &quot;<a class="el" href="util_8h_source.html">util.h</a>&quot;</code><br />
 <code>#include &lt;iostream&gt;</code><br />
 <code>#include &lt;gsl/gsl_interp.h&gt;</code><br />
 <code>#include &lt;gsl/gsl_randist.h&gt;</code><br />
@@ -120,7 +123,13 @@ document.addEventListener('DOMContentLoaded', () => {
 <code>#include &lt;mutex&gt;</code><br />
 <code>#include &quot;<a class="el" href="mcmc__sampler_8h_source.html">mcmc_sampler.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="quadrature_8h_source.html">quadrature.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="adaptivelikelihoods_8h_source.html">adaptivelikelihoods.h</a>&quot;</code><br />
+<code>#include &lt;fstream&gt;</code><br />
+<code>#include &lt;vector&gt;</code><br />
+<code>#include &lt;algorithm&gt;</code><br />
+<code>#include &lt;thread&gt;</code><br />
+<code>#include &lt;condition_variable&gt;</code><br />
+<code>#include &quot;<a class="el" href="IMRPhenomD__NRT_8h_source.html">IMRPhenomD_NRT.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="EA__IMRPhenomD__NRT_8h_source.html">EA_IMRPhenomD_NRT.h</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for mcmc_gw.h:</div>
 <div class="dyncontent">
@@ -140,590 +149,31 @@ This graph shows which files directly or indirectly include this file:</div>
 Classes</h2></td></tr>
 <tr class="memitem:MCMC_5Fmodification_5Fstruct" id="r_MCMC_5Fmodification_5Fstruct"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a></td></tr>
 <tr class="memitem:MCMC_5Fuser_5Fparam" id="r_MCMC_5Fuser_5Fparam"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structMCMC__user__param.html">MCMC_user_param</a></td></tr>
+<tr class="memitem:mcmcVariables" id="r_mcmcVariables"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structmcmcVariables.html">mcmcVariables</a></td></tr>
+<tr class="memitem:mcmcVariablesRJ" id="r_mcmcVariablesRJ"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structmcmcVariablesRJ.html">mcmcVariablesRJ</a></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:abd627450e43bf7ef683d875d804b7503" id="r_abd627450e43bf7ef683d875d804b7503"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#abd627450e43bf7ef683d875d804b7503">maximized_coal_log_likelihood_IMRPhenomD</a> (double *frequencies, int length, std::complex&lt; double &gt; *data, double *noise, double SNR, double chirpmass, double symmetric_mass_ratio, double spin1, double spin2, bool NSflag, <a class="el" href="structfftw__outline.html">fftw_outline</a> *plan)</td></tr>
-<tr class="memdesc:abd627450e43bf7ef683d875d804b7503"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to calculate the log Likelihood as defined by -1/2 (d-h|d-h) maximized over the extrinsic parameters phic and tc.  <br /></td></tr>
-<tr class="memitem:ae78896f8e8acd8dfaff6ff33a732284a" id="r_ae78896f8e8acd8dfaff6ff33a732284a"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#ae78896f8e8acd8dfaff6ff33a732284a">maximized_coal_log_likelihood_IMRPhenomD</a> (double *frequencies, size_t length, double *real_data, double *imag_data, double *noise, double SNR, double chirpmass, double symmetric_mass_ratio, double spin1, double spin2, bool NSflag)</td></tr>
-<tr class="memitem:a2635acb06ca0e448854aaab3fd7037c3" id="r_a2635acb06ca0e448854aaab3fd7037c3"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#a2635acb06ca0e448854aaab3fd7037c3">maximized_coal_log_likelihood_IMRPhenomD</a> (double *frequencies, size_t length, double *real_data, double *imag_data, double *noise, double SNR, double chirpmass, double symmetric_mass_ratio, double spin1, double spin2, bool NSflag, <a class="el" href="structfftw__outline.html">fftw_outline</a> *plan)</td></tr>
-<tr class="memitem:ac66db6fc5c75ee33b84a48724b4738ef" id="r_ac66db6fc5c75ee33b84a48724b4738ef"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#ac66db6fc5c75ee33b84a48724b4738ef">maximized_coal_log_likelihood_IMRPhenomD_Full_Param</a> (double *frequencies, int length, std::complex&lt; double &gt; *data, double *noise, double chirpmass, double symmetric_mass_ratio, double spin1, double spin2, double Luminosity_Distance, double theta, double phi, double iota, bool NSflag, <a class="el" href="structfftw__outline.html">fftw_outline</a> *plan)</td></tr>
-<tr class="memitem:a2322ab4b42380145e742ad564c643874" id="r_a2322ab4b42380145e742ad564c643874"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#a2322ab4b42380145e742ad564c643874">maximized_coal_log_likelihood_IMRPhenomD_Full_Param</a> (double *frequencies, size_t length, double *real_data, double *imag_data, double *noise, double chirpmass, double symmetric_mass_ratio, double spin1, double spin2, double Luminosity_Distance, double theta, double phi, double iota, bool NSflag)</td></tr>
-<tr class="memitem:a3fbdbcf0651bad5541eb6e366c62de23" id="r_a3fbdbcf0651bad5541eb6e366c62de23"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#a3fbdbcf0651bad5541eb6e366c62de23">maximized_coal_log_likelihood_IMRPhenomD_Full_Param</a> (double *frequencies, size_t length, double *real_data, double *imag_data, double *noise, double chirpmass, double symmetric_mass_ratio, double spin1, double spin2, double Luminosity_Distance, double theta, double phi, double iota, bool NSflag, <a class="el" href="structfftw__outline.html">fftw_outline</a> *plan)</td></tr>
+<tr class="memitem:a05fe5e0d6f102d62a2b936c9e2db07ff" id="r_a05fe5e0d6f102d62a2b936c9e2db07ff"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a05fe5e0d6f102d62a2b936c9e2db07ff">PTMCMC_method_specific_prep</a> (std::string generation_method, int dimension, bool *intrinsic, <a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *mod_struct)</td></tr>
+<tr class="memdesc:a05fe5e0d6f102d62a2b936c9e2db07ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unpacks MCMC parameters for method specific initiation.  <br /></td></tr>
+<tr class="memitem:a4e37907d499041030cadda111373d09c" id="r_a4e37907d499041030cadda111373d09c"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a4e37907d499041030cadda111373d09c">RJPTMCMC_method_specific_prep</a> (std::string generation_method, int dimension, bool *intrinsic, <a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *mod_struct)</td></tr>
+<tr class="memitem:acb9f3211eb79f7dc7660128ba1c71e5a" id="r_acb9f3211eb79f7dc7660128ba1c71e5a"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#acb9f3211eb79f7dc7660128ba1c71e5a">MCMC_prep_params</a> (double *param, double *temp_params, <a class="el" href="classgen__params__base.html">gen_params_base</a>&lt; double &gt; *gen_params, int dimension, std::string generation_method, <a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *mod_struct, bool intrinsic, double gmst)</td></tr>
+<tr class="memdesc:acb9f3211eb79f7dc7660128ba1c71e5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">utility to do MCMC specific transformations on the input param vector before passing to the repacking utillity  <br /></td></tr>
+<tr class="memitem:aaa7e92fc01ba7fe8e864fd084ae809fd" id="r_aaa7e92fc01ba7fe8e864fd084ae809fd"><td class="memItemLeft">bayesship::bayesshipSampler *&#160;</td><td class="memItemRight"><a class="el" href="#aaa7e92fc01ba7fe8e864fd084ae809fd">PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW</a> (int dimension, int independentSamples, int ensembleSize, int ensembleN, bayesship::positionInfo *initialPosition, bayesship::positionInfo **initialEnsemble, double swapProb, int burnIterations, int burnPriorIterations, int priorIterations, bool writePriorData, int batchSize, double **priorRanges, bayesship::probabilityFn *<a class="el" href="mcmc__sampler_8cpp.html#aabeb3eb5df7f59e1f61af63f662fa273">lp</a>, int numThreads, bool pool, int num_detectors, std::complex&lt; double &gt; **data, double **noise_psd, double **frequencies, int *data_length, double gps_time, std::string *detectors, <a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *mod_struct, std::string generation_method, std::string outputDir, std::string outputFileMoniker, bool ignoreExistingCheckpoint, bool restrictSwapTemperatures, bool coldChainStorageOnly)</td></tr>
+<tr class="memdesc:aaa7e92fc01ba7fe8e864fd084ae809fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Takes in an MCMC checkpoint file and continues the chain.  <br /></td></tr>
+<tr class="memitem:a0dd14180c6759f88bcdad6d0b5af810e" id="r_a0dd14180c6759f88bcdad6d0b5af810e"><td class="memItemLeft">bayesship::bayesshipSampler *&#160;</td><td class="memItemRight"><a class="el" href="#a0dd14180c6759f88bcdad6d0b5af810e">RJPTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW</a> (int minDim, int maxDim, int independentSamples, int ensembleSize, int ensembleN, bayesship::positionInfo *initialPosition, bayesship::positionInfo **initialEnsemble, double swapProb, int burnIterations, int burnPriorIterations, int priorIterations, bool writePriorData, int batchSize, double **priorRanges, bayesship::probabilityFn *log_prior, int numThreads, bool pool, int num_detectors, std::complex&lt; double &gt; **data, double **noise_psd, double **frequencies, int *data_length, double gps_time, std::string *detectors, <a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *mod_struct, std::string generation_method, std::string generation_method_extended, std::string outputDir, std::string outputFileMoniker, bool ignoreExistingCheckpoint, bool restrictSwapTemperatures, bool coldChainStorageOnly)</td></tr>
+<tr class="memdesc:a0dd14180c6759f88bcdad6d0b5af810e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Takes in an MCMC checkpoint file and continues the chain.  <br /></td></tr>
 <tr class="memitem:aecba6e7ba4f5a7463c95e0d65cfb3145" id="r_aecba6e7ba4f5a7463c95e0d65cfb3145"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#aecba6e7ba4f5a7463c95e0d65cfb3145">maximized_Log_Likelihood_aligned_spin_internal</a> (std::complex&lt; double &gt; *data, double *psd, double *frequencies, std::complex&lt; double &gt; *detector_response, size_t length, <a class="el" href="structfftw__outline.html">fftw_outline</a> *plan)</td></tr>
 <tr class="memdesc:aecba6e7ba4f5a7463c95e0d65cfb3145"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximized match over coalescence variables - returns log likelihood NOT NORMALIZED for aligned spins.  <br /></td></tr>
-<tr class="memitem:a1fa369a655934a9d3316c1596289628b" id="r_a1fa369a655934a9d3316c1596289628b"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#a1fa369a655934a9d3316c1596289628b">Log_Likelihood</a> (std::complex&lt; double &gt; *data, double *psd, double *frequencies, size_t length, <a class="el" href="classgen__params__base.html">gen_params_base</a>&lt; double &gt; *params, std::string detector, std::string generation_method)</td></tr>
-<tr class="memdesc:a1fa369a655934a9d3316c1596289628b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unmarginalized log of the likelihood.  <br /></td></tr>
 <tr class="memitem:a2c44e4b3acd713ae4ad07b92b96ac017" id="r_a2c44e4b3acd713ae4ad07b92b96ac017"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#a2c44e4b3acd713ae4ad07b92b96ac017">maximized_Log_Likelihood_unaligned_spin_internal</a> (std::complex&lt; double &gt; *data, double *psd, double *frequencies, std::complex&lt; double &gt; *hplus, std::complex&lt; double &gt; *hcross, size_t length, <a class="el" href="structfftw__outline.html">fftw_outline</a> *plan)</td></tr>
 <tr class="memdesc:a2c44e4b3acd713ae4ad07b92b96ac017"><td class="mdescLeft">&#160;</td><td class="mdescRight">log likelihood function that maximizes over extrinsic parameters tc, phic, D, and phiRef, the reference frequency - for unaligned spins  <br /></td></tr>
-<tr class="memitem:a0ae3ffbe1994b8a368c130b7f552ea28" id="r_a0ae3ffbe1994b8a368c130b7f552ea28"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#a0ae3ffbe1994b8a368c130b7f552ea28">maximized_Log_Likelihood</a> (std::complex&lt; double &gt; *data, double *psd, double *frequencies, size_t length, <a class="el" href="classgen__params__base.html">gen_params_base</a>&lt; double &gt; *params, std::string detector, std::string generation_method, <a class="el" href="structfftw__outline.html">fftw_outline</a> *plan)</td></tr>
-<tr class="memdesc:a0ae3ffbe1994b8a368c130b7f552ea28"><td class="mdescLeft">&#160;</td><td class="mdescRight">routine to maximize over all extrinsic quantities and return the log likelihood  <br /></td></tr>
-<tr class="memitem:ad7c52a57384919260f854ee553dfe554" id="r_ad7c52a57384919260f854ee553dfe554"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#ad7c52a57384919260f854ee553dfe554">maximized_Log_Likelihood</a> (double *data_real, double *data_imag, double *psd, double *frequencies, size_t length, <a class="el" href="classgen__params__base.html">gen_params_base</a>&lt; double &gt; *params, std::string detector, std::string generation_method, <a class="el" href="structfftw__outline.html">fftw_outline</a> *plan)</td></tr>
-<tr class="memitem:ac6ac1768b9d66a7ec4ece67f86724588" id="r_ac6ac1768b9d66a7ec4ece67f86724588"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#ac6ac1768b9d66a7ec4ece67f86724588">maximized_coal_Log_Likelihood</a> (double *data_real, double *data_imag, double *psd, double *frequencies, size_t length, double *template_real, double *template_imag, <a class="el" href="structfftw__outline.html">fftw_outline</a> *plan)</td></tr>
-<tr class="memitem:ae6cc4bb69ba72e0e49a53042cfecaffe" id="r_ae6cc4bb69ba72e0e49a53042cfecaffe"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#ae6cc4bb69ba72e0e49a53042cfecaffe">maximized_coal_Log_Likelihood</a> (std::complex&lt; double &gt; *data, double *psd, double *frequencies, size_t length, <a class="el" href="classgen__params__base.html">gen_params_base</a>&lt; double &gt; *params, std::string detector, std::string generation_method, <a class="el" href="structfftw__outline.html">fftw_outline</a> *plan, double *tc, double *phic)</td></tr>
-<tr class="memdesc:ae6cc4bb69ba72e0e49a53042cfecaffe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to maximize only over coalescence variables tc and phic, returns the maximum values used.  <br /></td></tr>
-<tr class="memitem:a5ad93847e3371aebb5ec16cdc98e2e4a" id="r_a5ad93847e3371aebb5ec16cdc98e2e4a"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#a5ad93847e3371aebb5ec16cdc98e2e4a">maximized_coal_Log_Likelihood_internal</a> (std::complex&lt; double &gt; *data, double *psd, double *frequencies, std::complex&lt; double &gt; *detector_response, size_t length, <a class="el" href="structfftw__outline.html">fftw_outline</a> *plan, double *tc, double *phic)</td></tr>
 <tr class="memitem:a64dda1c7803a0e355d700c39994149b3" id="r_a64dda1c7803a0e355d700c39994149b3"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#a64dda1c7803a0e355d700c39994149b3">Log_Likelihood_internal</a> (std::complex&lt; double &gt; *data, double *psd, double *frequencies, double *weights, std::complex&lt; double &gt; *detector_response, int length, bool log10F, std::string integration_method)</td></tr>
 <tr class="memdesc:a64dda1c7803a0e355d700c39994149b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal function for the unmarginalized log of the likelihood.  <br /></td></tr>
 <tr class="memitem:a36257bd162da3c1d78243834d21cb5ac" id="r_a36257bd162da3c1d78243834d21cb5ac"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#a36257bd162da3c1d78243834d21cb5ac">Log_Likelihood_internal</a> (std::complex&lt; double &gt; *data, double *psd, std::complex&lt; double &gt; *detector_response, <a class="el" href="classQuadrature.html">Quadrature</a> *QuadMethod)</td></tr>
 <tr class="memdesc:a36257bd162da3c1d78243834d21cb5ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute unmarginalized likelihood with a specified <a class="el" href="classQuadrature.html" title="Class to evaluate integrals with established spacing and weights.">Quadrature</a> method.  <br /></td></tr>
-<tr class="memitem:a62f62b74ff10f502d96a6aa31d51f330" id="r_a62f62b74ff10f502d96a6aa31d51f330"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#a62f62b74ff10f502d96a6aa31d51f330">MCMC_likelihood_wrapper_SKYSEARCH</a> (double *param, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, void *parameters)</td></tr>
-<tr class="memitem:a9752c4e306a786c7a716bc504b382d6d" id="r_a9752c4e306a786c7a716bc504b382d6d"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a9752c4e306a786c7a716bc504b382d6d">SkySearch_PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW</a> (<a class="el" href="classmcmc__sampler__output.html">mcmc_sampler_output</a> *sampler_output, double **output, int dimension, int N_steps, int chain_N, int max_chain_N_thermo_ensemble, double *initial_pos, double *seeding_var, double **ensemble_initial_pos, double *chain_temps, int swp_freq, int t0, int nu, int max_chunk_size, std::string chain_distribution_scheme, double(*log_prior)(double *param, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, void *<a class="el" href="fisher_8cpp.html#a79d93ace70e4e426663cb3c799c8cde6">parameters</a>), int numThreads, bool pool, bool show_prog, int num_detectors, std::complex&lt; double &gt; **data, double **noise_psd, double **frequencies, int *data_length, double gps_time, std::string *detectors, int Nmod, double *bppe, std::complex&lt; double &gt; *hplus, std::complex&lt; double &gt; *hcross, std::string statistics_filename, std::string chain_filename, std::string likelihood_log_filename, std::string checkpoint_filename)</td></tr>
-<tr class="memdesc:a9752c4e306a786c7a716bc504b382d6d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Takes in intrinsic parameters and conducts a sky search using uncorrelated MCMC.  <br /></td></tr>
-<tr class="memitem:a8713dc500016043cd1a5c6a509b49de7" id="r_a8713dc500016043cd1a5c6a509b49de7"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a8713dc500016043cd1a5c6a509b49de7">PTMCMC_MH_GW</a> (double ***output, int dimension, int N_steps, int chain_N, double *initial_pos, double *seeding_var, double **ensemble_initial_pos, double *chain_temps, int swp_freq, double(*log_prior)(double *param, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, void *<a class="el" href="fisher_8cpp.html#a79d93ace70e4e426663cb3c799c8cde6">parameters</a>), int numThreads, bool pool, bool show_prog, int num_detectors, std::complex&lt; double &gt; **data, double **noise_psd, double **frequencies, int *data_length, double gps_time, std::string *<a class="el" href="fisher_8cpp.html#af1dde6544f5c896e57d20b51bc7c25c0">detector</a>, <a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *mod_struct, std::string generation_method, std::string statistics_filename, std::string chain_filename, std::string auto_corr_filename, std::string likelihood_log_filename, std::string checkpoint_filename)</td></tr>
-<tr class="memdesc:a8713dc500016043cd1a5c6a509b49de7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wrapper for the MCMC_MH function, specifically for GW analysis.  <br /></td></tr>
-<tr class="memitem:aef24e17d7806e8fd654c50d0fc5e75d9" id="r_aef24e17d7806e8fd654c50d0fc5e75d9"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aef24e17d7806e8fd654c50d0fc5e75d9">continue_PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW</a> (std::string checkpoint_file_start, <a class="el" href="classmcmc__sampler__output.html">mcmc_sampler_output</a> *sampler_output, double **output, int N_steps, int max_chain_N_thermo_ensemble, double *chain_temps, int swp_freq, int t0, int nu, int max_chunk_size, std::string chain_distribution_scheme, double(*log_prior)(double *param, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, void *<a class="el" href="fisher_8cpp.html#a79d93ace70e4e426663cb3c799c8cde6">parameters</a>), int numThreads, bool pool, bool show_prog, int num_detectors, std::complex&lt; double &gt; **data, double **noise_psd, double **frequencies, int *data_length, double gps_time, std::string *detectors, <a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *mod_struct, std::string generation_method, std::string statistics_filename, std::string chain_filename, std::string likelihood_log_filename, std::string checkpoint_filename)</td></tr>
-<tr class="memdesc:aef24e17d7806e8fd654c50d0fc5e75d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Takes in an MCMC checkpoint file and continues the chain.  <br /></td></tr>
-<tr class="memitem:a5a0b6663a2e19df9417b744a6d8d12d7" id="r_a5a0b6663a2e19df9417b744a6d8d12d7"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a5a0b6663a2e19df9417b744a6d8d12d7">PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW</a> (<a class="el" href="classmcmc__sampler__output.html">mcmc_sampler_output</a> *sampler_output, double **output, int dimension, int N_steps, int chain_N, int max_chain_N_thermo_ensemble, double *initial_pos, double *seeding_var, double **ensemble_initial_pos, double *chain_temps, int swp_freq, int t0, int nu, int max_chunk_size, std::string chain_distribution_scheme, double(*log_prior)(double *param, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, void *<a class="el" href="fisher_8cpp.html#a79d93ace70e4e426663cb3c799c8cde6">parameters</a>), int numThreads, bool pool, bool show_prog, int num_detectors, std::complex&lt; double &gt; **data, double **noise_psd, double **frequencies, int *data_length, double gps_time, std::string *detectors, <a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *mod_struct, std::string generation_method, std::string statistics_filename, std::string chain_filename, std::string likelihood_log_filename, std::string checkpoint_filename)</td></tr>
-<tr class="memdesc:a5a0b6663a2e19df9417b744a6d8d12d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Takes in an MCMC checkpoint file and continues the chain.  <br /></td></tr>
-<tr class="memitem:ae2ea76adaa9e6d6142114a9bb63b497b" id="r_ae2ea76adaa9e6d6142114a9bb63b497b"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ae2ea76adaa9e6d6142114a9bb63b497b">PTMCMC_MH_dynamic_PT_alloc_GW</a> (double ***output, int dimension, int N_steps, int chain_N, int max_chain_N_thermo_ensemble, double *initial_pos, double *seeding_var, double **ensemble_initial_pos, double *chain_temps, int swp_freq, int t0, int nu, std::string chain_distribution_scheme, double(*log_prior)(double *param, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, void *<a class="el" href="fisher_8cpp.html#a79d93ace70e4e426663cb3c799c8cde6">parameters</a>), int numThreads, bool pool, bool show_prog, int num_detectors, std::complex&lt; double &gt; **data, double **noise_psd, double **frequencies, int *data_length, double gps_time, std::string *detectors, <a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *mod_struct, std::string generation_method, std::string statistics_filename, std::string chain_filename, std::string likelihood_log_filename, std::string checkpoint_filename)</td></tr>
-<tr class="memdesc:ae2ea76adaa9e6d6142114a9bb63b497b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Takes in an MCMC checkpoint file and continues the chain.  <br /></td></tr>
-<tr class="memitem:ae7d4afdc2e889cb9f5fee52e48de0256" id="r_ae7d4afdc2e889cb9f5fee52e48de0256"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ae7d4afdc2e889cb9f5fee52e48de0256">continue_PTMCMC_MH_GW</a> (std::string start_checkpoint_file, double ***output, int dimension, int N_steps, int swp_freq, double(*log_prior)(double *param, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, void *<a class="el" href="fisher_8cpp.html#a79d93ace70e4e426663cb3c799c8cde6">parameters</a>), int numThreads, bool pool, bool show_prog, int num_detectors, std::complex&lt; double &gt; **data, double **noise_psd, double **frequencies, int *data_length, double gps_time, std::string *<a class="el" href="fisher_8cpp.html#af1dde6544f5c896e57d20b51bc7c25c0">detector</a>, <a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *mod_struct, std::string generation_method, std::string statistics_filename, std::string chain_filename, std::string auto_corr_filename, std::string likelihood_log_filename, std::string final_checkpoint_filename, bool tune)</td></tr>
-<tr class="memdesc:ae7d4afdc2e889cb9f5fee52e48de0256"><td class="mdescLeft">&#160;</td><td class="mdescRight">Takes in an MCMC checkpoint file and continues the chain.  <br /></td></tr>
-<tr class="memitem:ae05b6d20ce302112ce0dc42c35002e5d" id="r_ae05b6d20ce302112ce0dc42c35002e5d"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ae05b6d20ce302112ce0dc42c35002e5d">PTMCMC_method_specific_prep</a> (std::string generation_method, int dimension, double **seeding_var_ptr, bool local_seeding)</td></tr>
-<tr class="memdesc:ae05b6d20ce302112ce0dc42c35002e5d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unpacks MCMC parameters for method specific initiation.  <br /></td></tr>
-<tr class="memitem:a2e8407e705ac51ccc0e1685858ff946f" id="r_a2e8407e705ac51ccc0e1685858ff946f"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a2e8407e705ac51ccc0e1685858ff946f">RJPTMCMC_method_specific_prep</a> (std::string generation_method, int max_dim, int min_dim, double *seeding_var, bool local_seeding)</td></tr>
-<tr class="memdesc:a2e8407e705ac51ccc0e1685858ff946f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unpacks MCMC parameters for method specific initiation (RJ version).  <br /></td></tr>
 <tr class="memitem:a10487a00e3fe184a0ac7971f2f970138" id="r_a10487a00e3fe184a0ac7971f2f970138"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#a10487a00e3fe184a0ac7971f2f970138">MCMC_likelihood_extrinsic</a> (bool save_waveform, <a class="el" href="classgen__params__base.html">gen_params_base</a>&lt; double &gt; *parameters, std::string generation_method, int *data_length, double **frequencies, std::complex&lt; double &gt; **data, double **psd, double **weights, std::string integration_method, bool log10F, std::string *detectors, int num_detectors, <a class="el" href="classQuadrature.html">Quadrature</a> *QuadMethod=NULL)</td></tr>
-<tr class="memitem:a4b7e4918b9ef36287e42b6e63670e082" id="r_a4b7e4918b9ef36287e42b6e63670e082"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a4b7e4918b9ef36287e42b6e63670e082">MCMC_fisher_wrapper</a> (double *param, double **output, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, void *parameters)</td></tr>
-<tr class="memitem:a795da071448fcad4709f142b125ba87a" id="r_a795da071448fcad4709f142b125ba87a"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a795da071448fcad4709f142b125ba87a">MCMC_prep_params</a> (double *param, double *temp_params, <a class="el" href="classgen__params__base.html">gen_params_base</a>&lt; double &gt; *gen_params, int dimension, std::string generation_method, <a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *mod_struct)</td></tr>
-<tr class="memdesc:a795da071448fcad4709f142b125ba87a"><td class="mdescLeft">&#160;</td><td class="mdescRight">utility to do MCMC specific transformations on the input param vector before passing to the repacking utillity  <br /></td></tr>
-<tr class="memitem:a2f8c2370fa955c4fbb09f250069d3dc4" id="r_a2f8c2370fa955c4fbb09f250069d3dc4"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#a2f8c2370fa955c4fbb09f250069d3dc4">MCMC_likelihood_wrapper</a> (double *param, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, void *parameters)</td></tr>
-<tr class="memitem:aa535271c0b4b8f946a1a17a5a58d785d" id="r_aa535271c0b4b8f946a1a17a5a58d785d"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aa535271c0b4b8f946a1a17a5a58d785d">continue_RJPTMCMC_MH_dynamic_PT_alloc_comprehensive_2WF_GW</a> (std::string checkpoint_file_start, <a class="el" href="classmcmc__sampler__output.html">mcmc_sampler_output</a> *sampler_output, double **output, int **status, int *model_status, int nested_model_number, int N_steps, int max_chain_N_thermo_ensemble, double **prior_ranges, double *chain_temps, int swp_freq, int t0, int nu, int max_chunk_size, std::string chain_distribution_scheme, double(*log_prior)(double *param, int *status, int model_status, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, void *<a class="el" href="fisher_8cpp.html#a79d93ace70e4e426663cb3c799c8cde6">parameters</a>), int numThreads, bool pool, bool show_prog, int num_detectors, std::complex&lt; double &gt; **data, double **noise_psd, double **frequencies, int *data_length, double gps_time, std::string *detectors, <a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *mod_struct, std::string generation_method_base, std::string generation_method_extended, std::string statistics_filename, std::string chain_filename, std::string likelihood_log_filename, std::string checkpoint_filename)</td></tr>
-<tr class="memdesc:aa535271c0b4b8f946a1a17a5a58d785d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs RJPTMCMC on two competeting models, waveform 1 and waveform 2. Assumes waveform 2 is a superset including waveform 1 (ie dCS Pv2 and Pv2 or NRT Pv2 and Pv2, but not dCS Pv2 and D).  <br /></td></tr>
-<tr class="memitem:a7004d90447a5b542e634291e9ec94e21" id="r_a7004d90447a5b542e634291e9ec94e21"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a7004d90447a5b542e634291e9ec94e21">RJPTMCMC_MH_dynamic_PT_alloc_comprehensive_2WF_GW</a> (<a class="el" href="classmcmc__sampler__output.html">mcmc_sampler_output</a> *sampler_output, double **output, int **status, int *model_status, int nested_model_number, int max_dimension, int min_dimension, int N_steps, int chain_N, int max_chain_N_thermo_ensemble, double *initial_pos, int *initial_status, int initial_model_status, double *seeding_var, double **ensemble_initial_pos, int **ensemble_initial_status, int *ensemble_initial_model_status, double **prior_ranges, double *chain_temps, int swp_freq, int t0, int nu, int max_chunk_size, std::string chain_distribution_scheme, double(*log_prior)(double *param, int *status, int model_status, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, void *<a class="el" href="fisher_8cpp.html#a79d93ace70e4e426663cb3c799c8cde6">parameters</a>), int numThreads, bool pool, bool show_prog, int num_detectors, std::complex&lt; double &gt; **data, double **noise_psd, double **frequencies, int *data_length, double gps_time, std::string *detectors, <a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *mod_struct, std::string generation_method_base, std::string generation_method_extended, std::string statistics_filename, std::string chain_filename, std::string likelihood_log_filename, std::string checkpoint_filename)</td></tr>
-<tr class="memdesc:a7004d90447a5b542e634291e9ec94e21"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs RJPTMCMC on two competeting models, waveform 1 and waveform 2. Assumes waveform 2 is a superset including waveform 1 (ie dCS Pv2 and Pv2 or NRT Pv2 and Pv2, but not dCS Pv2 and D).  <br /></td></tr>
-<tr class="memitem:a5cb38f56fe9e39843dc18d8bcb995532" id="r_a5cb38f56fe9e39843dc18d8bcb995532"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a5cb38f56fe9e39843dc18d8bcb995532">RJMCMC_2WF_RJ_proposal_wrapper</a> (double *current_param, double *proposed_param, int *current_status, int *proposed_status, int *current_model_status, int *proposed_model_status, double *MH_corrections, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, void *user_param)</td></tr>
-<tr class="memitem:ae88936c760265fdffa8db562c67b4cdd" id="r_ae88936c760265fdffa8db562c67b4cdd"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ae88936c760265fdffa8db562c67b4cdd">RJMCMC_2WF_fisher_wrapper</a> (double *param, int *status, int model_status, double **fisher, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, void *user_param)</td></tr>
-<tr class="memitem:a619ae3f6a26208b89f27e546d2017a8b" id="r_a619ae3f6a26208b89f27e546d2017a8b"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#a619ae3f6a26208b89f27e546d2017a8b">RJMCMC_2WF_likelihood_wrapper</a> (double *param, int *status, int model_status, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, void *user_param)</td></tr>
-<tr class="memitem:af13370b402086ce1b8367743279c93e0" id="r_af13370b402086ce1b8367743279c93e0"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#af13370b402086ce1b8367743279c93e0">pack_local_mod_structure</a> (<a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, double *param, int *status, std::string waveform_extended, void *parameters, <a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *full_struct, <a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *local_struct)</td></tr>
-<tr class="memitem:ad4639dbcf0b5579b4f235f52a88a4e7f" id="r_ad4639dbcf0b5579b4f235f52a88a4e7f"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ad4639dbcf0b5579b4f235f52a88a4e7f">MCMC_fisher_transformations</a> (double *param, double **fisher, int dimension, std::string generation_method, bool intrinsic, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, <a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *mod_struct, void *parameters)</td></tr>
 </table>
-<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Header file for the Graviational Wave specific MCMC routines </p>
-</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
-<a id="aef24e17d7806e8fd654c50d0fc5e75d9" name="aef24e17d7806e8fd654c50d0fc5e75d9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aef24e17d7806e8fd654c50d0fc5e75d9">&#9670;&#160;</a></span>continue_PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void continue_PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW </td>
-          <td>(</td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>checkpoint_file_start</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classmcmc__sampler__output.html">mcmc_sampler_output</a> *</td>          <td class="paramname"><span class="paramname"><em>sampler_output</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>output</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>N_steps</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>max_chain_N_thermo_ensemble</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>chain_temps</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>swp_freq</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>t0</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>nu</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>max_chunk_size</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>chain_distribution_scheme</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double(*</td>          <td class="paramname"><span class="paramname"><em>log_prior&#160;</em></span>)(double *param, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, void *<a class="el" href="fisher_8cpp.html#a79d93ace70e4e426663cb3c799c8cde6">parameters</a>), </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>numThreads</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>pool</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>show_prog</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>num_detectors</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::complex&lt; double &gt; **</td>          <td class="paramname"><span class="paramname"><em>data</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>noise_psd</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>frequencies</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>data_length</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>gps_time</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string *</td>          <td class="paramname"><span class="paramname"><em>detectors</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *</td>          <td class="paramname"><span class="paramname"><em>mod_struct</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>generation_method</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>statistics_filename</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>chain_filename</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>likelihood_log_filename</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>checkpoint_filename</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Takes in an MCMC checkpoint file and continues the chain. </p>
-<p>Obviously, the user must be sure to correctly match the dimension, number of chains, the generation_method, the prior function, the data, psds, freqs, and the detectors (number and name), and the gps_time to the previous run, otherwise the behavior of the sampler is undefined.</p>
-<p>numThreads and pool do not necessarily have to be the same </p>
-
-</div>
-</div>
-<a id="ae7d4afdc2e889cb9f5fee52e48de0256" name="ae7d4afdc2e889cb9f5fee52e48de0256"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae7d4afdc2e889cb9f5fee52e48de0256">&#9670;&#160;</a></span>continue_PTMCMC_MH_GW()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void continue_PTMCMC_MH_GW </td>
-          <td>(</td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>start_checkpoint_file</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double ***</td>          <td class="paramname"><span class="paramname"><em>output</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>dimension</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>N_steps</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>swp_freq</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double(*</td>          <td class="paramname"><span class="paramname"><em>log_prior&#160;</em></span>)(double *param, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, void *<a class="el" href="fisher_8cpp.html#a79d93ace70e4e426663cb3c799c8cde6">parameters</a>), </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>numThreads</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>pool</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>show_prog</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>num_detectors</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::complex&lt; double &gt; **</td>          <td class="paramname"><span class="paramname"><em>data</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>noise_psd</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>frequencies</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>data_length</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>gps_time</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string *</td>          <td class="paramname"><span class="paramname"><em>detectors</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *</td>          <td class="paramname"><span class="paramname"><em>mod_struct</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>generation_method</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>statistics_filename</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>chain_filename</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>auto_corr_filename</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>likelihood_log_filename</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>final_checkpoint_filename</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>tune</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Takes in an MCMC checkpoint file and continues the chain. </p>
-<p>Obviously, the user must be sure to correctly match the dimension, number of chains, the generation_method, the prior function, the data, psds, freqs, and the detectors (number and name), and the gps_time to the previous run, otherwise the behavior of the sampler is undefined.</p>
-<p>numThreads and pool do not necessarily have to be the same </p>
-
-</div>
-</div>
-<a id="aa535271c0b4b8f946a1a17a5a58d785d" name="aa535271c0b4b8f946a1a17a5a58d785d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa535271c0b4b8f946a1a17a5a58d785d">&#9670;&#160;</a></span>continue_RJPTMCMC_MH_dynamic_PT_alloc_comprehensive_2WF_GW()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void continue_RJPTMCMC_MH_dynamic_PT_alloc_comprehensive_2WF_GW </td>
-          <td>(</td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>checkpoint_file_start</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classmcmc__sampler__output.html">mcmc_sampler_output</a> *</td>          <td class="paramname"><span class="paramname"><em>sampler_output</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>output</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int **</td>          <td class="paramname"><span class="paramname"><em>status</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>model_status</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>nested_model_number</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>N_steps</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>max_chain_N_thermo_ensemble</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>prior_ranges</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>chain_temps</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>swp_freq</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>t0</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>nu</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>max_chunk_size</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>chain_distribution_scheme</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double(*</td>          <td class="paramname"><span class="paramname"><em>log_prior&#160;</em></span>)(double *param, int *status, int <a class="el" href="mcmc__sampler_8cpp.html#a9550894d148844bececaaa19c7a7b5f5">model_status</a>, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, void *<a class="el" href="fisher_8cpp.html#a79d93ace70e4e426663cb3c799c8cde6">parameters</a>), </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>numThreads</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>pool</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>show_prog</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>num_detectors</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::complex&lt; double &gt; **</td>          <td class="paramname"><span class="paramname"><em>data</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>noise_psd</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>frequencies</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>data_length</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>gps_time</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string *</td>          <td class="paramname"><span class="paramname"><em>detectors</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *</td>          <td class="paramname"><span class="paramname"><em>mod_struct</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>generation_method_base</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>generation_method_extended</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>statistics_filename</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>chain_filename</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>likelihood_log_filename</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>checkpoint_filename</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Performs RJPTMCMC on two competeting models, waveform 1 and waveform 2. Assumes waveform 2 is a superset including waveform 1 (ie dCS Pv2 and Pv2 or NRT Pv2 and Pv2, but not dCS Pv2 and D). </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">prior_ranges</td><td>Range of priors on MODIFICATIONS &ndash; shape : double[N_mods][2] with low in 0 and high in 1* </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a1fa369a655934a9d3316c1596289628b" name="a1fa369a655934a9d3316c1596289628b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1fa369a655934a9d3316c1596289628b">&#9670;&#160;</a></span>Log_Likelihood()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double Log_Likelihood </td>
-          <td>(</td>
-          <td class="paramtype">std::complex&lt; double &gt; *</td>          <td class="paramname"><span class="paramname"><em>data</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>psd</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>frequencies</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t</td>          <td class="paramname"><span class="paramname"><em>length</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classgen__params__base.html">gen_params_base</a>&lt; double &gt; *</td>          <td class="paramname"><span class="paramname"><em>params</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>detector</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>generation_method</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Unmarginalized log of the likelihood. </p>
-
-</div>
-</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
 <a id="a64dda1c7803a0e355d700c39994149b3" name="a64dda1c7803a0e355d700c39994149b3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a64dda1c7803a0e355d700c39994149b3">&#9670;&#160;</a></span>Log_Likelihood_internal() <span class="overload">[1/2]</span></h2>
 
@@ -808,771 +258,6 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Compute unmarginalized likelihood with a specified <a class="el" href="classQuadrature.html" title="Class to evaluate integrals with established spacing and weights.">Quadrature</a> method. </p>
-
-</div>
-</div>
-<a id="ac6ac1768b9d66a7ec4ece67f86724588" name="ac6ac1768b9d66a7ec4ece67f86724588"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac6ac1768b9d66a7ec4ece67f86724588">&#9670;&#160;</a></span>maximized_coal_Log_Likelihood() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double maximized_coal_Log_Likelihood </td>
-          <td>(</td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>data_real</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>data_imag</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>psd</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>frequencies</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t</td>          <td class="paramname"><span class="paramname"><em>length</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>template_real</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>template_imag</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structfftw__outline.html">fftw_outline</a> *</td>          <td class="paramname"><span class="paramname"><em>plan</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ae6cc4bb69ba72e0e49a53042cfecaffe" name="ae6cc4bb69ba72e0e49a53042cfecaffe"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae6cc4bb69ba72e0e49a53042cfecaffe">&#9670;&#160;</a></span>maximized_coal_Log_Likelihood() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double maximized_coal_Log_Likelihood </td>
-          <td>(</td>
-          <td class="paramtype">std::complex&lt; double &gt; *</td>          <td class="paramname"><span class="paramname"><em>data</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>psd</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>frequencies</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t</td>          <td class="paramname"><span class="paramname"><em>length</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classgen__params__base.html">gen_params_base</a>&lt; double &gt; *</td>          <td class="paramname"><span class="paramname"><em>params</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>detector</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>generation_method</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structfftw__outline.html">fftw_outline</a> *</td>          <td class="paramname"><span class="paramname"><em>plan</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>tc</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>phic</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Function to maximize only over coalescence variables tc and phic, returns the maximum values used. </p>
-
-</div>
-</div>
-<a id="abd627450e43bf7ef683d875d804b7503" name="abd627450e43bf7ef683d875d804b7503"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abd627450e43bf7ef683d875d804b7503">&#9670;&#160;</a></span>maximized_coal_log_likelihood_IMRPhenomD() <span class="overload">[1/3]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double maximized_coal_log_likelihood_IMRPhenomD </td>
-          <td>(</td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>frequencies</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>length</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::complex&lt; double &gt; *</td>          <td class="paramname"><span class="paramname"><em>data</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>noise</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>SNR</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>chirpmass</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>symmetric_mass_ratio</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>spin1</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>spin2</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>NSflag</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structfftw__outline.html">fftw_outline</a> *</td>          <td class="paramname"><span class="paramname"><em>plan</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Function to calculate the log Likelihood as defined by -1/2 (d-h|d-h) maximized over the extrinsic parameters phic and tc. </p>
-<p>frequency array must be uniform spacing - this shouldn't be a problem when working with real data as DFT return uniform spacing </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">chirpmass</td><td>in solar masses </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="ae78896f8e8acd8dfaff6ff33a732284a" name="ae78896f8e8acd8dfaff6ff33a732284a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae78896f8e8acd8dfaff6ff33a732284a">&#9670;&#160;</a></span>maximized_coal_log_likelihood_IMRPhenomD() <span class="overload">[2/3]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double maximized_coal_log_likelihood_IMRPhenomD </td>
-          <td>(</td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>frequencies</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t</td>          <td class="paramname"><span class="paramname"><em>length</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>real_data</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>imag_data</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>noise</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>SNR</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>chirpmass</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>symmetric_mass_ratio</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>spin1</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>spin2</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>NSflag</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">chirpmass</td><td>in solar masses </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a2635acb06ca0e448854aaab3fd7037c3" name="a2635acb06ca0e448854aaab3fd7037c3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2635acb06ca0e448854aaab3fd7037c3">&#9670;&#160;</a></span>maximized_coal_log_likelihood_IMRPhenomD() <span class="overload">[3/3]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double maximized_coal_log_likelihood_IMRPhenomD </td>
-          <td>(</td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>frequencies</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t</td>          <td class="paramname"><span class="paramname"><em>length</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>real_data</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>imag_data</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>noise</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>SNR</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>chirpmass</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>symmetric_mass_ratio</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>spin1</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>spin2</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>NSflag</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structfftw__outline.html">fftw_outline</a> *</td>          <td class="paramname"><span class="paramname"><em>plan</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">chirpmass</td><td>in solar masses </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="ac66db6fc5c75ee33b84a48724b4738ef" name="ac66db6fc5c75ee33b84a48724b4738ef"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac66db6fc5c75ee33b84a48724b4738ef">&#9670;&#160;</a></span>maximized_coal_log_likelihood_IMRPhenomD_Full_Param() <span class="overload">[1/3]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double maximized_coal_log_likelihood_IMRPhenomD_Full_Param </td>
-          <td>(</td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>frequencies</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>length</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::complex&lt; double &gt; *</td>          <td class="paramname"><span class="paramname"><em>data</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>noise</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>chirpmass</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>symmetric_mass_ratio</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>spin1</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>spin2</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>Luminosity_Distance</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>theta</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>phi</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>iota</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>NSflag</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structfftw__outline.html">fftw_outline</a> *</td>          <td class="paramname"><span class="paramname"><em>plan</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">chirpmass</td><td>in solar masses </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a2322ab4b42380145e742ad564c643874" name="a2322ab4b42380145e742ad564c643874"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2322ab4b42380145e742ad564c643874">&#9670;&#160;</a></span>maximized_coal_log_likelihood_IMRPhenomD_Full_Param() <span class="overload">[2/3]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double maximized_coal_log_likelihood_IMRPhenomD_Full_Param </td>
-          <td>(</td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>frequencies</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t</td>          <td class="paramname"><span class="paramname"><em>length</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>real_data</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>imag_data</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>noise</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>chirpmass</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>symmetric_mass_ratio</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>spin1</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>spin2</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>Luminosity_Distance</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>theta</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>phi</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>iota</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>NSflag</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">chirpmass</td><td>in solar masses </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a3fbdbcf0651bad5541eb6e366c62de23" name="a3fbdbcf0651bad5541eb6e366c62de23"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3fbdbcf0651bad5541eb6e366c62de23">&#9670;&#160;</a></span>maximized_coal_log_likelihood_IMRPhenomD_Full_Param() <span class="overload">[3/3]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double maximized_coal_log_likelihood_IMRPhenomD_Full_Param </td>
-          <td>(</td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>frequencies</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t</td>          <td class="paramname"><span class="paramname"><em>length</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>real_data</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>imag_data</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>noise</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>chirpmass</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>symmetric_mass_ratio</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>spin1</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>spin2</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>Luminosity_Distance</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>theta</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>phi</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>iota</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>NSflag</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structfftw__outline.html">fftw_outline</a> *</td>          <td class="paramname"><span class="paramname"><em>plan</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">chirpmass</td><td>in solar masses </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a5ad93847e3371aebb5ec16cdc98e2e4a" name="a5ad93847e3371aebb5ec16cdc98e2e4a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5ad93847e3371aebb5ec16cdc98e2e4a">&#9670;&#160;</a></span>maximized_coal_Log_Likelihood_internal()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double maximized_coal_Log_Likelihood_internal </td>
-          <td>(</td>
-          <td class="paramtype">std::complex&lt; double &gt; *</td>          <td class="paramname"><span class="paramname"><em>data</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>psd</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>frequencies</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::complex&lt; double &gt; *</td>          <td class="paramname"><span class="paramname"><em>detector_response</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t</td>          <td class="paramname"><span class="paramname"><em>length</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structfftw__outline.html">fftw_outline</a> *</td>          <td class="paramname"><span class="paramname"><em>plan</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>tc</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>phic</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ad7c52a57384919260f854ee553dfe554" name="ad7c52a57384919260f854ee553dfe554"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad7c52a57384919260f854ee553dfe554">&#9670;&#160;</a></span>maximized_Log_Likelihood() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double maximized_Log_Likelihood </td>
-          <td>(</td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>data_real</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>data_imag</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>psd</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>frequencies</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t</td>          <td class="paramname"><span class="paramname"><em>length</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classgen__params__base.html">gen_params_base</a>&lt; double &gt; *</td>          <td class="paramname"><span class="paramname"><em>params</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>detector</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>generation_method</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structfftw__outline.html">fftw_outline</a> *</td>          <td class="paramname"><span class="paramname"><em>plan</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a0ae3ffbe1994b8a368c130b7f552ea28" name="a0ae3ffbe1994b8a368c130b7f552ea28"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0ae3ffbe1994b8a368c130b7f552ea28">&#9670;&#160;</a></span>maximized_Log_Likelihood() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double maximized_Log_Likelihood </td>
-          <td>(</td>
-          <td class="paramtype">std::complex&lt; double &gt; *</td>          <td class="paramname"><span class="paramname"><em>data</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>psd</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>frequencies</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t</td>          <td class="paramname"><span class="paramname"><em>length</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classgen__params__base.html">gen_params_base</a>&lt; double &gt; *</td>          <td class="paramname"><span class="paramname"><em>params</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>detector</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>generation_method</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structfftw__outline.html">fftw_outline</a> *</td>          <td class="paramname"><span class="paramname"><em>plan</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>routine to maximize over all extrinsic quantities and return the log likelihood </p>
-<p>IMRPhenomD &ndash; maximizes over DL, phic, tc, \iota, \phi, \theta IMRPhenomP &ndash; maximizes over DL, phic,tc, \psi, \phi , \theta </p>
 
 </div>
 </div>
@@ -1670,88 +355,6 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ad4639dbcf0b5579b4f235f52a88a4e7f" name="ad4639dbcf0b5579b4f235f52a88a4e7f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad4639dbcf0b5579b4f235f52a88a4e7f">&#9670;&#160;</a></span>MCMC_fisher_transformations()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void MCMC_fisher_transformations </td>
-          <td>(</td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>param</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>fisher</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>dimension</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>generation_method</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>intrinsic</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *</td>          <td class="paramname"><span class="paramname"><em>interface</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *</td>          <td class="paramname"><span class="paramname"><em>mod_struct</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>parameters</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a4b7e4918b9ef36287e42b6e63670e082" name="a4b7e4918b9ef36287e42b6e63670e082"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4b7e4918b9ef36287e42b6e63670e082">&#9670;&#160;</a></span>MCMC_fisher_wrapper()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void MCMC_fisher_wrapper </td>
-          <td>(</td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>param</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>output</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *</td>          <td class="paramname"><span class="paramname"><em>interface</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>parameters</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a id="a10487a00e3fe184a0ac7971f2f970138" name="a10487a00e3fe184a0ac7971f2f970138"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a10487a00e3fe184a0ac7971f2f970138">&#9670;&#160;</a></span>MCMC_likelihood_extrinsic()</h2>
 
@@ -1828,60 +431,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a2f8c2370fa955c4fbb09f250069d3dc4" name="a2f8c2370fa955c4fbb09f250069d3dc4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2f8c2370fa955c4fbb09f250069d3dc4">&#9670;&#160;</a></span>MCMC_likelihood_wrapper()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double MCMC_likelihood_wrapper </td>
-          <td>(</td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>param</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *</td>          <td class="paramname"><span class="paramname"><em>interface</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>parameters</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a62f62b74ff10f502d96a6aa31d51f330" name="a62f62b74ff10f502d96a6aa31d51f330"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a62f62b74ff10f502d96a6aa31d51f330">&#9670;&#160;</a></span>MCMC_likelihood_wrapper_SKYSEARCH()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double MCMC_likelihood_wrapper_SKYSEARCH </td>
-          <td>(</td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>param</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *</td>          <td class="paramname"><span class="paramname"><em>interface</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>parameters</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a795da071448fcad4709f142b125ba87a" name="a795da071448fcad4709f142b125ba87a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a795da071448fcad4709f142b125ba87a">&#9670;&#160;</a></span>MCMC_prep_params()</h2>
+<a id="acb9f3211eb79f7dc7660128ba1c71e5a" name="acb9f3211eb79f7dc7660128ba1c71e5a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acb9f3211eb79f7dc7660128ba1c71e5a">&#9670;&#160;</a></span>MCMC_prep_params()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1914,7 +465,17 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *</td>          <td class="paramname"><span class="paramname"><em>mod_struct</em></span>&#160;)</td>
+          <td class="paramtype"><a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *</td>          <td class="paramname"><span class="paramname"><em>mod_struct</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>intrinsic</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>gmst</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -1924,54 +485,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="af13370b402086ce1b8367743279c93e0" name="af13370b402086ce1b8367743279c93e0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af13370b402086ce1b8367743279c93e0">&#9670;&#160;</a></span>pack_local_mod_structure()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void pack_local_mod_structure </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *</td>          <td class="paramname"><span class="paramname"><em>interface</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>param</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>status</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>waveform_extended</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>parameters</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *</td>          <td class="paramname"><span class="paramname"><em>full_struct</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *</td>          <td class="paramname"><span class="paramname"><em>local_struct</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ae05b6d20ce302112ce0dc42c35002e5d" name="ae05b6d20ce302112ce0dc42c35002e5d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae05b6d20ce302112ce0dc42c35002e5d">&#9670;&#160;</a></span>PTMCMC_method_specific_prep()</h2>
+<a id="a05fe5e0d6f102d62a2b936c9e2db07ff" name="a05fe5e0d6f102d62a2b936c9e2db07ff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a05fe5e0d6f102d62a2b936c9e2db07ff">&#9670;&#160;</a></span>PTMCMC_method_specific_prep()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1989,12 +504,12 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>seeding_var</em></span>, </td>
+          <td class="paramtype">bool *</td>          <td class="paramname"><span class="paramname"><em>intrinsic</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>local_seeding</em></span>&#160;)</td>
+          <td class="paramtype"><a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *</td>          <td class="paramname"><span class="paramname"><em>mod_struct</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -2004,81 +519,81 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ae2ea76adaa9e6d6142114a9bb63b497b" name="ae2ea76adaa9e6d6142114a9bb63b497b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae2ea76adaa9e6d6142114a9bb63b497b">&#9670;&#160;</a></span>PTMCMC_MH_dynamic_PT_alloc_GW()</h2>
+<a id="aaa7e92fc01ba7fe8e864fd084ae809fd" name="aaa7e92fc01ba7fe8e864fd084ae809fd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaa7e92fc01ba7fe8e864fd084ae809fd">&#9670;&#160;</a></span>PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void PTMCMC_MH_dynamic_PT_alloc_GW </td>
+          <td class="memname">bayesship::bayesshipSampler * PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW </td>
           <td>(</td>
-          <td class="paramtype">double ***</td>          <td class="paramname"><span class="paramname"><em>output</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>dimension</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>N_steps</em></span>, </td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>independentSamples</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>chain_N</em></span>, </td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>ensembleSize</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>max_chain_N_thermo_ensemble</em></span>, </td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>ensembleN</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>initial_pos</em></span>, </td>
+          <td class="paramtype">bayesship::positionInfo *</td>          <td class="paramname"><span class="paramname"><em>initialPosition</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>seeding_var</em></span>, </td>
+          <td class="paramtype">bayesship::positionInfo **</td>          <td class="paramname"><span class="paramname"><em>initialEnsemble</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>ensemble_initial_pos</em></span>, </td>
+          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>swapProb</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>chain_temps</em></span>, </td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>burnIterations</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>swp_freq</em></span>, </td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>burnPriorIterations</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>t0</em></span>, </td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>priorIterations</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>nu</em></span>, </td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>writePriorData</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>chain_distribution_scheme</em></span>, </td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>batchSize</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double(*</td>          <td class="paramname"><span class="paramname"><em>log_prior&#160;</em></span>)(double *param, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, void *<a class="el" href="fisher_8cpp.html#a79d93ace70e4e426663cb3c799c8cde6">parameters</a>), </td>
+          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>priorRanges</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bayesship::probabilityFn *</td>          <td class="paramname"><span class="paramname"><em>log_prior</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -2089,11 +604,6 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>pool</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>show_prog</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -2143,22 +653,27 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>statistics_filename</em></span>, </td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>outputDir</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>chain_filename</em></span>, </td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>outputFileMoniker</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>likelihood_log_filename</em></span>, </td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>ignoreExistingCheckpoint</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>checkpoint_filename</em></span>&#160;)</td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>restrictSwapTemperatures</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>coldChainStorageOnly</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -2169,482 +684,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a5a0b6663a2e19df9417b744a6d8d12d7" name="a5a0b6663a2e19df9417b744a6d8d12d7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5a0b6663a2e19df9417b744a6d8d12d7">&#9670;&#160;</a></span>PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classmcmc__sampler__output.html">mcmc_sampler_output</a> *</td>          <td class="paramname"><span class="paramname"><em>sampler_output</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>output</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>dimension</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>N_steps</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>chain_N</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>max_chain_N_thermo_ensemble</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>initial_pos</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>seeding_var</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>ensemble_initial_pos</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>chain_temps</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>swp_freq</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>t0</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>nu</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>max_chunk_size</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>chain_distribution_scheme</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double(*</td>          <td class="paramname"><span class="paramname"><em>log_prior&#160;</em></span>)(double *param, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, void *<a class="el" href="fisher_8cpp.html#a79d93ace70e4e426663cb3c799c8cde6">parameters</a>), </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>numThreads</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>pool</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>show_prog</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>num_detectors</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::complex&lt; double &gt; **</td>          <td class="paramname"><span class="paramname"><em>data</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>noise_psd</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>frequencies</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>data_length</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>gps_time</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string *</td>          <td class="paramname"><span class="paramname"><em>detectors</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *</td>          <td class="paramname"><span class="paramname"><em>mod_struct</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>generation_method</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>statistics_filename</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>chain_filename</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>likelihood_log_filename</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>checkpoint_filename</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Takes in an MCMC checkpoint file and continues the chain. </p>
-<p>Obviously, the user must be sure to correctly match the dimension, number of chains, the generation_method, the prior function, the data, psds, freqs, and the detectors (number and name), and the gps_time to the previous run, otherwise the behavior of the sampler is undefined.</p>
-<p>numThreads and pool do not necessarily have to be the same </p>
-
-</div>
-</div>
-<a id="a8713dc500016043cd1a5c6a509b49de7" name="a8713dc500016043cd1a5c6a509b49de7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8713dc500016043cd1a5c6a509b49de7">&#9670;&#160;</a></span>PTMCMC_MH_GW()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void PTMCMC_MH_GW </td>
-          <td>(</td>
-          <td class="paramtype">double ***</td>          <td class="paramname"><span class="paramname"><em>output</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>dimension</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>N_steps</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>chain_N</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>initial_pos</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>seeding_var</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>ensemble_initial_pos</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>chain_temps</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>swp_freq</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double(*</td>          <td class="paramname"><span class="paramname"><em>log_prior&#160;</em></span>)(double *param, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, void *<a class="el" href="fisher_8cpp.html#a79d93ace70e4e426663cb3c799c8cde6">parameters</a>), </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>numThreads</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>pool</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>show_prog</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>num_detectors</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::complex&lt; double &gt; **</td>          <td class="paramname"><span class="paramname"><em>data</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>noise_psd</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>frequencies</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>data_length</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>gps_time</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string *</td>          <td class="paramname"><span class="paramname"><em>detectors</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *</td>          <td class="paramname"><span class="paramname"><em>mod_struct</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>generation_method</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>statistics_filename</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>chain_filename</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>auto_corr_filename</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>likelihood_log_filename</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>checkpoint_file</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Wrapper for the MCMC_MH function, specifically for GW analysis. </p>
-<p>Handles the details of setting up the MCMC sampler and wraps the fisher and log likelihood to conform to the format of the sampler</p>
-<p><em>NOTE</em> &ndash; This sampler is NOT thread safe. There is global memory declared for each call to MCMC_MH_GW, so separate samplers should not be run in the same process space</p>
-<p>Supported parameter combinations:</p>
-<p>IMRPhenomD - 4 dimensions &ndash; ln chirpmass, eta, chi1, chi2</p>
-<p>IMRPhenomD - 7 dimensions &ndash; ln D_L, tc, phic, ln chirpmass, eta, chi1, chi2</p>
-<p>IMRPhenomD - 9 dimensions &ndash; cos inclination, RA, DEC, ln D_L, ln chirpmass, eta, chi1, chi2, psi</p>
-<p>dCS_IMRPhenomD- 8 dimensions &ndash; cos inclination, RA, DEC, ln D_L, ln chirpmass, eta, chi1, chi2, \alpha^2 (the coupling parameter)</p>
-<p>dCS_IMRPhenomD_root_alpha- 8 dimensions &ndash; cos inclination, RA, DEC, ln D_L, ln chirpmass, eta, chi1, chi2, \sqrt \alpha (in km) (the coupling parameter)</p>
-<p><a class="el" href="classIMRPhenomPv2.html">IMRPhenomPv2</a> - 9 dimensions &ndash; cos J_N, ln chirpmass, eta, |chi1|, |chi1|, theta_1, theta_2, phi_1, phi_2 </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">statistics_filename</td><td>Filename to output sampling statistics, if empty string, not output  </td></tr>
-    <tr><td class="paramname">chain_filename</td><td>Filename to output data (chain 0 only), if empty string, not output  </td></tr>
-    <tr><td class="paramname">auto_corr_filename</td><td>Filename to output auto correlation in some interval, if empty string, not output  </td></tr>
-    <tr><td class="paramname">checkpoint_file</td><td>Filename to output data for checkpoint, if empty string, not saved </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="ae88936c760265fdffa8db562c67b4cdd" name="ae88936c760265fdffa8db562c67b4cdd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae88936c760265fdffa8db562c67b4cdd">&#9670;&#160;</a></span>RJMCMC_2WF_fisher_wrapper()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void RJMCMC_2WF_fisher_wrapper </td>
-          <td>(</td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>param</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>status</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>model_status</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>fisher</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *</td>          <td class="paramname"><span class="paramname"><em>interface</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>user_param</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a619ae3f6a26208b89f27e546d2017a8b" name="a619ae3f6a26208b89f27e546d2017a8b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a619ae3f6a26208b89f27e546d2017a8b">&#9670;&#160;</a></span>RJMCMC_2WF_likelihood_wrapper()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double RJMCMC_2WF_likelihood_wrapper </td>
-          <td>(</td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>param</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>status</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>model_status</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *</td>          <td class="paramname"><span class="paramname"><em>interface</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>user_param</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a5cb38f56fe9e39843dc18d8bcb995532" name="a5cb38f56fe9e39843dc18d8bcb995532"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5cb38f56fe9e39843dc18d8bcb995532">&#9670;&#160;</a></span>RJMCMC_2WF_RJ_proposal_wrapper()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void RJMCMC_2WF_RJ_proposal_wrapper </td>
-          <td>(</td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>current_param</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>proposed_param</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>current_status</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>proposed_status</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>current_model_status</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>proposed_model_status</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>MH_corrections</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *</td>          <td class="paramname"><span class="paramname"><em>interface</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>user_param</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a2e8407e705ac51ccc0e1685858ff946f" name="a2e8407e705ac51ccc0e1685858ff946f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2e8407e705ac51ccc0e1685858ff946f">&#9670;&#160;</a></span>RJPTMCMC_method_specific_prep()</h2>
+<a id="a4e37907d499041030cadda111373d09c" name="a4e37907d499041030cadda111373d09c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4e37907d499041030cadda111373d09c">&#9670;&#160;</a></span>RJPTMCMC_method_specific_prep()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -2657,161 +698,103 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>max_dim</em></span>, </td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>dimension</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>min_dim</em></span>, </td>
+          <td class="paramtype">bool *</td>          <td class="paramname"><span class="paramname"><em>intrinsic</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>seeding_var</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>local_seeding</em></span>&#160;)</td>
+          <td class="paramtype"><a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *</td>          <td class="paramname"><span class="paramname"><em>mod_struct</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Unpacks MCMC parameters for method specific initiation (RJ version). </p>
-<p>Populates seeding vector if non supplied, populates mcmc_Nmod, populates mcmc_log_beta, populates mcmc_intrinsic </p>
-
 </div>
 </div>
-<a id="a7004d90447a5b542e634291e9ec94e21" name="a7004d90447a5b542e634291e9ec94e21"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7004d90447a5b542e634291e9ec94e21">&#9670;&#160;</a></span>RJPTMCMC_MH_dynamic_PT_alloc_comprehensive_2WF_GW()</h2>
+<a id="a0dd14180c6759f88bcdad6d0b5af810e" name="a0dd14180c6759f88bcdad6d0b5af810e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0dd14180c6759f88bcdad6d0b5af810e">&#9670;&#160;</a></span>RJPTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void RJPTMCMC_MH_dynamic_PT_alloc_comprehensive_2WF_GW </td>
+          <td class="memname">bayesship::bayesshipSampler * RJPTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classmcmc__sampler__output.html">mcmc_sampler_output</a> *</td>          <td class="paramname"><span class="paramname"><em>sampler_output</em></span>, </td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>minDim</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>output</em></span>, </td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>maxDim</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int **</td>          <td class="paramname"><span class="paramname"><em>status</em></span>, </td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>independentSamples</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>model_status</em></span>, </td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>ensembleSize</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>nested_model_number</em></span>, </td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>ensembleN</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>max_dimension</em></span>, </td>
+          <td class="paramtype">bayesship::positionInfo *</td>          <td class="paramname"><span class="paramname"><em>initialPosition</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>min_dimension</em></span>, </td>
+          <td class="paramtype">bayesship::positionInfo **</td>          <td class="paramname"><span class="paramname"><em>initialEnsemble</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>N_steps</em></span>, </td>
+          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>swapProb</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>chain_N</em></span>, </td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>burnIterations</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>max_chain_N_thermo_ensemble</em></span>, </td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>burnPriorIterations</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>initial_pos</em></span>, </td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>priorIterations</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>initial_status</em></span>, </td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>writePriorData</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>initial_model_status</em></span>, </td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>batchSize</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>seeding_var</em></span>, </td>
+          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>priorRanges</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>ensemble_initial_pos</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int **</td>          <td class="paramname"><span class="paramname"><em>ensemble_initial_status</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>ensemble_initial_model_status</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>prior_ranges</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>chain_temps</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>swp_freq</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>t0</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>nu</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>max_chunk_size</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>chain_distribution_scheme</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double(*</td>          <td class="paramname"><span class="paramname"><em>log_prior&#160;</em></span>)(double *param, int *status, int <a class="el" href="mcmc__sampler_8cpp.html#a9550894d148844bececaaa19c7a7b5f5">model_status</a>, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, void *<a class="el" href="fisher_8cpp.html#a79d93ace70e4e426663cb3c799c8cde6">parameters</a>), </td>
+          <td class="paramtype">bayesship::probabilityFn *</td>          <td class="paramname"><span class="paramname"><em>log_prior</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -2822,11 +805,6 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>pool</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>show_prog</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -2871,7 +849,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>generation_method_base</em></span>, </td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>generation_method</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -2881,219 +859,34 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>statistics_filename</em></span>, </td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>outputDir</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>chain_filename</em></span>, </td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>outputFileMoniker</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>likelihood_log_filename</em></span>, </td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>ignoreExistingCheckpoint</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>checkpoint_filename</em></span>&#160;)</td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>restrictSwapTemperatures</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>coldChainStorageOnly</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Performs RJPTMCMC on two competeting models, waveform 1 and waveform 2. Assumes waveform 2 is a superset including waveform 1 (ie dCS Pv2 and Pv2 or NRT Pv2 and Pv2, but not dCS Pv2 and D). </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">prior_ranges</td><td>Range of priors on MODIFICATIONS &ndash; shape : double[N_mods][2] with low in 0 and high in 1* </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a9752c4e306a786c7a716bc504b382d6d" name="a9752c4e306a786c7a716bc504b382d6d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9752c4e306a786c7a716bc504b382d6d">&#9670;&#160;</a></span>SkySearch_PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void SkySearch_PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classmcmc__sampler__output.html">mcmc_sampler_output</a> *</td>          <td class="paramname"><span class="paramname"><em>sampler_output</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>output</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>dimension</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>N_steps</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>chain_N</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>max_chain_N_thermo_ensemble</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>initial_pos</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>seeding_var</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>ensemble_initial_pos</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>chain_temps</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>swp_freq</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>t0</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>nu</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>max_chunk_size</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>chain_distribution_scheme</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double(*</td>          <td class="paramname"><span class="paramname"><em>log_prior&#160;</em></span>)(double *param, <a class="el" href="classmcmc__data__interface.html">mcmc_data_interface</a> *interface, void *<a class="el" href="fisher_8cpp.html#a79d93ace70e4e426663cb3c799c8cde6">parameters</a>), </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>numThreads</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>pool</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>show_prog</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>num_detectors</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::complex&lt; double &gt; **</td>          <td class="paramname"><span class="paramname"><em>data</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>noise_psd</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>frequencies</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>data_length</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>gps_time</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string *</td>          <td class="paramname"><span class="paramname"><em>detectors</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>Nmod</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>bppe</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::complex&lt; double &gt; *</td>          <td class="paramname"><span class="paramname"><em>hplus</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::complex&lt; double &gt; *</td>          <td class="paramname"><span class="paramname"><em>hcross</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>statistics_filename</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>chain_filename</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>likelihood_log_filename</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>checkpoint_filename</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Takes in intrinsic parameters and conducts a sky search using uncorrelated MCMC. </p>
-<p>Searches over RA, sin(DEC), PSI, INCLINATION, phiREF, tc,ln(DL)</p>
-<p>Only works with PhenomD</p>
-<p>hplus and hcross should be constructed with the value for inclination in initial_pos &ndash; its scaled out internally </p>
+<p>Takes in an MCMC checkpoint file and continues the chain. </p>
+<p>Obviously, the user must be sure to correctly match the dimension, number of chains, the generation_method, the prior function, the data, psds, freqs, and the detectors (number and name), and the gps_time to the previous run, otherwise the behavior of the sampler is undefined.</p>
+<p>numThreads and pool do not necessarily have to be the same </p>
 
 </div>
 </div>

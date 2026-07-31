@@ -3,7 +3,6 @@
 #include <gwat/io_util.h>
 #include <gwat/mcmc_sampler.h>
 #include <gwat/mcmc_gw.h>
-#include <gwat/mcmc_gw_extended.h>
 #include <gwat/detector_util.h>
 #include <gwat/util.h>
 #include <gwat/waveform_util.h>
@@ -94,7 +93,7 @@ int main(int argc, char *argv[])
 	}
 	else if(runtime_opt == 1){
 		std::cout<<"MCMC Injected GW"<<std::endl;
-		std::cout<<"Test function deprecated due to function PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW no longer being in use"<<std::endl;
+		std::cout<<"Test function deprecated"<<std::endl;
 		return -1;
 	}
 	else if(runtime_opt == 2){
@@ -331,7 +330,7 @@ int test_ptrjmcmc_integration(int argc, char *argv[])
 	//double priorIterations =0 ;
 	int max_chunk_size = 1e6;
 
-	ptrjmcmc::PtrjmcmcSampler * samplerObj = PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(
+	ptrjmcmc::PtrjmcmcSampler * samplerObj = PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
 		dim, samples, ensembleSize, ensembleN, initialPosition, (ptrjmcmc::positionInfo **)nullptr, swapProb, burnIterations, burnPriorIterations,priorIterations, true, max_chunk_size, &(priorRanges[0]), test_ptrjmcmc_integration_log_prior, threads, pool, detect_number, data, psd, freq, data_lengths, gps, detectors, &mod_struct, recovery_method, outputDir, outputMoniker);
 	//samplerObj->data->writeStatFile(outputDir+outputMoniker+"Stat.csv");
 	if(priorIterations>0){

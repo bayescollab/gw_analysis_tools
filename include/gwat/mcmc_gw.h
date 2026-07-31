@@ -1,5 +1,12 @@
 #ifndef MCMC_GW_H
 #define MCMC_GW_H
+
+#include "util.h"
+// #include "mcmc_gw.h" # TODO delete this line
+#include <bayesship/bayesshipSampler.h>
+#include <bayesship/dataUtilities.h>
+#include "adaptivelikelihoods.h"
+
 #include <complex>
 #include <fftw3.h>
 #include "util.h"
@@ -13,41 +20,22 @@
 #include "mcmc_sampler.h"
 #include "quadrature.h"
 #include "adaptivelikelihoods.h"
-/*! \file 
- *
- * Header file for the Graviational Wave specific MCMC routines
- */
 
-//########################################
-//MCMC global variables - facilitate wrapping 
-//of likelihood function 
-static double **mcmc_noise=NULL;
-static double *mcmc_init_pos=NULL;
-static std::complex<double> **mcmc_data=NULL;
-static double **mcmc_frequencies=NULL;
-static std::string *mcmc_detectors=NULL;
-static std::string mcmc_generation_method="";
-static std::string mcmc_generation_method_base="";
-static std::string mcmc_generation_method_extended="";
-static int *mcmc_data_length=NULL ;
-static fftw_outline *mcmc_fftw_plans=NULL ;
-static int mcmc_num_detectors=2;
-static double mcmc_gps_time=0;
-static double mcmc_gmst=0;
-static int mcmc_max_dim;
-static int mcmc_min_dim;
-static int mcmc_Nmod;
-static int mcmc_Nmod_max;
-static double *mcmc_bppe;
-static gsl_interp_accel **mcmc_accels = NULL;
-static gsl_spline **mcmc_splines = NULL;
-static bool mcmc_log_beta;
+
+#include <fstream>
+#include <vector>
+#include <algorithm>
+#include <thread>
+#include <condition_variable>
+#include "IMRPhenomD_NRT.h" //For testing purposes only! Remove later.
+#include "EA_IMRPhenomD_NRT.h" //For testing purposes only! Remove later.
+
+
 static bool mcmc_intrinsic;
 static bool mcmc_save_waveform;
-static int mcmc_deriv_order=4;
-static gsl_rng **mcmc_rvec;
 
-//########################################
+
+
 
 struct MCMC_modification_struct
 {
@@ -107,8 +95,6 @@ struct MCMC_modification_struct
 	double nu = 100.;
 };
 
-static MCMC_modification_struct *mcmc_mod_struct;
-
 struct MCMC_user_param
 {
 	std::complex<double> **burn_data=NULL;
@@ -139,6 +125,180 @@ struct MCMC_user_param
 	gsl_rng *r;
 };
 
+struct mcmcVariables 
+{
+	double **mcmc_noise=nullptr;
+	double *mcmc_init_pos=nullptr;
+	std::complex<double> **mcmc_data=nullptr;
+	double **mcmc_frequencies=nullptr;
+	std::string *mcmc_detectors=nullptr;
+	std::string mcmc_generation_method="";
+	int *mcmc_data_length = nullptr;
+	fftw_outline *mcmc_fftw_plans=nullptr;
+	int mcmc_num_detectors  ;
+	double mcmc_gps_time = 0;
+	double mcmc_gmst = 0;
+	int mcmc_max_dim;
+	int mcmc_min_dim;
+	MCMC_modification_struct *mcmc_mod_struct=nullptr;
+	bool mcmc_save_waveform=true;	
+	bool mcmc_intrinsic=false;	
+	int mcmc_deriv_order = 4;
+	bool mcmc_log_beta = false;
+	MCMC_user_param *user_parameters = nullptr;	
+	double maxDim;
+	bool mcmc_adaptive = false;
+	AdaptiveLikelihood *adaptivell=nullptr;
+	Quadrature *QuadMethod = NULL;
+};
+struct mcmcVariablesRJ
+{
+	double **mcmc_noise=nullptr;
+	double *mcmc_init_pos=nullptr;
+	std::complex<double> **mcmc_data=nullptr;
+	double **mcmc_frequencies=nullptr;
+	std::string *mcmc_detectors=nullptr;
+	std::string mcmc_generation_method="";
+	std::string mcmc_generation_method_extended="";
+	int *mcmc_data_length = nullptr;
+	fftw_outline *mcmc_fftw_plans=nullptr;
+	int mcmc_num_detectors  ;
+	double mcmc_gps_time = 0;
+	double mcmc_gmst = 0;
+	int mcmc_max_dim;
+	int mcmc_min_dim;
+	MCMC_modification_struct *mcmc_mod_struct=nullptr;
+	bool mcmc_save_waveform=true;	
+	bool mcmc_intrinsic=false;	
+	int mcmc_deriv_order = 4;
+	bool mcmc_log_beta = false;
+	MCMC_user_param *user_parameters = nullptr;	
+	int maxDim;
+	int minDim;
+};
+
+void PTMCMC_method_specific_prep(std::string generation_method, int dimension, bool *intrinsic,MCMC_modification_struct *mod_struct);
+void RJPTMCMC_method_specific_prep(std::string generation_method, int dimension, bool *intrinsic,MCMC_modification_struct *mod_struct);
+
+std::string MCMC_prep_params(double *param, double *temp_params, gen_params_base<double> *gen_params, int dimension, std::string generation_method, MCMC_modification_struct *mod_struct, bool intrinsic, double gmst);
+
+
+
+
+bayesship::bayesshipSampler *  PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
+	int dimension,
+	int independentSamples,
+	int ensembleSize,
+	int ensembleN,
+	bayesship::positionInfo *initialPosition,
+	bayesship::positionInfo **initialEnsemble,
+	double swapProb,
+	int burnIterations,
+	int burnPriorIterations,
+	int priorIterations,
+	bool writePriorData,
+	int batchSize,
+	double **priorRanges,
+	bayesship::probabilityFn *lp,
+	int numThreads,
+	bool pool,
+	int num_detectors,
+	std::complex<double> **data,
+	double **noise_psd,
+	double **frequencies,
+	int *data_length,
+	double gps_time,
+	std::string *detectors,
+	MCMC_modification_struct *mod_struct,
+	std::string generation_method,
+	std::string outputDir,
+	std::string outputFileMoniker, 
+	bool ignoreExistingCheckpoint,
+	bool restrictSwapTemperatures,
+	bool coldChainStorageOnly);
+
+bayesship::bayesshipSampler *  RJPTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
+	int minDim,
+	int maxDim,
+	int independentSamples,
+	int ensembleSize,
+	int ensembleN,
+	bayesship::positionInfo *initialPosition,
+	bayesship::positionInfo **initialEnsemble,
+	double swapProb,
+	int burnIterations,
+	int burnPriorIterations,
+	int priorIterations,
+	bool writePriorData,
+	int batchSize,
+	double **priorRanges,
+	bayesship::probabilityFn *log_prior,
+	int numThreads,
+	bool pool,
+	int num_detectors,
+	std::complex<double> **data,
+	double **noise_psd,
+	double **frequencies,
+	int *data_length,
+	double gps_time,
+	std::string *detectors,
+	MCMC_modification_struct *mod_struct,
+	std::string generation_method,
+	std::string generation_method_extended,
+	std::string outputDir,
+	std::string outputFileMoniker,
+	bool ignoreExistingCheckpoint,
+	bool restrictSwapTemperatures,
+	bool coldChainStorageOnly);
+
+double maximized_Log_Likelihood_aligned_spin_internal(std::complex<double> *data,
+				double *psd,
+				double *frequencies,
+				std::complex<double> *detector_response,
+				size_t length,
+				fftw_outline *plan
+				);
+
+double maximized_Log_Likelihood_unaligned_spin_internal(std::complex<double> *data,
+				double *psd,
+				double *frequencies,
+				std::complex<double> *hplus,
+				std::complex<double> *hcross,
+				size_t length,
+				fftw_outline *plan
+				);
+
+double Log_Likelihood_internal(std::complex<double> *data,
+			double *psd,
+			double *frequencies,
+			double *weights,
+			std::complex<double> *detector_response,
+			int length,
+			bool log10F,
+			std::string integration_method
+			);
+double Log_Likelihood_internal(std::complex<double> *data,
+	double *psd,
+	std::complex<double> *detector_response,
+	Quadrature *QuadMethod
+);
+
+
+
+double MCMC_likelihood_extrinsic(bool save_waveform, 
+	gen_params_base<double> *parameters,
+	std::string generation_method, 
+	int *data_length, 
+	double **frequencies, 
+	std::complex<double> **data, 
+	double **psd,  
+	double **weights, 
+	std::string integration_method, 
+	bool log10F,
+	std::string *detectors, 
+	int num_detectors,
+	Quadrature *QuadMethod = NULL
+	);
 
 
 #endif

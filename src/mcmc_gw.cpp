@@ -17,8 +17,10 @@
 void MCMC_fisher_wrapper(bayesship::positionInfo* pos, double** output,
                          void* userParameters);
 
-void explicit_marginalization(bayesship::positionInfo* pos, double** output,
-                              std::vector<int> ids, void* userParameters);
+void MCMC_fisher_wrapper_explicit_marginalization(bayesship::positionInfo* pos,
+                                                  double** output,
+                                                  std::vector<int> ids,
+                                                  void* userParameters);
 
 int invertFisherBlock(double** fisherIn, double** fisherOut, int dimIn,
                       std::vector<int> ids);
@@ -839,9 +841,7 @@ bayesship::bayesshipSampler* RJPTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
   sampler->ignoreExistingCheckpoint = ignoreExistingCheckpoint;
   sampler->restrictSwapTemperatures = restrictSwapTemperatures;
 
-  // Testing
   sampler->coldOnlyStorage = coldChainStorageOnly;
-  // sampler->coldOnlyStorage = true;
 
   mcmcVariablesRJ** mcmcVarVec = new mcmcVariablesRJ*[chainN];
   for (int i = 0; i < chainN; i++) {
@@ -849,8 +849,6 @@ bayesship::bayesshipSampler* RJPTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
     mcmcVarVec[i]->user_parameters = user_parameters[i];
   }
   sampler->userParameters = (void**)mcmcVarVec;
-
-  // ##########################################################
 
   int proposalFnN = 6;
   bayesship::proposal** propArray = new bayesship::proposal*[proposalFnN];
@@ -880,14 +878,6 @@ bayesship::bayesshipSampler* RJPTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
                                  sampler->maxDim, sampler, false);
 
   propArray[3] = new bayesship::randomLayerRJProposal(sampler, .5);
-
-  // ################################################
-  // std::vector<std::vector<int>> blocks = {{0,1,2,3,4,5,6,7,8,9,10}};
-  // std::vector<double> blockProb = {1};
-  // propArray[4] = new
-  // bayesship::blockFisherProposal(sampler->ensembleN*sampler->ensembleSize,
-  // sampler->minDim, &MCMC_fisher_wrapper_RJ,   sampler->userParameters,
-  // 100,sampler,blocks, blockProb );
 
   if (mcmcVarRJ.mcmc_intrinsic) {
     std::vector<std::vector<int>> blocks = std::vector<std::vector<int>>(1);
@@ -920,8 +910,6 @@ bayesship::bayesshipSampler* RJPTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
         blockProb);
   }
 
-  // ################################################
-  //
   std::vector<std::vector<int>> blocks2 = std::vector<std::vector<int>>(1);
   blocks2[0] = std::vector<int>(maxDim - minDim);
   for (int i = 0; i < maxDim - minDim; i++) {
@@ -1010,20 +998,10 @@ bayesship::bayesshipSampler* RJPTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
   bayesship::proposalData* propData = new bayesship::proposalData(
       chainN, proposalFnN, propArray, (double*)nullptr, propProb);
 
-  // #######################################################################################
   sampler->proposalFns = propData;
-  // #######################################################################################
-
-  // #######################################################################################
-  // #######################################################################################
   sampler->sample();
-  // #######################################################################################
-  // #######################################################################################
 
-  // #######################################################################################
   // Delete data
-  // #######################################################################################
-
   for (int i = 0; i < chainN; i++) {
     delete[] propProb[i];
   }
@@ -1042,7 +1020,6 @@ bayesship::bayesshipSampler* RJPTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
 
   // Deallocate fftw plans
   for (int i = 0; i < num_detectors; i++) deallocate_FFTW_mem(&plans[i]);
-  // #################################################
   for (int i = 0; i < proposalFnN; i++) {
     delete propData->proposals[i];
   }
@@ -1067,7 +1044,6 @@ bayesship::bayesshipSampler* RJPTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
   delete[] user_parameters;
   delete[] mcmcVarVec;
   delete ll;
-  // #################################################
   free(plans);
   return sampler;
 }
@@ -1103,9 +1079,6 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
   }
 
   std::mutex fisher_mutex;
-
-  // ##########################################################
-  // ##########################################################
   mcmcVariables mcmcVar;
   mcmcVar.mcmc_noise = noise_psd;
   // mcmcVar.mcmc_init_pos = initial_pos;
@@ -1129,26 +1102,6 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
     mcmcVar.mcmc_adaptive = true;
   }
 
-  // ##########################################################
-  // ##########################################################
-
-  // mcmc_noise = noise_psd;
-  // mcmc_init_pos = initial_pos;
-  // mcmc_frequencies = frequencies;
-  // mcmc_data = data;
-  // mcmc_data_length = data_length;
-  // mcmc_detectors = detectors;
-  // mcmc_generation_method = generation_method;
-  // mcmc_fftw_plans = plans;
-  // mcmc_num_detectors = num_detectors;
-  // mcmc_gps_time = gps_time;
-  // mcmc_gmst = gps_to_GMST_radian(mcmc_gps_time);
-  ////mcmc_Nmod = mod_struct->ppE_Nmod;
-  ////mcmc_bppe = mod_struct->bppe;
-  // mcmc_mod_struct = mod_struct;
-  // mcmc_log_beta = false;
-  // mcmc_intrinsic = false;
-
   // To save time, intrinsic waveforms can be saved between detectors, if the
   // frequencies are all the same
   mcmc_save_waveform = true;
@@ -1165,7 +1118,6 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
                               &(mcmcVar.mcmc_intrinsic),
                               mcmcVar.mcmc_mod_struct);
 
-  // ######################################################
   int T = (int)(1. / (mcmcVar.mcmc_frequencies[0][1] -
                       mcmcVar.mcmc_frequencies[0][0]));
   debugger_print(__FILE__, __LINE__, T);
@@ -1234,23 +1186,7 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
     user_parameters[i]->QuadMethod = mod_struct->QuadMethod;
 
     user_parameters[i]->mod_struct = mod_struct;
-
-    // user_parameters[i]->burn_freqs = mcmc_frequencies;
-    // user_parameters[i]->burn_data = mcmc_data;
-    // user_parameters[i]->burn_noise = mcmc_noise;
-    // user_parameters[i]->burn_lengths = mcmc_data_length;
   }
-  // mcmcVar.user_parameters = user_parameters;
-  // ######################################################
-  // ###########################################################
-  // double trial[11] = {1,.9,.2,.9,.2,3,7,4,.24,0,0};
-  // mcmc_data_interface i;
-  // i.min_dim = 11;
-  // i.max_dim = 11;
-  // i.chain_id  = 0;
-  // i.chain_number  = 11;
-  // debugger_print(__FILE__,__LINE__,ll);
-  // ###########################################################
 
   MCMC_likelihood_wrapper* ll = new MCMC_likelihood_wrapper();
   ll->mcmcVar = &mcmcVar;
@@ -1279,8 +1215,6 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
   sampler->nu = mod_struct->nu;
   sampler->Tmax = mod_struct->Tmax;
 
-  // Testing
-  // sampler->coldOnlyStorage = false;
   sampler->coldOnlyStorage = coldChainStorageOnly;
 
   mcmcVariables** mcmcVarVec = new mcmcVariables*[chainN];
@@ -1290,13 +1224,10 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
   }
   sampler->userParameters = (void**)mcmcVarVec;
 
-  // ##########################################################
-
   int proposalFnN = 5;
   bayesship::proposal** propArray = new bayesship::proposal*[proposalFnN];
   propArray[0] = new bayesship::gaussianProposal(
       sampler->ensembleN * sampler->ensembleSize, sampler->maxDim, sampler);
-  // propArray[1] = new bayesship::differentialEvolutionProposal(sampler);
   if (mcmcVar.mcmc_intrinsic) {
     propArray[1] = new bayesship::differentialEvolutionProposal(sampler);
   } else if (has_substring(generation_method, "EA_IMRPhenomD_NRT")) {
@@ -1342,10 +1273,6 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
   propArray[2] =
       new bayesship::KDEProposal(sampler->ensembleN * sampler->ensembleSize,
                                  sampler->maxDim, sampler, false);
-  // propArray[3] = new
-  // bayesship::fisherProposal(sampler->ensembleN*sampler->ensembleSize,
-  // sampler->maxDim, &MCMC_fisher_wrapper,   sampler->userParameters,
-  // 100,sampler);
   if (mcmcVar.mcmc_intrinsic) {
     propArray[3] = new bayesship::fisherProposal(
         sampler->ensembleN * sampler->ensembleSize, sampler->maxDim,
@@ -1364,13 +1291,10 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
     blocks[3].push_back(7);
     blocks[3].push_back(12);
     std::vector<double> blockProb = {.25, .25, .25, .25};
-    // std::vector<std::vector<int>> blocks = {
-    //				{7,8,9,10}};
-    // std::vector<double> blockProb = {1};
     propArray[3] = new bayesship::blockFisherProposal(
         sampler->ensembleN * sampler->ensembleSize, sampler->minDim,
-        &explicit_marginalization, sampler->userParameters, 100, sampler,
-        blocks, blockProb);
+        &MCMC_fisher_wrapper_explicit_marginalization, sampler->userParameters,
+        100, sampler, blocks, blockProb);
 
   } else {
     std::vector<std::vector<int>> blocks = std::vector<std::vector<int>>(3);
@@ -1384,29 +1308,11 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
       blocks[2].push_back(i);
     }
     std::vector<double> blockProb = {.3, .3, .4};
-    // std::vector<std::vector<int>> blocks = {
-    //				{7,8,9,10}};
-    // std::vector<double> blockProb = {1};
     propArray[3] = new bayesship::blockFisherProposal(
         sampler->ensembleN * sampler->ensembleSize, sampler->minDim,
-        &explicit_marginalization, sampler->userParameters, 100, sampler,
-        blocks, blockProb);
+        &MCMC_fisher_wrapper_explicit_marginalization, sampler->userParameters,
+        100, sampler, blocks, blockProb);
   }
-
-  // ################################################
-  // std::vector<std::vector<int>> blocks = {
-  //				{0,1,2,3,4,5,6},
-  //				{7,8,9,10}};
-  // std::vector<double> blockProb = {.5,.5};
-  ////std::vector<std::vector<int>> blocks = {
-  ////				{7,8,9,10}};
-  ////std::vector<double> blockProb = {1};
-  // propArray[4] = new
-  // bayesship::blockFisherProposal(sampler->ensembleN*sampler->ensembleSize,
-  // sampler->minDim, &explicit_marginalization,   sampler->userParameters,
-  // 100,sampler,blocks, blockProb );
-
-  // ################################################
 
   // Rough estimate of the temperatures
   double betaTemp[sampler->ensembleSize];
@@ -1423,19 +1329,9 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
     propProb[i] = new double[proposalFnN];
     propProb[i][2] = 0.0;
 
-    // propProb[i][0] = 0.05;
-    // propProb[i][1] = 0.25;
-    // propProb[i][3] = 0.7;
     propProb[i][1] = .4 - 0.15 * (betaTemp[ensemble]);   //.25 to .7
     propProb[i][3] = 0.05 + .55 * (betaTemp[ensemble]);  //.7 to .15
     propProb[i][4] = 0.1 + .05 * (betaTemp[ensemble]);   //.7 to .15
-    // propProb[i][4] = 0.1 + .2*( betaTemp[ensemble]); //.3 to .1
-
-    // propProb[i][1] = 0; //.25 to .7
-    // propProb[i][3] = 0.3 + .45*( betaTemp[ensemble]); //.7 to .25
-
-    // propProb[i][0] = 1.- propProb[i][4] - propProb[i][3] - propProb[i][1]-
-    // propProb[i][2];
     propProb[i][0] = 0.05;
 
     double sum = 0;
@@ -1447,114 +1343,9 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
     }
   }
 
-  // propProb[0] = 0.05;
-  // propProb[1] = 0.3;
-  // propProb[2] = 0.05;
-  // propProb[3] = 0.6;
-  // propProb[0] = 0.05;
-  // propProb[1] = 0.25;
-  // propProb[2] = 0.0;
-  // propProb[3] = 0.7;
-
-  // propProb[0] = 0.1;
-  // propProb[1] = 0.0;
-  // propProb[2] = 0.0;
-  // propProb[3] = 0.9;
-
   bayesship::proposalData* propData = new bayesship::proposalData(
       chainN, proposalFnN, propArray, (double*)nullptr, propProb);
-
-  // int proposalFnN = 4;
-  // bayesship::proposalFn propArray[proposalFnN];
-  // void *proposalFnVariables[proposalFnN];
-  // propArray[0] = bayesship::gaussianProposal;
-  // propArray[1] = bayesship::differentialEvolutionProposal;
-  // propArray[2] = bayesship::KDEProposal;
-  // propArray[3] = bayesship::FisherProposal;
-
-  ////Rough estimate of the temperatures
-  // double betaTemp[sampler->ensembleSize];
-  // betaTemp[0] = 1;
-  // betaTemp[sampler->ensembleSize-1] = 0;
-  // double deltaBeta = pow((1e2),1./sampler->ensembleSize);
-  // for(int i = 1 ; i<sampler->ensembleSize-1; i++){
-  //	betaTemp[i] = betaTemp[i-1]/deltaBeta;
-  // }
-
-  // float **propProb = new float*[chainN];
-  // for(int i = 0 ; i<chainN; i++){
-  //	int ensemble = i / sampler->ensembleN;
-  //	//std::cout<<ensemble<<std::endl;
-  //	//std::cout<<betaTemp[ensemble]<<std::endl;
-  //	propProb[i] = new float[proposalFnN];
-  //	propProb[i][2] = 0.0;
-
-  //	//propProb[i][0] = 0.05;
-  //	//propProb[i][1] = 0.25;
-  //	//propProb[i][3] = 0.7;
-  //	propProb[i][1] = .7 - 0.45*( betaTemp[ensemble]); //.25 to .7
-  //	propProb[i][3] = 0.25 + .45*( betaTemp[ensemble]); //.7 to .25
-
-  //	propProb[i][0] = 1. - propProb[i][3] - propProb[i][1]- propProb[i][2];
-  //	//std::cout<<propProb[i][0]<<" "<<propProb[i][1]<<"
-  //"<<propProb[i][3]<<std::endl;
-
-  //}
-  //
-  ////propProb[0] = 0.05;
-  ////propProb[1] = 0.3;
-  ////propProb[2] = 0.05;
-  ////propProb[3] = 0.6;
-  ////propProb[0] = 0.05;
-  ////propProb[1] = 0.25;
-  ////propProb[2] = 0.0;
-  ////propProb[3] = 0.7;
-
-  ////propProb[0] = 0.1;
-  ////propProb[1] = 0.0;
-  ////propProb[2] = 0.0;
-  ////propProb[3] = 0.9;
-
-  // bayesship::gaussianProposalVariables *gpv = new
-  // bayesship::gaussianProposalVariables(sampler->ensembleN*sampler->ensembleSize,
-  // sampler->maxDim);
-
-  ////bayesship::KDEProposalVariables *kdepv = new
-  /// bayesship::KDEProposalVariables(sampler->ensembleN*sampler->ensembleSize,
-  /// sampler->maxDim);
-  // bayesship::KDEProposalVariables
-  // kdepv(sampler->ensembleN*sampler->ensembleSize, sampler->maxDim);
-
-  // bayesship::FisherProposalVariables *fpv = new
-  // bayesship::FisherProposalVariables(sampler->ensembleN*sampler->ensembleSize,
-  // sampler->maxDim, MCMC_fisher_wrapper,   sampler->userParameters,  100);
-
-  // proposalFnVariables[0] = (void *)gpv;
-  // proposalFnVariables[1] = (void *)nullptr;
-  // proposalFnVariables[2] = (void *)&kdepv;
-  ////proposalFnVariables[2] = (void *)nullptr;
-  // proposalFnVariables[3] = (void *)fpv;
-
-  // bayesship::proposalFnWriteCheckpoint *writeCheckpointFns = new
-  // bayesship::proposalFnWriteCheckpoint[proposalFnN]; writeCheckpointFns[0] =
-  // bayesship::gaussianProposalWriteCheckpoint; writeCheckpointFns[1] =
-  // nullptr; writeCheckpointFns[2] = nullptr; writeCheckpointFns[3] = nullptr;
-
-  // bayesship::proposalFnLoadCheckpoint *loadCheckpointFns = new
-  // bayesship::proposalFnLoadCheckpoint[proposalFnN]; loadCheckpointFns[0] =
-  // bayesship::gaussianProposalLoadCheckpoint; loadCheckpointFns[1] = nullptr;
-  // loadCheckpointFns[2] = nullptr;
-  // loadCheckpointFns[3] = nullptr;
-
-  // bayesship::proposalFnData *propData = new
-  // bayesship::proposalFnData(chainN,proposalFnN,
-  // propArray,proposalFnVariables, (float *)nullptr,
-  // propProb,writeCheckpointFns,loadCheckpointFns);
-
-  // #######################################################################################
   sampler->proposalFns = propData;
-  // ##########################################################
-
   sampler->sample();
 
   for (int i = 0; i < chainN; i++) {
@@ -1575,12 +1366,10 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
 
   // Deallocate fftw plans
   for (int i = 0; i < num_detectors; i++) deallocate_FFTW_mem(&plans[i]);
-  // #################################################
   delete propData->proposals[0];
   delete propData->proposals[1];
   delete propData->proposals[2];
   delete propData->proposals[3];
-  // delete propData->proposals[4];
   delete propData;
   delete[] propArray;
   for (int i = 0; i < num_detectors; i++) {
@@ -1600,7 +1389,6 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
   delete[] user_parameters;
   delete[] mcmcVarVec;
   delete ll;
-  // #################################################
   free(plans);
   return sampler;
 }
@@ -2059,7 +1847,8 @@ void MCMC_fisher_wrapper_RJ(bayesship::positionInfo* pos, double** output,
   mcmcVar.maxDim = mcmcVarRJ->minDim;
   mcmcVar.user_parameters = mcmcVarRJ->user_parameters;
 
-  explicit_marginalization(pos, output, block, (void*)&mcmcVar);
+  MCMC_fisher_wrapper_explicit_marginalization(pos, output, block,
+                                               (void*)&mcmcVar);
 
   return;
 }
@@ -2087,8 +1876,10 @@ int invertFisherBlock(double** fisherIn, double** fisherOut, int dimIn,
   return status;
 }
 
-void explicit_marginalization(bayesship::positionInfo* pos, double** output,
-                              std::vector<int> ids, void* userParameters) {
+void MCMC_fisher_wrapper_explicit_marginalization(bayesship::positionInfo* pos,
+                                                  double** output,
+                                                  std::vector<int> ids,
+                                                  void* userParameters) {
   mcmcVariables* mcmcVar = (mcmcVariables*)userParameters;
 
   int dimension = mcmcVar->maxDim;

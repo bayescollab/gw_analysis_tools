@@ -1,4 +1,4 @@
-#include "mcmc_gw_extended.h"
+#include "mcmc_gw.h"
 #include "standardPriorLibrary.h"
 #include "waveform_generator.h"
 #include "ppE_utilities.h"
@@ -546,7 +546,7 @@ int main(int argc, char *argv[])
 	}
 	//bayesship::probabilityFn *logp = new logPriorStandard_D(&PD);
 	std::cout<<"Running uncorrelated sampler "<<std::endl;
-	bayesship::bayesshipSampler *sampler = PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2( 
+	bayesship::bayesshipSampler *sampler = PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW( 
 			dimension, samples, ensembleSize, ensembleN,
 			 initialPosition,ensembleInitialPosition,swapProb, 
 			 burnIterations, burnPriorIterations,priorIterations, writePriorData,max_chunk_size, (double **)nullptr,

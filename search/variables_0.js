@@ -1,8 +1,8 @@
 var searchData=
 [
   ['a_0',['A',['../classsampler.html#acc05de31b897f48f37841d92421dc7ee',1,'sampler::A'],['../mcmc__sampler_8cpp.html#aba36975b8a64915743c5cc87e2953651',1,'A:&#160;mcmc_sampler.cpp']]],
-  ['a0_1',['A0',['../structfiducial__data__struct.html#a87860f8af688c2bd039b6a80f3742d69',1,'fiducial_data_struct::A0'],['../structsource__parameters.html#a8153a3eb546d1da6d7de74a5b713edd8',1,'source_parameters::A0']]],
-  ['a1_2',['A1',['../structfiducial__data__struct.html#a1bd6c0b53cf7b84cbb3855c696c60f1a',1,'fiducial_data_struct']]],
+  ['a0_1',['A0',['../structGWATLikelihoods_1_1SummaryData.html#a04b8cbec63817afebff3c6524476d367',1,'GWATLikelihoods::SummaryData::A0'],['../structsource__parameters.html#a8153a3eb546d1da6d7de74a5b713edd8',1,'source_parameters::A0']]],
+  ['a1_2',['A1',['../structGWATLikelihoods_1_1SummaryData.html#a251988c726a57e4b3e848fc34b8a2995',1,'GWATLikelihoods::SummaryData']]],
   ['a1_5fea_3',['A1_EA',['../structsource__parameters.html#a387fb5870b9b5ebd9a3d1f05f6349927',1,'source_parameters']]],
   ['a1_5fprior_4',['a1_prior',['../structpriorData.html#a64b844cfbe54c6a524a3d863f3d94309',1,'priorData']]],
   ['a2_5fea_5',['A2_EA',['../structsource__parameters.html#aefb4e0a459391b0e58366011da1aae2d',1,'source_parameters']]],
@@ -16,7 +16,7 @@ var searchData=
   ['acend_13',['acend',['../mcmc__sampler_8cpp.html#a7800c37668273b936d0a13d8854cf268',1,'mcmc_sampler.cpp']]],
   ['active_5fpolarizations_14',['active_polarizations',['../structdet__res__pat.html#ab217bb06b9b981133f8cee52cdcb26f6',1,'det_res_pat::active_polarizations'],['../classwaveform__polarizations.html#a19af979a1b34373b7fbd69939ac81e32',1,'waveform_polarizations::active_polarizations']]],
   ['ad_15',['ad',['../structTbm__struct.html#a6ec6a0f1176f825b7a98da700502d267',1,'Tbm_struct']]],
-  ['adaptivell_16',['adaptivell',['../structMCMC__modification__struct.html#a93e6976d7c12b63125ec6e9cdf765d2c',1,'MCMC_modification_struct::adaptivell'],['../structmcmcVariables.html#a3bc29938638e875546db35c365d942f4',1,'mcmcVariables::adaptivell']]],
+  ['adaptivell_16',['adaptivell',['../structMCMC__modification__struct.html#a1d1f1e638f3c39d4e528ebc37de59657',1,'MCMC_modification_struct::adaptivell'],['../structmcmcVariables.html#a617049b908189b4476b5e393b2594c4a',1,'mcmcVariables::adaptivell']]],
   ['alpha0_17',['alpha0',['../structPhenomPv3Storage.html#a3534776e09325a7cebd69edbff450d6e',1,'PhenomPv3Storage::alpha0'],['../classgen__params__base.html#a4f6b7235552757d42a412693c7490c2f',1,'gen_params_base::alpha0'],['../structsource__parameters.html#aab3eb0a82eb97db0a49aaff255af0d60',1,'source_parameters::alpha0']]],
   ['alpha1_5fea_18',['alpha1_EA',['../classgen__params__base.html#aed07d8fd313a05daea31baf0a417ee87',1,'gen_params_base::alpha1_EA'],['../structsource__parameters.html#a52d7ec249c421c623c80f1c443c1ba0b',1,'source_parameters::alpha1_EA']]],
   ['alpha2_5fea_19',['alpha2_EA',['../classgen__params__base.html#adf525b66b86ce64d2a791578435aeef7',1,'gen_params_base::alpha2_EA'],['../structsource__parameters.html#ababe5a49ea48ab3267b1f604eaa4cbf8',1,'source_parameters::alpha2_EA']]],
@@ -35,8 +35,8 @@ var searchData=
   ['analytic_5fpsd_5fmodels_32',['analytic_PSD_models',['../detector__util_8h.html#ac16fa0dd3ee1abccd1777cc1e0df2794',1,'detector_util.h']]],
   ['analytic_5fpsd_5fmodels_5fn_33',['analytic_PSD_models_N',['../detector__util_8h.html#a0d17465c5603245852c0cdec8ee84b6c',1,'detector_util.h']]],
   ['appe_34',['appe',['../classgen__params__base.html#a74162931315acf760222c0c7832e8bbf',1,'gen_params_base::appe'],['../structsource__parameters.html#a9b0992a0eaad8e171dd4a6f69d531fec',1,'source_parameters::appe']]],
-  ['au_5fsec_35',['AU_SEC',['../util_8h.html#abcfdf85edc41c59ae55c3c45dc9c506a',1,'util.h']]],
+  ['au_5fsec_35',['AU_SEC',['../util_8h.html#a4ad5e2a1146dc491890966172ddeef96',1,'util.h']]],
   ['auto_5fcorr_5ffilename_36',['auto_corr_filename',['../mcmc__sampler_8cpp.html#a4e4e235814e275196ce9bb9812d7719e',1,'mcmc_sampler.cpp']]],
   ['autodiff_5ftime_5fderiv_37',['autodiff_time_deriv',['../fisher_8cpp.html#a71dd0643407be7c8f6d7b697944fa05c',1,'fisher.cpp']]],
-  ['axial_5ftilt_38',['AXIAL_TILT',['../util_8h.html#a19ace59856e55cca68458867a62d0bc4',1,'util.h']]]
+  ['axial_5ftilt_38',['AXIAL_TILT',['../util_8h.html#a0291df9d94b133d580311444146853b3',1,'util.h']]]
 ];

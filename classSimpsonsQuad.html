@@ -126,7 +126,8 @@ Collaboration diagram for SimpsonsQuad:</div>
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a99c047214b81d7ff1d3c1ad9526007f8" id="r_a99c047214b81d7ff1d3c1ad9526007f8"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a99c047214b81d7ff1d3c1ad9526007f8">SimpsonsQuad</a> (int length, double delta)</td></tr>
-<tr class="memitem:a26ec7bcdfa2772aa8feb38cab272128d" id="r_a26ec7bcdfa2772aa8feb38cab272128d"><td class="memItemLeft">virtual double&#160;</td><td class="memItemRight"><a class="el" href="#a26ec7bcdfa2772aa8feb38cab272128d">integrate</a> (const double *integrand) const</td></tr>
+<tr class="memitem:a99829c9ce83f6abf9dcd640703ec1331" id="r_a99829c9ce83f6abf9dcd640703ec1331"><td class="memItemLeft">virtual double&#160;</td><td class="memItemRight"><a class="el" href="#a99829c9ce83f6abf9dcd640703ec1331">inner_product</a> (const std::complex&lt; double &gt; *h1, const std::complex&lt; double &gt; *h2, const double *psd) const</td></tr>
+<tr class="memdesc:a99829c9ce83f6abf9dcd640703ec1331"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the inner product 4•∫ h1(f)•h2*(f) / psd(f) df.  <br /></td></tr>
 <tr class="inherit_header pub_methods_classQuadrature"><td colspan="2">Public Member Functions inherited from <a class="el" href="classQuadrature.html">Quadrature</a></td></tr>
 <tr class="memitem:a2501af273a5e90052591241a5fd62c74 pub_methods_classQuadrature" id="r_a2501af273a5e90052591241a5fd62c74"><td class="memItemLeft">virtual&#160;</td><td class="memItemRight"><a class="el" href="classQuadrature.html#a2501af273a5e90052591241a5fd62c74">~Quadrature</a> ()=default</td></tr>
 <tr class="memitem:a563ad786c04c0431f2f7e9d3f3e80157 pub_methods_classQuadrature" id="r_a563ad786c04c0431f2f7e9d3f3e80157"><td class="memItemLeft">virtual int&#160;</td><td class="memItemRight"><a class="el" href="classQuadrature.html#a563ad786c04c0431f2f7e9d3f3e80157">get_length</a> () const</td></tr>
@@ -169,8 +170,8 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
-<a id="a26ec7bcdfa2772aa8feb38cab272128d" name="a26ec7bcdfa2772aa8feb38cab272128d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a26ec7bcdfa2772aa8feb38cab272128d">&#9670;&#160;</a></span>integrate()</h2>
+<a id="a99829c9ce83f6abf9dcd640703ec1331" name="a99829c9ce83f6abf9dcd640703ec1331"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a99829c9ce83f6abf9dcd640703ec1331">&#9670;&#160;</a></span>inner_product()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -179,10 +180,19 @@ Additional Inherited Members</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">double SimpsonsQuad::integrate </td>
+          <td class="memname">double SimpsonsQuad::inner_product </td>
           <td>(</td>
-          <td class="paramtype">const double *</td>          <td class="paramname"><span class="paramname"><em>integrand</em></span></td><td>)</td>
-          <td> const</td>
+          <td class="paramtype">const std::complex&lt; double &gt; *</td>          <td class="paramname"><span class="paramname"><em>h1</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::complex&lt; double &gt; *</td>          <td class="paramname"><span class="paramname"><em>h2</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double *</td>          <td class="paramname"><span class="paramname"><em>psd</em></span>&#160;) const</td>
         </tr>
       </table>
   </td>
@@ -192,9 +202,19 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Implements <a class="el" href="classQuadrature.html#a2323af38162a4b772c46011fe4843e78">Quadrature</a>.</p>
+<p>Compute the inner product 4•∫ h1(f)•h2*(f) / psd(f) df. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">h1</td><td></td></tr>
+    <tr><td class="paramname">h2</td><td></td></tr>
+    <tr><td class="paramname">psd</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
 
-<p>Reimplemented in <a class="el" href="classSimpsonsLogQuad.html#aa103468cf2fc0e701406996b8e4f544a">SimpsonsLogQuad</a>.</p>
+<p>Implements <a class="el" href="classQuadrature.html#a0b027f77bf3cbcdbcf9ce1c9e3c45d5d">Quadrature</a>.</p>
+
+<p>Reimplemented in <a class="el" href="classSimpsonsLogQuad.html#a5408f8df0e20068e3ebd17651436bc48">SimpsonsLogQuad</a>.</p>
 
 </div>
 </div>

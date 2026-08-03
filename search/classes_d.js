@@ -7,5 +7,7 @@ var searchData=
   ['threaded_5fac_5fjobs_5fserial_4',['threaded_ac_jobs_serial',['../classthreaded__ac__jobs__serial.html',1,'']]],
   ['threadpool_5',['ThreadPool',['../classThreadPool.html',1,'']]],
   ['threadpool_6',['threadPool',['../classthreadPool.html',1,'']]],
-  ['tov_7',['TOV',['../classTOV.html',1,'']]]
+  ['tov_7',['TOV',['../classTOV.html',1,'']]],
+  ['trapezoidlogquad_8',['TrapezoidLogQuad',['../classTrapezoidLogQuad.html',1,'']]],
+  ['trapezoidquad_9',['TrapezoidQuad',['../classTrapezoidQuad.html',1,'']]]
 ];

@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['ifo_5fdata_5fstruct_0',['ifo_data_struct',['../structifo__data__struct.html',1,'']]],
+  ['ifodata_0',['IfoData',['../structGWATLikelihoods_1_1IfoData.html',1,'GWATLikelihoods']]],
   ['imrphenomd_5fnrt_1',['IMRPhenomD_NRT',['../classIMRPhenomD__NRT.html',1,'']]],
   ['imrphenomd_5fnrt_5feos_2',['IMRPhenomD_NRT_EOS',['../classIMRPhenomD__NRT__EOS.html',1,'']]],
   ['imrphenompv2_3',['IMRPhenomPv2',['../classIMRPhenomPv2.html',1,'']]],

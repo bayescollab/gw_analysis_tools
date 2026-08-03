@@ -62,7 +62,7 @@ var searchData=
   ['progress_59',['progress',['../classsampler.html#af248578ba42f306ff0d9d1e47a75c055',1,'sampler']]],
   ['prop_5fmh_5ffactor_60',['prop_MH_factor',['../classsampler.html#ab72a903105e9ccb18356e3db4312b9ba',1,'sampler']]],
   ['proper_5ffisher_61',['proper_fisher',['../classsampler.html#a2f740ef7f8608a9e46b3b1849553c81a',1,'sampler']]],
-  ['psd_62',['psd',['../structifo__data__struct.html#aa64f4e40c54660a7a7763359ac072c70',1,'ifo_data_struct']]],
+  ['psd_62',['psd',['../structGWATLikelihoods_1_1IfoData.html#a012ac7856bc136fc3b7a5ffe7cb92209',1,'GWATLikelihoods::IfoData']]],
   ['psds_63',['psds',['../classppEFisherRJVariables.html#a1074a4077a7a823b9161a10c6bbb91f3',1,'ppEFisherRJVariables']]],
   ['psi_64',['psi',['../classgen__params__base.html#af1c02da522106d065ee3ebefe77a11a6',1,'gen_params_base']]],
   ['psi_5fbounds_65',['PSI_bounds',['../structpriorData.html#a99425400e04c068802d511ba3201bffa',1,'priorData']]],

@@ -108,28 +108,26 @@ document.addEventListener('DOMContentLoaded', () => {
   <div class="headertitle"><div class="title">mcmc_gw.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="util_8h_source.html">util.h</a>&quot;</code><br />
-<code>#include &lt;bayesship/bayesshipSampler.h&gt;</code><br />
+<div class="textblock"><code>#include &lt;bayesship/bayesshipSampler.h&gt;</code><br />
 <code>#include &lt;bayesship/dataUtilities.h&gt;</code><br />
-<code>#include &quot;<a class="el" href="adaptivelikelihoods_8h_source.html">adaptivelikelihoods.h</a>&quot;</code><br />
-<code>#include &lt;complex&gt;</code><br />
 <code>#include &lt;fftw3.h&gt;</code><br />
-<code>#include &lt;iostream&gt;</code><br />
+<code>#include &lt;gsl/gsl_errno.h&gt;</code><br />
 <code>#include &lt;gsl/gsl_interp.h&gt;</code><br />
 <code>#include &lt;gsl/gsl_randist.h&gt;</code><br />
 <code>#include &lt;gsl/gsl_rng.h&gt;</code><br />
 <code>#include &lt;gsl/gsl_spline.h&gt;</code><br />
-<code>#include &lt;gsl/gsl_errno.h&gt;</code><br />
+<code>#include &lt;algorithm&gt;</code><br />
+<code>#include &lt;complex&gt;</code><br />
+<code>#include &lt;condition_variable&gt;</code><br />
+<code>#include &lt;fstream&gt;</code><br />
+<code>#include &lt;iostream&gt;</code><br />
 <code>#include &lt;mutex&gt;</code><br />
+<code>#include &lt;thread&gt;</code><br />
+<code>#include &lt;vector&gt;</code><br />
+<code>#include &quot;<a class="el" href="likelihoods_8h_source.html">likelihoods.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="mcmc__sampler_8h_source.html">mcmc_sampler.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="quadrature_8h_source.html">quadrature.h</a>&quot;</code><br />
-<code>#include &lt;fstream&gt;</code><br />
-<code>#include &lt;vector&gt;</code><br />
-<code>#include &lt;algorithm&gt;</code><br />
-<code>#include &lt;thread&gt;</code><br />
-<code>#include &lt;condition_variable&gt;</code><br />
-<code>#include &quot;<a class="el" href="IMRPhenomD__NRT_8h_source.html">IMRPhenomD_NRT.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="EA__IMRPhenomD__NRT_8h_source.html">EA_IMRPhenomD_NRT.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="util_8h_source.html">util.h</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for mcmc_gw.h:</div>
 <div class="dyncontent">
@@ -172,8 +170,133 @@ Functions</h2></td></tr>
 <tr class="memitem:a36257bd162da3c1d78243834d21cb5ac" id="r_a36257bd162da3c1d78243834d21cb5ac"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#a36257bd162da3c1d78243834d21cb5ac">Log_Likelihood_internal</a> (std::complex&lt; double &gt; *data, double *psd, std::complex&lt; double &gt; *detector_response, <a class="el" href="classQuadrature.html">Quadrature</a> *QuadMethod)</td></tr>
 <tr class="memdesc:a36257bd162da3c1d78243834d21cb5ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute unmarginalized likelihood with a specified <a class="el" href="classQuadrature.html" title="Class to evaluate integrals with established spacing and weights.">Quadrature</a> method.  <br /></td></tr>
 <tr class="memitem:a10487a00e3fe184a0ac7971f2f970138" id="r_a10487a00e3fe184a0ac7971f2f970138"><td class="memItemLeft">double&#160;</td><td class="memItemRight"><a class="el" href="#a10487a00e3fe184a0ac7971f2f970138">MCMC_likelihood_extrinsic</a> (bool save_waveform, <a class="el" href="classgen__params__base.html">gen_params_base</a>&lt; double &gt; *parameters, std::string generation_method, int *data_length, double **frequencies, std::complex&lt; double &gt; **data, double **psd, double **weights, std::string integration_method, bool log10F, std::string *detectors, int num_detectors, <a class="el" href="classQuadrature.html">Quadrature</a> *QuadMethod=NULL)</td></tr>
+<tr class="memitem:aa7f2e40afe220ddf41e0f3891439cf80" id="r_aa7f2e40afe220ddf41e0f3891439cf80"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aa7f2e40afe220ddf41e0f3891439cf80">find_fiducial</a> (int dimension, double *initial_params, bayesship::probabilityFn *log_prior, const std::vector&lt; double &gt; &amp;param_scales, int num_mh_steps, int num_detectors, std::complex&lt; double &gt; **data, double **noise_psd, double **frequencies, int *data_length, double gps_time, std::string *detectors, std::string generation_method, <a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *mod_struct, std::complex&lt; double &gt; **fiducial_out, std::complex&lt; double &gt; **test_out, <a class="el" href="classgen__params__base.html">gen_params_base</a>&lt; double &gt; *test_gp_out=nullptr)</td></tr>
+<tr class="memdesc:aa7f2e40afe220ddf41e0f3891439cf80"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs a Metropolis-Hastings chain from initial_params to locate good fiducial and test waveforms relative binning initialization.  <br /></td></tr>
 </table>
-<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Header file for the Graviational Wave specific MCMC routines </p>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
+<a id="aa7f2e40afe220ddf41e0f3891439cf80" name="aa7f2e40afe220ddf41e0f3891439cf80"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa7f2e40afe220ddf41e0f3891439cf80">&#9670;&#160;</a></span>find_fiducial()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void find_fiducial </td>
+          <td>(</td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>dimension</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *</td>          <td class="paramname"><span class="paramname"><em>initial_params</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bayesship::probabilityFn *</td>          <td class="paramname"><span class="paramname"><em>log_prior</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; double &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>param_scales</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>num_mh_steps</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>num_detectors</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::complex&lt; double &gt; **</td>          <td class="paramname"><span class="paramname"><em>data</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>noise_psd</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double **</td>          <td class="paramname"><span class="paramname"><em>frequencies</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>data_length</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>gps_time</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string *</td>          <td class="paramname"><span class="paramname"><em>detectors</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>generation_method</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> *</td>          <td class="paramname"><span class="paramname"><em>mod_struct</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::complex&lt; double &gt; **</td>          <td class="paramname"><span class="paramname"><em>fiducial_out</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::complex&lt; double &gt; **</td>          <td class="paramname"><span class="paramname"><em>test_out</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classgen__params__base.html">gen_params_base</a>&lt; double &gt; *</td>          <td class="paramname"><span class="paramname"><em>test_gp_out</em></span><span class="paramdefsep"> = </span><span class="paramdefval">nullptr</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Runs a Metropolis-Hastings chain from initial_params to locate good fiducial and test waveforms relative binning initialization. </p>
+<p>Outputs detector responses: fiducial_out — response at the maximum-likelihood point found test_out — response at the last accepted point in the chain Caller must pre-allocate both output arrays as [num_detectors][data_length[i]]. If waveform generation fails for fiducial_out, it is set to the initial parameter point. If it fails for test_out, it is set to the max-likelihood point.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">dimension</td><td>Size of parameter space. </td></tr>
+    <tr><td class="paramname">initial_params</td><td>Array of parameters to begin exploration. </td></tr>
+    <tr><td class="paramname">log_prior</td><td>Log-prior probability function for the model. </td></tr>
+    <tr><td class="paramname">param_scales</td><td>Typical scale for each parameter (e.g. prior width); used to size finite-difference steps for the Fisher diagonal. </td></tr>
+    <tr><td class="paramname">num_mh_steps</td><td>Number of M-H steps to be taken. </td></tr>
+    <tr><td class="paramname">num_detectors</td><td>Number of detectors. </td></tr>
+    <tr><td class="paramname">data</td><td>The signal at each detector whose fiducial waveform will be found for. </td></tr>
+    <tr><td class="paramname">noise_psd</td><td>The PSD for each detector. </td></tr>
+    <tr><td class="paramname">frequencies</td><td>Frequency arrays for each detector. </td></tr>
+    <tr><td class="paramname">data_length</td><td>Length of the signal for each detector. </td></tr>
+    <tr><td class="paramname">gps_time</td><td>GPS time of the signal. </td></tr>
+    <tr><td class="paramname">detectors</td><td>Names of the detectors. </td></tr>
+    <tr><td class="paramname">generation_method</td><td>Model name for the output waveforms. </td></tr>
+    <tr><td class="paramname">mod_struct</td><td><a class="el" href="structMCMC__modification__struct.html">MCMC_modification_struct</a> </td></tr>
+    <tr><td class="paramname">fiducial_out</td><td>[out] The fiducial signal. </td></tr>
+    <tr><td class="paramname">test_out</td><td>[out] The signal at the final M-H step. </td></tr>
+    <tr><td class="paramname">test_gp_out</td><td>[out] The parameters at the final M-H step. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a64dda1c7803a0e355d700c39994149b3" name="a64dda1c7803a0e355d700c39994149b3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a64dda1c7803a0e355d700c39994149b3">&#9670;&#160;</a></span>Log_Likelihood_internal() <span class="overload">[1/2]</span></h2>
 

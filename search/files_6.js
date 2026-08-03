@@ -1,11 +1,5 @@
 var searchData=
 [
-  ['mcmc_5fgw_2ecpp_0',['mcmc_gw.cpp',['../mcmc__gw_8cpp.html',1,'']]],
-  ['mcmc_5fgw_2eh_1',['mcmc_gw.h',['../mcmc__gw_8h.html',1,'']]],
-  ['mcmc_5fio_5futil_2ecpp_2',['mcmc_io_util.cpp',['../mcmc__io__util_8cpp.html',1,'']]],
-  ['mcmc_5fio_5futil_2eh_3',['mcmc_io_util.h',['../mcmc__io__util_8h.html',1,'']]],
-  ['mcmc_5fsampler_2ecpp_4',['mcmc_sampler.cpp',['../mcmc__sampler_8cpp.html',1,'']]],
-  ['mcmc_5fsampler_2eh_5',['mcmc_sampler.h',['../mcmc__sampler_8h.html',1,'']]],
-  ['mcmc_5fsampler_5finternals_2ecpp_6',['mcmc_sampler_internals.cpp',['../mcmc__sampler__internals_8cpp.html',1,'']]],
-  ['mcmc_5fsampler_5finternals_2eh_7',['mcmc_sampler_internals.h',['../mcmc__sampler__internals_8h.html',1,'']]]
+  ['likelihoods_2ecpp_0',['likelihoods.cpp',['../likelihoods_8cpp.html',1,'']]],
+  ['likelihoods_2eh_1',['likelihoods.h',['../likelihoods_8h.html',1,'']]]
 ];

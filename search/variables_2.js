@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['c_0',['c',['../util_8h.html#a8fc6defe4e499b1b9b9c275689e44352',1,'util.h']]],
+  ['c_0',['c',['../util_8h.html#a6753ecfe87da659675b18c2f81d6ec12',1,'util.h']]],
   ['c13_5fea_1',['c13_EA',['../structsource__parameters.html#a509cfc12ebe0ef9afd211419c5fdeb0e',1,'source_parameters']]],
   ['c14_5fea_2',['c14_EA',['../structsource__parameters.html#a3e1c2c6cf0cb46db7b5be907378a57ce',1,'source_parameters']]],
   ['c1_5f2_3',['c1_2',['../structsysprecquant.html#ad9e1b0cf74f2dd98559953bbb5da7b4e',1,'sysprecquant']]],
@@ -41,7 +41,7 @@ var searchData=
   ['chain_5ftemps_38',['chain_temps',['../classsampler.html#aeab13d23abfd6582959f82201306bbd9',1,'sampler::chain_temps'],['../mcmc__sampler_8cpp.html#ac8469dff63e8529c06e80b71afa7c9df',1,'chain_temps:&#160;mcmc_sampler.cpp']]],
   ['check_5fstepsize_5ffreq_39',['check_stepsize_freq',['../classsampler.html#a54e672a5ebb85d55770f07581bffd945',1,'sampler']]],
   ['checkpoint_5ffile_40',['checkpoint_file',['../mcmc__sampler_8cpp.html#ad50346611a606b059abaefb37839a014',1,'mcmc_sampler.cpp']]],
-  ['chi_41',['chi',['../classRelativeBinningLikelihood.html#a55fe35164d87cf04292435f13504f67a',1,'RelativeBinningLikelihood']]],
+  ['chi_41',['chi',['../classGWATLikelihoods_1_1RelativeBinningPNansatzLikelihood.html#a4843212563f6a5b0b5410970c8def1e9',1,'GWATLikelihoods::RelativeBinningPNansatzLikelihood']]],
   ['chi1_5fl_42',['chi1_l',['../classgen__params__base.html#a61278889182aeb69be0002db898b1159',1,'gen_params_base::chi1_l'],['../structsource__parameters.html#a4bdb088e6eca1c0a64d055ba75f1eecd',1,'source_parameters::chi1_l']]],
   ['chi1_5fmag_43',['chi1_mag',['../structPhenomPv3Storage.html#afcf1d3f589d52417e440e6530d6bef3e',1,'PhenomPv3Storage']]],
   ['chi1_5fp_44',['chi1_p',['../structsource__parameters.html#a0638be3609f73afa73d95c4db571e8a9',1,'source_parameters']]],

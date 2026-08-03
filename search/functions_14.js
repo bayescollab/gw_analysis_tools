@@ -67,7 +67,9 @@ var searchData=
   ['transpose_5fdata_5fto_5fcolumn_5fmajor_64',['transpose_data_to_column_major',['../classIMRPhenomD__NRT__EOS.html#a5bd91b8ddb0ee3180354f6634ebff019',1,'IMRPhenomD_NRT_EOS']]],
   ['trapezoidal_5fsum_65',['trapezoidal_sum',['../util_8h.html#ab7d3ff0c020ec0ffbe56f4271f425d68',1,'util.h']]],
   ['trapezoidal_5fsum_5funiform_66',['trapezoidal_sum_uniform',['../util_8h.html#a185f5ce6420f94f03d77915d94b06f4f',1,'util.h']]],
-  ['trim_67',['trim',['../io__util_8h.html#a9b855aac79a01bc69b093a4ee12bb688',1,'trim(std::string str):&#160;io_util.cpp'],['../io__util_8cpp.html#a9b855aac79a01bc69b093a4ee12bb688',1,'trim(std::string str):&#160;io_util.cpp']]],
-  ['tukey_5fwindow_68',['tukey_window',['../util_8h.html#adcfd6e3f070e3c9bdae4a7cd03570f67',1,'tukey_window(double *window, int length, double alpha):&#160;util.cpp'],['../util_8cpp.html#adcfd6e3f070e3c9bdae4a7cd03570f67',1,'tukey_window(double *window, int length, double alpha):&#160;util.cpp']]],
-  ['tvg_5fbeta_69',['TVG_beta',['../ppE__utilities_8h.html#a7b03e49c2d766f1abea02d6578deac9d',1,'ppE_utilities.h']]]
+  ['trapezoidlogquad_67',['TrapezoidLogQuad',['../classTrapezoidLogQuad.html#a258e80ba1ac74fe6c06bb21270f089c6',1,'TrapezoidLogQuad']]],
+  ['trapezoidquad_68',['TrapezoidQuad',['../classTrapezoidQuad.html#ab0d19636654396ed3169b5e928c5b1d9',1,'TrapezoidQuad']]],
+  ['trim_69',['trim',['../io__util_8h.html#a9b855aac79a01bc69b093a4ee12bb688',1,'trim(std::string str):&#160;io_util.cpp'],['../io__util_8cpp.html#a9b855aac79a01bc69b093a4ee12bb688',1,'trim(std::string str):&#160;io_util.cpp']]],
+  ['tukey_5fwindow_70',['tukey_window',['../util_8h.html#adcfd6e3f070e3c9bdae4a7cd03570f67',1,'tukey_window(double *window, int length, double alpha):&#160;util.cpp'],['../util_8cpp.html#adcfd6e3f070e3c9bdae4a7cd03570f67',1,'tukey_window(double *window, int length, double alpha):&#160;util.cpp']]],
+  ['tvg_5fbeta_71',['TVG_beta',['../ppE__utilities_8h.html#a7b03e49c2d766f1abea02d6578deac9d',1,'ppE_utilities.h']]]
 ];

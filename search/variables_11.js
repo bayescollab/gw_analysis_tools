@@ -58,7 +58,7 @@ var searchData=
   ['step_5freject_5fct_55',['step_reject_ct',['../classsampler.html#a1fba018ed13db917b7a9245fa8d544a0',1,'sampler']]],
   ['step_5frejected_56',['step_rejected',['../mcmc__sampler_8cpp.html#a9dbef5a6ba9580ac65ededf9ec1b60bf',1,'mcmc_sampler.cpp']]],
   ['stopping_57',['stopping',['../classthreadPool.html#a5616baffb9b54b8964812fd4660e31a1',1,'threadPool']]],
-  ['strain_58',['strain',['../structifo__data__struct.html#a6322432bde5cdc7546ff9c62332aa26f',1,'ifo_data_struct::strain'],['../structfiducial__data__struct.html#a7fa53af905fd4a7eb326503b09ec1989',1,'fiducial_data_struct::strain']]],
+  ['strain_58',['strain',['../structGWATLikelihoods_1_1IfoData.html#a5895e80dfb2a65f8b17c9a241880f775',1,'GWATLikelihoods::IfoData::strain'],['../structGWATLikelihoods_1_1SummaryData.html#a66389edb64f441c5aec548d9bfab7492',1,'GWATLikelihoods::SummaryData::strain']]],
   ['swap_5faccept_5fct_59',['swap_accept_ct',['../classsampler.html#a8d98db2373f10e4f3c0acf4f5246e5ba',1,'sampler']]],
   ['swap_5faccepts_60',['swap_accepts',['../classsampler.html#a64ce44c681ce38d4bd837b9b9a560f7f',1,'sampler']]],
   ['swap_5fpartners_61',['swap_partners',['../classsampler.html#a2f761b80964f5c915983e912c9698ac6',1,'sampler']]],

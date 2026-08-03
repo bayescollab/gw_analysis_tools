@@ -7,6 +7,7 @@ var searchData=
   ['skysearch_5fparams_4',['skysearch_params',['../structskysearch__params.html',1,'']]],
   ['source_5fparameters_5',['source_parameters',['../structsource__parameters.html',1,'']]],
   ['sph_5fharm_6',['sph_harm',['../structsph__harm.html',1,'']]],
-  ['swap_5fstruct_7',['swap_struct',['../structswap__struct.html',1,'']]],
-  ['sysprecquant_8',['sysprecquant',['../structsysprecquant.html',1,'']]]
+  ['summarydata_7',['SummaryData',['../structGWATLikelihoods_1_1SummaryData.html',1,'GWATLikelihoods']]],
+  ['swap_5fstruct_8',['swap_struct',['../structswap__struct.html',1,'']]],
+  ['sysprecquant_9',['sysprecquant',['../structsysprecquant.html',1,'']]]
 ];

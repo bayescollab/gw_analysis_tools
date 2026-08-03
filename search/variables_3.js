@@ -43,5 +43,5 @@ var searchData=
   ['double_5fcomp_5fthresh_40',['DOUBLE_COMP_THRESH',['../util_8h.html#a44616d1e8d795d9169691152fb8425df',1,'util.h']]],
   ['dump_5ffile_5fnames_41',['dump_file_names',['../classmcmc__sampler__output.html#ac1efaf4fa8223156d2990438edc09688',1,'mcmc_sampler_output']]],
   ['dump_5ffiles_42',['dump_files',['../classmcmc__sampler__output.html#a4ac7d0644e6622f45079032ac265b1ce',1,'mcmc_sampler_output']]],
-  ['duration_43',['duration',['../structifo__data__struct.html#a145d1fc233791c31dc9f407c1948d07f',1,'ifo_data_struct::duration'],['../classRelativeBinningLikelihood.html#ae0c7839a4ef7f9f0199a5ff57ef17047',1,'RelativeBinningLikelihood::duration']]]
+  ['duration_43',['duration',['../classGWATLikelihoods_1_1RelativeBinningPNansatzLikelihood.html#a092817f34db30a4a73aaea47bcfdedc0',1,'GWATLikelihoods::RelativeBinningPNansatzLikelihood']]]
 ];

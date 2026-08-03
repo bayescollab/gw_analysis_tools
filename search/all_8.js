@@ -9,7 +9,7 @@ var searchData=
   ['h_5flong_6',['H_LONG',['../detector__util_8h.html#ad71c7f7f5ecd2c0c4e72a476b60f9761',1,'detector_util.h']]],
   ['h_5fof_5fe_7',['h_of_e',['../structEOSinterpolation.html#aef40ff63d3ad1bcb05abf0a3dff2a563',1,'EOSinterpolation']]],
   ['h_5fof_5fp_8',['h_of_p',['../structEOSinterpolation.html#a837de347708491740c5facccad028fe4',1,'EOSinterpolation']]],
-  ['h_5fplanck_9',['h_planck',['../util_8h.html#a5625ec9f520a5f041fb88f5da5f94bef',1,'util.h']]],
+  ['h_5fplanck_9',['h_planck',['../util_8h.html#a87a7e8d453f8565ae418058b84a946dc',1,'util.h']]],
   ['h_5fradius_10',['H_radius',['../detector__util_8h.html#a000abb0905c1fd62ad0484a9adada609',1,'detector_util.h']]],
   ['h_5fstart_11',['h_start',['../structTOV_1_1Initial__conditions__TOV.html#a4ac5a4bf47a0f2c65b3fbb62919e4823',1,'TOV::Initial_conditions_TOV']]],
   ['h_5fvec_12',['h_vec',['../structEOSinterpolation.html#a2ca4aaf2acd91e77e0b83ba8468f95a2',1,'EOSinterpolation']]],

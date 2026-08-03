@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.17.0"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>GW Analysis Tools: AdaptiveLikelihood Class Reference</title>
+<title>GW Analysis Tools: GWATLikelihoods::Likelihood Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="codefolding.js"></script>
 <script type="text/javascript" src="clipboard.js"></script>
@@ -95,35 +95,39 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 </div>
 
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a href="namespaceGWATLikelihoods.html">GWATLikelihoods</a></li><li class="navelem"><a href="classGWATLikelihoods_1_1Likelihood.html">Likelihood</a></li>  </ul>
+</div>
 </div><!-- top -->
 <div id="doc-content">
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="classAdaptiveLikelihood-members.html">List of all members</a>  </div>
-  <div class="headertitle"><div class="title">AdaptiveLikelihood Class Reference<span class="mlabels"><span class="mlabel abstract">abstract</span></span></div></div>
+<a href="classGWATLikelihoods_1_1Likelihood-members.html">List of all members</a>  </div>
+  <div class="headertitle"><div class="title">GWATLikelihoods::Likelihood Class Reference<span class="mlabels"><span class="mlabel abstract">abstract</span></span></div></div>
 </div><!--header-->
 <div class="contents">
 
-<p><code>#include &lt;<a class="el" href="adaptivelikelihoods_8h_source.html">adaptivelikelihoods.h</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="likelihoods_8h_source.html">likelihoods.h</a>&gt;</code></p>
 <div class="dynheader">
-Inheritance diagram for AdaptiveLikelihood:</div>
+Inheritance diagram for GWATLikelihoods::Likelihood:</div>
 <div class="dyncontent">
-<div class="center"><img src="classAdaptiveLikelihood__inherit__graph.png" border="0" usemap="#aAdaptiveLikelihood_inherit__map" loading="lazy" alt="Inheritance graph"/></div>
+<div class="center"><img src="classGWATLikelihoods_1_1Likelihood__inherit__graph.png" border="0" usemap="#aGWATLikelihoods_1_1Likelihood_inherit__map" loading="lazy" alt="Inheritance graph"/></div>
 <!-- MAP 0 -->
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ae0c6c485b89feff6b1519d06a9623064" id="r_ae0c6c485b89feff6b1519d06a9623064"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ae0c6c485b89feff6b1519d06a9623064">AdaptiveLikelihood</a> ()=default</td></tr>
-<tr class="memitem:a5238f7ae5b4a78b110c36372a5607ddf" id="r_a5238f7ae5b4a78b110c36372a5607ddf"><td class="memItemLeft">virtual&#160;</td><td class="memItemRight"><a class="el" href="#a5238f7ae5b4a78b110c36372a5607ddf">~AdaptiveLikelihood</a> ()=default</td></tr>
-<tr class="memitem:a5683deb227d6471edf045240fface51f" id="r_a5683deb227d6471edf045240fface51f"><td class="memItemLeft">virtual double&#160;</td><td class="memItemRight"><a class="el" href="#a5683deb227d6471edf045240fface51f">log_likelihood</a> (std::string *detectors, int num_detectors, <a class="el" href="classgen__params__base.html">gen_params_base</a>&lt; double &gt; *params, std::string generation_method, bool reuse_WF)=0</td></tr>
+<tr class="memitem:a26607b60359c69d7261d347208a177cc" id="r_a26607b60359c69d7261d347208a177cc"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a26607b60359c69d7261d347208a177cc">Likelihood</a> ()=default</td></tr>
+<tr class="memitem:ac14117134c90b00cc68446df5a446aa2" id="r_ac14117134c90b00cc68446df5a446aa2"><td class="memItemLeft">virtual&#160;</td><td class="memItemRight"><a class="el" href="#ac14117134c90b00cc68446df5a446aa2">~Likelihood</a> ()=default</td></tr>
+<tr class="memitem:a659fae5ad9899e897c67b8528569548b" id="r_a659fae5ad9899e897c67b8528569548b"><td class="memItemLeft">virtual double&#160;</td><td class="memItemRight"><a class="el" href="#a659fae5ad9899e897c67b8528569548b">log_likelihood</a> (std::string *detectors, int num_detectors, <a class="el" href="classgen__params__base.html">gen_params_base</a>&lt; double &gt; *params, std::string generation_method, bool reuse_WF)=0</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Base class for adaptive likelihoods </p>
 </div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="ae0c6c485b89feff6b1519d06a9623064" name="ae0c6c485b89feff6b1519d06a9623064"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae0c6c485b89feff6b1519d06a9623064">&#9670;&#160;</a></span>AdaptiveLikelihood()</h2>
+<a id="a26607b60359c69d7261d347208a177cc" name="a26607b60359c69d7261d347208a177cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26607b60359c69d7261d347208a177cc">&#9670;&#160;</a></span>Likelihood()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -132,7 +136,7 @@ Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">AdaptiveLikelihood::AdaptiveLikelihood </td>
+          <td class="memname">GWATLikelihoods::Likelihood::Likelihood </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
@@ -147,8 +151,8 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a5238f7ae5b4a78b110c36372a5607ddf" name="a5238f7ae5b4a78b110c36372a5607ddf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5238f7ae5b4a78b110c36372a5607ddf">&#9670;&#160;</a></span>~AdaptiveLikelihood()</h2>
+<a id="ac14117134c90b00cc68446df5a446aa2" name="ac14117134c90b00cc68446df5a446aa2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac14117134c90b00cc68446df5a446aa2">&#9670;&#160;</a></span>~Likelihood()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -157,7 +161,7 @@ Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual AdaptiveLikelihood::~AdaptiveLikelihood </td>
+          <td class="memname">virtual GWATLikelihoods::Likelihood::~Likelihood </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
@@ -173,8 +177,8 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
-<a id="a5683deb227d6471edf045240fface51f" name="a5683deb227d6471edf045240fface51f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5683deb227d6471edf045240fface51f">&#9670;&#160;</a></span>log_likelihood()</h2>
+<a id="a659fae5ad9899e897c67b8528569548b" name="a659fae5ad9899e897c67b8528569548b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a659fae5ad9899e897c67b8528569548b">&#9670;&#160;</a></span>log_likelihood()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -183,7 +187,7 @@ Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual double AdaptiveLikelihood::log_likelihood </td>
+          <td class="memname">virtual double GWATLikelihoods::Likelihood::log_likelihood </td>
           <td>(</td>
           <td class="paramtype">std::string *</td>          <td class="paramname"><span class="paramname"><em>detectors</em></span>, </td>
         </tr>
@@ -215,12 +219,12 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Implemented in <a class="el" href="classRelativeBinningLikelihood.html#a6143e8a725c1b26f2208bfe9c7c3fd6f">RelativeBinningLikelihood</a>.</p>
+<p>Implemented in <a class="el" href="classGWATLikelihoods_1_1RelativeBinningBisectionLikelihood.html#ae83417e02f82b40d0f2429a202a30b4f">GWATLikelihoods::RelativeBinningBisectionLikelihood</a>, and <a class="el" href="classGWATLikelihoods_1_1RelativeBinningPNansatzLikelihood.html#a9268204c6090f175505a4ed68968a350">GWATLikelihoods::RelativeBinningPNansatzLikelihood</a>.</p>
 
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/Users/runner/work/gw_analysis_tools/gw_analysis_tools/include/gwat/<a class="el" href="adaptivelikelihoods_8h_source.html">adaptivelikelihoods.h</a></li>
+<li>/Users/runner/work/gw_analysis_tools/gw_analysis_tools/include/gwat/<a class="el" href="likelihoods_8h_source.html">likelihoods.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

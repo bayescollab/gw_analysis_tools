@@ -36,6 +36,6 @@ var searchData=
   ['rjstep_5flast_5faccept_5fct_33',['RJstep_last_accept_ct',['../classsampler.html#a8682f3a38e907010a8a21a9a19207bc4',1,'sampler']]],
   ['rjstep_5flast_5freject_5fct_34',['RJstep_last_reject_ct',['../classsampler.html#a09859b32798ffd6cf39492bf89245cb4',1,'sampler']]],
   ['rjstep_5freject_5fct_35',['RJstep_reject_ct',['../classsampler.html#ab973ac88d7266aae83bb6543d2ef9700',1,'sampler']]],
-  ['root_5fthree_36',['ROOT_THREE',['../util_8h.html#aeef10f63f0d33b2b400ac1948439ccfc',1,'util.h']]],
+  ['root_5fthree_36',['ROOT_THREE',['../util_8h.html#a2e521812477c882bcc6c674b3ff912ab',1,'util.h']]],
   ['rvec_37',['rvec',['../classsampler.html#a69e45d595b5d65c585bae324f0bc7185',1,'sampler']]]
 ];

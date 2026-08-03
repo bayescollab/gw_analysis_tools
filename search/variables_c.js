@@ -41,7 +41,7 @@ var searchData=
   ['num_5frjstep_38',['num_RJstep',['../classsampler.html#a7b934ed8a7b185ad220cf4e0fa419c40',1,'sampler']]],
   ['num_5fsegments_39',['num_segments',['../D__Z__Config_8h.html#aac953daa8839736a9045defba4330a71',1,'D_Z_Config.h']]],
   ['num_5fthreads_40',['num_threads',['../classsampler.html#a0d3c87df5d138ce4cd2286d55a54eb04',1,'sampler::num_threads'],['../mcmc__sampler_8cpp.html#a1d1dcf356debb2e4d1b66d739d350de2',1,'num_threads:&#160;mcmc_sampler.cpp']]],
-  ['number_5fof_5fbins_41',['number_of_bins',['../classRelativeBinningLikelihood.html#aafcfe7e0d61e165864bd0984823c0fc6',1,'RelativeBinningLikelihood']]],
+  ['number_5fof_5fbins_41',['number_of_bins',['../classGWATLikelihoods_1_1RelativeBinningPNansatzLikelihood.html#a27be6ebd869c3cd0f43bdfff237bf4fb',1,'GWATLikelihoods::RelativeBinningPNansatzLikelihood::number_of_bins'],['../classGWATLikelihoods_1_1RelativeBinningBisectionLikelihood.html#a21e1e6c761d5eefd471c16e577d4182d',1,'GWATLikelihoods::RelativeBinningBisectionLikelihood::number_of_bins']]],
   ['numswpswppthreads_42',['numSwpSWPPThreads',['../classThreadPool.html#a4759d05545738e03325dc54f7ed2b5d6',1,'ThreadPool']]],
   ['numswpswpthreads_43',['numSwpSWPThreads',['../classThreadPool.html#a4a06a902b9d11f43d59c12f0537ac879',1,'ThreadPool']]],
   ['numthreads_44',['numThreads',['../classsampler.html#a67740d4b88501036e9f05955d4664708',1,'sampler::numThreads'],['../mcmc__sampler_8cpp.html#adefca1752830a943ec6c60baa0483442',1,'numThreads:&#160;mcmc_sampler.cpp']]],

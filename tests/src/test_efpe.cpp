@@ -8,9 +8,9 @@
 
 #include <pyefpe/pyefpe.hpp>
 
-#include "EFPE.h"
-#include "util.h"
-#include "waveform_generator.h"
+#include "../include/gwat/EFPE.h"
+#include "../include/gwat/util.h"
+#include "../include/gwat/waveform_generator.h"
 
 int main()
 {

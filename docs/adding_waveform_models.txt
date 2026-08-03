@@ -80,10 +80,10 @@ been vendored and the CMake build has been set up.
         }
 
 
-2. MCMC Preparation (src/mcmc_gw_extended.cpp)
+2. MCMC Preparation (src/mcmc_gw.cpp)
 -----------------------------------------------
 
-2a. PTMCMC_method_specific_prep_v2
+2a. PTMCMC_method_specific_prep
     Add branches that recognise the model name and parameter-space dimension,
     print the parameter list, and set *intrinsic. Add these before the
     generic else{} exit block. Use an early return to avoid falling through
@@ -100,7 +100,7 @@ been vendored and the CMake build has been set up.
     Add one branch per supported dimension (e.g. a circular variant at
     dim=15, an eccentric variant at dim=17).
 
-2b. Fisher regularization in MCMC_fisher_transformations_v2
+2b. Fisher regularization in MCMC_fisher_transformations
     This function adds prior-width regularization terms to the diagonal of the
     Fisher matrix. Without these, parameters that are weakly constrained by the
     likelihood (near-zero Fisher elements) make the matrix ill-conditioned. When
@@ -113,8 +113,7 @@ been vendored and the CMake build has been set up.
     regularizes those entries. This must be done in all four Fisher
     transformation sites across the codebase:
 
-        src/mcmc_gw_extended.cpp  MCMC_fisher_transformations_v2  non-intrinsic branch
-        src/mcmc_gw_extended.cpp  MCMC_fisher_transformations_v2  intrinsic branch
+
         src/mcmc_gw.cpp           MCMC_fisher_transformations      non-intrinsic branch
         src/mcmc_gw.cpp           MCMC_fisher_transformations      intrinsic branch
         src/mcmc_gw.cpp           MCMC_fisher_wrapper              non-intrinsic branch
@@ -137,7 +136,7 @@ been vendored and the CMake build has been set up.
     This is particularly important at the circular limit, where spin orientations
     are weakly constrained and the corresponding Fisher elements are near-zero.
 
-2c. Proposal setup in PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2
+2c. Proposal setup in PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW
     The five proposals are:
         propArray[0]  gaussianProposal
         propArray[1]  blockDifferentialEvolutionProposal  (or DE for intrinsic)
@@ -180,9 +179,9 @@ are checked inside the branch with a nested find().
 ------------------------------
 [ ] Add unpack_parameters branch (non-sky-averaged + sky-averaged) in src/fisher.cpp
 [ ] Add repack_parameters branch (non-sky-averaged + sky-averaged) in src/fisher.cpp
-[ ] Add dimension branch(es) in PTMCMC_method_specific_prep_v2
+[ ] Add dimension branch(es) in PTMCMC_method_specific_prep
     (extrinsic dim=N with *intrinsic=false; intrinsic dim=M with *intrinsic=true)
-[ ] Add proposal branch in PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2
+[ ] Add proposal branch in PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW
     (only if block structure differs from the standard 7/rest split)
 [ ] Add Fisher regularization for spin-angle indices in all six sites
     (see section 2b for the full list of files and functions)

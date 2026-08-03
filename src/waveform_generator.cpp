@@ -281,12 +281,22 @@ int fourier_waveform(T *frequencies, /**< double array of frequencies for the wa
 			status = model.construct_waveform(frequencies, length, wp->hplus, wp->hcross, &params);
 		}
 	}
-	else if(local_method.find("EFPE")!=std::string::npos)
+	else if(has_substring(local_method, "EFPE"))
 	{
-		if(local_method.find("uniform")!=std::string::npos)
-			status = efpe_fourier_waveform_uniform(frequencies, length, wp, parameters);
+		if(has_substring(local_method, "fast"))
+		{
+			if(has_substring(local_method, "uniform"))
+				status = efpe_fast_fourier_waveform_uniform(frequencies, length, wp, parameters);
+			else
+				status = efpe_fast_fourier_waveform(frequencies, length, wp, parameters);
+		}
 		else
-			status = efpe_fourier_waveform(frequencies, length, wp, parameters);
+		{
+			if(has_substring(local_method, "uniform"))
+				status = efpe_fourier_waveform_uniform(frequencies, length, wp, parameters);
+			else
+				status = efpe_fourier_waveform(frequencies, length, wp, parameters);
+		}
 	}
 
 	//Catch all for any modifications not captured in ppE formalism like extra polarizations

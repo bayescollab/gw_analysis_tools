@@ -2191,6 +2191,13 @@ void apply_preset(Parameters& p, ParameterPreset preset) {
     p.amplitude_pmax = 100;
     set_fast_rr_tolerances(p);
     break;
+  case ParameterPreset::FastProduction:
+    set_common_preset_options(p, DenseOutput::DormandPrince, true);
+    allow_fast_waveform_options(p);
+    set_production_accuracy(p);
+    p.sua_kmax               = 2;
+    p.amplitude_interp_nodes = 8;
+    break;
   case ParameterPreset::Production:
     set_common_preset_options(p, DenseOutput::DormandPrince, true);
     allow_fast_waveform_options(p);

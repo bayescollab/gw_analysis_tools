@@ -551,21 +551,7 @@ double calculate_snr_internal(
 	const Quadrature *QuadMethod
 )
 {
-	int length = QuadMethod->get_length();
-	// Integrand array
-	double *integrand = new double [length];
-
-	for (int i = 0; i < length; i++)
-	{
-		integrand[i] = real(conj(waveform[i])*waveform[i]/psd[i]);
-	}
-
-	double innerproduct = QuadMethod->integrate(integrand);
-	
-	// Clean-up
-	delete [] integrand;
-
-	return 2.*sqrt(innerproduct);
+	return std::sqrt(QuadMethod->inner_product(waveform, waveform, psd));
 }
 
 /* \brief calculates the detector response for a given waveform and detector -- polarization angle =0

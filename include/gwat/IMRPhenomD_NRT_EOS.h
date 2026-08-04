@@ -6,9 +6,9 @@
 #include <gsl/gsl_odeiv2.h>
 #include <gsl/gsl_spline.h>
 
-#include <armadillo>
 #include <cmath>
 #include <cstdlib>
+#include <eigen3/Eigen/Eigen>
 #include <string>
 #include <vector>
 
@@ -224,8 +224,8 @@ class ObservablesIntegrator {
   ObservablesIntegrator(Interpolation& p_of_e, double ec_1, double ec_2);
 
   // Function to drive integration for the observable values
-  void integrate_for_observables(arma::vec::fixed<3>& first_observables,
-                                 arma::vec::fixed<3>& second_observables,
+  void integrate_for_observables(Eigen::Vector3d& first_observables,
+                                 Eigen::Vector3d& second_observables,
                                  bool& CurveIsNegative);
 
  protected:
@@ -253,9 +253,9 @@ class ObservablesIntegrator {
   void integrate_for_eos_of_h(Interpolation& p_of_e, double ec_1, double ec_2);
 
   // Functions to evaluate integration for m(h) and r(h)
-  void evaluate_ODE_at_point(double h, const arma::vec::fixed<3>& y,
-                             arma::vec::fixed<3>& f);
-  void rk4(double& t, arma::vec::fixed<3>& y, double h);
+  void evaluate_ODE_at_point(double h, const Eigen::Vector3d& y,
+                             Eigen::Vector3d& f);
+  void rk4(double& t, Eigen::Vector3d& y, double h);
 
   // Functions to convert units
   double convert_dimensions(double value, std::string unit,

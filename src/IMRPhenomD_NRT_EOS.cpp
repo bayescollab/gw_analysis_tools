@@ -78,16 +78,13 @@ int IMRPhenomD_NRT_EOS<T>::construct_waveform(T* frequencies, int length,
  */
 template <class T>
 void IMRPhenomD_NRT_EOS<T>::get_m_love(source_parameters<T>* params) {
-  // Define objects needed to store information
-  std::string eos_filepath = "/opt/gw_analysis_tools/data/eos.csv";
-
   // Central epsilon values
   double ec1;
   double ec2;
 
   // Objects to store integration information
-  arma::vec::fixed<3> observables1;
-  arma::vec::fixed<3> observables2;
+  Eigen::Vector3d observables1;
+  Eigen::Vector3d observables2;
 
   // Constructs the bumpy EoS and stores that information in interpolated object
   Bumpy_EOS_Constructor* bumpy_eos = new Bumpy_EOS_Constructor;
@@ -116,16 +113,10 @@ void IMRPhenomD_NRT_EOS<T>::get_m_love(source_parameters<T>* params) {
   delete p_of_e;
   p_of_e = 0;
 
-  // Check if curvature is valid
+  /* // Check if curvature is valid
   if (CurvatureCheck) {
     std::cout << "This curvature... is bad. Sobs." << std::endl;
-  }
-
-  // TODO: (Kaitlyn) For debugging, remove when done
-  /* std::cout << "Mass (1): " << observables1[1]
-            << ", Mass (2): " << observables2[1]
-            << ", Tidal (1): " << observables1[2]
-            << ", Tidal (2): " << observables2[2] << std::endl; */
+  } */
 
   // Store observables into params structure
   params->mass1 = observables1[1] * MSOL_SEC;
@@ -154,7 +145,6 @@ void IMRPhenomD_NRT_EOS<T>::get_m_love(source_parameters<T>* params) {
 template <class T>
 void IMRPhenomD_NRT_EOS<T>::get_observable_params(
     source_parameters<T>* params) {
-  params->q = params->mass2 / params->mass1;
   params->chirpmass = calculate_chirpmass(params->mass1, params->mass2);
   params->eta = calculate_eta(params->mass1, params->mass2);
   params->M = params->mass1 + params->mass2;
@@ -164,15 +154,8 @@ void IMRPhenomD_NRT_EOS<T>::get_observable_params(
   params->chi_pn =
       params->chi_eff - (38 * params->eta / 113) * (2 * params->chi_s);
   params->delta_mass = sqrt(1. - 4 * params->eta);
-
-  if (params->sky_average) {
-    params->A0 = sqrt(M_PI / 30) * params->chirpmass * params->chirpmass /
-                 params->DL * pow(M_PI * params->chirpmass, -7. / 6);
-  } else {
-    params->A0 = sqrt(M_PI * 40. / 192.) * params->chirpmass *
-                 params->chirpmass / params->DL *
-                 pow(M_PI * params->chirpmass, -7. / 6);
-  }
+  params->A0 = A0_from_DL(params->chirpmass, params->DL, params->sky_average);
+  return;
 }
 
 // Because GWAT hates me (DON'T REMOVE THIS THE COMPILER WILL FAIL TO FIND THE
@@ -554,16 +537,16 @@ ObservablesIntegrator::ObservablesIntegrator(Interpolation& p_of_e, double ec_1,
  * starting enthalpy to 0 (the surface of the star). Default number of steps for
  * integration is 10,000.
  *
- * @param first_observables Armadillo vector to store the first set of
+ * @param first_observables Eigen vector to store the first set of
  * calculated neutron star observables (Radius, Mass, Tidal).
- * @param second_observables Armadillo vector to store the second set of
+ * @param second_observables Eigen vector to store the second set of
  * calculated neutron star observables (Radius, Mass, Tidal).
  * @param CurveIsNegative Boolean to store if the slope of the m(epsilon) curve
  * is negative.
  */
 void ObservablesIntegrator::integrate_for_observables(
-    arma::vec::fixed<3>& first_observables,
-    arma::vec::fixed<3>& second_observables, bool& CurveIsNegative) {
+    Eigen::Vector3d& first_observables, Eigen::Vector3d& second_observables,
+    bool& CurveIsNegative) {
   // Define starting radius
   const double R_start = convert_dimensions(4e-4, "km", true);
   const double R_start_2 = R_start * R_start;
@@ -583,7 +566,7 @@ void ObservablesIntegrator::integrate_for_observables(
   // Define starting y values
   const double Y_start = 2.0;
 
-  // Define enthalpy shift values
+  /* // Define enthalpy shift values
   double h1_shift = hc_1_shift - x1 * (e_of_h.yofx(hc_1_shift) +
                                        3.0 * p_of_h.yofx(hc_1_shift));
   double h2_shift = hc_2_shift - x1 * (e_of_h.yofx(hc_2_shift) +
@@ -591,7 +574,7 @@ void ObservablesIntegrator::integrate_for_observables(
 
   // Define mass shift values
   const double M_shift_1 = x2 * e_of_h.yofx(h1_shift);
-  const double M_shift_2 = x2 * e_of_h.yofx(h2_shift);
+  const double M_shift_2 = x2 * e_of_h.yofx(h2_shift); */
 
   // Define step sizes
   double N_steps = 5e4;
@@ -680,8 +663,9 @@ void ObservablesIntegrator::integrate_for_observables(
 
   /* ----------------------- Integrate to Check Slope ----------------------- */
 
-  arma::vec::fixed<3> first_shifts;
-  arma::vec::fixed<3> second_shifts;
+  CurveIsNegative = false;
+  /* Eigen::Vector3d first_shifts;
+  Eigen::Vector3d second_shifts;
 
   // Set starting values
   first_shifts = {R_start, M_shift_1, Y_start};
@@ -709,7 +693,7 @@ void ObservablesIntegrator::integrate_for_observables(
     CurveIsNegative = true;
   } else {
     CurveIsNegative = false;
-  }
+  } */
 }
 
 /* --------------------------- Protected Functions -------------------------- */
@@ -809,8 +793,8 @@ void ObservablesIntegrator::integrate_for_eos_of_h(Interpolation& p_of_e,
  * @param f Object to store the results of calculating dR/dh, dM/dh, and dY/dh
  */
 void ObservablesIntegrator::evaluate_ODE_at_point(double h,
-                                                  const arma::vec::fixed<3>& y,
-                                                  arma::vec::fixed<3>& f) {
+                                                  const Eigen::Vector3d& y,
+                                                  Eigen::Vector3d& f) {
   // Grab values of pressure and epsilon at the point
   const double p = p_of_h.yofx(h);
   const double e = e_of_h.yofx(h);
@@ -862,16 +846,16 @@ void ObservablesIntegrator::evaluate_ODE_at_point(double h,
  * @param y Functions given in terms of the independent variable t
  * @param h Step size for the rk4 routine
  */
-void ObservablesIntegrator::rk4(double& t, arma::vec::fixed<3>& y, double h) {
+void ObservablesIntegrator::rk4(double& t, Eigen::Vector3d& y, double h) {
   // Calculate step size fractions
   const double h_6 = h / 6.0;
   const double h_2 = h / 2.0;
 
   // Define arrays to store rk4 term results in
-  arma::vec::fixed<3> k1;
-  arma::vec::fixed<3> k2;
-  arma::vec::fixed<3> k3;
-  arma::vec::fixed<3> k4;
+  Eigen::Vector3d k1;
+  Eigen::Vector3d k2;
+  Eigen::Vector3d k3;
+  Eigen::Vector3d k4;
 
   // Calculate rk4 terms
   evaluate_ODE_at_point(t, y, k1);

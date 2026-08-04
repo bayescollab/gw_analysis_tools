@@ -1606,8 +1606,7 @@ void unpack_parameters(double* parameters,
         parameters[12] = cos(spin2sph[1]);
         parameters[13] = spin1sph[2];
         parameters[14] = spin2sph[2];
-        if (dimension > 15 &&
-            generation_method.find("circular") == std::string::npos) {
+        if (dimension > 15 && has_substring(generation_method, "circular")) {
           parameters[15] = input_params->e_start;
           parameters[16] = input_params->mean_anomaly_start;
         }
@@ -1644,8 +1643,8 @@ void unpack_parameters(double* parameters,
             << std::endl;
       }
 
-    } else if (has_substring(generation_method, "EFPE")) {
-      if (has_substring(generation_method, "MCMC")) {
+    } else if (generation_method.find("EFPE")) {
+      if (generation_method.find("MCMC")) {
         for (int i = 0; i < dimension; i++) log_factors[i] = false;
         parameters[0] =
             log(calculate_chirpmass(input_params->mass1, input_params->mass2));
@@ -1660,8 +1659,7 @@ void unpack_parameters(double* parameters,
         parameters[5] = cos(spin2sph[1]);
         parameters[6] = spin1sph[2];
         parameters[7] = spin2sph[2];
-        if (dimension > 8 &&
-            generation_method.find("circular") == std::string::npos) {
+        if (dimension > 8 && generation_method.find("circular")) {
           parameters[8] = input_params->e_start;
           parameters[9] = input_params->mean_anomaly_start;
         }
@@ -1951,7 +1949,7 @@ void repack_parameters(T* avec_parameters, gen_params_base<T>* a_params,
         a_params->spin2[0] = spin2cart[0];
         a_params->spin2[1] = spin2cart[1];
         a_params->spin2[2] = spin2cart[2];
-        if (generation_method.find("circular") != std::string::npos) {
+        if (generation_method.find("circular")) {
           a_params->e_start = 0;
           a_params->mean_anomaly_start = 0;
         } else {
@@ -2499,26 +2497,16 @@ void calculate_fisher_elements(double* frequency, int length, int dimension,
 void calculate_fisher_elements(
     double** output,                        //< [return] Fisher matrix
     std::complex<double>** response_deriv,  //< Derivatives of the response from
-                                            // calculate_derivatives
+                                            //calculate_derivatives
     double* psd,                            //< PSD array
     int dimension,                          //< Dimension of parameter space
     Quadrature* quadMethod  //< Quadrature class to compute integrals
 ) {
-  // Array for integrand
-  int length = quadMethod->get_length();
-  double* integrand = new double[length];
-
   // Loop over derivatives
   for (int j = 0; j < dimension; j++) {
     for (int k = 0; k <= j; k++) {
-      // Set up integrand
-      for (int i = 0; i < length; i++) {
-        integrand[i] = real(
-            (response_deriv[j][i] * std::conj(response_deriv[k][i])) / psd[i]);
-      }
-
-      // Compute the (j,k) Fisher element
-      output[j][k] = 4. * quadMethod->integrate(integrand);
+      output[j][k] =
+          quadMethod->inner_product(response_deriv[j], response_deriv[k], psd);
 
       // Off-diagonal elements
       if (k != j) {
@@ -2527,9 +2515,6 @@ void calculate_fisher_elements(
       }
     }
   }
-
-  // Clean-up
-  delete[] integrand;
 }
 // #################################################################
 template void repack_parameters<adouble>(adouble*, gen_params_base<adouble>*,

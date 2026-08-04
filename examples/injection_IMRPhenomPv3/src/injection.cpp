@@ -4,7 +4,7 @@
 #include <gwat/util.h>
 #include <gwat/detector_util.h>
 #include <gwat/io_util.h>
-#include <gwat/mcmc_gw_extended.h>
+#include <gwat/mcmc_gw.h>
 #include <gwat/mcmc_sampler.h>
 #include <gwat/standardPriorLibrary.h>
 #include <bayesship/dataUtilities.h>
@@ -260,7 +260,7 @@ int main(int argc, char *argv[])
 	std::cout << "Prior of initial point: " << lp << std::endl;
 
 	// Run the sampler
-	PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW_v2(dim, independentSamples,
+	PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(dim, independentSamples,
 		ensembleSize, ensembleN, &initialPosition, (bayesship::positionInfo**)nullptr,
 		swapProb, burnIterations, burnPriorIterations, priorIterations, writePriorData, batchsize, (double **) nullptr,
 		log_prior, threads, pool, detect_number, data, psd, freq, data_lengths,

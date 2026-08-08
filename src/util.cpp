@@ -1932,6 +1932,14 @@ void transform_sph_cart(T *sphvec, T *cartvec)
 template void transform_sph_cart<double>(double*, double*);
 template void transform_sph_cart<adouble>(adouble*, adouble*);
 
+void spin_cartesian_to_spherical(double sx, double sy, double sz,
+                                 double& a, double& cos_tilt, double& phi) {
+  a = std::sqrt(sx * sx + sy * sy + sz * sz);
+  cos_tilt = (a > 0.) ? sz / a : 0.;
+  phi = std::atan2(sy, sx);
+  if (phi < 0.) phi += 2. * M_PI;
+}
+
 /*! \brief Unwrap angles from arctan 
  *
  * Stolen from stack exchange.. https://stackoverflow.com/questions/15634400/continous-angles-in-c-eq-unwrap-function-in-matlab

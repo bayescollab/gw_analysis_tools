@@ -4,7 +4,7 @@
 #include "quadrature.h"
 #include <string>
 
-/*! \file 
+/*! \file
  */
 using namespace std;
 
@@ -33,21 +33,14 @@ void tape_time_gsl_subroutine(gsl_subroutine * params_packed);
 void tape_phase_gsl_subroutine(gsl_subroutine * params_packed);
 void prep_gsl_subroutine(gsl_subroutine *params_packed);
 
-void fisher_numerical(double *frequency, 
-	int length,
-	string generation_method, 
-	string detector, 
-	string reference_detector, 
-	double **output,
-	int dimension, 
-	//double *parameters,
-	gen_params_base<double> *parameters,
-	int order,
-	int *amp_tapes = NULL,
-	int *phase_tapes = NULL,
-	double *noise = NULL,
-	Quadrature *quadMethod = NULL
-	);
+void fisher_numerical(double* frequency, int length, string generation_method,
+                      string detector, string reference_detector,
+                      double** output, int dimension,
+                      // double *parameters,
+                      gen_params_base<double>* parameters, int order,
+                      int* amp_tapes = nullptr, int* phase_tapes = nullptr,
+                      double* noise = nullptr, Quadrature* quadMethod = nullptr);
+
 void calculate_fisher_elements(double *frequency, 
 	int length, 
 	int dimension, 
@@ -58,6 +51,12 @@ void calculate_fisher_elements(double *frequency,
 	double *weights, 
 	bool log10_f);
 
+/// @brief Calculate the Fisher matrix from the response derivatives.
+/// @param[out] output     The Fisher matrix.
+/// @param response_deriv  Derivatives of the response ∂h(f_i)/∂θ_j
+/// @param psd  		   PSD array
+/// @param dimension 	   Dimension of parameter space
+/// @param quadMethod
 void calculate_fisher_elements(
 	double **output,
 	std::complex<double> **response_deriv,
@@ -271,16 +270,11 @@ void ppE_theory_covariance_transformation(std::string original_method,
 	double **old_cov, 
 	double **new_cov);
 
-
-void calculate_derivatives(std::complex<double> **response_deriv,
-							   double *frequencies,
-							   int length,
-							   int dimension,
-							   string detector,
-							   string reference_detector,
-							   string gen_method,
-							   gen_params_base<double> *parameters,
-							   int order);
+void calculate_derivatives(std::complex<double>** response_deriv,
+                           double* frequencies, int length, int dimension,
+                           string detector, string reference_detector,
+                           string gen_method,
+                           gen_params_base<double>* parameters, int order);
 
 /**
  * @class CentralDifferenceShfits
@@ -293,18 +287,21 @@ protected:
 	int dimension;
 	double *parameters_vec;
 	bool *log_factors;
+        int eta_idx;  // index of "eta" in the MCMC vector, or -1 if absent
 
-public:
+       public:
 	const double epsilon = 1e-8;
 
-    CentralDifferenceShifts(int dim, std::string local_gen_method, gen_params_base<double> *parameters);
-		virtual ~CentralDifferenceShifts();
+        CentralDifferenceShifts(int dim, std::string gen_method,
+                                gen_params_base<double>* parameters);
+        virtual ~CentralDifferenceShifts();
 
 	int get_dimension() { return dimension; }
 	double *get_parameters_vec() { return parameters_vec; }
 	bool *get_log_factors() { return log_factors; }
+        int get_eta_idx() const { return eta_idx; }
 
-	/**
+        /**
 	 * @brief Shift the value of a parameter in the parameters vector to take its derivative.
 	 * @param i	Index of the parameter to shift.
 	 * @param local_gen_method	Name of the model.
@@ -328,22 +325,23 @@ protected:
 	double *param_m;
 
 public:
-	CentralDifferenceShifts_O2(int dim, std::string gen_method, gen_params_base<double> *parameters);
-	~CentralDifferenceShifts_O2() override;
+ CentralDifferenceShifts_O2(int dim, std::string gen_method,
+                            gen_params_base<double>* parameters);
+ ~CentralDifferenceShifts_O2() override;
 
-	double *get_param_p() { return param_p; }
-	double *get_param_m() { return param_m; }
+ double* get_param_p() { return param_p; }
+ double* get_param_m() { return param_m; }
 
-	/**
-	 * @copydoc CentralDifferenceShifts::calculate_parameters_shift
-	 * @note order 2 version
-	 */
-	void calculate_parameters_shift(int i, std::string local_gen_method) override;
-	/**
-	 * @copydoc CentralDifferenceShifts::calculate_parameters_unshift
-	 * @note order 2 version
-	 */
-	void calculate_parameters_unshift(int i) override;
+ /**
+  * @copydoc CentralDifferenceShifts::calculate_parameters_shift
+  * @note order 2 version
+  */
+ void calculate_parameters_shift(int i, std::string local_gen_method) override;
+ /**
+  * @copydoc CentralDifferenceShifts::calculate_parameters_unshift
+  * @note order 2 version
+  */
+ void calculate_parameters_unshift(int i) override;
 };
 
 /**
@@ -357,22 +355,23 @@ protected:
 	double *param_mm;
 
 public:
-	CentralDifferenceShifts_O4(int dim, std::string gen_method, gen_params_base<double> *parameters);
-	~CentralDifferenceShifts_O4() override;
+ CentralDifferenceShifts_O4(int dim, std::string gen_method,
+                            gen_params_base<double>* parameters);
+ ~CentralDifferenceShifts_O4() override;
 
-	double *get_param_pp() { return param_pp; }
-	double *get_param_mm() { return param_mm; }
+ double* get_param_pp() { return param_pp; }
+ double* get_param_mm() { return param_mm; }
 
-	/**
-	 * @copydoc CentralDifferenceShifts::calculate_parameters_shift
-	 * @note order 4 version
-	 */
-	void calculate_parameters_shift(int i, std::string local_gen_method) override;
-	/**
-	 * @copydoc CentralDifferenceShifts::calculate_parameters_unshift
-	 * @note order 4 version
-	 */
-	void calculate_parameters_unshift(int i) override;
+ /**
+  * @copydoc CentralDifferenceShifts::calculate_parameters_shift
+  * @note order 4 version
+  */
+ void calculate_parameters_shift(int i, std::string local_gen_method) override;
+ /**
+  * @copydoc CentralDifferenceShifts::calculate_parameters_unshift
+  * @note order 4 version
+  */
+ void calculate_parameters_unshift(int i) override;
 };
 
 /**
@@ -388,40 +387,44 @@ protected:
 	int length;
 	std::string local_gen_method;
 
-public:
-	FiniteFisherDerivatives(int len, int dim, int order, std::string local_gen_method, std::string gen_method, gen_params_base<double> *parameters);
-	virtual ~FiniteFisherDerivatives();
+       public:
+ FiniteFisherDerivatives(int len, int dim, int order,
+                         std::string local_gen_method, std::string gen_method,
+                         gen_params_base<double>* parameters);
+ virtual ~FiniteFisherDerivatives();
 
-	void calculate_derivatives(
-		std::complex<double> **response_deriv,
-		double *frequencies,
-		int length,
-		int dimension,
-		string detector,
-		string reference_detector,
-		string gen_method,
-		gen_params_base<double> *parameters);
+ void calculate_derivatives(std::complex<double>** response_deriv,
+                            double* frequencies, int length, int dimension,
+                            string detector, string reference_detector,
+                            string gen_method,
+                            gen_params_base<double>* parameters);
 
-	/**
-	 * @brief Calculate the response quantities needed for the Fisher derivatives.
-	 * @param waveform_params
-	 * @param gen_method
-	 * @param frequencies
-	 * @param local_gen_method
-	 * @param reference_detector
-	 * @param detector
-	 */
-	virtual void calculate_response(gen_params &waveform_params, string gen_method, double *frequencies,
-									std::string local_gen_method, string reference_detector, string detector) = 0;
+ /**
+  * @brief Calculate the response quantities needed for the Fisher derivatives.
+  * @param waveform_params
+  * @param gen_method
+  * @param frequencies
+  * @param local_gen_method
+  * @param reference_detector
+  * @param detector
+  */
+ virtual void calculate_response(gen_params& waveform_params, string gen_method,
+                                 double* frequencies,
+                                 std::string local_gen_method,
+                                 string reference_detector,
+                                 string detector) = 0;
 
-	/**
-	 * @brief Calculate the response derivative w.r.t. a single parameter.
-	 * @param[in] i					The parameter being varied.
-	 * @param[in] local_gen_method	Name of the model.
-	 * @param[out] response_deriv	The row-array to be filled with the derivative at each frequency point.
-	 */
-	virtual void calculate_response_derivative(int i, std::string &local_gen_method,
-											   std::complex<double> **response_deriv) = 0;
+ /**
+  * @brief Calculate the response derivative w.r.t. a single parameter.
+  * @param[in] i					The parameter being
+  * varied.
+  * @param[in] local_gen_method	Name of the model.
+  * @param[out] response_deriv	The row-array to be filled with the derivative
+  * at each frequency point.
+  */
+ virtual void calculate_response_derivative(
+     int i, std::string& local_gen_method,
+     std::complex<double>** response_deriv) = 0;
 };
 
 /**
@@ -434,17 +437,21 @@ protected:
 	double *amplitude;
 
 public:
-	AmplitudePhaseDerivatives(int len, int dim, int order, double *frequencies,
-							  std::string local_gen_method, std::string gen_method, gen_params_base<double> *parameters);
-	~AmplitudePhaseDerivatives() override;
+ AmplitudePhaseDerivatives(int len, int dim, int order, double* frequencies,
+                           std::string local_gen_method, std::string gen_method,
+                           gen_params_base<double>* parameters);
+ ~AmplitudePhaseDerivatives() override;
 
-	/**
-	 * @copydoc FiniteFisherDerivatives::calculate_response
-	 * @note parameters reference_detector and detector are unused in this implementation (required by FiniteFisherDerivatives)
-	 */
-	virtual void calculate_response(gen_params &, string, double *, std::string, string, string) = 0;
-	virtual void calculate_response_derivative(int i, std::string &local_gen_method,
-											   std::complex<double> **response_deriv) = 0;
+ /**
+  * @copydoc FiniteFisherDerivatives::calculate_response
+  * @note parameters reference_detector and detector are unused in this
+  * implementation (required by FiniteFisherDerivatives)
+  */
+ virtual void calculate_response(gen_params&, string, double*, std::string,
+                                 string, string) = 0;
+ virtual void calculate_response_derivative(
+     int i, std::string& local_gen_method,
+     std::complex<double>** response_deriv) = 0;
 };
 
 /**
@@ -462,14 +469,18 @@ protected:
 	double *phase_minusc;
 
 public:
-	AmplitudePhaseDerivatives_O2(int len, int dim, int order, double *frequencies,
-								 std::string local_gen_method, std::string gen_method, gen_params_base<double> *parameters);
-	~AmplitudePhaseDerivatives_O2() override;
+ AmplitudePhaseDerivatives_O2(int len, int dim, int order, double* frequencies,
+                              std::string local_gen_method,
+                              std::string gen_method,
+                              gen_params_base<double>* parameters);
+ ~AmplitudePhaseDerivatives_O2() override;
 
-	void calculate_response(gen_params &waveform_params, string gen_method, double *frequencies,
-							std::string local_gen_method, string reference_detector, string detector) override;
-	void calculate_response_derivative(int i, std::string &local_gen_method,
-									   std::complex<double> **response_deriv) override;
+ void calculate_response(gen_params& waveform_params, string gen_method,
+                         double* frequencies, std::string local_gen_method,
+                         string reference_detector, string detector) override;
+ void calculate_response_derivative(
+     int i, std::string& local_gen_method,
+     std::complex<double>** response_deriv) override;
 };
 
 /**
@@ -486,15 +497,20 @@ class AmplitudePhaseDerivatives_O4:public AmplitudePhaseDerivatives_O2 {
 		double *phase_minus_minusc;
 
   public:
-    AmplitudePhaseDerivatives_O4(int len, int dim, int order, double* frequencies, 
-			std::string local_gen_method, std::string gen_method, gen_params_base<double>* parameters);
-		~AmplitudePhaseDerivatives_O4() override;
+   AmplitudePhaseDerivatives_O4(int len, int dim, int order,
+                                double* frequencies,
+                                std::string local_gen_method,
+                                std::string gen_method,
+                                gen_params_base<double>* parameters);
+   ~AmplitudePhaseDerivatives_O4() override;
 
-    void calculate_response(gen_params& waveform_params, string gen_method, double* frequencies, 
-			std::string local_gen_method, string reference_detector, string detector) override;
-    
-		void calculate_response_derivative(int i, std::string& local_gen_method, 
-			std::complex<double>  **response_deriv) override;
+   void calculate_response(gen_params& waveform_params, string gen_method,
+                           double* frequencies, std::string local_gen_method,
+                           string reference_detector, string detector) override;
+
+   void calculate_response_derivative(
+       int i, std::string& local_gen_method,
+       std::complex<double>** response_deriv) override;
 	};
 
 /**
@@ -507,13 +523,18 @@ class FullResponseDerivatives_O2:public FiniteFisherDerivatives {
 		std::complex<double> *response_minus;
 
   public:
-    FullResponseDerivatives_O2(int len, int dim, int order, std::string local_gen_method, std::string gen_method, gen_params_base<double> *parameters);
-		~FullResponseDerivatives_O2() override;
+   FullResponseDerivatives_O2(int len, int dim, int order,
+                              std::string local_gen_method,
+                              std::string gen_method,
+                              gen_params_base<double>* parameters);
+   ~FullResponseDerivatives_O2() override;
 
-		void calculate_response(gen_params& waveform_params, string gen_method, double* frequencies, 
-			std::string local_gen_method, string reference_detector, string detector) override;
-		void calculate_response_derivative(int i, std::string& local_gen_method, 
-			std::complex<double>** response_deriv) override;
+   void calculate_response(gen_params& waveform_params, string gen_method,
+                           double* frequencies, std::string local_gen_method,
+                           string reference_detector, string detector) override;
+   void calculate_response_derivative(
+       int i, std::string& local_gen_method,
+       std::complex<double>** response_deriv) override;
 	};
 
 /**
@@ -526,14 +547,18 @@ class FullResponseDerivatives_O4:public FullResponseDerivatives_O2 {
 		std::complex<double> *response_minus_minus;
 
   public:
-    FullResponseDerivatives_O4(int len, int dim, int order, std::string local_gen_method, std::string gen_method, gen_params_base<double> *parameters);
-		~FullResponseDerivatives_O4() override;
-    
+   FullResponseDerivatives_O4(int len, int dim, int order,
+                              std::string local_gen_method,
+                              std::string gen_method,
+                              gen_params_base<double>* parameters);
+   ~FullResponseDerivatives_O4() override;
 
-		void calculate_response(gen_params& waveform_params, string gen_method, double* frequencies, 
-			std::string local_gen_method, string reference_detector, string detector) override;
-		void calculate_response_derivative(int i, std::string& local_gen_method,
-			 std::complex<double>** response_deriv) override;
+   void calculate_response(gen_params& waveform_params, string gen_method,
+                           double* frequencies, std::string local_gen_method,
+                           string reference_detector, string detector) override;
+   void calculate_response_derivative(
+       int i, std::string& local_gen_method,
+       std::complex<double>** response_deriv) override;
 	};
 
 

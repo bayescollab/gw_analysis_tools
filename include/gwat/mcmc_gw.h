@@ -25,6 +25,7 @@
 
 #include "likelihoods.h"
 #include "mcmc_sampler.h"
+#include "parameter_space.h"
 #include "quadrature.h"
 #include "util.h"
 
@@ -67,10 +68,12 @@ struct MCMC_modification_struct {
   int* fisher_length = NULL;
   bool fisher_log10F = false;
 
-  // Quadrature method to be used for Fisher and likelihood calculations
-  // (unless an Likelihood is being used for the latter).
+  // Quadrature for the Fisher when param_space is not set.
+  // When param_space is set, GWParameterSpace::quadrature() is used instead.
   Quadrature* QuadMethod = NULL;
-  GWATLikelihoods::Likelihood* adaptivell = NULL;
+  // Always set param_space and likelihood together or not at all.
+  GWParameterSpace* param_space = nullptr;
+  GWLikelihoods::Likelihood* likelihood = nullptr;
 
   // Refererence frequency for waveform generation.
   // Not as trivial as you might think!
@@ -136,9 +139,9 @@ struct mcmcVariables {
   bool mcmc_log_beta = false;
   MCMC_user_param* user_parameters = nullptr;
   double maxDim;
-  bool mcmc_adaptive = false;
-  GWATLikelihoods::Likelihood* adaptivell = nullptr;
-  Quadrature* QuadMethod = NULL;
+  GWParameterSpace* param_space = nullptr;
+  GWLikelihoods::Likelihood* likelihood = nullptr;
+  Quadrature* QuadMethod = nullptr;
 };
 struct mcmcVariablesRJ {
   double** mcmc_noise = nullptr;
@@ -221,57 +224,41 @@ double Log_Likelihood_internal(std::complex<double>* data, double* psd,
                                std::complex<double>* detector_response,
                                int length, bool log10F,
                                std::string integration_method);
-double Log_Likelihood_internal(std::complex<double>* data, double* psd,
-                               std::complex<double>* detector_response,
-                               Quadrature* QuadMethod);
 
-double MCMC_likelihood_extrinsic(
-    bool save_waveform, gen_params_base<double>* parameters,
-    std::string generation_method, int* data_length, double** frequencies,
-    std::complex<double>** data, double** psd, double** weights,
-    std::string integration_method, bool log10F, std::string* detectors,
-    int num_detectors, Quadrature* QuadMethod = NULL);
+double MCMC_likelihood_extrinsic(bool save_waveform,
+                                 gen_params_base<double>* parameters,
+                                 std::string generation_method,
+                                 int* data_length, double** frequencies,
+                                 std::complex<double>** data, double** psd,
+                                 double** weights,
+                                 std::string integration_method, bool log10F,
+                                 std::string* detectors, int num_detectors);
 
-/// @brief Runs a Metropolis-Hastings chain from initial_params to locate
-/// good fiducial and test waveforms relative binning initialization.
+/// @brief Runs a Metropolis-Hastings chain from @p initial_params to locate
+/// good fiducial and test waveforms for relative-binning initialization.
 ///
-/// Outputs detector responses:
-///   fiducial_out  — response at the maximum-likelihood point found
-///   test_out      — response at the last accepted point in the chain
-/// Caller must pre-allocate both output arrays as
-/// [num_detectors][data_length[i]]. If waveform generation fails for
-/// fiducial_out, it is set to the initial parameter point. If it fails for
-/// test_out, it is set to the max-likelihood point.
+/// Detector data (frequencies, PSDs, strain) is obtained from
+/// @p likelihood. The parameter-space dimension, generation
+/// method, and Fisher quadrature are obtained from @p param_space.
 ///
-/// \param dimension      Size of parameter space.
-/// \param initial_params Array of parameters to begin exploration.
+/// \param param_space    Parameter-space object (dimension, to_gen_params,
+/// etc.)
+/// \param likelihood     Likelihood whose get_ifos() supplies detector data.
+/// \param initial_params Starting MCMC parameter vector (length
+/// param_space.dim()).
 /// \param log_prior      Log-prior probability function for the model.
-/// \param param_scales   Typical scale for each parameter (e.g. prior width);
-///  used to size finite-difference steps for the Fisher diagonal.
-/// \param num_mh_steps   Number of M-H steps to be taken.
-/// \param num_detectors  Number of detectors.
-/// \param data           The signal at each detector whose fiducial waveform
-/// will be found for.
-/// \param noise_psd      The PSD for each detector.
-/// \param frequencies    Frequency arrays for each detector.
-/// \param data_length    Length of the signal for each detector.
-/// \param gps_time       GPS time of the signal.
-/// \param detectors      Names of the detectors.
-/// \param generation_method Model name for the output waveforms.
-/// \param mod_struct     MCMC_modification_struct
-/// \param fiducial_out  [out] The fiducial signal.
-/// \param test_out	     [out] The signal at the final M-H step.
-/// \param test_gp_out   [out] The parameters at the final M-H step.
-void find_fiducial(int dimension, double* initial_params,
+/// \param param_scales   Typical scale for each parameter (e.g. prior width).
+/// \param num_mh_steps   Number of M-H steps.
+/// \param fiducial_out  [out] Detector responses at the MAP point.
+/// \param test_out      [out] Detector responses at the final M-H step.
+/// \param test_gp_out   [out] gen_params at the final M-H step (optional).
+void find_fiducial(const GWParameterSpace& param_space,
+                   const GWLikelihoods::Likelihood& likelihood,
+                   const double* initial_params,
                    bayesship::probabilityFn* log_prior,
                    const std::vector<double>& param_scales, int num_mh_steps,
-                   int num_detectors, std::complex<double>** data,
-                   double** noise_psd, double** frequencies, int* data_length,
-                   double gps_time, std::string* detectors,
-                   std::string generation_method,
-                   MCMC_modification_struct* mod_struct,
-                   std::complex<double>** fiducial_out,
-                   std::complex<double>** test_out,
+                   std::vector<VECCPL>& fiducial_out,
+                   std::vector<VECCPL>& test_out,
                    gen_params_base<double>* test_gp_out = nullptr);
 
 #endif

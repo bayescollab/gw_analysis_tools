@@ -30,9 +30,8 @@ class Quadrature {
   /// @param h1
   /// @param h2
   /// @param psd
-  virtual double inner_product(const std::complex<double>* h1,
-                               const std::complex<double>* h2,
-                               const double* psd) const = 0;
+  virtual double inner_product(const VECCPL& h1, const VECCPL& h2,
+                               const VECDBL& psd) const = 0;
   virtual int get_length() const { return length; }
 };
 
@@ -51,9 +50,8 @@ class SimpsonsQuad : public Quadrature {
  public:
   SimpsonsQuad(int length, double delta);
 
-  virtual double inner_product(const std::complex<double>* h1,
-                               const std::complex<double>* h2,
-                               const double* psd) const;
+  virtual double inner_product(const VECCPL& h1, const VECCPL& h2,
+                               const VECDBL& psd) const;
 };
 
 SimpsonsQuad CreateSimpsonsQuad(std::vector<double>& xPoints, double a,
@@ -72,9 +70,8 @@ class SimpsonsLogQuad : public SimpsonsQuad {
 
  public:
   SimpsonsLogQuad(int length, double logdelta, const double* xArray);
-  double inner_product(const std::complex<double>* h1,
-                       const std::complex<double>* h2,
-                       const double* psd) const override;
+  double inner_product(const VECCPL& h1, const VECCPL& h2,
+                       const VECDBL& psd) const override;
 };
 
 SimpsonsLogQuad CreateSimpsonsLogQuad(std::vector<double>& xPoints, double a,
@@ -88,9 +85,8 @@ class TrapezoidQuad : public Quadrature {
  public:
   TrapezoidQuad(int length, double delta);
 
-  virtual double inner_product(const std::complex<double>* h1,
-                               const std::complex<double>* h2,
-                               const double* psd) const;
+  virtual double inner_product(const VECCPL& h1, const VECCPL& h2,
+                               const VECDBL& psd) const;
 };
 
 //! \brief Trapezoidal rule for logarithmically uniformly-spaced integrals.
@@ -101,9 +97,8 @@ class TrapezoidLogQuad : public TrapezoidQuad {
 
  public:
   TrapezoidLogQuad(int length, double logdelta, const double* xArray);
-  double inner_product(const std::complex<double>* h1,
-                       const std::complex<double>* h2,
-                       const double* psd) const override;
+  double inner_product(const VECCPL& h1, const VECCPL& h2,
+                       const VECDBL& psd) const override;
 };
 
 #endif  // QUADRATURE_H

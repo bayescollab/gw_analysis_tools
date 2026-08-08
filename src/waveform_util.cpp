@@ -220,6 +220,38 @@ void create_coherent_GW_detection_reuse_WF(
 template void create_coherent_GW_detection_reuse_WF<double>(std::string *, int, double*, int , gen_params_base<double> *,std::string, std::complex<double> **);
 template void create_coherent_GW_detection_reuse_WF<adouble>(std::string *, int, adouble*, int , gen_params_base<adouble> *,std::string, std::complex<adouble> **);
 
+std::vector<VECCPL> create_coherent_GW_detection_reuse_wf(
+    const std::vector<IfoData>& ifos, gen_params_base<double>* gen_params,
+    std::string generation_method) {
+  int n_det = ifos.size();
+  int length = ifos[0].freqs.size();
+  double* frequencies = const_cast<double*>(ifos[0].freqs.data());
+
+  waveform_polarizations<double> wp;
+  assign_polarizations(generation_method, &wp);
+  wp.allocate_memory(length);
+  double tc_ref = gen_params->tc;
+  fourier_waveform(frequencies, length, &wp, generation_method, gen_params);
+
+  std::vector<VECCPL> responses(n_det, VECCPL(length));
+  for (int i = 0; i < n_det; i++) {
+    fourier_detector_response_equatorial(
+        frequencies, length, &wp, responses[i].data(), gen_params->RA,
+        gen_params->DEC, gen_params->psi, gen_params->gmst, (double*)nullptr,
+        gen_params->LISA_alpha0, gen_params->LISA_phi0, gen_params->theta_l,
+        gen_params->phi_l, ifos[i].name);
+    double tc = -2 * M_PI *
+                DTOA_DETECTOR(gen_params->RA, gen_params->DEC, gen_params->gmst,
+                              ifos[0].name, ifos[i].name);
+    for (int j = 0; j < length; j++)
+      responses[i][j] *= exp(std::complex<double>(0, tc * frequencies[j]));
+  }
+  wp.deallocate_memory();
+  gen_params->tc = tc_ref;
+
+  return responses;
+}
+
 /*! \brief Utility to calculate the snr of a fourier transformed data stream while maximizing over the coalescence parameters phic and tc
  *
  * The gen_params structure holds the parameters for the template to be used (the maximimum likelihood parameters)
@@ -542,16 +574,6 @@ double calculate_snr_internal(double *psd,
 	}
 	free(integrand);
         return sqrt(integral);
-}
-
-// SNR calculator with Quadrature method
-double calculate_snr_internal(
-	double *psd,
-	std::complex<double> *waveform,
-	const Quadrature *QuadMethod
-)
-{
-	return std::sqrt(QuadMethod->inner_product(waveform, waveform, psd));
 }
 
 /* \brief calculates the detector response for a given waveform and detector -- polarization angle =0

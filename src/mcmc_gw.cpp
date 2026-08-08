@@ -7,6 +7,7 @@
 
 #include "detector_util.h"
 #include "fisher.h"
+#include "gw_fisher.h"
 #include "io_util.h"
 #include "ortho_basis.h"
 #include "ppE_utilities.h"
@@ -463,29 +464,26 @@ class MCMC_likelihood_wrapper : public bayesship::probabilityFn {
   bayesship::bayesshipSampler* sampler;
   mcmcVariables* mcmcVar;
   virtual double eval(bayesship::positionInfo* pos, int chainID) {
-    // return 2;
-    // mcmcVariables *mcmcVar = (mcmcVariables *)userParameters;
-    // MCMC_user_param *user_param = (MCMC_user_param *)userParameters;
-
     int dimension = sampler->maxDim;
     double ll = 0;
-    double* temp_params = new double[dimension];
-    // #########################################################################
     gen_params_base<double> gen_params;
+
+    // Run modernized code if param_space is active
+    // TODO: Eventually make this THE way to compute likelihoods
+    if (mcmcVar->param_space) {
+      mcmcVar->param_space->to_gen_params(pos->parameters, gen_params);
+      return mcmcVar->likelihood->log_likelihood(
+          &gen_params, mcmcVar->param_space->generation_method());
+    }
+
+    double* temp_params = new double[dimension];
     std::string local_gen = MCMC_prep_params(
         pos->parameters, temp_params, &gen_params, dimension,
         mcmcVar->mcmc_generation_method, mcmcVar->mcmc_mod_struct,
         mcmcVar->mcmc_intrinsic, mcmcVar->mcmc_gmst);
-    // #########################################################################
-    // #########################################################################
-
-    // repack_non_parameters(temp_params, &gen_params,
-    //"MCMC_"+mcmc_generation_method, dimension, NULL);
     repack_parameters(temp_params, &gen_params,
                       "MCMC_" + mcmcVar->mcmc_generation_method, dimension);
-    // #########################################################################
-    // #########################################################################
-    // return 1;
+
     std::complex<double>** local_data = mcmcVar->mcmc_data;
     double** local_freqs = mcmcVar->mcmc_frequencies;
     double** local_noise = mcmcVar->mcmc_noise;
@@ -493,7 +491,6 @@ class MCMC_likelihood_wrapper : public bayesship::probabilityFn {
     int* local_lengths = mcmcVar->mcmc_data_length;
     fftw_outline* local_plans = mcmcVar->mcmc_fftw_plans;
     std::string local_integration_method = "SIMPSONS";
-    // if(interface->burn_phase && user_param->burn_data){
     if (mcmcVar->user_parameters->GAUSS_QUAD) {
       local_integration_method = "GAUSSLEG";
     }
@@ -532,34 +529,16 @@ class MCMC_likelihood_wrapper : public bayesship::probabilityFn {
           fourier_detector_response_horizon(
               local_freqs[0], local_lengths[0], response,
               mcmcVar->mcmc_detectors[0], local_gen, &gen_params);
-          // std::complex<double> *hc =
-          //	(std::complex<double> *) malloc(sizeof(std::complex<double>) *
-          // mcmc_data_length[0]); std::complex<double> *hp =
-          //	(std::complex<double> *) malloc(sizeof(std::complex<double>) *
-          // mcmc_data_length[0]); fourier_waveform(mcmc_frequencies[0],
-          // mcmc_data_length[0], hp,hc, local_gen, &gen_params);
           for (int i = 0; i < mcmcVar->mcmc_num_detectors; i++) {
             ll += maximized_Log_Likelihood_aligned_spin_internal(
                 local_data[i], local_noise[i], local_freqs[i], response,
                 (size_t)local_lengths[i], &local_plans[i]);
-            // ll +=
-            // maximized_Log_Likelihood_unaligned_spin_internal(mcmc_data[i],
-            //		mcmc_noise[i],
-            //		mcmc_frequencies[i],
-            //		hp,
-            //		hc,
-            //		(size_t) mcmc_data_length[i],
-            //		&mcmc_fftw_plans[i]
-            //		);
           }
           free(response);
-          // free(hp);
-          // free(hc);
         }
 
       } else if (mcmcVar->mcmc_generation_method.find("IMRPhenomP") !=
                  std::string::npos) {
-        // if(!mcmc_save_waveform){
         gen_params.theta = 0;
         gen_params.phi = 0;
         gen_params.psi = 0;
@@ -579,37 +558,20 @@ class MCMC_likelihood_wrapper : public bayesship::probabilityFn {
         }
         wp.deallocate_memory();
       }
-    } else if (mcmcVar->mcmc_adaptive) {
-      ll = mcmcVar->adaptivell->log_likelihood(
-          mcmcVar->mcmc_detectors, mcmcVar->mcmc_num_detectors, &gen_params,
-          local_gen, mcmcVar->mcmc_save_waveform);
     } else {
       double RA = gen_params.RA;
       double DEC = gen_params.DEC;
       double PSI = gen_params.psi;
-      // if(mcmc_generation_method.find("IMRPhenomD") != std::string:npos){
 
       ll = MCMC_likelihood_extrinsic(
           mcmcVar->mcmc_save_waveform, &gen_params, local_gen, local_lengths,
           local_freqs, local_data, local_noise, local_weights,
           local_integration_method, mcmcVar->user_parameters->log10F,
-          mcmcVar->mcmc_detectors, mcmcVar->mcmc_num_detectors,
-          mcmcVar->QuadMethod);
-      // ll=2;
-
-      //}
-      // else if(has_substring(mcmc_generation_method, "IMRPhenomP")){
-
-      //}
+          mcmcVar->mcmc_detectors, mcmcVar->mcmc_num_detectors);
     }
     // Cleanup
     delete[] temp_params;
     if (check_mod(local_gen)) {
-      // if( has_substring(local_gen, "ppE") ||
-      //	has_substring(local_gen, "dCS") ||
-      //	has_substring(local_gen, "EdGB")){
-      //	delete [] gen_params.betappe;
-      // }
       if (has_substring(local_gen, "ppE") || check_theory_support(local_gen)) {
         delete[] gen_params.betappe;
       } else if (has_substring(local_gen, "gIMR")) {
@@ -1096,10 +1058,15 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
   mcmcVar.maxDim = dimension;
   mcmcVar.QuadMethod = mod_struct->QuadMethod;
 
-  if (mod_struct->adaptivell != nullptr) {
-    std::cout << "Sampling with adaptive likelihood\n";
-    mcmcVar.adaptivell = mod_struct->adaptivell;
-    mcmcVar.mcmc_adaptive = true;
+  if ((mod_struct->param_space == nullptr) !=
+      (mod_struct->likelihood == nullptr)) {
+    std::cerr << "ERROR: param_space and likelihood must both be set or both "
+                 "be null.\n";
+    std::exit(EXIT_FAILURE);
+  }
+  if (mod_struct->param_space != nullptr) {
+    mcmcVar.param_space = mod_struct->param_space;
+    mcmcVar.likelihood = mod_struct->likelihood;
   }
 
   // To save time, intrinsic waveforms can be saved between detectors, if the
@@ -1114,9 +1081,19 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
     }
   }
 
-  PTMCMC_method_specific_prep(generation_method, dimension,
-                              &(mcmcVar.mcmc_intrinsic),
-                              mcmcVar.mcmc_mod_struct);
+  if (mcmcVar.param_space) {
+    const auto& names = mcmcVar.param_space->names();
+    std::cout << "Sampling in parameters: ";
+    for (int i = 0; i < (int)names.size() - 1; i++)
+      std::cout << names[i] << ", ";
+    std::cout << names.back() << "\n";
+    std::cout << "First " << mcmcVar.param_space->number_of_extrinsic_params()
+              << " are extrinsic.\n";
+  } else {
+    PTMCMC_method_specific_prep(generation_method, dimension,
+                                &(mcmcVar.mcmc_intrinsic),
+                                mcmcVar.mcmc_mod_struct);
+  }
 
   int T = (int)(1. / (mcmcVar.mcmc_frequencies[0][1] -
                       mcmcVar.mcmc_frequencies[0][0]));
@@ -1252,17 +1229,31 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
         sampler->maxDim * 100);
 
   } else {
-    std::vector<std::vector<int>> blocksDiff = std::vector<std::vector<int>>(3);
-    for (int i = 0; i < 7; i++) {
-      blocksDiff[0].push_back(i);
+    int extrinsic_num = 7;  // default
+    if (mcmcVar.param_space)
+      extrinsic_num = mcmcVar.param_space->number_of_extrinsic_params();
+    std::vector<std::vector<int>> blocksDiff;
+    std::vector<double> blocksProbDiff;
+
+    if (extrinsic_num > 0) {
+      blocksDiff = std::vector<std::vector<int>>(3);
+      blocksProbDiff = {0.3, 0.3, .4};
+      for (int i = 0; i < extrinsic_num; i++) {
+        blocksDiff[0].push_back(i);
+      }
+      for (int i = extrinsic_num; i < sampler->maxDim; i++) {
+        blocksDiff[1].push_back(i);
+      }
+      for (int i = 0; i < sampler->maxDim; i++) {
+        blocksDiff[2].push_back(i);
+      }
+    } else {
+      blocksDiff = std::vector<std::vector<int>>(1);
+      for (int i = 0; i < sampler->maxDim; i++) {
+        blocksDiff[0].push_back(i);
+      }
+      blocksProbDiff = {1.0};
     }
-    for (int i = 7; i < sampler->maxDim; i++) {
-      blocksDiff[1].push_back(i);
-    }
-    for (int i = 0; i < sampler->maxDim; i++) {
-      blocksDiff[2].push_back(i);
-    }
-    std::vector<double> blocksProbDiff = {0.3, 0.3, .4};
     propArray[1] = new bayesship::blockDifferentialEvolutionProposal(
         sampler, blocksDiff, blocksProbDiff);
     propArray[4] = new bayesship::GMMProposal(
@@ -1297,17 +1288,31 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
         100, sampler, blocks, blockProb);
 
   } else {
-    std::vector<std::vector<int>> blocks = std::vector<std::vector<int>>(3);
-    for (int i = 0; i < 7; i++) {
-      blocks[0].push_back(i);
+    int extrinsic_num = 7;  // default
+    if (mcmcVar.param_space)
+      extrinsic_num = mcmcVar.param_space->number_of_extrinsic_params();
+    std::vector<std::vector<int>> blocks;
+    std::vector<double> blockProb;
+
+    if (extrinsic_num > 0) {
+      blocks = std::vector<std::vector<int>>(3);
+      for (int i = 0; i < extrinsic_num; i++) {
+        blocks[0].push_back(i);
+      }
+      for (int i = extrinsic_num; i < sampler->maxDim; i++) {
+        blocks[1].push_back(i);
+      }
+      for (int i = 0; i < sampler->maxDim; i++) {
+        blocks[2].push_back(i);
+      }
+      blockProb = {.3, .3, .4};
+    } else {
+      blocks = std::vector<std::vector<int>>(1);
+      for (int i = 0; i < sampler->maxDim; i++) {
+        blocks[0].push_back(i);
+      }
+      blockProb = {1.0};
     }
-    for (int i = 7; i < sampler->maxDim; i++) {
-      blocks[1].push_back(i);
-    }
-    for (int i = 0; i < sampler->maxDim; i++) {
-      blocks[2].push_back(i);
-    }
-    std::vector<double> blockProb = {.3, .3, .4};
     propArray[3] = new bayesship::blockFisherProposal(
         sampler->ensembleN * sampler->ensembleSize, sampler->minDim,
         &MCMC_fisher_wrapper_explicit_marginalization, sampler->userParameters,
@@ -1524,7 +1529,7 @@ void PTMCMC_method_specific_prep(std::string generation_method, int dimension,
   debugger_print(__FILE__, __LINE__, totalmod);
   const int nonModDim = dimension - totalmod;
   // EFPE branches checked before other models to avoid false matches from
-  // find()
+  // has_substring()
   if (has_substring(generation_method, "EFPE")) {
     if (nonModDim == 15) {
       std::cout
@@ -1890,21 +1895,12 @@ void MCMC_fisher_wrapper_explicit_marginalization(bayesship::positionInfo* pos,
   for (int i = 0; i < dimension; i++) {
     param[i] = pos->parameters[i];
   }
-  // #########################################################################
   gen_params_base<double> params;
   std::string local_gen = MCMC_prep_params(
       param, temp_params, &params, dimension, mcmcVar->mcmc_generation_method,
       mcmcVar->mcmc_mod_struct, mcmcVar->mcmc_intrinsic, mcmcVar->mcmc_gmst);
-  // #########################################################################
-  // #########################################################################
   repack_parameters(temp_params, &params,
                     "MCMC_" + mcmcVar->mcmc_generation_method, dimension);
-  // std::cout<<temp_params[11]<<" "<<temp_params[12]<<std::endl;
-  // repack_parameters(mcmc_init_pos, &params,
-  //	"MCMC_"+mcmc_generation_method, dimension);
-  // #########################################################################
-  // #########################################################################
-  // std::cout<<"INCL angle fisher: "<<params.incl_angle<<std::endl;
   for (int j = 0; j < dimension; j++) {
     for (int k = 0; k < dimension; k++) {
       tempOutput[j][k] = 0;
@@ -1934,54 +1930,42 @@ void MCMC_fisher_wrapper_explicit_marginalization(bayesship::positionInfo* pos,
 
   std::string local_gen_method = mcmcVar->mcmc_generation_method;
   int local_dimension = dimension;
-  // if(has_substring(local_gen_method, "EA") && ids.size() != 2)
-  //   {
-  //     	local_gen_method = "IMRPhenomD_NRT";
-  //     	local_dimension -= 3;
-  //   }
-  double** temp_out = allocate_2D_array(local_dimension, local_dimension);
-  // double **temp_out = allocate_2D_array(dimension,dimension);
-  for (int i = 0; i < mcmcVar->mcmc_num_detectors; i++) {
-    // Use AD
-    if (mcmcVar->user_parameters->fisher_AD) {
-      std::unique_lock<std::mutex> lock{*(mcmcVar->user_parameters->mFish)};
-      // fisher_autodiff(mcmcVar->mcmc_frequencies[i],
-      // mcmcVar->mcmc_data_length[i], 	"MCMC_"+mcmcVar->mcmc_generation_method,
-      // mcmcVar->mcmc_detectors[i],mcmcVar->mcmc_detectors[0],temp_out,dimension,
-      //	(gen_params *)(&params),  "SIMPSONS",(double
-      //*)NULL,false,mcmcVar->mcmc_noise[i]);
-      fisher_autodiff(local_freq[i], local_lengths[i],
-                      "MCMC_" + local_gen_method, mcmcVar->mcmc_detectors[i],
-                      mcmcVar->mcmc_detectors[0], temp_out, local_dimension,
-                      (gen_params*)(&params), local_integration_method,
-                      local_weights[i], true, local_noise[i]);
-    } else {
-      fisher_numerical(local_freq[i], local_lengths[i],
-                       "MCMC_" + local_gen_method, mcmcVar->mcmc_detectors[i],
-                       mcmcVar->mcmc_detectors[0], temp_out, local_dimension,
-                       &params, 4, NULL, NULL, local_noise[i],
-                       mcmcVar->user_parameters->QuadMethod);
-    }
-    for (int j = 0; j < local_dimension; j++) {
-      for (int k = 0; k < local_dimension; k++) {
-        tempOutput[j][k] += temp_out[j][k];
-        // if(std::isnan(output[j][k]))
-        //{
-        //       std::cout<<j<<" "<<k<<" "<<temp_out[j][k]<<std::endl;
-        // }
+  if (mcmcVar->param_space) {
+    const GWParameterSpace* ps = mcmcVar->param_space;
+    auto deriv = ps->fisher_derivatives(mcmcVar->mcmc_deriv_order);
+    fisher_numerical(pos->parameters, mcmcVar->likelihood->get_ifos(), deriv.get(),
+                     tempOutput);
+    ps->fisher_prior(tempOutput);
+  } else {
+    double** temp_out = allocate_2D_array(local_dimension, local_dimension);
+    for (int i = 0; i < mcmcVar->mcmc_num_detectors; i++) {
+      // Use AD
+      if (mcmcVar->user_parameters->fisher_AD) {
+        std::unique_lock<std::mutex> lock{*(mcmcVar->user_parameters->mFish)};
+        fisher_autodiff(local_freq[i], local_lengths[i],
+                        "MCMC_" + local_gen_method, mcmcVar->mcmc_detectors[i],
+                        mcmcVar->mcmc_detectors[0], temp_out, local_dimension,
+                        (gen_params*)(&params), local_integration_method,
+                        local_weights[i], true, local_noise[i]);
+      } else {
+        fisher_numerical(local_freq[i], local_lengths[i],
+                         "MCMC_" + local_gen_method, mcmcVar->mcmc_detectors[i],
+                         mcmcVar->mcmc_detectors[0], temp_out, local_dimension,
+                         &params, 4, nullptr, nullptr, local_noise[i],
+                         mcmcVar->user_parameters->QuadMethod);
+      }
+      for (int j = 0; j < local_dimension; j++) {
+        for (int k = 0; k < local_dimension; k++) {
+          tempOutput[j][k] += temp_out[j][k];
+        }
       }
     }
+
+    MCMC_fisher_transformations(temp_params, tempOutput, dimension, local_gen,
+                                mcmcVar->mcmc_intrinsic,
+                                mcmcVar->mcmc_mod_struct);
+    deallocate_2D_array(temp_out, local_dimension, local_dimension);
   }
-  // Add prior information to fisher
-  // if(mcmcVar->mcmc_generation_method.find("Pv2") &&
-  // !mcmcVar->mcmc_intrinsic){
-
-  // if(has_substring(local_gen_method, "EA") && ids.size() == 2){
-
-  MCMC_fisher_transformations(temp_params, tempOutput, dimension, local_gen,
-                              mcmcVar->mcmc_intrinsic,
-                              mcmcVar->mcmc_mod_struct);
-  deallocate_2D_array(temp_out, local_dimension, local_dimension);
 
   // Try marginalizing over other parameters, otherwise just use subfisher
   // without marginalizing
@@ -1999,11 +1983,6 @@ void MCMC_fisher_wrapper_explicit_marginalization(bayesship::positionInfo* pos,
   deallocate_2D_array(tempOutput, dimension, dimension);
   deallocate_2D_array(tempCov, dimension, dimension);
   if (check_mod(local_gen)) {
-    // if(has_substring(local_gen, "ppE") ||
-    //	has_substring(local_gen, "dCS")||
-    //	has_substring(local_gen, "EdGB")){
-    //	delete [] params.betappe;
-    // }
     if (has_substring(local_gen, "ppE") || check_theory_support(local_gen)) {
       delete[] params.betappe;
     } else if (has_substring(local_gen, "gIMR")) {
@@ -2033,21 +2012,12 @@ void MCMC_fisher_wrapper(bayesship::positionInfo* pos, double** output,
   for (int i = 0; i < dimension; i++) {
     param[i] = pos->parameters[i];
   }
-  // #########################################################################
   gen_params_base<double> params;
   std::string local_gen = MCMC_prep_params(
       param, temp_params, &params, dimension, mcmcVar->mcmc_generation_method,
       mcmcVar->mcmc_mod_struct, mcmcVar->mcmc_intrinsic, mcmcVar->mcmc_gmst);
-  // #########################################################################
-  // #########################################################################
   repack_parameters(temp_params, &params,
                     "MCMC_" + mcmcVar->mcmc_generation_method, dimension);
-  // std::cout<<temp_params[11]<<" "<<temp_params[12]<<std::endl;
-  // repack_parameters(mcmc_init_pos, &params,
-  //	"MCMC_"+mcmc_generation_method, dimension);
-  // #########################################################################
-  // #########################################################################
-  // std::cout<<"INCL angle fisher: "<<params.incl_angle<<std::endl;
   for (int j = 0; j < dimension; j++) {
     for (int k = 0; k < dimension; k++) {
       output[j][k] = 0;
@@ -2074,74 +2044,47 @@ void MCMC_fisher_wrapper(bayesship::positionInfo* pos, double** output,
   if (mcmcVar->user_parameters->fisher_GAUSS_QUAD) {
     local_integration_method = "GAUSSLEG";
   }
-  double** temp_out = allocate_2D_array(dimension, dimension);
-  for (int i = 0; i < mcmcVar->mcmc_num_detectors; i++) {
-    // Use AD
-    if (mcmcVar->user_parameters->fisher_AD) {
-      std::unique_lock<std::mutex> lock{*(mcmcVar->user_parameters->mFish)};
-      // fisher_autodiff(mcmcVar->mcmc_frequencies[i],
-      // mcmcVar->mcmc_data_length[i], 	"MCMC_"+mcmcVar->mcmc_generation_method,
-      // mcmcVar->mcmc_detectors[i],mcmcVar->mcmc_detectors[0],temp_out,dimension,
-      //	(gen_params *)(&params),  "SIMPSONS",(double
-      //*)NULL,false,mcmcVar->mcmc_noise[i]);
-      fisher_autodiff(local_freq[i], local_lengths[i],
-                      "MCMC_" + mcmcVar->mcmc_generation_method,
-                      mcmcVar->mcmc_detectors[i], mcmcVar->mcmc_detectors[0],
-                      temp_out, dimension, (gen_params*)(&params),
-                      local_integration_method, local_weights[i], true,
-                      local_noise[i]);
-    } else {
-      fisher_numerical(local_freq[i], local_lengths[i],
-                       "MCMC_" + mcmcVar->mcmc_generation_method,
-                       mcmcVar->mcmc_detectors[i], mcmcVar->mcmc_detectors[0],
-                       temp_out, dimension, &params, 4, NULL, NULL,
-                       local_noise[i]);
-    }
-    for (int j = 0; j < dimension; j++) {
-      for (int k = 0; k < dimension; k++) {
-        output[j][k] += temp_out[j][k];
-        // if(std::isnan(output[j][k]))
-        //{
-        //       std::cout<<j<<" "<<k<<" "<<temp_out[j][k]<<std::endl;
-        // }
+  if (mcmcVar->param_space) {
+    const GWParameterSpace* ps = mcmcVar->param_space;
+    auto deriv = ps->fisher_derivatives(mcmcVar->mcmc_deriv_order);
+    fisher_numerical(pos->parameters, mcmcVar->likelihood->get_ifos(), deriv.get(),
+                     output);
+    ps->fisher_prior(output);
+  } else {
+    double** temp_out = allocate_2D_array(dimension, dimension);
+    for (int i = 0; i < mcmcVar->mcmc_num_detectors; i++) {
+      // Use AD
+      if (mcmcVar->user_parameters->fisher_AD) {
+        std::unique_lock<std::mutex> lock{*(mcmcVar->user_parameters->mFish)};
+        fisher_autodiff(local_freq[i], local_lengths[i],
+                        "MCMC_" + mcmcVar->mcmc_generation_method,
+                        mcmcVar->mcmc_detectors[i], mcmcVar->mcmc_detectors[0],
+                        temp_out, dimension, (gen_params*)(&params),
+                        local_integration_method, local_weights[i], true,
+                        local_noise[i]);
+      } else {
+        fisher_numerical(local_freq[i], local_lengths[i],
+                         "MCMC_" + mcmcVar->mcmc_generation_method,
+                         mcmcVar->mcmc_detectors[i], mcmcVar->mcmc_detectors[0],
+                         temp_out, dimension, &params, 4, nullptr, nullptr,
+                         local_noise[i]);
+      }
+      for (int j = 0; j < dimension; j++) {
+        for (int k = 0; k < dimension; k++) {
+          output[j][k] += temp_out[j][k];
+        }
       }
     }
-  }
-  // Add prior information to fisher
-  // if(mcmcVar->mcmc_generation_method.find("Pv2") &&
-  // !mcmcVar->mcmc_intrinsic){
 
-  MCMC_fisher_transformations(temp_params, output, dimension, local_gen,
-                              mcmcVar->mcmc_intrinsic,
-                              mcmcVar->mcmc_mod_struct);
-  deallocate_2D_array(temp_out, dimension, dimension);
-  //////////////////////////////////////////////
-  // if(!interface->burn_phase)
-  //{
-  //	debugger_print(__FILE__,__LINE__,"Fisher MCMC");
-  //	double **cov = allocate_2D_array( dimension,dimension);
-  //	gsl_cholesky_matrix_invert(output, cov, dimension);
-  //	for(int i = 0 ; i<dimension; i++){
-  //		std::cout<<sqrt(cov[i][i])<<" ";
-  //		//for(int j = 0 ; j<dimension; j++){
-  //		//	std::cout<<cov[i][j]<<" ";
-  //		//}
-  //		//std::cout<<std::endl;
-  //
-  //	}
-  //	std::cout<<std::endl;
-  //	deallocate_2D_array(cov, dimension,dimension);
-  // }
-  //////////////////////////////////////////////
+    MCMC_fisher_transformations(temp_params, output, dimension, local_gen,
+                                mcmcVar->mcmc_intrinsic,
+                                mcmcVar->mcmc_mod_struct);
+    deallocate_2D_array(temp_out, dimension, dimension);
+  }
 
   // Cleanup
   delete[] temp_params;
   if (check_mod(local_gen)) {
-    // if(has_substring(local_gen, "ppE") ||
-    //	has_substring(local_gen, "dCS")||
-    //	has_substring(local_gen, "EdGB")){
-    //	delete [] params.betappe;
-    // }
     if (has_substring(local_gen, "ppE") || check_theory_support(local_gen)) {
       delete[] params.betappe;
     } else if (has_substring(local_gen, "gIMR")) {
@@ -2384,36 +2327,25 @@ double Log_Likelihood_internal(std::complex<double>* data, double* psd,
   return -0.5 * (HH - 2 * DH);
 }
 
-//! \brief Compute unmarginalized likelihood with a specified Quadrature method
-double Log_Likelihood_internal(std::complex<double>* data, double* psd,
-                               std::complex<double>* detector_response,
-                               Quadrature* QuadMethod) {
-  double hh =
-      QuadMethod->inner_product(detector_response, detector_response, psd);
-  double dh = QuadMethod->inner_product(data, detector_response, psd);
-
-  return -0.5 * hh + dh;
-}
-
 struct skysearch_params {
   std::complex<double>* hplus;
   std::complex<double>* hcross;
 };
 
-// RA, DEC, and PSI were absorbed into gen_params structure -- remove from
-// arguments
-double MCMC_likelihood_extrinsic(
-    bool save_waveform, gen_params_base<double>* parameters,
-    std::string generation_method, int* data_length, double** frequencies,
-    std::complex<double>** data, double** psd, double** weights,
-    std::string integration_method, bool log10F, std::string* detectors,
-    int num_detectors, Quadrature* QuadMethod) {
+double MCMC_likelihood_extrinsic(bool save_waveform,
+                                 gen_params_base<double>* parameters,
+                                 std::string generation_method,
+                                 int* data_length, double** frequencies,
+                                 std::complex<double>** data, double** psd,
+                                 double** weights,
+                                 std::string integration_method, bool log10F,
+                                 std::string* detectors, int num_detectors) {
   double ll = 0;
   std::complex<double>** responses = new std::complex<double>*[num_detectors];
   for (int i = 0; i < num_detectors; i++) {
     responses[i] = new std::complex<double>[data_length[i]];
   }
-  // parameters->tc = -(parameters->tc);
+
   if (num_detectors == 1) {
     create_single_GW_detection(responses[0], detectors[0], frequencies[0],
                                data_length[0], parameters, generation_method);
@@ -2423,18 +2355,10 @@ double MCMC_likelihood_extrinsic(
                                  generation_method, responses);
   }
 
-  if (QuadMethod == NULL) {
-    // Scott's way
-    for (int i = 0; i < num_detectors; i++) {
-      ll += Log_Likelihood_internal(data[i], psd[i], frequencies[i], weights[i],
-                                    responses[i], data_length[i], log10F,
-                                    integration_method);
-    }
-  } else {
-    // New way. Would be nice to make this the standard.
-    for (int i = 0; i < num_detectors; i++) {
-      ll += Log_Likelihood_internal(data[i], psd[i], responses[i], QuadMethod);
-    }
+  for (int i = 0; i < num_detectors; i++) {
+    ll += Log_Likelihood_internal(data[i], psd[i], frequencies[i], weights[i],
+                                  responses[i], data_length[i], log10F,
+                                  integration_method);
   }
 
   for (int i = 0; i < num_detectors; i++) {
@@ -2449,198 +2373,89 @@ double MCMC_likelihood_extrinsic(
 //  find_fiducial
 // ============================================================
 
-static void cleanup_gen_params_rb(const std::string& local_gen,
-                                  gen_params_base<double>& gp,
-                                  MCMC_modification_struct* ms) {
-  if (!check_mod(local_gen)) return;
-  if (has_substring(local_gen, "ppE") || check_theory_support(local_gen))
-    delete[] gp.betappe;
-  else if (has_substring(local_gen, "gIMR")) {
-    if (ms->gIMR_Nmod_phi != 0) delete[] gp.delta_phi;
-    if (ms->gIMR_Nmod_sigma != 0) delete[] gp.delta_sigma;
-    if (ms->gIMR_Nmod_beta != 0) delete[] gp.delta_beta;
-    if (ms->gIMR_Nmod_alpha != 0) delete[] gp.delta_alpha;
-  }
-}
+void find_fiducial(const GWParameterSpace& param_space,
+                   const GWLikelihoods::Likelihood& likelihood,
+                   const double* initial_params,
+                   bayesship::probabilityFn* log_prior,
+                   const std::vector<double>& param_scales, int num_mh_steps,
+                   std::vector<VECCPL>& fiducial_out,
+                   std::vector<VECCPL>& test_out,
+                   gen_params_base<double>* test_gp_out) {
+  const int dimension = param_space.dim();
+  const std::string gen_method = param_space.generation_method();
+  const std::vector<IfoData>& ifos = likelihood.get_ifos();
+  const int num_detectors = static_cast<int>(ifos.size());
 
-void find_fiducial(
-    int dimension, double* initial_params, bayesship::probabilityFn* log_prior,
-    const std::vector<double>& param_scales, int num_mh_steps,
-    int num_detectors, std::complex<double>** data, double** noise_psd,
-    double** frequencies, int* data_length, double gps_time,
-    std::string* detectors, std::string generation_method,
-    MCMC_modification_struct* mod_struct, std::complex<double>** fiducial_out,
-    std::complex<double>** test_out, gen_params_base<double>* test_gp_out) {
-  // Mirror mcmcVariables setup from
-  // PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW
-  mcmcVariables mcmcVar;
-  mcmcVar.mcmc_noise = noise_psd;
-  mcmcVar.mcmc_frequencies = frequencies;
-  mcmcVar.mcmc_data = data;
-  mcmcVar.mcmc_data_length = data_length;
-  mcmcVar.mcmc_detectors = detectors;
-  mcmcVar.mcmc_generation_method = generation_method;
-  mcmcVar.mcmc_num_detectors = num_detectors;
-  mcmcVar.mcmc_gps_time = gps_time;
-  mcmcVar.mcmc_gmst = gps_to_GMST_radian(gps_time);
-  mcmcVar.mcmc_mod_struct = mod_struct;
-  mcmcVar.mcmc_save_waveform = true;
-  mcmcVar.maxDim = dimension;
-  mcmcVar.QuadMethod = mod_struct->QuadMethod;
-
-  for (int i = 1; i < num_detectors; i++) {
-    if (data_length[i] != data_length[0] ||
-        frequencies[i][0] != frequencies[0][0] ||
-        frequencies[i][data_length[i] - 1] !=
-            frequencies[0][data_length[0] - 1])
-      mcmcVar.mcmc_save_waveform = false;
-  }
-  PTMCMC_method_specific_prep(generation_method, dimension,
-                              &mcmcVar.mcmc_intrinsic, mcmcVar.mcmc_mod_struct);
-
-  MCMC_user_param user_param;
-  user_param.weights = new double*[num_detectors];
-  for (int j = 0; j < num_detectors; j++) user_param.weights[j] = nullptr;
-  user_param.GAUSS_QUAD = mod_struct->GAUSS_QUAD;
-  user_param.log10F = mod_struct->log10F;
-  user_param.mod_struct = mod_struct;
-  user_param.QuadMethod = mod_struct->QuadMethod;
-  mcmcVar.user_parameters = &user_param;
-
-  gsl_rng* rng = gsl_rng_alloc(gsl_rng_default);
-
-  // Evaluate log-likelihood at a parameter vector
-  auto eval_ll = [&](double* params) -> double {
+  auto eval_ll = [&](const double* params) -> double {
     try {
-      double* tmp = new double[dimension];
       gen_params_base<double> gp;
-      std::string local_gen = MCMC_prep_params(
-          params, tmp, &gp, dimension, generation_method, mod_struct,
-          mcmcVar.mcmc_intrinsic, mcmcVar.mcmc_gmst);
-      repack_parameters(tmp, &gp, "MCMC_" + generation_method, dimension);
-      double ll = MCMC_likelihood_extrinsic(
-          mcmcVar.mcmc_save_waveform, &gp, local_gen, data_length, frequencies,
-          data, noise_psd, user_param.weights, "SIMPSONS", user_param.log10F,
-          detectors, num_detectors, mod_struct->QuadMethod);
-      delete[] tmp;
-      cleanup_gen_params_rb(local_gen, gp, mod_struct);
+      param_space.to_gen_params(params, gp);
+      double ll = likelihood.log_likelihood(&gp, gen_method);
       return std::isnan(ll) ? -std::numeric_limits<double>::infinity() : ll;
     } catch (const std::exception&) {
       return -std::numeric_limits<double>::infinity();
     }
   };
 
-  // Generate detector responses at a parameter vector.
-  // Returns true on success; on waveform generation failure zeros out and
-  // returns false so the Fisher diagonal entry degrades gracefully.
-  auto gen_resp = [&](double* params, std::complex<double>** out) -> bool {
+  auto gen_resp = [&](const double* params) -> std::vector<VECCPL> {
     try {
-      double* tmp = new double[dimension];
       gen_params_base<double> gp;
-      std::string local_gen = MCMC_prep_params(
-          params, tmp, &gp, dimension, generation_method, mod_struct,
-          mcmcVar.mcmc_intrinsic, mcmcVar.mcmc_gmst);
-      repack_parameters(tmp, &gp, "MCMC_" + generation_method, dimension);
-      create_coherent_GW_detection(detectors, num_detectors, frequencies,
-                                   data_length, true, &gp, local_gen, out);
-      delete[] tmp;
-      cleanup_gen_params_rb(local_gen, gp, mod_struct);
-      return true;
+      param_space.to_gen_params(params, gp);
+      return create_coherent_GW_detection_reuse_wf(ifos, &gp, gen_method);
     } catch (const std::exception&) {
+      std::vector<VECCPL> zeros(num_detectors);
       for (int d = 0; d < num_detectors; d++)
-        std::fill(out[d], out[d] + data_length[d],
-                  std::complex<double>(0., 0.));
-      return false;
+        zeros[d].assign(ifos[d].freqs.size(), CPL(0., 0.));
+      return zeros;
     }
   };
 
   // Chain state
-  double* current = new double[dimension];
-  double* proposed = new double[dimension];
-  double* best = new double[dimension];
-  std::memcpy(current, initial_params, dimension * sizeof(double));
-  double current_ll = eval_ll(current);
+  std::vector<double> current(initial_params, initial_params + dimension);
+  std::vector<double> proposed(dimension);
+  std::vector<double> best = current;
+
+  double current_ll = eval_ll(current.data());
   // Single positionInfo reused for all prior evaluations (avoids double-free
   // from swapping objects that have raw pointer members).
   bayesship::positionInfo pos_tmp(dimension);
   for (int i = 0; i < dimension; i++) pos_tmp.parameters[i] = current[i];
   double current_lp = log_prior->eval(&pos_tmp, 0);
-  std::memcpy(best, current, dimension * sizeof(double));
   double best_ll = current_ll + current_lp;
 
-  // Proposal scales: sigma_i = (2.38/sqrt(dim)) / sqrt(Gamma_ii)
-  // Gamma_ii estimated via central finite differences of the network response
-  // w.r.t. each MCMC parameter directly, avoiding any Jacobian transform.
-
-  std::complex<double>** h_plus = new std::complex<double>*[num_detectors];
-  std::complex<double>** h_minus = new std::complex<double>*[num_detectors];
-  for (int d = 0; d < num_detectors; d++) {
-    h_plus[d] = new std::complex<double>[data_length[d]];
-    h_minus[d] = new std::complex<double>[data_length[d]];
-  }
-  double* theta_p = new double[dimension];
-  double* theta_m = new double[dimension];
-
-  double* sigma = new double[dimension];
+  // Fisher diagonal for M-H proposal widths via the O2 derivative class.
+  std::vector<double> sigma(dimension);
   const double c_mh = 2.38 / std::sqrt((double)dimension);
-  const double fd_eps = 1e-5;
-
-  // Compute the Fisher elements
-  std::cout << "Fiducial Fisher diagonal (MCMC params):\n";
-  for (int i = 0; i < dimension; i++) {
-    std::memcpy(theta_p, current, dimension * sizeof(double));
-    std::memcpy(theta_m, current, dimension * sizeof(double));
-
-    // Step size: fd_eps * typical parameter scale
-    double dtheta = fd_eps * param_scales[i];
-    if (dtheta <= 0.0) dtheta = fd_eps;
-
-    theta_p[i] = current[i] + dtheta;
-    theta_m[i] = current[i] - dtheta;
-
-    gen_resp(theta_p, h_plus);
-    gen_resp(theta_m, h_minus);
-
-    double gamma_ii = 0.0;
-    for (int d = 0; d < num_detectors; d++) {
-      std::vector<std::complex<double>> deriv;
-      for (int j = 0; j < data_length[d]; j++) {
-        deriv.push_back((h_plus[d][j] - h_minus[d][j]) / (2.0 * dtheta));
-      }
-      gamma_ii += mod_struct->QuadMethod->inner_product(
-          deriv.data(), deriv.data(), noise_psd[d]);
+  {
+    std::vector<double> fisher_storage(dimension * dimension, 0.0);
+    std::vector<double*> fisher_mat(dimension);
+    for (int i = 0; i < dimension; i++)
+      fisher_mat[i] = fisher_storage.data() + i * dimension;
+    auto deriv = param_space.fisher_derivatives(2);
+    fisher_numerical(current.data(), ifos, deriv.get(), fisher_mat.data());
+    std::cout << "Fiducial Fisher diagonal (MCMC params):\n";
+    for (int i = 0; i < dimension; i++) {
+      double gamma_ii = fisher_mat[i][i];
+      double fisher_sigma =
+          (gamma_ii > 0.0) ? c_mh / std::sqrt(gamma_ii) : 0.1 * param_scales[i];
+      double prior_half = 0.5 * param_scales[i];
+      sigma[i] = std::min(fisher_sigma, prior_half);
+      std::cout << "  param " << i << ": Gamma_ii=" << gamma_ii
+                << "  sigma=" << sigma[i] << "  ["
+                << (sigma[i] < fisher_sigma ? "prior" : "Fisher") << "]\n";
     }
-    double fisher_sigma =
-        (gamma_ii > 0.0) ? c_mh / std::sqrt(gamma_ii) : 0.1 * param_scales[i];
-    double prior_half = 0.5 * param_scales[i];
-    sigma[i] = std::min(fisher_sigma, prior_half);
-    std::cout << "  param " << i << ": Gamma_ii=" << gamma_ii
-              << "  sigma=" << sigma[i] << "  ["
-              << (sigma[i] < fisher_sigma ? "prior" : "Fisher") << "]\n";
   }
-
-  for (int d = 0; d < num_detectors; d++) {
-    delete[] h_plus[d];
-    delete[] h_minus[d];
-  }
-  delete[] h_plus;
-  delete[] h_minus;
-  delete[] theta_p;
-  delete[] theta_m;
 
   std::cout << "Fiducial M-H start logL = " << current_ll << "\n";
 
-  // Per-parameter (Gibbs-style) M-H: one parameter is proposed per step,
-  // cycling through all dimensions. This avoids joint prior rejections and
-  // exposes per-parameter acceptance rates for diagnostics.
-  int proposals_in_prior = 0;
-  int proposals_accepted = 0;
-  std::vector<int> param_in_prior(dimension, 0);
-  std::vector<int> param_accepted(dimension, 0);
+  // Per-parameter (Gibbs-style) M-H
+  int proposals_in_prior = 0, proposals_accepted = 0;
+  std::vector<int> param_in_prior(dimension, 0), param_accepted(dimension, 0);
+  gsl_rng* rng = gsl_rng_alloc(gsl_rng_default);
   auto mh_t0 = std::chrono::steady_clock::now();
+
   for (int step = 0; step < num_mh_steps; step++) {
     int i = step % dimension;
-
     double old_val = current[i];
     double new_val = old_val + gsl_ran_gaussian(rng, sigma[i]);
     pos_tmp.parameters[i] = new_val;
@@ -2653,9 +2468,9 @@ void find_fiducial(
     proposals_in_prior++;
     param_in_prior[i]++;
 
-    std::memcpy(proposed, current, dimension * sizeof(double));
+    proposed = current;
     proposed[i] = new_val;
-    double proposed_ll = eval_ll(proposed);
+    double proposed_ll = eval_ll(proposed.data());
     double log_alpha = (proposed_ll + proposed_lp) - (current_ll + current_lp);
 
     if (log_alpha >= 0. || std::log(gsl_rng_uniform(rng)) < log_alpha) {
@@ -2665,7 +2480,7 @@ void find_fiducial(
       proposals_accepted++;
       param_accepted[i]++;
       if (current_ll + current_lp > best_ll) {
-        std::memcpy(best, current, dimension * sizeof(double));
+        best = current;
         best_ll = current_ll + current_lp;
       }
     } else {
@@ -2683,30 +2498,17 @@ void find_fiducial(
             << proposals_in_prior << " in-prior proposals accepted\n";
   std::cout << "Per-parameter acceptance (in-prior):\n";
   for (int i = 0; i < dimension; i++) {
-    int tot = param_in_prior[i];
-    int acc = param_accepted[i];
+    int tot = param_in_prior[i], acc = param_accepted[i];
     std::cout << "  param " << i << ": " << acc << "/" << tot;
     if (tot > 0) std::cout << "  (" << (100 * acc / tot) << "%)";
     std::cout << "\n";
   }
 
-  if (!gen_resp(best, fiducial_out)) gen_resp(initial_params, fiducial_out);
-  if (!gen_resp(current, test_out)) gen_resp(best, test_out);
+  fiducial_out = gen_resp(best.data());
+  test_out = gen_resp(current.data());
 
-  if (test_gp_out != nullptr) {
-    double* tmp = new double[dimension];
-    std::string local_gen = MCMC_prep_params(
-        current, tmp, test_gp_out, dimension, generation_method, mod_struct,
-        mcmcVar.mcmc_intrinsic, mcmcVar.mcmc_gmst);
-    repack_parameters(tmp, test_gp_out, "MCMC_" + generation_method, dimension);
-    delete[] tmp;
-  }
+  if (test_gp_out != nullptr)
+    param_space.to_gen_params(current.data(), *test_gp_out);
 
-  // Cleanup
-  delete[] sigma;
-  delete[] current;
-  delete[] proposed;
-  delete[] best;
-  delete[] user_param.weights;
   gsl_rng_free(rng);
 }

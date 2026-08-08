@@ -10,37 +10,48 @@
  * Header file for waveform specific utilites
  */
 
+// Struct for an interferometer's strain and PSD at specific frequencies
+struct IfoData {
+  std::string name;
+  // Interferometer strain
+  VECCPL strain;
+  // Frequency array
+  VECDBL freqs;
+  // PSD
+  VECDBL psd;
+};
 
-double match(  std::complex<double> *data1, std::complex<double> *data2, double *SN,double *frequencies,int length);
+double match(std::complex<double>* data1, std::complex<double>* data2,
+             double* SN, double* frequencies, int length);
 
-template<class T>
-void create_coherent_GW_detection(
-	std::string *detectors,
-	int detector_N, 
-	T **frequencies, 
-	int *lengths,
-	bool reuse_WF,	
-	gen_params_base<T> *gen_params,
-	std::string generation_method,
-	std::complex<T> **responses);
+template <class T>
+void create_coherent_GW_detection(std::string* detectors, int detector_N,
+                                  T** frequencies, int* lengths, bool reuse_WF,
+                                  gen_params_base<T>* gen_params,
+                                  std::string generation_method,
+                                  std::complex<T>** responses);
 template <class T>
 void create_single_GW_detection(
-	std::complex<T> *response,	//< [out] Detector response \tilde{h}. Should be pre-allocated array of same length of frequencies
-	std::string detector,	//< Detector string name
-	T *frequencies,					//< Frequency array
-	int length,						//< Length of data (frequnecies and response)
-	gen_params_base<T> *gen_params,	//< Waveform parameters
-	std::string generation_method	//< Waveform generation method
+    std::complex<T>*
+        response,          //< [out] Detector response \tilde{h}. Should be
+                           // pre-allocated array of same length of frequencies
+    std::string detector,  //< Detector string name
+    T* frequencies,        //< Frequency array
+    int length,            //< Length of data (frequnecies and response)
+    gen_params_base<T>* gen_params,  //< Waveform parameters
+    std::string generation_method    //< Waveform generation method
 );
-template<class T>
-void create_coherent_GW_detection_reuse_WF(
-	std::string *detectors,
-	int detector_N, 
-	T *frequencies, 
-	int lengths,
-	gen_params_base<T> *gen_params,
-	std::string generation_method,
-	std::complex<T> **responses);
+template <class T>
+void create_coherent_GW_detection_reuse_WF(std::string* detectors,
+                                           int detector_N, T* frequencies,
+                                           int lengths,
+                                           gen_params_base<T>* gen_params,
+                                           std::string generation_method,
+                                           std::complex<T>** responses);
+
+std::vector<VECCPL> create_coherent_GW_detection_reuse_wf(
+    const std::vector<IfoData>& ifos, gen_params_base<double>* gen_params,
+    std::string generation_method);
 
 double data_snr(double *frequencies, 
 	int length,
@@ -80,13 +91,6 @@ double calculate_snr_internal(double *psd,
 	std::string integration_method="SIMPSONS",
 	double *weights=NULL,
 	bool log10_freq=false);
-
-// SNR calculator with Quadrature method
-double calculate_snr_internal(
-	double *psd,
-	std::complex<double> *waveform,
-	const Quadrature *QuadMethod
-);
 
 double calculate_snr(std::string sensitivity_curve,
 	std::string detector,

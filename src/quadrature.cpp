@@ -62,7 +62,8 @@ int unrefine_uniform_grid_with_trapezoid_quad(
 
     double total_hh = 0.0;
     for (int i = 0; i < N_detectors; i++) {
-      total_hh += q->inner_product(data[i], data[i], nvs[i].data());
+      VECCPL di(data[i], data[i] + N);
+      total_hh += q->inner_product(di, di, nvs[i]);
     }
 
     for (int d = 0; d < N_detectors; d += 1) delete[] data[d];
@@ -118,9 +119,8 @@ SimpsonsQuad::SimpsonsQuad(int length,   //< Length of integrand
   }
 }
 
-double SimpsonsQuad::inner_product(const std::complex<double>* h1,
-                                   const std::complex<double>* h2,
-                                   const double* psd) const {
+double SimpsonsQuad::inner_product(const VECCPL& h1, const VECCPL& h2,
+                                   const VECDBL& psd) const {
   // Inner sum: odd indices get weight 4, even indices get weight 2.
   double integral = 0.;
   for (int i = 1; i < SimpsonsEnd; i++)
@@ -173,16 +173,12 @@ SimpsonsLogQuad::SimpsonsLogQuad(
     : SimpsonsQuad(length, LOG10 * logdelta), xArray(xArray, xArray + length) {}
 
 // Use SimpsonsQuad method by weighting the PSD array
-double SimpsonsLogQuad::inner_product(const std::complex<double>* h1,
-                                      const std::complex<double>* h2,
-                                      const double* psd) const {
-  std::vector<double> weighted_psd;
-
-  for (int i = 0; i < length; i++) {
-    weighted_psd.push_back(psd[i] / xArray.at(i));
-  }
-
-  return SimpsonsQuad::inner_product(h1, h2, weighted_psd.data());
+double SimpsonsLogQuad::inner_product(const VECCPL& h1, const VECCPL& h2,
+                                      const VECDBL& psd) const {
+  VECDBL weighted_psd(length);
+  for (int i = 0; i < length; i++)
+    weighted_psd[i] = psd[i] / xArray[i];
+  return SimpsonsQuad::inner_product(h1, h2, weighted_psd);
 }
 
 //! Create a SimpsonsLogQuad given the endpoints of the integral and number of
@@ -218,9 +214,8 @@ TrapezoidQuad::TrapezoidQuad(int length,   //< Length of integrand
   this->length = length;
 }
 
-double TrapezoidQuad::inner_product(const std::complex<double>* h1,
-                                    const std::complex<double>* h2,
-                                    const double* psd) const {
+double TrapezoidQuad::inner_product(const VECCPL& h1, const VECCPL& h2,
+                                    const VECDBL& psd) const {
   // Inner sum
   double integral = 0.;
   for (int i = 1; i < length - 1; i++)
@@ -244,14 +239,10 @@ TrapezoidLogQuad::TrapezoidLogQuad(
       xArray(xArray, xArray + length) {}
 
 // Use TrapezoidQuad method by weighting the PSD array
-double TrapezoidLogQuad::inner_product(const std::complex<double>* h1,
-                                       const std::complex<double>* h2,
-                                       const double* psd) const {
-  std::vector<double> weighted_psd;
-
-  for (int i = 0; i < length; i++) {
-    weighted_psd.push_back(psd[i] / xArray.at(i));
-  }
-
-  return TrapezoidQuad::inner_product(h1, h2, weighted_psd.data());
+double TrapezoidLogQuad::inner_product(const VECCPL& h1, const VECCPL& h2,
+                                       const VECDBL& psd) const {
+  VECDBL weighted_psd(length);
+  for (int i = 0; i < length; i++)
+    weighted_psd[i] = psd[i] / xArray[i];
+  return TrapezoidQuad::inner_product(h1, h2, weighted_psd);
 }

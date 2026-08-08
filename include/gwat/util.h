@@ -1,15 +1,16 @@
 #ifndef UTIL_H
 #define UTIL_H
 //#include "general_parameter_structures.h"
-#include <string>
-#include <complex>
-#include "adolc/adouble.h"
 #include <fftw3.h>
-#include <gsl/gsl_interp.h>
-#include <gsl/gsl_spline.h>
 #include <gsl/gsl_errno.h>
+#include <gsl/gsl_interp.h>
 #include <gsl/gsl_rng.h>
-//#define adouble double
+#include <gsl/gsl_spline.h>
+
+#include <complex>
+#include <string>
+
+#include "adolc/adouble.h"
 
 // libc++ (LLVM/Apple) requires std::complex<T>'s T to satisfy is_floating_point, which adouble
 // does not. This explicit specialization routes std::exp(complex<adouble>) through ADOL-C's
@@ -35,31 +36,37 @@ namespace std {
  *General utilities (functions and structures) independent of modelling method
  */
 
+// Common types
+using CPL = std::complex<double>;
+using VECDBL = std::vector<double>;
+using VECINT = std::vector<int>;
+using VECCPL = std::vector<CPL>;
+
 /*! natural log of 2*/
-#define GWAT_LN2 0.693147180559945309417232121458176568
+constexpr double GWAT_LN2 = 0.693147180559945309417232121458176568;
 /*! Gravitational constant in SI */
-#define GWAT_G_SI 6.67430e-11
+constexpr double GWAT_G_SI = 6.67430e-11;
 /*! 2*PI*/
-#define GWAT_TWOPI 6.283185307179586476925286766559005768
+constexpr double GWAT_TWOPI = 6.283185307179586476925286766559005768;
 
 /**
  *! Nominal solar mass, kg
  */
-#define GWAT_MSUN_SI 1.988409870698050731911960804878414216e30
+constexpr double GWAT_MSUN_SI = 1.988409870698050731911960804878414216e30;
 
 /**
  *! \brief Geometrized nominal solar mass, s
  *! \details
  * GWAT_MTSUN_SI = GWAT_GMSUN_SI / c^3
  */
-#define GWAT_MTSUN_SI 4.925490947641266978197229498498379006e-6
+constexpr double GWAT_MTSUN_SI = 4.925490947641266978197229498498379006e-6;
 
 /**
  *! \brief Geometrized nominal solar mass, m
  *! \details
  * GWAT_MRSUN_SI = GWAT_GMSUN_SI / c^3
  */
-#define GWAT_MRSUN_SI 1.476625038050124729627979840144936351e3
+constexpr double GWAT_MRSUN_SI = 1.476625038050124729627979840144936351e3;
 
 /*! Euler number*/
 constexpr double gamma_E = 0.5772156649015328606065120900824024310421;
@@ -101,12 +108,6 @@ constexpr double LOG10 = 2.302585092994045684;
 const double DOUBLE_COMP_THRESH = 1e-10;
 
 #define MAX_TOL_ATAN 1.0e-15
-//GSL versions of the constants, but G seems off..
-//const double gamma_E = M_EULER;
-//const double c = GSL_CONST_MKSA_SPEED_OF_LIGHT;
-//const double G =GSL_CONST_MKSA_GRAVITATIONAL_CONSTANT;
-//const double MSOL_SEC = GSL_CONST_MKSA_SOLAR_MASS*(GSL_CONST_MKSA_GRAVITATIONAL_CONSTANT/(c*c*c));
-//const double MPC_SEC = GSL_CONST_MKSA_PARSEC*1e6/c;
 
 struct fftw_outline
 {
@@ -917,5 +918,12 @@ adouble cbrt_internal(adouble base);
 
 bool has_substring(const std::string& s, const std::string& target);
 
+/// @brief Convert a Cartesian spin vector to GWAT's MCMC spin parameterization.
+/// @param[in]  sx, sy, sz   Cartesian spin components (|s| ≤ 1).
+/// @param[out] a            Spin magnitude √(sx²+sy²+sz²).
+/// @param[out] cos_tilt     Cosine of the tilt angle: sz/a (0 if a=0).
+/// @param[out] phi          Azimuthal angle atan2(sy,sx) mapped to [0,2π).
+void spin_cartesian_to_spherical(double sx, double sy, double sz,
+                                 double& a, double& cos_tilt, double& phi);
 
 #endif

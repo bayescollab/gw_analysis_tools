@@ -5,43 +5,39 @@
 #include <bayesship/bayesshipSampler.h>
 #include <bayesship/dataUtilities.h>
 
-struct priorData
-{
-	double **mod_priors;
-	double mass1_prior[2];
-	double mass2_prior[2];
-        double nbc1_prior[2];
-        double nbc2_prior[2];
-	double spin1_prior[2];
-	double spin2_prior[2];
-	double tidal1_prior[2];
-	double tidal2_prior[2];
-	double tidal_s_prior[2];
-	double diss_tidal1_prior[2];
-	double diss_tidal2_prior[2];
-	double EA_prior[6];
-	double RA_bounds[2];
-	double sinDEC_bounds[2];
-	bool tidal_love=true;
-	bool tidal_love_error;
-        double EOS_prior[8]; 
-        bool EOS_plat_flag; 
-	bool alpha_param; 
-	double DL_prior[2];
-	double T_mcmc_gw_tool;
-	double T_merger; 
-	double a1_prior[2];
-	double a2_prior[2];
-	double ctheta1_prior[2];
-	double ctheta2_prior[2];
-	double phi1_prior[2];
-	double phi2_prior[2];
-	double ciota_bounds[2] {-1., 1.};
-	double PSI_bounds[2] {0, M_PI};
-	double phi_ref_bounds[2] {0, 2*M_PI};
-	// Bounds to the left and right of T_merger.
-	// The zeroth element is subtracted from T_merger, the first element is added.
-	double T_merger_bounds[2] {0.1, 0.1};
+struct priorData {
+  double** mod_priors;
+  double mass1_prior[2];
+  double mass2_prior[2];
+  double nbc1_prior[2];
+  double nbc2_prior[2];
+  double spin1_prior[2];
+  double spin2_prior[2];
+  double tidal1_prior[2];
+  double tidal2_prior[2];
+  double tidal_s_prior[2];
+  double diss_tidal1_prior[2];
+  double diss_tidal2_prior[2];
+  double EA_prior[6];
+  double RA_bounds[2];
+  double sinDEC_bounds[2];
+  bool tidal_love = true;
+  bool tidal_love_error;
+  double EOS_prior[8];
+  bool EOS_plat_flag;
+  bool alpha_param;
+  double DL_prior[2];
+  double T_mcmc_gw_tool;
+  double a1_prior[2];
+  double a2_prior[2];
+  double ctheta1_prior[2];
+  double ctheta2_prior[2];
+  double phi1_prior[2];
+  double phi2_prior[2];
+  double ciota_bounds[2]{-1., 1.};
+  double PSI_bounds[2]{0, M_PI};
+  double phi_ref_bounds[2]{0, 2 * M_PI};
+  double T_merger;
 };
 
 bool tidal_love_boundary_violation(double q,double lambda_s);

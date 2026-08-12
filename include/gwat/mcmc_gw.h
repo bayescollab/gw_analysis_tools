@@ -73,7 +73,7 @@ struct MCMC_modification_struct {
   Quadrature* QuadMethod = NULL;
   // Always set param_space and likelihood together or not at all.
   GWParameterSpace* param_space = nullptr;
-  GWLikelihoods::Likelihood* likelihood = nullptr;
+  gw_likelihoods::Likelihood* likelihood = nullptr;
 
   // Refererence frequency for waveform generation.
   // Not as trivial as you might think!
@@ -140,7 +140,7 @@ struct mcmcVariables {
   MCMC_user_param* user_parameters = nullptr;
   double maxDim;
   GWParameterSpace* param_space = nullptr;
-  GWLikelihoods::Likelihood* likelihood = nullptr;
+  gw_likelihoods::Likelihood* likelihood = nullptr;
   Quadrature* QuadMethod = nullptr;
 };
 struct mcmcVariablesRJ {
@@ -253,7 +253,7 @@ double MCMC_likelihood_extrinsic(bool save_waveform,
 /// \param test_out      [out] Detector responses at the final M-H step.
 /// \param test_gp_out   [out] gen_params at the final M-H step (optional).
 void find_fiducial(const GWParameterSpace& param_space,
-                   const GWLikelihoods::Likelihood& likelihood,
+                   const gw_likelihoods::Likelihood& likelihood,
                    const double* initial_params,
                    bayesship::probabilityFn* log_prior,
                    const std::vector<double>& param_scales, int num_mh_steps,

@@ -5,7 +5,7 @@
 
 #include "waveform_util.h"
 
-namespace GWLikelihoods {
+namespace gw_likelihoods {
 
 ///@class Likelihood
 ///@brief Base class for likelihoods
@@ -147,6 +147,6 @@ RelativeBinningBisectionLikelihood RelBinBisectLL_from_c_arrays(
 
 }  // namespace RelativeBinning
 
-}  // namespace GWLikelihoods
+}  // namespace gw_likelihoods
 
 #endif  // LIKELIHOODS_H

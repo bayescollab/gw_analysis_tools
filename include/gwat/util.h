@@ -41,6 +41,7 @@ using CPL = std::complex<double>;
 using VECDBL = std::vector<double>;
 using VECINT = std::vector<int>;
 using VECCPL = std::vector<CPL>;
+using DBLPAIR = std::pair<double, double>;
 
 /*! natural log of 2*/
 constexpr double GWAT_LN2 = 0.693147180559945309417232121458176568;
@@ -919,7 +920,7 @@ adouble cbrt_internal(adouble base);
 bool has_substring(const std::string& s, const std::string& target);
 
 /// @brief Convert a Cartesian spin vector to GWAT's MCMC spin parameterization.
-/// @param[in]  sx, sy, sz   Cartesian spin components (|s| ≤ 1).
+/// @param  sx, sy, sz   Cartesian spin components (|s| ≤ 1).
 /// @param[out] a            Spin magnitude √(sx²+sy²+sz²).
 /// @param[out] cos_tilt     Cosine of the tilt angle: sz/a (0 if a=0).
 /// @param[out] phi          Azimuthal angle atan2(sy,sx) mapped to [0,2π).

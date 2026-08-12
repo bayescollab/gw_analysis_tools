@@ -10,7 +10,7 @@
 #include <set>
 #include <utility>
 
-namespace GWLikelihoods {
+namespace gw_likelihoods {
 
 using std::conj;
 
@@ -412,4 +412,4 @@ RelativeBinningBisectionLikelihood RelBinBisectLL_from_c_arrays(
 
 }  // namespace RelativeBinning
 
-}  // namespace GWLikelihoods
+}  // namespace gw_likelihoods

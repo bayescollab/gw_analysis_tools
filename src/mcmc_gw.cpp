@@ -29,6 +29,14 @@ int invertFisherBlock(double** fisherIn, double** fisherOut, int dimIn,
 void MCMC_fisher_wrapper_RJ(bayesship::positionInfo* pos, double** output,
                             std::vector<int> block, void* userParameters);
 
+void MCMC_fisher_GWParameterSpace_wrapper(bayesship::positionInfo* pos,
+                                          double** fisherM,
+                                          void* userParameters);
+
+void MCMC_fisher_GWParameterSpace_wrapper_explicit_marginalization(
+    bayesship::positionInfo* pos, double** fisherM, std::vector<int> ids,
+    void* userParameters);
+
 void pack_local_mod_structure(bayesship::bayesshipSampler* sampler,
                               double* param, int* status,
                               std::string waveform_extended, void* parameters,
@@ -1205,7 +1213,33 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
   bayesship::proposal** propArray = new bayesship::proposal*[proposalFnN];
   propArray[0] = new bayesship::gaussianProposal(
       sampler->ensembleN * sampler->ensembleSize, sampler->maxDim, sampler);
-  if (mcmcVar.mcmc_intrinsic) {
+  if (mcmcVar.param_space) {
+    // Attempting a more flexible block proposal setup based on
+    // param_space->number_of_extrinsic_params(). Ideally these settings would
+    // be more flexible and outside of PTMCMC; remains to be done.
+    const int extrinsic_num = mcmcVar.param_space->number_of_extrinsic_params();
+    if (extrinsic_num > 0) {
+      std::vector<std::vector<int>> blocksDiff(3);
+      std::vector<double> blocksProbDiff = {0.3, 0.3, .4};
+      for (int i = 0; i < extrinsic_num; i++) {
+        blocksDiff[0].push_back(i);
+      }
+      for (int i = extrinsic_num; i < sampler->maxDim; i++) {
+        blocksDiff[1].push_back(i);
+      }
+      for (int i = 0; i < sampler->maxDim; i++) {
+        blocksDiff[2].push_back(i);
+      }
+      propArray[1] = new bayesship::blockDifferentialEvolutionProposal(
+          sampler, blocksDiff, blocksProbDiff);
+      propArray[4] = new bayesship::GMMProposal(
+          sampler->ensembleN * sampler->ensembleSize, sampler->maxDim, sampler,
+          blocksDiff, blocksProbDiff, 10, 10, 10, 1e-10, false,
+          sampler->maxDim * 100);
+    } else {
+      propArray[1] = new bayesship::differentialEvolutionProposal(sampler);
+    }
+  } else if (mcmcVar.mcmc_intrinsic) {
     propArray[1] = new bayesship::differentialEvolutionProposal(sampler);
   } else if (has_substring(generation_method, "EA_IMRPhenomD_NRT")) {
     std::vector<std::vector<int>> blocksDiff = std::vector<std::vector<int>>(4);
@@ -1229,30 +1263,17 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
         sampler->maxDim * 100);
 
   } else {
-    int extrinsic_num = 7;  // default
-    if (mcmcVar.param_space)
-      extrinsic_num = mcmcVar.param_space->number_of_extrinsic_params();
-    std::vector<std::vector<int>> blocksDiff;
-    std::vector<double> blocksProbDiff;
-
-    if (extrinsic_num > 0) {
-      blocksDiff = std::vector<std::vector<int>>(3);
-      blocksProbDiff = {0.3, 0.3, .4};
-      for (int i = 0; i < extrinsic_num; i++) {
-        blocksDiff[0].push_back(i);
-      }
-      for (int i = extrinsic_num; i < sampler->maxDim; i++) {
-        blocksDiff[1].push_back(i);
-      }
-      for (int i = 0; i < sampler->maxDim; i++) {
-        blocksDiff[2].push_back(i);
-      }
-    } else {
-      blocksDiff = std::vector<std::vector<int>>(1);
-      for (int i = 0; i < sampler->maxDim; i++) {
-        blocksDiff[0].push_back(i);
-      }
-      blocksProbDiff = {1.0};
+    const int extrinsic_num = 7;
+    std::vector<std::vector<int>> blocksDiff(3);
+    std::vector<double> blocksProbDiff = {0.3, 0.3, .4};
+    for (int i = 0; i < extrinsic_num; i++) {
+      blocksDiff[0].push_back(i);
+    }
+    for (int i = extrinsic_num; i < sampler->maxDim; i++) {
+      blocksDiff[1].push_back(i);
+    }
+    for (int i = 0; i < sampler->maxDim; i++) {
+      blocksDiff[2].push_back(i);
     }
     propArray[1] = new bayesship::blockDifferentialEvolutionProposal(
         sampler, blocksDiff, blocksProbDiff);
@@ -1264,7 +1285,33 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
   propArray[2] =
       new bayesship::KDEProposal(sampler->ensembleN * sampler->ensembleSize,
                                  sampler->maxDim, sampler, false);
-  if (mcmcVar.mcmc_intrinsic) {
+
+  if (mcmcVar.param_space) {
+    const int extrinsic_num = mcmcVar.param_space->number_of_extrinsic_params();
+    if (extrinsic_num > 0) {
+      std::vector<std::vector<int>> blocks(3);
+      std::vector<double> blockProb{.3, .3, .4};
+      for (int i = 0; i < extrinsic_num; i++) {
+        blocks[0].push_back(i);
+      }
+      for (int i = extrinsic_num; i < sampler->maxDim; i++) {
+        blocks[1].push_back(i);
+      }
+      for (int i = 0; i < sampler->maxDim; i++) {
+        blocks[2].push_back(i);
+      }
+      propArray[3] = new bayesship::blockFisherProposal(
+          sampler->ensembleN * sampler->ensembleSize, sampler->minDim,
+          &MCMC_fisher_GWParameterSpace_wrapper_explicit_marginalization,
+          sampler->userParameters, 100, sampler, blocks, blockProb);
+    } else {
+      propArray[3] = new bayesship::fisherProposal(
+          sampler->ensembleN * sampler->ensembleSize, sampler->maxDim,
+          &MCMC_fisher_GWParameterSpace_wrapper, sampler->userParameters, 100,
+          sampler);
+    }
+
+  } else if (mcmcVar.mcmc_intrinsic) {
     propArray[3] = new bayesship::fisherProposal(
         sampler->ensembleN * sampler->ensembleSize, sampler->maxDim,
         &MCMC_fisher_wrapper, sampler->userParameters, 100, sampler);
@@ -1288,31 +1335,21 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
         100, sampler, blocks, blockProb);
 
   } else {
-    int extrinsic_num = 7;  // default
-    if (mcmcVar.param_space)
-      extrinsic_num = mcmcVar.param_space->number_of_extrinsic_params();
-    std::vector<std::vector<int>> blocks;
-    std::vector<double> blockProb;
+    const int extrinsic_num = 7;
+    std::vector<std::vector<int>> blocks(3);
+    std::vector<double> blockProb{.3, .3, .4};
 
-    if (extrinsic_num > 0) {
-      blocks = std::vector<std::vector<int>>(3);
-      for (int i = 0; i < extrinsic_num; i++) {
-        blocks[0].push_back(i);
-      }
+    blocks = std::vector<std::vector<int>>(3);
+    for (int i = 0; i < extrinsic_num; i++) {
+      blocks[0].push_back(i);
+    }
       for (int i = extrinsic_num; i < sampler->maxDim; i++) {
         blocks[1].push_back(i);
       }
       for (int i = 0; i < sampler->maxDim; i++) {
         blocks[2].push_back(i);
       }
-      blockProb = {.3, .3, .4};
-    } else {
-      blocks = std::vector<std::vector<int>>(1);
-      for (int i = 0; i < sampler->maxDim; i++) {
-        blocks[0].push_back(i);
-      }
-      blockProb = {1.0};
-    }
+
     propArray[3] = new bayesship::blockFisherProposal(
         sampler->ensembleN * sampler->ensembleSize, sampler->minDim,
         &MCMC_fisher_wrapper_explicit_marginalization, sampler->userParameters,
@@ -1321,12 +1358,8 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
 
   // Rough estimate of the temperatures
   double betaTemp[sampler->ensembleSize];
-  betaTemp[0] = 1;
-  betaTemp[sampler->ensembleSize - 1] = 0;
-  double deltaBeta = pow((1e2), 1. / sampler->ensembleSize);
-  for (int i = 1; i < sampler->ensembleSize - 1; i++) {
-    betaTemp[i] = betaTemp[i - 1] / deltaBeta;
-  }
+  bayesship::geometric_beta_schedule(betaTemp, sampler->ensembleSize,
+                                     sampler->Tmax);
 
   double** propProb = new double*[chainN];
   for (int i = 0; i < chainN; i++) {
@@ -1889,7 +1922,6 @@ void MCMC_fisher_wrapper_explicit_marginalization(bayesship::positionInfo* pos,
 
   int dimension = mcmcVar->maxDim;
   double** tempOutput = allocate_2D_array(dimension, dimension);
-  double** tempCov = allocate_2D_array(dimension, dimension);
   double* temp_params = new double[dimension];
   double param[dimension];
   for (int i = 0; i < dimension; i++) {
@@ -1981,7 +2013,6 @@ void MCMC_fisher_wrapper_explicit_marginalization(bayesship::positionInfo* pos,
   // Cleanup
   delete[] temp_params;
   deallocate_2D_array(tempOutput, dimension, dimension);
-  deallocate_2D_array(tempCov, dimension, dimension);
   if (check_mod(local_gen)) {
     if (has_substring(local_gen, "ppE") || check_theory_support(local_gen)) {
       delete[] params.betappe;
@@ -2102,6 +2133,51 @@ void MCMC_fisher_wrapper(bayesship::positionInfo* pos, double** output,
       }
     }
   }
+}
+
+/// @brief Wrapper to compute Fisher matrix for BayesShip sampler
+void MCMC_fisher_GWParameterSpace_wrapper(bayesship::positionInfo* pos,
+                                          double** fisherM,
+                                          void* userParameters) {
+  const mcmcVariables* mcmcVar = (mcmcVariables*)userParameters;
+  const GWParameterSpace* param_space = mcmcVar->param_space;
+
+  gen_params_base<double> params;
+  param_space->to_gen_params(pos->parameters, params);
+  auto deriv = param_space->fisher_derivatives(mcmcVar->mcmc_deriv_order);
+  fisher_numerical(pos->parameters, mcmcVar->likelihood->get_ifos(),
+                   deriv.get(), fisherM);
+  param_space->fisher_prior(fisherM);
+}
+
+/// @brief Wrapper to compute Fisher matrix for BayesShip sampler with
+/// marginalization of extrinsic parameters
+void MCMC_fisher_GWParameterSpace_wrapper_explicit_marginalization(
+    bayesship::positionInfo* pos, double** fisherM, std::vector<int> ids,
+    void* userParameters) {
+  const mcmcVariables* mcmcVar = (mcmcVariables*)userParameters;
+  const GWParameterSpace* param_space = mcmcVar->param_space;
+
+  // Full Fisher matrix calculation
+  const int dim = mcmcVar->maxDim;
+  double** tempMatrix = allocate_2D_array(dim, dim);
+  gen_params_base<double> params;
+  param_space->to_gen_params(pos->parameters, params);
+  auto deriv = param_space->fisher_derivatives(mcmcVar->mcmc_deriv_order);
+  fisher_numerical(pos->parameters, mcmcVar->likelihood->get_ifos(),
+                   deriv.get(), tempMatrix);
+  param_space->fisher_prior(tempMatrix);
+
+  // Try marginalizing over extrinsic parameters
+  int status = invertFisherBlock(tempMatrix, fisherM, dim, ids);
+  // If unsuccesful, pass submatrix
+  if (status == 1) {
+    for (int i = 0; i < ids.size(); i++)
+      for (int j = 0; j < ids.size(); j++)
+        fisherM[i][j] = tempMatrix[ids[i]][ids[j]];
+  }
+
+  deallocate_2D_array(tempMatrix, dim, dim);
 }
 
 /*! \brief Maximized match over coalescence variables - returns log likelihood
@@ -2374,7 +2450,7 @@ double MCMC_likelihood_extrinsic(bool save_waveform,
 // ============================================================
 
 void find_fiducial(const GWParameterSpace& param_space,
-                   const GWLikelihoods::Likelihood& likelihood,
+                   const gw_likelihoods::Likelihood& likelihood,
                    const double* initial_params,
                    bayesship::probabilityFn* log_prior,
                    const std::vector<double>& param_scales, int num_mh_steps,

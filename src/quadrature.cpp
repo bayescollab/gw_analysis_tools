@@ -13,7 +13,7 @@ int unrefine_uniform_grid_with_trapezoid_quad(
     const int N_initial, const double f_min, const double f_max,
     std::vector<std::string>& psds, const int N_detectors,
     std::string* detectors, gen_params_base<double>* params, std::string model,
-    const double tol, const bool log_spacing) {
+    const double tol, const bool log_spacing, const int max_iterations) {
   std::cout << "Halving from N_initial=" << N_initial
             << " to find N_converged (tol=" << tol << ") ...\n";
 
@@ -74,13 +74,15 @@ int unrefine_uniform_grid_with_trapezoid_quad(
   const double hh_ref = eval_hh(N_initial);
   int N_converged = N_initial;
   int N_halve = N_initial;
-  while (N_halve > 3) {
+  int counter = 0;
+  while (counter <= max_iterations && N_halve > 3) {
     int N_half = (N_halve - 1) / 2 + 1;
     if (N_half < 3) N_half = 3;
     double rel = std::abs(eval_hh(N_half) - hh_ref) / std::abs(hh_ref);
-    if (rel < tol)
+    if (rel < tol) {
       N_converged = N_half;
-    else
+      counter++;
+    } else
       break;
     N_halve = N_half;
     if (N_halve <= 3) break;

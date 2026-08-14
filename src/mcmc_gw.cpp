@@ -1962,34 +1962,26 @@ void MCMC_fisher_wrapper_explicit_marginalization(bayesship::positionInfo* pos,
 
   std::string local_gen_method = mcmcVar->mcmc_generation_method;
   int local_dimension = dimension;
-  if (mcmcVar->param_space) {
-    const GWParameterSpace* ps = mcmcVar->param_space;
-    auto deriv = ps->fisher_derivatives(mcmcVar->mcmc_deriv_order);
-    fisher_numerical(pos->parameters, mcmcVar->likelihood->get_ifos(), deriv.get(),
-                     tempOutput);
-    ps->fisher_prior(tempOutput);
-  } else {
-    double** temp_out = allocate_2D_array(local_dimension, local_dimension);
-    for (int i = 0; i < mcmcVar->mcmc_num_detectors; i++) {
-      // Use AD
-      if (mcmcVar->user_parameters->fisher_AD) {
-        std::unique_lock<std::mutex> lock{*(mcmcVar->user_parameters->mFish)};
-        fisher_autodiff(local_freq[i], local_lengths[i],
-                        "MCMC_" + local_gen_method, mcmcVar->mcmc_detectors[i],
-                        mcmcVar->mcmc_detectors[0], temp_out, local_dimension,
-                        (gen_params*)(&params), local_integration_method,
-                        local_weights[i], true, local_noise[i]);
-      } else {
-        fisher_numerical(local_freq[i], local_lengths[i],
-                         "MCMC_" + local_gen_method, mcmcVar->mcmc_detectors[i],
-                         mcmcVar->mcmc_detectors[0], temp_out, local_dimension,
-                         &params, 4, nullptr, nullptr, local_noise[i],
-                         mcmcVar->user_parameters->QuadMethod);
-      }
-      for (int j = 0; j < local_dimension; j++) {
-        for (int k = 0; k < local_dimension; k++) {
-          tempOutput[j][k] += temp_out[j][k];
-        }
+  double** temp_out = allocate_2D_array(local_dimension, local_dimension);
+  for (int i = 0; i < mcmcVar->mcmc_num_detectors; i++) {
+    // Use AD
+    if (mcmcVar->user_parameters->fisher_AD) {
+      std::unique_lock<std::mutex> lock{*(mcmcVar->user_parameters->mFish)};
+      fisher_autodiff(local_freq[i], local_lengths[i],
+                      "MCMC_" + local_gen_method, mcmcVar->mcmc_detectors[i],
+                      mcmcVar->mcmc_detectors[0], temp_out, local_dimension,
+                      (gen_params*)(&params), local_integration_method,
+                      local_weights[i], true, local_noise[i]);
+    } else {
+      fisher_numerical(local_freq[i], local_lengths[i],
+                       "MCMC_" + local_gen_method, mcmcVar->mcmc_detectors[i],
+                       mcmcVar->mcmc_detectors[0], temp_out, local_dimension,
+                       &params, 4, nullptr, nullptr, local_noise[i],
+                       mcmcVar->user_parameters->QuadMethod);
+    }
+    for (int j = 0; j < local_dimension; j++) {
+      for (int k = 0; k < local_dimension; k++) {
+        tempOutput[j][k] += temp_out[j][k];
       }
     }
 
@@ -2075,35 +2067,27 @@ void MCMC_fisher_wrapper(bayesship::positionInfo* pos, double** output,
   if (mcmcVar->user_parameters->fisher_GAUSS_QUAD) {
     local_integration_method = "GAUSSLEG";
   }
-  if (mcmcVar->param_space) {
-    const GWParameterSpace* ps = mcmcVar->param_space;
-    auto deriv = ps->fisher_derivatives(mcmcVar->mcmc_deriv_order);
-    fisher_numerical(pos->parameters, mcmcVar->likelihood->get_ifos(), deriv.get(),
-                     output);
-    ps->fisher_prior(output);
-  } else {
-    double** temp_out = allocate_2D_array(dimension, dimension);
-    for (int i = 0; i < mcmcVar->mcmc_num_detectors; i++) {
-      // Use AD
-      if (mcmcVar->user_parameters->fisher_AD) {
-        std::unique_lock<std::mutex> lock{*(mcmcVar->user_parameters->mFish)};
-        fisher_autodiff(local_freq[i], local_lengths[i],
-                        "MCMC_" + mcmcVar->mcmc_generation_method,
-                        mcmcVar->mcmc_detectors[i], mcmcVar->mcmc_detectors[0],
-                        temp_out, dimension, (gen_params*)(&params),
-                        local_integration_method, local_weights[i], true,
-                        local_noise[i]);
-      } else {
-        fisher_numerical(local_freq[i], local_lengths[i],
-                         "MCMC_" + mcmcVar->mcmc_generation_method,
-                         mcmcVar->mcmc_detectors[i], mcmcVar->mcmc_detectors[0],
-                         temp_out, dimension, &params, 4, nullptr, nullptr,
-                         local_noise[i]);
-      }
-      for (int j = 0; j < dimension; j++) {
-        for (int k = 0; k < dimension; k++) {
-          output[j][k] += temp_out[j][k];
-        }
+  double** temp_out = allocate_2D_array(dimension, dimension);
+  for (int i = 0; i < mcmcVar->mcmc_num_detectors; i++) {
+    // Use AD
+    if (mcmcVar->user_parameters->fisher_AD) {
+      std::unique_lock<std::mutex> lock{*(mcmcVar->user_parameters->mFish)};
+      fisher_autodiff(local_freq[i], local_lengths[i],
+                      "MCMC_" + mcmcVar->mcmc_generation_method,
+                      mcmcVar->mcmc_detectors[i], mcmcVar->mcmc_detectors[0],
+                      temp_out, dimension, (gen_params*)(&params),
+                      local_integration_method, local_weights[i], true,
+                      local_noise[i]);
+    } else {
+      fisher_numerical(local_freq[i], local_lengths[i],
+                       "MCMC_" + mcmcVar->mcmc_generation_method,
+                       mcmcVar->mcmc_detectors[i], mcmcVar->mcmc_detectors[0],
+                       temp_out, dimension, &params, 4, nullptr, nullptr,
+                       local_noise[i]);
+    }
+    for (int j = 0; j < dimension; j++) {
+      for (int k = 0; k < dimension; k++) {
+        output[j][k] += temp_out[j][k];
       }
     }
 

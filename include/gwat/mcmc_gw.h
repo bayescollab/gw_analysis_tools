@@ -23,11 +23,25 @@
 #include <thread>
 #include <vector>
 
+#include "gw_fisher.h"
 #include "likelihoods.h"
 #include "mcmc_sampler.h"
-#include "parameter_space.h"
+#include "parameter_map.h"
 #include "quadrature.h"
 #include "util.h"
+
+/// @brief Bundle of new-API objects that together define a GW inference model.
+///
+/// When model != nullptr in mcmcVariables or MCMC_modification_struct, the MCMC
+/// uses this path rather than the legacy generation-method decision trees.
+struct GWModel {
+  ParameterMap*                     param_map  = nullptr;
+  bayesship::probabilityFn*         prior      = nullptr;
+  gw_fishers::GWNumericalFishers*   fisher     = nullptr;
+  gw_likelihoods::Likelihood*       likelihood = nullptr;
+
+  bool active() const { return param_map != nullptr && likelihood != nullptr; }
+};
 
 static bool mcmc_intrinsic;
 static bool mcmc_save_waveform;
@@ -68,12 +82,9 @@ struct MCMC_modification_struct {
   int* fisher_length = NULL;
   bool fisher_log10F = false;
 
-  // Quadrature for the Fisher when param_space is not set.
-  // When param_space is set, GWParameterSpace::quadrature() is used instead.
   Quadrature* QuadMethod = NULL;
-  // Always set param_space and likelihood together or not at all.
-  GWParameterSpace* param_space = nullptr;
-  gw_likelihoods::Likelihood* likelihood = nullptr;
+  // Set model to use the new ParameterMap / Likelihood / Fisher path.
+  GWModel* model = nullptr;
 
   // Refererence frequency for waveform generation.
   // Not as trivial as you might think!
@@ -139,8 +150,7 @@ struct mcmcVariables {
   bool mcmc_log_beta = false;
   MCMC_user_param* user_parameters = nullptr;
   double maxDim;
-  GWParameterSpace* param_space = nullptr;
-  gw_likelihoods::Likelihood* likelihood = nullptr;
+  GWModel* model = nullptr;
   Quadrature* QuadMethod = nullptr;
 };
 struct mcmcVariablesRJ {
@@ -237,28 +247,39 @@ double MCMC_likelihood_extrinsic(bool save_waveform,
 /// @brief Runs a Metropolis-Hastings chain from @p initial_params to locate
 /// good fiducial and test waveforms for relative-binning initialization.
 ///
-/// Detector data (frequencies, PSDs, strain) is obtained from
-/// @p likelihood. The parameter-space dimension, generation
-/// method, and Fisher quadrature are obtained from @p param_space.
-///
-/// \param param_space    Parameter-space object (dimension, to_gen_params,
-/// etc.)
-/// \param likelihood     Likelihood whose get_ifos() supplies detector data.
+/// \param model          GWModel supplying param_map, likelihood, and fisher.
 /// \param initial_params Starting MCMC parameter vector (length
-/// param_space.dim()).
+/// model.param_map->dim()).
 /// \param log_prior      Log-prior probability function for the model.
 /// \param param_scales   Typical scale for each parameter (e.g. prior width).
 /// \param num_mh_steps   Number of M-H steps.
-/// \param fiducial_out  [out] Detector responses at the MAP point.
-/// \param test_out      [out] Detector responses at the final M-H step.
+/// \param gen_resp       Callable (const double* theta) → std::vector<VECCPL>
+///                       that generates the model waveform(s) at theta. The
+///                       caller decides whether to return detector responses or
+///                       polarization modes — find_fiducial passes the result
+///                       through unchanged.
+/// \param fiducial_out  [out] gen_resp evaluated at the MAP point.
+/// \param test_out      [out] gen_resp evaluated at the final M-H step.
 /// \param test_gp_out   [out] gen_params at the final M-H step (optional).
-void find_fiducial(const GWParameterSpace& param_space,
-                   const gw_likelihoods::Likelihood& likelihood,
+/// @brief Runs a Metropolis-Hastings chain from @p initial_params to locate
+/// good fiducial and test parameter points for relative-binning initialization.
+///
+/// Returns the MAP parameter vector and the final M-H step parameter vector.
+/// The caller is responsible for generating the corresponding waveforms (e.g.
+/// via model.fisher->generate_modes or a likelihood call).
+///
+/// \param model             GWModel supplying param_map, likelihood, and fisher.
+/// \param initial_params    Starting parameter vector (length param_map->dim()).
+/// \param log_prior         Log-prior probability function for the model.
+/// \param param_scales      Typical scale for each parameter (e.g. prior width).
+/// \param num_mh_steps      Number of M-H steps.
+/// \param map_params_out   [out] Parameter vector at the MAP point.
+/// \param final_params_out [out] Parameter vector at the final M-H step.
+void find_fiducial(const GWModel& model,
                    const double* initial_params,
                    bayesship::probabilityFn* log_prior,
                    const std::vector<double>& param_scales, int num_mh_steps,
-                   std::vector<VECCPL>& fiducial_out,
-                   std::vector<VECCPL>& test_out,
-                   gen_params_base<double>* test_gp_out = nullptr);
+                   std::vector<double>& map_params_out,
+                   std::vector<double>& final_params_out);
 
 #endif

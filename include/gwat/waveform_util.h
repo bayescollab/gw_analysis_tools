@@ -10,7 +10,7 @@
  * Header file for waveform specific utilites
  */
 
-// Struct for an interferometer's strain and PSD at specific frequencies
+/// Struct for an interferometer's strain and PSD at specific frequencies
 struct IfoData {
   std::string name;
   // Interferometer strain
@@ -19,6 +19,13 @@ struct IfoData {
   VECDBL freqs;
   // PSD
   VECDBL psd;
+};
+
+/// Struct for polarization modes data
+struct PolarizationData {
+  VECDBL freqs;
+  VECDBL psd;
+  std::vector<VECCPL> modes;
 };
 
 double match(std::complex<double>* data1, std::complex<double>* data2,

@@ -12,7 +12,7 @@
 int unrefine_uniform_grid_with_trapezoid_quad(
     int N_initial, double f_min, double f_max, std::vector<std::string>& psds,
     int N_detectors, std::string* detectors, gen_params_base<double>* params,
-    std::string model, double tol, bool log_spacing, int max_iterations = 10);
+    std::string model, double tol, bool log_spacing, int max_iterations = 15);
 
 // ----- QUADRATURE CLASSES -----
 

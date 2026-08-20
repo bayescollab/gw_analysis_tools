@@ -12,48 +12,58 @@
 #include <string>
 #include <vector>
 
+#include "parameter_map.h"
 #include "util.h"
 
+namespace gw_prior {
 /// Map from physical-space parameter name to [lo, hi] prior bounds.
-using BoundsMap = std::map<std::string, DBLPAIR>;
+using BoundsMap = std::map<std::string, PAIRDBL>;
 
-/// @brief bayesship::probabilityFn built from a list of boolean constraints
-/// and additive log-prior terms.
+/// @brief Per-parameter [lo, hi] bounds for lnMc and eta derived from
+/// component-mass bounds, assuming the convention m1 >= m2 > 0.
 ///
-/// eval() returns bayesship::limitInf on the first violated constraint,
-/// otherwise the sum of all registered log-prior terms (0.0 if none).
-/// Constraints are added via add(); log-prior contributions (e.g. Jacobians)
-/// are added via add_ln_prior_term().
+/// @p m1lo   Lower bound on m1 (also minimum m2 value; must equal m2lo
+///           under the shared-lower-bound convention).
+/// @p m1hi   Upper bound on m1.
+/// @p m2lo   Lower bound on m2 (the lighter mass).
+/// @p m2hi   Upper bound on m2.
+///
+/// Returns a BoundsMap with keys "lnMc" and "eta".
+BoundsMap lnMc_eta_bounds_from_mass_bounds(double m1lo, double m1hi,
+                                            double m2lo, double m2hi);
+
+/// @brief Uniform box prior built from per-parameter [lo, hi] bounds.
+class BoxPrior {
+  const std::vector<PAIRDBL> bounds_;
+
+ public:
+  explicit BoxPrior(const std::vector<PAIRDBL> b) : bounds_(std::move(b)) {}
+
+  double ln_prior(const double* params) const {
+    for (int i = 0; i < static_cast<int>(bounds_.size()); ++i) {
+      if (params[i] < bounds_[i].first || params[i] > bounds_[i].second)
+        return bayesship::limitInf;
+    }
+    return 0.0;
+  }
+};
+
+/// @brief bayesship::probabilityFn built from boolean constraints and additive
+/// log-prior terms. eval() returns limitInf on the first violated constraint,
+/// otherwise the sum of all registered log-prior terms.
 class GWPriorFn : public bayesship::probabilityFn {
-  std::vector<std::function<bool(const double*)>> constraints_;
+  std::vector<std::function<bool(const double*)>>   constraints_;
   std::vector<std::function<double(const double*)>> terms_;
 
  public:
-  /// Append a boolean constraint.
   void add(std::function<bool(const double*)> c) {
     constraints_.push_back(std::move(c));
   }
 
-  /// Append an additive log-prior term (e.g. a Jacobian contribution).
   void add_ln_prior_term(std::function<double(const double*)> f) {
     terms_.push_back(std::move(f));
   }
 
-  double eval(bayesship::positionInfo* pos, int /*chainID*/) override {
-    for (const auto& c : constraints_)
-      if (!c(pos->parameters)) return bayesship::limitInf;
-    double lp = 0.0;
-    for (const auto& f : terms_) lp += f(pos->parameters);
-    return lp;
-  }
-
-  // -----------------------------------------------------------------------
-  // Helpers — called from concrete subclass constructors to populate
-  // a GWPriorFn with the transforms appropriate to each parameter layout.
-  // -----------------------------------------------------------------------
-
-  /// Bound the sampling-coordinate parameter at @p idx directly:
-  /// lo ≤ v[idx] ≤ hi.  The key in @p b must match the sampling name.
   void add_direct_constraint(const BoundsMap& b, const std::string& name,
                              int idx) {
     auto it = b.find(name);
@@ -65,24 +75,38 @@ class GWPriorFn : public bayesship::probabilityFn {
     });
   }
 
-  /// Bound component masses derived from ln(Mc) and eta.  @p b must contain
-  /// keys "m1" and "m2" with bounds in physical (solar-mass) units.
-  void add_mass_constraint(const BoundsMap& b, int lnMc_idx, int eta_idx) {
-    auto m1_it = b.find("m1"), m2_it = b.find("m2");
-    if (m1_it == b.end())
-      throw std::invalid_argument("BoundsMap missing key: m1");
-    if (m2_it == b.end())
-      throw std::invalid_argument("BoundsMap missing key: m2");
-    double m1lo = m1_it->second.first, m1hi = m1_it->second.second;
-    double m2lo = m2_it->second.first, m2hi = m2_it->second.second;
-    add([lnMc_idx, eta_idx, m1lo, m1hi, m2lo, m2hi](const double* v) {
-      double Mc = std::exp(v[lnMc_idx]), eta = v[eta_idx];
-      double M = Mc * std::pow(eta, -0.6);
-      double disc = std::sqrt(std::max(0.0, 1.0 - 4.0 * eta));
-      double m1 = 0.5 * M * (1.0 + disc), m2 = 0.5 * M * (1.0 - disc);
-      return m1 >= m1lo && m1 <= m1hi && m2 >= m2lo && m2 <= m2hi;
-    });
+  double eval(bayesship::positionInfo* pos, int /*chainID*/) override {
+    for (const auto& c : constraints_)
+      if (!c(pos->parameters)) return bayesship::limitInf;
+    double lp = 0.0;
+    for (const auto& f : terms_) lp += f(pos->parameters);
+    return lp;
   }
 };
+
+/// @brief GWPriorFn for black-hole binary models built from a ParamSpecMap.
+///
+/// Registers box constraints for all sampled parameters directly from their
+/// ParamSpec bounds. Additional physics:
+///   - (lnMc, eta): component-mass bounds check + chirpmass-eta Jacobian.
+///     Requires "m1" and "m2" entries in @p extra_bounds.
+///   - chi1, chi2 (aligned): box constraint + aligned-spin magnitude prior.
+///   - a1/cosT1/phi1, a2/cosT2/phi2 (precessing): box constraints only.
+///   - lnDL: uniform-volume prior (Jacobian 3*lnDL).
+class BHBPriorFn : public GWPriorFn {
+ public:
+  /// @param specs        Full parameter specification (sampled + fixed).
+  /// @param pmap         Compiled ParameterMap; used for index_of() lookups.
+  /// @param extra_bounds Additional bounds not in ParamSpec — required to
+  ///                     contain "m1" and "m2" whenever "lnMc" is sampled.
+  BHBPriorFn(const ParamSpecMap& specs, const ParameterMap& pmap,
+              BoundsMap extra_bounds = {});
+
+  /// Bound component masses derived from ln(Mc) and eta. @p b must contain
+  /// keys "m1" and "m2".
+  void add_mass_constraint(const BoundsMap& b, int lnMc_idx, int eta_idx);
+};
+
+}  // namespace gw_prior
 
 #endif  // GW_PRIOR_H

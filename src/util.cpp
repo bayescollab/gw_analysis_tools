@@ -1498,6 +1498,13 @@ adouble calculate_chirpmass(adouble mass1, adouble mass2)
 	return pow(mass1 * mass2,3./5) / pow(mass1 + mass2,1./5);
 }
 
+/// Heavier mass is given first.
+PAIRDBL component_masses_from_Mc_eta(double Mc, double eta) {
+  double M = Mc * std::pow(eta, -0.6);
+  double disc = std::sqrt(std::max(0.0, 1.0 - 4.0 * eta));
+  return std::make_pair(0.5 * M * (1.0 + disc), 0.5 * M * (1.0 - disc));
+}
+
 /*!\brief Calculates the symmetric mass ration from the two component masses
  */
 double calculate_eta(double mass1, double mass2)
@@ -1938,6 +1945,19 @@ void spin_cartesian_to_spherical(double sx, double sy, double sz,
   cos_tilt = (a > 0.) ? sz / a : 0.;
   phi = std::atan2(sy, sx);
   if (phi < 0.) phi += 2. * M_PI;
+}
+
+void spin_spherical_to_cartestion(double a, double cos_tilt, double phi,
+                                  double& sx, double& sy, double& sz) {
+  if (a == 0.0) {
+    sx = sy = sz = 0.0;
+    return;
+  }
+
+  double sin_tilt = std::sqrt(std::max(0.0, 1.0 - cos_tilt * cos_tilt));
+  sx = a * sin_tilt * std::cos(phi);
+  sy = a * sin_tilt * std::sin(phi);
+  sz = a * cos_tilt;
 }
 
 /*! \brief Unwrap angles from arctan 

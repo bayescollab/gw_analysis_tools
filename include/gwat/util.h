@@ -41,7 +41,11 @@ using CPL = std::complex<double>;
 using VECDBL = std::vector<double>;
 using VECINT = std::vector<int>;
 using VECCPL = std::vector<CPL>;
-using DBLPAIR = std::pair<double, double>;
+using PAIRDBL = std::pair<double, double>;
+
+// TODO: 1) Use std::constants once available, 2) rename constants to fit style
+// guide (see https://google.github.io/styleguide/cppguide.html#Constant_Names)
+constexpr double kPi = M_PI;
 
 /*! natural log of 2*/
 constexpr double GWAT_LN2 = 0.693147180559945309417232121458176568;
@@ -805,6 +809,8 @@ void ecl_from_eq(T theta_eq, T phi_eq, T *theta_ecl, T *phi_ecl);
 template<class T>
 void equatorial_from_SF(T *SFvec,T thetal, T phil, T thetas, T phis, T iota, T phi_ref,T *EQvec);
 
+PAIRDBL component_masses_from_Mc_eta(double Mc, double eta);
+
 double calculate_eta(double mass1, double mass2);
 adouble calculate_eta(adouble mass1, adouble mass2);
 
@@ -926,5 +932,13 @@ bool has_substring(const std::string& s, const std::string& target);
 /// @param[out] phi          Azimuthal angle atan2(sy,sx) mapped to [0,2π).
 void spin_cartesian_to_spherical(double sx, double sy, double sz,
                                  double& a, double& cos_tilt, double& phi);
+
+/// @brief Convert from spherical spin parameters to Cartesian components.
+/// @param a 					Spin magnitude √(sx²+sy²+sz²).
+/// @param cos_tilt 	Cosine of the tilt angle.
+/// @param phi 				Azimuthal angle.
+/// @param[out] sx, sy, sz Cartesian components.
+void spin_spherical_to_cartestion(double a, double cos_tilt, double phi,
+                                  double& sx, double& sy, double& sz);
 
 #endif

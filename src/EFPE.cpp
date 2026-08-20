@@ -12,7 +12,7 @@
 
 namespace {
 
-pyefpe::Parameters build_efpe_params(gen_params_base<double>* p,
+pyefpe::Parameters build_efpe_params(const gen_params_base<double>* p,
                                      double f22_start_fallback,
                                      double f22_end) {
   pyefpe::Parameters ep;
@@ -42,6 +42,17 @@ void apply_time_shift(double* frequencies, int length,
     std::complex<double> shift(std::cos(phase), std::sin(phase));
     wp->hplus[i] *= shift;
     wp->hcross[i] *= shift;
+  }
+}
+
+void apply_time_shift(const VECDBL& frequencies, VECCPL& hplus, VECCPL& hcross,
+                      double tc) {
+  const double two_pi_tc = 2.0 * kPi * tc;
+  for (int i = 0; i < static_cast<int>(frequencies.size()); i++) {
+    std::complex<double> shift(std::cos(two_pi_tc * frequencies[i]),
+                               std::sin(two_pi_tc * frequencies[i]));
+    hplus[i] *= shift;
+    hcross[i] *= shift;
   }
 }
 
@@ -131,4 +142,80 @@ int efpe_fast_fourier_waveform_uniform<double>(
     apply_time_shift(frequencies, length, wp, p->tc);
 
   return 1;
+}
+
+// ---------------------------------------------------------------------------
+// Modern VECDBL overloads
+// ---------------------------------------------------------------------------
+
+std::vector<VECCPL> efpe_fourier_waveform(const VECDBL& frequencies,
+                                           const gen_params_base<double>* p) {
+  pyefpe::Parameters ep =
+      build_efpe_params(p, frequencies.front(), frequencies.back());
+  pyefpe::apply_preset(ep, pyefpe::ParameterPreset::Production);
+  pyefpe::Model model(ep);
+
+  pyefpe::FrequencyWaveform fw = model.generate_waveform(frequencies);
+  VECCPL hplus(std::move(fw.plus)), hcross(std::move(fw.cross));
+
+  if (p->shift_time && p->tc != 0.0)
+    apply_time_shift(frequencies, hplus, hcross, p->tc);
+
+  return {std::move(hplus), std::move(hcross)};
+}
+
+std::vector<VECCPL> efpe_fourier_waveform_uniform(const VECDBL& frequencies,
+                                                   const gen_params_base<double>* p) {
+  int length = static_cast<int>(frequencies.size());
+  double f_min = frequencies.front();
+  double delta_f = frequencies[1] - frequencies[0];
+
+  pyefpe::Parameters ep = build_efpe_params(p, f_min, frequencies.back());
+  pyefpe::apply_preset(ep, pyefpe::ParameterPreset::Production);
+  pyefpe::Model model(ep);
+
+  VECCPL hplus(length), hcross(length);
+  model.generate_waveform_uniform(f_min, delta_f, static_cast<std::size_t>(length),
+                                  hplus.data(), hcross.data());
+
+  if (p->shift_time && p->tc != 0.0)
+    apply_time_shift(frequencies, hplus, hcross, p->tc);
+
+  return {std::move(hplus), std::move(hcross)};
+}
+
+std::vector<VECCPL> efpe_fast_fourier_waveform(const VECDBL& frequencies,
+                                                const gen_params_base<double>* p) {
+  pyefpe::Parameters ep =
+      build_efpe_params(p, frequencies.front(), frequencies.back());
+  pyefpe::apply_preset(ep, pyefpe::ParameterPreset::FastProduction);
+  pyefpe::Model model(ep);
+
+  pyefpe::FrequencyWaveform fw = model.generate_waveform(frequencies);
+  VECCPL hplus(std::move(fw.plus)), hcross(std::move(fw.cross));
+
+  if (p->shift_time && p->tc != 0.0)
+    apply_time_shift(frequencies, hplus, hcross, p->tc);
+
+  return {std::move(hplus), std::move(hcross)};
+}
+
+std::vector<VECCPL> efpe_fast_fourier_waveform_uniform(const VECDBL& frequencies,
+                                                        const gen_params_base<double>* p) {
+  int length = static_cast<int>(frequencies.size());
+  double f_min = frequencies.front();
+  double delta_f = frequencies[1] - frequencies[0];
+
+  pyefpe::Parameters ep = build_efpe_params(p, f_min, frequencies.back());
+  pyefpe::apply_preset(ep, pyefpe::ParameterPreset::FastProduction);
+  pyefpe::Model model(ep);
+
+  VECCPL hplus(length), hcross(length);
+  model.generate_waveform_uniform(f_min, delta_f, static_cast<std::size_t>(length),
+                                  hplus.data(), hcross.data());
+
+  if (p->shift_time && p->tc != 0.0)
+    apply_time_shift(frequencies, hplus, hcross, p->tc);
+
+  return {std::move(hplus), std::move(hcross)};
 }

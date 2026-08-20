@@ -122,4 +122,20 @@ int efpe_fast_fourier_waveform_uniform<double>(
     double* frequencies, int length, waveform_polarizations<double>* wp,
     gen_params_base<double>* params);
 
+// ---------------------------------------------------------------------------
+// Modern overloads: take VECDBL frequencies, return modes as std::vector<VECCPL>
+// in canonical order {hplus, hcross}.
+// ---------------------------------------------------------------------------
+std::vector<VECCPL> efpe_fourier_waveform(const VECDBL& frequencies,
+                                           const gen_params_base<double>* params);
+
+std::vector<VECCPL> efpe_fourier_waveform_uniform(const VECDBL& frequencies,
+                                                   const gen_params_base<double>* params);
+
+std::vector<VECCPL> efpe_fast_fourier_waveform(const VECDBL& frequencies,
+                                                const gen_params_base<double>* params);
+
+std::vector<VECCPL> efpe_fast_fourier_waveform_uniform(const VECDBL& frequencies,
+                                                        const gen_params_base<double>* params);
+
 #endif

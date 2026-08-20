@@ -565,7 +565,8 @@ RelativeBinningBisectionPolarizationsLikelihood::bin_log_likelihood_error(
 void RelativeBinningBisectionPolarizationsLikelihood::bin_bisection(
     const PolarizationData& data, const std::vector<VECCPL>& fiducial_modes,
     const std::vector<VECCPL>& test_modes, double epsilon, bool log_spacing) {
-  auto [min_idx, max_idx] = find_min_max_indices(fiducial_modes);
+  auto min_max_idx = find_min_max_indices(fiducial_modes);
+  int min_idx = min_max_idx.first, max_idx = min_max_idx.second;
   RelativeBinningPrinter("Max frequency: " +
                          std::to_string(data.freqs[max_idx]));
 
@@ -576,7 +577,7 @@ void RelativeBinningBisectionPolarizationsLikelihood::bin_bisection(
   stack.push_back({min_idx, max_idx});
 
   while (!stack.empty()) {
-    auto [left, right] = stack.back();
+    int left = stack.back().first, right = stack.back().second;
     stack.pop_back();
 
     if (right - left <= 1) {

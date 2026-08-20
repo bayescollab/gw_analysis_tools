@@ -2400,13 +2400,20 @@ double MCMC_likelihood_extrinsic(bool save_waveform,
 // ============================================================
 
 void find_fiducial(const GWModel& model, const double* initial_params,
-                   bayesship::probabilityFn* log_prior,
-                   const std::vector<double>& param_scales, int num_mh_steps,
+                   bayesship::probabilityFn* log_prior, int num_mh_steps,
                    std::vector<double>& map_params_out,
                    std::vector<double>& final_params_out) {
   const ParameterMap& pmap = *model.param_map;
   const gw_likelihoods::Likelihood& likelihood = *model.likelihood;
   const int dimension = pmap.dim();
+
+  // Prior widths (w_i = hi_i - lo_i) in sampling-vector order.
+  std::vector<double> prior_widths(dimension, 1.0);
+  for (const auto& kv : pmap.specs()) {
+    if (kv.second.fixed) continue;
+    int idx = pmap.index_of(kv.first);
+    if (idx >= 0) prior_widths[idx] = kv.second.hi - kv.second.lo;
+  }
 
   auto eval_ll = [&](const double* params) -> double {
     try {
@@ -2445,8 +2452,8 @@ void find_fiducial(const GWModel& model, const double* initial_params,
     for (int i = 0; i < dimension; i++) {
       double gamma_ii = fisher_mat[i][i];
       double fisher_sigma =
-          (gamma_ii > 0.0) ? c_mh / std::sqrt(gamma_ii) : 0.1 * param_scales[i];
-      double prior_half = 0.5 * param_scales[i];
+          (gamma_ii > 0.0) ? c_mh / std::sqrt(gamma_ii) : 0.1 * prior_widths[i];
+      double prior_half = 0.5 * prior_widths[i];
       sigma[i] = std::min(fisher_sigma, prior_half);
       std::cout << "  param " << i << ": Gamma_ii=" << gamma_ii
                 << "  sigma=" << sigma[i] << "  ["

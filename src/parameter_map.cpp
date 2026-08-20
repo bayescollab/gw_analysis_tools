@@ -7,8 +7,7 @@
 
 #include "util.h"
 
-// ── Static registry
-// ───────────────────────────────────────────────────────────
+// ── Static registry ─────────────────────────────────────────────────────────
 
 namespace {
 
@@ -145,7 +144,7 @@ ParameterMap::ParameterMap(const ParamSpecMap& specs) : specs_(specs) {
     return {false, -1, 0.0};
   };
 
-  // ── First pass: assign sampling indices in insertion order ─────────────────
+  // ── First pass: assign sampling indices in insertion order ────────────────
   // We need sampled_names_ populated before resolve() can look up indices, so
   // walk specs once to number the sampled parameters.
   for (const auto& kv : specs) {
@@ -166,7 +165,7 @@ ParameterMap::ParameterMap(const ParamSpecMap& specs) : specs_(specs) {
     }
   }
 
-  // ── Detect which groups are present ────────────────────────────────────────
+  // ── Detect which groups are present ───────────────────────────────────────
   bool has_lnMc_eta = false;
   bool has_chi1_chi2 = false;
   bool has_spin1_sph = false;
@@ -180,7 +179,7 @@ ParameterMap::ParameterMap(const ParamSpecMap& specs) : specs_(specs) {
     if (n == "a2" || n == "cosT2" || n == "phi2") has_spin2_sph = true;
   }
 
-  // ── Second pass: compile entries ───────────────────────────────────────────
+  // ── Second pass: compile entries ───────────────────────────
   for (const auto& kv : specs) {
     const std::string& name = kv.first;
     const ParamSpec& sp = kv.second;
@@ -210,7 +209,7 @@ ParameterMap::ParameterMap(const ParamSpecMap& specs) : specs_(specs) {
     entries_.push_back(ce);
   }
 
-  // ── Register group transforms ──────────────────────────────────────────────
+  // ── Register group transforms ────────────────────────────
 
   // Group: lnMc + eta → mass1, mass2
   if (has_lnMc_eta) {
@@ -339,8 +338,7 @@ ParameterMap::ParameterMap(const ParamSpecMap& specs) : specs_(specs) {
   }
 }
 
-// ── to_gen_params
-// ─────────────────────────────────────────────────────────────
+// ── to_gen_params ───────────────────────────────
 
 void ParameterMap::to_gen_params(const double* vec,
                                  gen_params_base<double>& p) const {
@@ -355,8 +353,7 @@ void ParameterMap::to_gen_params(const double* vec,
   for (const auto& g : groups_) g.to_gen(vec, p);
 }
 
-// ── from_gen_params
-// ───────────────────────────────────────────────────────────
+// ── from_gen_params ───────────────────────────
 
 void ParameterMap::from_gen_params(const gen_params_base<double>& p,
                                    double* vec) const {
@@ -370,7 +367,7 @@ void ParameterMap::from_gen_params(const gen_params_base<double>& p,
   for (const auto& g : groups_) g.from_gen(p, vec);
 }
 
-// ── index_of ─────────────────────────────────────────────────────────────────
+// ── index_of ──────────────────────────────
 
 int ParameterMap::index_of(const std::string& name) const {
   for (int i = 0; i < (int)sampled_names_.size(); ++i)

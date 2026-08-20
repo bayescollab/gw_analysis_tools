@@ -20,6 +20,9 @@ class IMRPhenomD_generator : public WaveformGenerator {
     source_parameters<double> converted_params;
     converted_params.populate_source_parameters(
         const_cast<gen_params_base<double>*>(params));
+    converted_params.f_ref       = params->f_ref;
+    converted_params.shift_time  = params->shift_time;
+    converted_params.shift_phase = params->shift_phase;
 
     VECCPL hplus(length), hcross(length);
     IMRPhenomD<double> phenomd;

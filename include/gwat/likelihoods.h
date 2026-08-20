@@ -27,10 +27,6 @@ class Likelihood {
   virtual const std::vector<IfoData>& get_ifos() const {
     throw std::logic_error("get_ifos() not supported for this likelihood type");
   }
-
-  /// @brief The polarization data used by this likelihood.
-  /// Returns nullptr for strain-based likelihoods.
-  virtual const PolarizationData* get_polarization_data() const { return nullptr; }
 };
 
 /// @class CoherentBareLikelihood
@@ -107,8 +103,6 @@ class PolarizationsLikelihood : public Likelihood {
   }
 
   double log_likelihood(gen_params_base<double>* params) const override;
-
-  const PolarizationData* get_polarization_data() const override { return &data_; }
 };
 
 namespace RelativeBinning {
@@ -219,10 +213,6 @@ class RelativeBinningBisectionPolarizationsLikelihood : public Likelihood {
 
   VECDBL get_bin_freqs() const { return bin_freqs_; }
   VECINT get_bin_inds() const { return bin_inds_; }
-
-  const PolarizationData* get_polarization_data() const override {
-    return &binned_data_;
-  }
 
   /// Per-mode template-template summary data; B0/B1 are used by the Fisher.
   struct SummaryData {

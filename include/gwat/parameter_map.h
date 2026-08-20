@@ -51,7 +51,9 @@ class ParameterMap {
  public:
   explicit ParameterMap(const ParamSpecMap& specs);
 
+  /// Map sampler vector to gen_params_base
   void to_gen_params(const double* vec, gen_params_base<double>& p) const;
+  /// Inverse of to_gen_params()
   void from_gen_params(const gen_params_base<double>& p, double* vec) const;
 
   int dim() const { return dim_; }

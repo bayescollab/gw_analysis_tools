@@ -9,13 +9,13 @@
 
 // ----- UTILITIES -----
 
-int unrefine_uniform_grid_with_trapezoid_quad(
+int downsize_uniform_grid_with_trapezoid_quad(
     const int N_initial, const double f_min, const double f_max,
     std::vector<std::string>& psds, const int N_detectors,
     std::string* detectors, gen_params_base<double>* params, std::string model,
     const double tol, const bool log_spacing, const int max_iterations) {
   std::cout << "Halving from N_initial=" << N_initial
-            << " to find N_converged (tol=" << tol << ") ...\n";
+            << " with tolerance=" << tol << ") ...\n";
 
   const double fmin = log_spacing ? std::log10(f_min) : f_min;
   const double range = (log_spacing ? std::log10(f_max) : f_max) - fmin;
@@ -68,6 +68,73 @@ int unrefine_uniform_grid_with_trapezoid_quad(
 
     for (int d = 0; d < N_detectors; d += 1) delete[] data[d];
 
+    return total_hh;
+  };
+
+  const double hh_ref = eval_hh(N_initial);
+  int N_converged = N_initial;
+  int N_halve = N_initial;
+  int counter = 0;
+  while (counter <= max_iterations && N_halve > 3) {
+    int N_half = (N_halve - 1) / 2 + 1;
+    if (N_half < 3) N_half = 3;
+    double rel = std::abs(eval_hh(N_half) - hh_ref) / std::abs(hh_ref);
+    if (rel < tol) {
+      N_converged = N_half;
+      counter++;
+    } else
+      break;
+    N_halve = N_half;
+    if (N_halve <= 3) break;
+  }
+  std::cout << "N_converged = " << N_converged << "  (" << N_initial << " / "
+            << N_converged << " = "
+            << static_cast<double>(N_initial) / N_converged << "x reduction)\n";
+
+  return N_converged;
+}
+
+int downsize_uniform_grid_with_trapezoid_quad(
+    const int N_initial, const double f_min, const double f_max,
+    const std::string& psd_name, gen_params_base<double>* params,
+    const waveform_generator::WaveformGenerator& wf_gen,
+    const std::vector<double>& sky_avg_factors,
+    const double tol, const bool log_spacing, const int max_iterations) {
+  std::cout << "Halving from N_initial=" << N_initial
+            << " with tolerance=" << tol << ") ...\n";
+
+  const double fmin = log_spacing ? std::log10(f_min) : f_min;
+  const double range = (log_spacing ? std::log10(f_max) : f_max) - fmin;
+
+  auto eval_hh = [&](int N) -> double {
+    const double dx = range / (N - 1);
+    VECDBL xv(N);
+    for (int j = 0; j < N; j++) {
+      if (log_spacing)
+        xv[j] = std::pow(10.0, fmin + j * dx);
+      else
+        xv[j] = fmin + j * dx;
+    }
+    xv[N - 1] = f_max;
+
+    VECDBL psd_v(N);
+    populate_noise(xv.data(), psd_name.c_str(), psd_v.data(), N);
+    for (int j = 0; j < N; j++) psd_v[j] *= psd_v[j];
+
+    auto modes = wf_gen.generate_polarizations(params, xv);
+
+    std::unique_ptr<Quadrature> q;
+    if (log_spacing)
+      q = std::make_unique<TrapezoidLogQuad>(N, dx, xv.data());
+    else
+      q = std::make_unique<TrapezoidQuad>(N, dx);
+
+    double total_hh = 0.0;
+    for (int m = 0; m < static_cast<int>(modes.size()); m++) {
+      if (m < static_cast<int>(sky_avg_factors.size()))
+        total_hh +=
+            sky_avg_factors[m] * q->inner_product(modes[m], modes[m], psd_v);
+    }
     return total_hh;
   };
 

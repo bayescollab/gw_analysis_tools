@@ -271,14 +271,16 @@ double MCMC_likelihood_extrinsic(bool save_waveform,
 /// \param model             GWModel supplying param_map, likelihood, and fisher.
 /// \param initial_params    Starting parameter vector (length param_map->dim()).
 /// \param log_prior         Log-prior probability function for the model.
-/// \param param_scales      Typical scale for each parameter (e.g. prior width).
 /// \param num_mh_steps      Number of M-H steps.
 /// \param map_params_out   [out] Parameter vector at the MAP point.
 /// \param final_params_out [out] Parameter vector at the final M-H step.
+///
+/// M-H proposal widths are derived from the prior bounds in model.param_map:
+/// sigma_i = min(Fisher, 0.5 * w_i) where w_i = hi_i - lo_i.
 void find_fiducial(const GWModel& model,
                    const double* initial_params,
                    bayesship::probabilityFn* log_prior,
-                   const std::vector<double>& param_scales, int num_mh_steps,
+                   int num_mh_steps,
                    std::vector<double>& map_params_out,
                    std::vector<double>& final_params_out);
 

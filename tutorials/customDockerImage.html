@@ -114,13 +114,13 @@ Note, there are publicly maintained pre-compiled images to use on DockerHub, but
 <li><p>Make any desired changes to the source code.</p></li>
 <li><p>Write a docker-compose.yml file, following the following template and save it in “root-directory”,</p></li>
 </ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>version:<span class="w"> </span><span class="s2">&quot;3&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>version:<span class="w"> </span><span class="s2">"3"</span>
 services:
 <span class="w">  </span>project:
 <span class="w">    </span>container_name:<span class="w"> </span>&lt;name&gt;
 <span class="w">    </span>image:<span class="w"> </span>scottperkins/gw.base.deps
 <span class="w">    </span>ports:
-<span class="w">        </span>-<span class="w"> </span><span class="s2">&quot;8081:8081&quot;</span>
+<span class="w">        </span>-<span class="w"> </span><span class="s2">"8081:8081"</span>
 <span class="w">    </span>tty:<span class="w"> </span><span class="nb">true</span>
 <span class="w">    </span>stdin_open:<span class="w"> </span><span class="nb">true</span>
 <span class="w">    </span>volumes:

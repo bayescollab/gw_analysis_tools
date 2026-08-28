@@ -2,12 +2,21 @@
 #define PARAMETER_MAP_H
 
 #include <functional>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 #include "util.h"
 
 enum class ParamCategory { Intrinsic, Extrinsic };
+
+inline const char* category_string(ParamCategory c) {
+  switch (c) {
+    case ParamCategory::Intrinsic: return "intrinsic";
+    case ParamCategory::Extrinsic: return "extrinsic";
+    default: throw std::runtime_error("ParamCategory not recognized");
+  }
+}
 
 struct ParamSpec {
   bool fixed;

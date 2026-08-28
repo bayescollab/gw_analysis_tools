@@ -330,7 +330,7 @@ double LISA_analytic_SADC(double f)
 	double S = 10./(3. * L*L) * ( POMS +2.*(1. + pow_int(  std::cos(f/fstar) ,2) )*(  PACC/pow_int( twopi * f, 4) ))*(1. + 6./10. * pow_int(f/fstar,2)) ;
 	return  S;
 }
-/*! \breif Optical metrology noise function
+/*! \brief Optical metrology noise function
  *
  * arXiv:1803.01944 -- equation 10
  */
@@ -340,7 +340,7 @@ double LISA_POMS(double f)
 	return factor * factor * (1. + pow_int( (.002/f) ,4) );
 }
 
-/*! \breif Single test mass accelartion noise
+/*! \brief Single test mass acceleration noise
  *
  * arXiv:1803.01944 -- equation 11
  */
@@ -351,11 +351,12 @@ double LISA_PACC(double f)
 
 }
 
-/*! \breif Confusion noise  -- this is S, not root  S
+/*! \brief Confusion noise  -- this is S, not root  S
  *
  * arXiv:1803.01944 -- 14
  *
- * integration_time is the observation time in months -- options are 6, 12, 24, and 48
+ * integration_time is the observation time in months -- options are 6, 12, 24,
+ * and 48
  */
 double LISA_SC(double f, double alpha, double beta, double kappa, double gamma, double fk)
 {
@@ -365,11 +366,12 @@ double LISA_SC(double f, double alpha, double beta, double kappa, double gamma, 
 	return  SC;
 }
 
-/*! \breif LISA confusion noise coefficients 
+/*! \brief LISA confusion noise coefficients
  *
  * arXiv:1803.01944 -- Table 1
  *
- * integration_time is the observation time in months -- options are 6, 12, 24, and 48
+ * integration_time is the observation time in months -- options are 6, 12, 24,
+ * and 48
  *
  */
 void sort_LISA_SC_coeffs(double *alpha, double *beta, double *kappa, double *gamma, double *fk, double  integration_time)

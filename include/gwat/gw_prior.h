@@ -32,6 +32,25 @@ using BoundsMap = std::map<std::string, PAIRDBL>;
 BoundsMap lnMc_eta_bounds_from_mass_bounds(double m1lo, double m1hi,
                                             double m2lo, double m2hi);
 
+/// @brief Formats `x` the same way std::cout would by default. Used to build
+/// row cells for print_param_table() before any column widths are measured.
+std::string format_value(double x);
+
+/// @brief Prints a name column followed by right-aligned value columns,
+/// sized to fit their contents, with a header and separator row. Intended
+/// for GWPriorFn classes to report their sampled/fixed parameters
+/// consistently during construction. No-op if @p rows is empty.
+///
+/// @p title         Line printed above the table.
+/// @p name_header   Header for the (left-aligned) first column.
+/// @p value_headers Headers for each subsequent (right-aligned) column.
+/// @p rows          Row cells; row[0] is the name, row[1:] align with
+///                   value_headers. Every row must have
+///                   value_headers.size() + 1 cells.
+void print_param_table(const std::string& title, const std::string& name_header,
+                       const std::vector<std::string>& value_headers,
+                       const std::vector<std::vector<std::string>>& rows);
+
 /// @brief Uniform box prior built from per-parameter [lo, hi] bounds.
 class BoxPrior {
   const std::vector<PAIRDBL> bounds_;
@@ -49,8 +68,9 @@ class BoxPrior {
 };
 
 /// @brief bayesship::probabilityFn built from boolean constraints and additive
-/// log-prior terms. eval() returns limitInf on the first violated constraint,
-/// otherwise the sum of all registered log-prior terms.
+/// log-prior terms. A constraint returns True if the parameter position is
+/// valid, False otherwise. eval() returns limitInf on the first violated
+/// constraint, otherwise the sum of all registered log-prior terms.
 class GWPriorFn : public bayesship::probabilityFn {
   std::vector<std::function<bool(const double*)>>   constraints_;
   std::vector<std::function<double(const double*)>> terms_;
@@ -81,6 +101,17 @@ class GWPriorFn : public bayesship::probabilityFn {
     double lp = 0.0;
     for (const auto& f : terms_) lp += f(pos->parameters);
     return lp;
+  }
+
+  /// @brief Print out all parameters that violate their constraints
+  void check_position(bayesship::positionInfo* pos) {
+    int i = 0;
+    for (const auto& c : constraints_) {
+      if (!c(pos->parameters))
+        std::cout << "Parameter i=" << i << " failed prior with value "
+                  << pos->parameters[i] << "\n";
+      i++;
+    }
   }
 };
 

@@ -14,10 +14,11 @@ PolarizationDataFishers::compute_derivative_in_detector(
   auto make_wf = [&](int i, double val) -> std::vector<VECCPL> {
     std::vector<double> th(theta, theta + dim);
     th[i] = val;
-    return generate_modes(th.data(), ifo.freqs);
+    return likelihood_.generate_modes(th.data(), ifo.freqs);
   };
 
-  const int n_modes = wf_gen_.n_modes();
+  const auto& factors = likelihood_.sky_avg_factors();
+  const int n_modes = static_cast<int>(factors.size());
   std::vector<std::vector<VECCPL>> modes_derivs(
       dim, std::vector<VECCPL>(n_modes, VECCPL(len)));
   for (int i = 0; i < dim; i++) {
@@ -59,18 +60,6 @@ PolarizationDataFishers::compute_derivative_in_detector(
   return modes_derivs;
 }
 
-std::vector<VECCPL> PolarizationDataFishers::generate_modes(
-    const double* theta, const VECDBL& freqs) const {
-  std::vector<double> th(theta, theta + pmap_.dim());
-  gen_params_base<double> gp;
-  pmap_.to_gen_params(th.data(), gp);
-  gp.f_ref = f_ref_;
-  gp.gmst = gmst_;
-  gp.shift_time = shift_time_;
-  gp.shift_phase = shift_phase_;
-  return wf_gen_.generate_polarizations(&gp, freqs);
-}
-
 void PolarizationDataFishers::compute_Fisher(double** fisherM,
                                              const double* theta) const {
   const int dim = pmap_.dim();
@@ -78,13 +67,14 @@ void PolarizationDataFishers::compute_Fisher(double** fisherM,
   for (int i = 0; i < dim; i++)
     for (int j = 0; j < dim; j++) fisherM[i][j] = 0.0;
 
+  const auto& factors = likelihood_.sky_avg_factors();
   for (const auto& ifo : ifos_) {
     auto resp_deriv = compute_derivative_in_detector(theta, ifo);
     for (int j = 0; j < dim; j++)
       for (int k = 0; k <= j; k++)
-        for (int m = 0; m < wf_gen_.n_modes(); m++)
+        for (int m = 0; m < static_cast<int>(factors.size()); m++)
           fisherM[j][k] +=
-              sky_avg_factors_[m] *
+              factors[m] *
               quad_.inner_product(resp_deriv[j][m], resp_deriv[k][m], ifo.psd);
   }
 
@@ -93,22 +83,11 @@ void PolarizationDataFishers::compute_Fisher(double** fisherM,
     for (int k = 0; k < j; k++) fisherM[k][j] = fisherM[j][k];
 }
 
-std::vector<VECCPL> RelativeBinningPolarizationsFishers::generate_modes(
-    const double* theta, const VECDBL& freqs) const {
-  std::vector<double> th(theta, theta + pmap_.dim());
-  gen_params_base<double> gp;
-  pmap_.to_gen_params(th.data(), gp);
-  gp.f_ref = f_ref_;
-  gp.gmst = gmst_;
-  gp.shift_time = shift_time_;
-  gp.shift_phase = shift_phase_;
-  return wf_gen_.generate_polarizations(&gp, freqs);
-}
-
 void RelativeBinningPolarizationsFishers::compute_Fisher(
     double** fisherM, const double* theta) const {
   const int dim = pmap_.dim();
-  const int n_modes = wf_gen_.n_modes();
+  const auto& factors = rb_.sky_avg_factors();
+  const int n_modes = static_cast<int>(factors.size());
   const VECDBL& bin_freqs = rb_.get_bin_freqs();
   const auto& summary = rb_.template_summary();
   const int n_bins = static_cast<int>(summary[0].B0.size());
@@ -123,7 +102,7 @@ void RelativeBinningPolarizationsFishers::compute_Fisher(
   auto make_modes = [&](int param, double val) -> std::vector<VECCPL> {
     std::vector<double> th(theta, theta + dim);
     th[param] = val;
-    return generate_modes(th.data(), bin_freqs);
+    return rb_.generate_modes(th.data(), bin_freqs);
   };
 
   for (int i = 0; i < dim; i++) {
@@ -181,7 +160,7 @@ void RelativeBinningPolarizationsFishers::compute_Fisher(
         const VECDBL& B0 = summary[m].B0;
         const VECDBL& B1 = summary[m].B1;
         for (int b = 0; b < n_bins; b++) {
-          gamma_jk += sky_avg_factors_[m] *
+          gamma_jk += factors[m] *
                       std::real(std::conj(g0[j][m][b]) * g0[k][m][b] * B0[b] +
                                 (std::conj(g0[j][m][b]) * g1[k][m][b] +
                                  std::conj(g1[j][m][b]) * g0[k][m][b]) *

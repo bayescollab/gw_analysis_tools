@@ -1039,10 +1039,12 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
     bool restrictSwapTemperatures, bool coldChainStorageOnly) {
   int chainN = ensembleSize * ensembleN;
   // Create fftw plan for each detector (length of data stream may be different)
-  fftw_outline* plans =
-      (fftw_outline*)malloc(sizeof(fftw_outline) * num_detectors);
-  for (int i = 0; i < num_detectors; i++) {
-    allocate_FFTW_mem_forward(&plans[i], data_length[i]);
+  fftw_outline* plans = nullptr;
+  if (data_length) {
+    plans = (fftw_outline*)malloc(sizeof(fftw_outline) * num_detectors);
+    for (int i = 0; i < num_detectors; i++) {
+      allocate_FFTW_mem_forward(&plans[i], data_length[i]);
+    }
   }
 
   std::mutex fisher_mutex;
@@ -1068,56 +1070,50 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
   // To save time, intrinsic waveforms can be saved between detectors, if the
   // frequencies are all the same
   mcmc_save_waveform = true;
-  for (int i = 1; i < mcmcVar.mcmc_num_detectors; i++) {
-    if (mcmcVar.mcmc_data_length[i] != mcmcVar.mcmc_data_length[0] ||
-        mcmcVar.mcmc_frequencies[i][0] != mcmcVar.mcmc_frequencies[0][0] ||
-        mcmcVar.mcmc_frequencies[i][mcmcVar.mcmc_data_length[i] - 1] !=
-            mcmcVar.mcmc_frequencies[0][mcmcVar.mcmc_data_length[0] - 1]) {
-      mcmcVar.mcmc_save_waveform = false;
+  if (data_length && frequencies) {
+    for (int i = 1; i < mcmcVar.mcmc_num_detectors; i++) {
+      if (mcmcVar.mcmc_data_length[i] != mcmcVar.mcmc_data_length[0] ||
+          mcmcVar.mcmc_frequencies[i][0] != mcmcVar.mcmc_frequencies[0][0] ||
+          mcmcVar.mcmc_frequencies[i][mcmcVar.mcmc_data_length[i] - 1] !=
+              mcmcVar.mcmc_frequencies[0][mcmcVar.mcmc_data_length[0] - 1]) {
+        mcmcVar.mcmc_save_waveform = false;
+      }
     }
   }
 
-  if (mcmcVar.model && mcmcVar.model->active()) {
-    const auto& names = mcmcVar.model->param_map->names();
-    std::cout << "Sampling in parameters: ";
-    for (int i = 0; i < (int)names.size() - 1; i++)
-      std::cout << names[i] << ", ";
-    std::cout << names.back() << "\n";
-    std::cout << mcmcVar.model->param_map->extrinsic_indices().size()
-              << " extrinsic parameters at indices:";
-    for (int idx : mcmcVar.model->param_map->extrinsic_indices())
-      std::cout << " " << idx;
-    std::cout << "\n";
-  } else {
+  if (!mcmcVar.model || !mcmcVar.model->active()) {
     PTMCMC_method_specific_prep(generation_method, dimension,
                                 &(mcmcVar.mcmc_intrinsic),
                                 mcmcVar.mcmc_mod_struct);
   }
 
-  int T = (int)(1. / (mcmcVar.mcmc_frequencies[0][1] -
-                      mcmcVar.mcmc_frequencies[0][0]));
-  debugger_print(__FILE__, __LINE__, T);
-  int burn_factor = T / 4;  // Take all sources to 4 seconds
-  debugger_print(__FILE__, __LINE__, burn_factor);
   std::complex<double>** burn_data =
-      new std::complex<double>*[mcmcVar.mcmc_num_detectors];
-  double** burn_freqs = new double*[mcmcVar.mcmc_num_detectors];
-  double** burn_noise = new double*[mcmcVar.mcmc_num_detectors];
-  int* burn_lengths = new int[mcmcVar.mcmc_num_detectors];
-  fftw_outline* burn_plans = new fftw_outline[mcmcVar.mcmc_num_detectors];
-  for (int j = 0; j < mcmcVar.mcmc_num_detectors; j++) {
-    burn_lengths[j] = mcmcVar.mcmc_data_length[j] / burn_factor;
-    burn_data[j] = new std::complex<double>[burn_lengths[j]];
-    burn_freqs[j] = new double[burn_lengths[j]];
-    burn_noise[j] = new double[burn_lengths[j]];
-    allocate_FFTW_mem_forward(&burn_plans[j], burn_lengths[j]);
-    int ct = 0;
-    for (int k = 0; k < mcmcVar.mcmc_data_length[j]; k++) {
-      if (k % burn_factor == 0 && ct < burn_lengths[j]) {
-        burn_data[j][ct] = mcmcVar.mcmc_data[j][k];
-        burn_freqs[j][ct] = mcmcVar.mcmc_frequencies[j][k];
-        burn_noise[j][ct] = mcmcVar.mcmc_noise[j][k];
-        ct++;
+      new std::complex<double>*[mcmcVar.mcmc_num_detectors]();
+  double** burn_freqs = new double*[mcmcVar.mcmc_num_detectors]();
+  double** burn_noise = new double*[mcmcVar.mcmc_num_detectors]();
+  int* burn_lengths = new int[mcmcVar.mcmc_num_detectors]();
+  fftw_outline* burn_plans = nullptr;
+  if (data_length && data && frequencies && noise_psd) {
+    int T = (int)(1. / (mcmcVar.mcmc_frequencies[0][1] -
+                        mcmcVar.mcmc_frequencies[0][0]));
+    debugger_print(__FILE__, __LINE__, T);
+    int burn_factor = T / 4;  // Take all sources to 4 seconds
+    debugger_print(__FILE__, __LINE__, burn_factor);
+    burn_plans = new fftw_outline[mcmcVar.mcmc_num_detectors];
+    for (int j = 0; j < mcmcVar.mcmc_num_detectors; j++) {
+      burn_lengths[j] = mcmcVar.mcmc_data_length[j] / burn_factor;
+      burn_data[j] = new std::complex<double>[burn_lengths[j]];
+      burn_freqs[j] = new double[burn_lengths[j]];
+      burn_noise[j] = new double[burn_lengths[j]];
+      allocate_FFTW_mem_forward(&burn_plans[j], burn_lengths[j]);
+      int ct = 0;
+      for (int k = 0; k < mcmcVar.mcmc_data_length[j]; k++) {
+        if (k % burn_factor == 0 && ct < burn_lengths[j]) {
+          burn_data[j][ct] = mcmcVar.mcmc_data[j][k];
+          burn_freqs[j][ct] = mcmcVar.mcmc_frequencies[j][k];
+          burn_noise[j][ct] = mcmcVar.mcmc_noise[j][k];
+          ct++;
+        }
       }
     }
   }
@@ -1380,7 +1376,9 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
   }
 
   // Deallocate fftw plans
-  for (int i = 0; i < num_detectors; i++) deallocate_FFTW_mem(&plans[i]);
+  if (plans) {
+    for (int i = 0; i < num_detectors; i++) deallocate_FFTW_mem(&plans[i]);
+  }
   delete propData->proposals[0];
   delete propData->proposals[1];
   delete propData->proposals[2];
@@ -1391,13 +1389,15 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
     delete[] burn_data[i];
     delete[] burn_freqs[i];
     delete[] burn_noise[i];
-    deallocate_FFTW_mem(&burn_plans[i]);
+  }
+  if (burn_plans) {
+    for (int i = 0; i < num_detectors; i++) deallocate_FFTW_mem(&burn_plans[i]);
+    delete[] burn_plans;
   }
   delete[] burn_data;
   delete[] burn_lengths;
   delete[] burn_noise;
   delete[] burn_freqs;
-  delete[] burn_plans;
   for (int i = 0; i < chainN; i++) {
     delete user_parameters[i];
   }
@@ -2399,7 +2399,7 @@ double MCMC_likelihood_extrinsic(bool save_waveform,
 //  find_fiducial
 // ============================================================
 
-void find_fiducial(const GWModel& model, const double* initial_params,
+void find_fiducial(const GWModel& model, const VECDBL& initial_params,
                    bayesship::probabilityFn* log_prior, int num_mh_steps,
                    std::vector<double>& map_params_out,
                    std::vector<double>& final_params_out) {
@@ -2427,7 +2427,7 @@ void find_fiducial(const GWModel& model, const double* initial_params,
   };
 
   // Chain state
-  std::vector<double> current(initial_params, initial_params + dimension);
+  std::vector<double> current = initial_params;
   std::vector<double> proposed(dimension);
   std::vector<double> best = current;
 

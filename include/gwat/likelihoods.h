@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <vector>
 
+#include "parameter_map.h"
 #include "waveform_generator_v2.h"
 #include "waveform_util.h"
 
@@ -22,10 +23,21 @@ class Likelihood {
   /// @param params             Model parameters.
   virtual double log_likelihood(gen_params_base<double>* params) const = 0;
 
-  /// @brief The detector strain data used by this likelihood.
-  /// Only meaningful for strain-based likelihoods; throws for others.
-  virtual const std::vector<IfoData>& get_ifos() const {
-    throw std::logic_error("get_ifos() not supported for this likelihood type");
+  /// @brief Generate polarization modes at @p freqs for the MCMC parameter
+  /// vector @p theta. The single source of truth for theta → waveform conversion.
+  /// Only meaningful for likelihoods that hold a ParameterMap; throws for others.
+  virtual std::vector<VECCPL> generate_modes(const double* theta,
+                                             const VECDBL& freqs) const {
+    throw std::logic_error("generate_modes() not supported for this likelihood type");
+  }
+
+  /// @brief Number of detectors (IFOs) this likelihood operates over.
+  virtual int detector_number() const = 0;
+
+  /// @brief Per-mode sky-averaging factors. Only meaningful for polarization
+  /// likelihoods; throws for others.
+  virtual const std::vector<double>& sky_avg_factors() const {
+    throw std::logic_error("sky_avg_factors() not supported for this likelihood type");
   }
 };
 
@@ -59,7 +71,9 @@ class CoherentBareLikelihood : public Likelihood {
   /// @details Compute the unmarginalized log-likelihood.
   double log_likelihood(gen_params_base<double>* params) const override;
 
-  const std::vector<IfoData>& get_ifos() const override { return ifos_; }
+  int detector_number() const override {
+    return static_cast<int>(ifos_.size());
+  }
 };
 
 /// @class PolarizationsLikelihood
@@ -73,6 +87,7 @@ class CoherentBareLikelihood : public Likelihood {
 /// waveform_polarizations: {hplus, hcross, hx, hy, hb, hl}.
 class PolarizationsLikelihood : public Likelihood {
  private:
+  const ParameterMap& pmap_;
   const PolarizationData& data_;
   const std::vector<double> sky_avg_factors_;
   const Quadrature& quad;
@@ -81,13 +96,15 @@ class PolarizationsLikelihood : public Likelihood {
   const bool shift_time_, shift_phase_;
 
  public:
-  PolarizationsLikelihood(const PolarizationData& data,
+  PolarizationsLikelihood(const ParameterMap& pmap,
+                          const PolarizationData& data,
                           std::vector<double> sky_avg_factors,
                           const Quadrature& q,
                           const WaveformGenerator& wf_generator,
                           double f_ref, double gmst,
                           bool shift_time, bool shift_phase)
-      : data_(data),
+      : pmap_(pmap),
+        data_(data),
         sky_avg_factors_(std::move(sky_avg_factors)),
         quad(q),
         waveform_generator_(wf_generator),
@@ -103,6 +120,12 @@ class PolarizationsLikelihood : public Likelihood {
   }
 
   double log_likelihood(gen_params_base<double>* params) const override;
+  std::vector<VECCPL> generate_modes(const double* theta,
+                                     const VECDBL& freqs) const override;
+  int detector_number() const override { return 1; }
+  const std::vector<double>& sky_avg_factors() const override {
+    return sky_avg_factors_;
+  }
 };
 
 namespace RelativeBinning {
@@ -126,6 +149,7 @@ class RelativeBinningBisectionLikelihood : public Likelihood {
       bool shift_time, bool shift_phase, bool log_spacing = false);
 
   double log_likelihood(gen_params_base<double>* params) const override;
+  int detector_number() const override { return 1; }
 
   VECDBL get_bin_freqs() { return bin_freqs; }
   VECINT get_bin_inds() { return bin_inds; }
@@ -133,8 +157,6 @@ class RelativeBinningBisectionLikelihood : public Likelihood {
   // Evaluate RB logL from waveforms already extracted at bin edges.
   // h_at_bins[det] must have exactly bin_inds.size() entries.
   double log_likelihood_at_waveform(const VECCPL& h_at_bins) const;
-
-  const std::vector<IfoData>& get_ifos() const override { return ifos_vec_; }
 
  private:
   const WaveformGenerator& waveform_generator_;
@@ -151,8 +173,6 @@ class RelativeBinningBisectionLikelihood : public Likelihood {
   int number_of_bins;
   SummaryData ifo_summary_data_;
   IfoData ifo_;
-  // Stable storage for get_ifos(); rebuilt once after setup_summary_data.
-  std::vector<IfoData> ifos_vec_;
 
   /// @brief Indices of the bin edges corresponding to the full-resolution grid,
   /// including the final right edge.
@@ -196,6 +216,7 @@ class RelativeBinningBisectionLikelihood : public Likelihood {
 class RelativeBinningBisectionPolarizationsLikelihood : public Likelihood {
  public:
   RelativeBinningBisectionPolarizationsLikelihood(
+      const ParameterMap& pmap,
       const PolarizationData& data,
       const std::vector<VECCPL>& fiducial_modes,
       const std::vector<VECCPL>& test_modes,
@@ -206,6 +227,12 @@ class RelativeBinningBisectionPolarizationsLikelihood : public Likelihood {
       bool log_spacing = false);
 
   double log_likelihood(gen_params_base<double>* params) const override;
+  std::vector<VECCPL> generate_modes(const double* theta,
+                                     const VECDBL& freqs) const override;
+  int detector_number() const override { return 1; }
+  const std::vector<double>& sky_avg_factors() const override {
+    return sky_avg_factors_;
+  }
 
   /// @brief Evaluate RB logL from template modes already extracted at bin edges.
   /// h_at_bins[m] must have exactly bin_inds_.size() entries.
@@ -233,6 +260,7 @@ class RelativeBinningBisectionPolarizationsLikelihood : public Likelihood {
                                const std::vector<VECCPL>& h) const;
 
  private:
+  const ParameterMap& pmap_;
   const WaveformGenerator& waveform_generator_;
   const double f_ref_, gmst_;
   const bool shift_time_, shift_phase_;

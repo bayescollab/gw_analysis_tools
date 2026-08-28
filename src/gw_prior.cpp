@@ -1,11 +1,61 @@
 #include "gw_prior.h"
 
 #include <cmath>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 
 #include "standardPriorLibrary.h"
 
 namespace gw_prior {
+
+std::string format_value(double x) {
+  std::ostringstream oss;
+  oss << x;
+  return oss.str();
+}
+
+void print_param_table(const std::string& title, const std::string& name_header,
+                       const std::vector<std::string>& value_headers,
+                       const std::vector<std::vector<std::string>>& rows) {
+  if (rows.empty()) return;
+
+  size_t name_w = name_header.size();
+  std::vector<size_t> val_w(value_headers.size());
+  for (size_t j = 0; j < value_headers.size(); ++j)
+    val_w[j] = value_headers[j].size();
+  for (const auto& row : rows) {
+    name_w = std::max(name_w, row[0].size());
+    for (size_t j = 0; j < value_headers.size(); ++j)
+      val_w[j] = std::max(val_w[j], row[j + 1].size());
+  }
+
+  auto print_value_cells = [&](const std::vector<std::string>& cells) {
+    for (size_t j = 0; j < value_headers.size(); ++j) {
+      std::cout << std::right << std::setw(val_w[j]) << cells[j];
+      if (j + 1 < value_headers.size()) std::cout << "  ";
+    }
+  };
+
+  std::cout << "\n" << title << "\n";
+  std::cout << "  " << std::left << std::setw(name_w) << name_header << "  |  ";
+  print_value_cells(value_headers);
+  std::cout << "\n";
+
+  std::cout << "  " << std::string(name_w, '-') << "--+--";
+  for (size_t j = 0; j < value_headers.size(); ++j) {
+    std::cout << std::string(val_w[j], '-');
+    if (j + 1 < value_headers.size()) std::cout << "--";
+  }
+  std::cout << "\n";
+
+  for (const auto& row : rows) {
+    std::cout << "  " << std::left << std::setw(name_w) << row[0] << "  |  ";
+    print_value_cells(std::vector<std::string>(row.begin() + 1, row.end()));
+    std::cout << "\n";
+  }
+}
+
 
 BoundsMap lnMc_eta_bounds_from_mass_bounds(double m1lo, double m1hi,
                                            double m2lo, double m2hi) {
@@ -28,16 +78,27 @@ BoundsMap lnMc_eta_bounds_from_mass_bounds(double m1lo, double m1hi,
 
 BHBPriorFn::BHBPriorFn(const ParamSpecMap& specs, const ParameterMap& pmap,
                        BoundsMap extra_bounds) {
+  std::vector<std::vector<std::string>> sampled_rows, fixed_rows;
   // Box constraints for every sampled parameter from its ParamSpec bounds.
   for (const auto& kv : specs) {
-    if (kv.second.fixed) continue;
+    if (kv.second.fixed) {
+      fixed_rows.push_back({kv.first, format_value(kv.second.value)});
+      continue;
+    }
     const std::string& name = kv.first;
     int idx = pmap.index_of(name);
     double lo = kv.second.lo, hi = kv.second.hi;
+    sampled_rows.push_back({name, format_value(lo), format_value(hi),
+                            category_string(kv.second.category)});
     add([idx, lo, hi](const double* v) {
       return v[idx] >= lo && v[idx] <= hi;
     });
   }
+
+  std::cout << "---- Initializing BHBPriorFn ----\n";
+  print_param_table("Sampled parameters:", "Parameter",
+                    {"Lo", "Hi", "Category"}, sampled_rows);
+  print_param_table("Fixed parameters:", "Parameter", {"Value"}, fixed_rows);
 
   // lnMc + eta: component-mass bounds + chirpmass-eta Jacobian.
   {

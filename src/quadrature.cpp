@@ -75,7 +75,7 @@ int downsize_uniform_grid_with_trapezoid_quad(
   int N_converged = N_initial;
   int N_halve = N_initial;
   int counter = 0;
-  while (counter <= max_iterations && N_halve > 3) {
+  while (counter < max_iterations && N_halve > 3) {
     int N_half = (N_halve - 1) / 2 + 1;
     if (N_half < 3) N_half = 3;
     double rel = std::abs(eval_hh(N_half) - hh_ref) / std::abs(hh_ref);
@@ -87,6 +87,7 @@ int downsize_uniform_grid_with_trapezoid_quad(
     N_halve = N_half;
     if (N_halve <= 3) break;
   }
+  if (counter >= max_iterations) std::cout << "max_iterations reached.\n";
   std::cout << "N_converged = " << N_converged << "  (" << N_initial << " / "
             << N_converged << " = "
             << static_cast<double>(N_initial) / N_converged << "x reduction)\n";
@@ -96,10 +97,11 @@ int downsize_uniform_grid_with_trapezoid_quad(
 
 int downsize_uniform_grid_with_trapezoid_quad(
     const int N_initial, const double f_min, const double f_max,
-    const std::string& psd_name, gen_params_base<double>* params,
+    gen_params_base<double>* params,
     const waveform_generator::WaveformGenerator& wf_gen,
-    const std::vector<double>& sky_avg_factors,
-    const double tol, const bool log_spacing, const int max_iterations) {
+    const std::string& psd_name, const std::vector<double>& sky_avg_factors,
+    const double tol, const bool log_spacing, double integration_time,
+    const int max_iterations) {
   std::cout << "Halving from N_initial=" << N_initial
             << " with tolerance=" << tol << ") ...\n";
 
@@ -107,7 +109,7 @@ int downsize_uniform_grid_with_trapezoid_quad(
   const double range = (log_spacing ? std::log10(f_max) : f_max) - fmin;
 
   auto eval_hh = [&](int N) -> double {
-    const double dx = range / (N - 1);
+    const double dx = range / static_cast<double>(N - 1);
     VECDBL xv(N);
     for (int j = 0; j < N; j++) {
       if (log_spacing)
@@ -118,7 +120,8 @@ int downsize_uniform_grid_with_trapezoid_quad(
     xv[N - 1] = f_max;
 
     VECDBL psd_v(N);
-    populate_noise(xv.data(), psd_name.c_str(), psd_v.data(), N);
+    populate_noise(xv.data(), psd_name.c_str(), psd_v.data(), N,
+                   integration_time);
     for (int j = 0; j < N; j++) psd_v[j] *= psd_v[j];
 
     auto modes = wf_gen.generate_polarizations(params, xv);
@@ -142,7 +145,7 @@ int downsize_uniform_grid_with_trapezoid_quad(
   int N_converged = N_initial;
   int N_halve = N_initial;
   int counter = 0;
-  while (counter <= max_iterations && N_halve > 3) {
+  while (counter < max_iterations && N_halve > 3) {
     int N_half = (N_halve - 1) / 2 + 1;
     if (N_half < 3) N_half = 3;
     double rel = std::abs(eval_hh(N_half) - hh_ref) / std::abs(hh_ref);
@@ -154,6 +157,7 @@ int downsize_uniform_grid_with_trapezoid_quad(
     N_halve = N_half;
     if (N_halve <= 3) break;
   }
+  if (counter >= max_iterations) std::cout << "max_iterations reached.\n";
   std::cout << "N_converged = " << N_converged << "  (" << N_initial << " / "
             << N_converged << " = "
             << static_cast<double>(N_initial) / N_converged << "x reduction)\n";

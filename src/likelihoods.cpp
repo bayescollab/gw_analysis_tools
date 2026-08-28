@@ -77,6 +77,17 @@ double CoherentBareLikelihood::log_likelihood(
   return ll;
 }
 
+std::vector<VECCPL> PolarizationsLikelihood::generate_modes(
+    const double* theta, const VECDBL& freqs) const {
+  gen_params_base<double> gp;
+  pmap_.to_gen_params(theta, gp);
+  gp.f_ref = f_ref_;
+  gp.gmst = gmst_;
+  gp.shift_time = shift_time_;
+  gp.shift_phase = shift_phase_;
+  return waveform_generator_.generate_polarizations(&gp, freqs);
+}
+
 double PolarizationsLikelihood::log_likelihood(
     gen_params_base<double>* params) const {
   gen_params_base<double> local_params = *params;
@@ -182,7 +193,6 @@ RelativeBinningBisectionLikelihood::RelativeBinningBisectionLikelihood(
   RelativeBinningPrinter(std::to_string(number_of_bins) + " bins setup");
 
   setup_summary_data(ifo, fiducial_data, log_spacing);
-  ifos_vec_ = {ifo_};
 
   int num_edges = (int)bin_inds.size();
   VECCPL ht(num_edges);
@@ -434,6 +444,7 @@ double RelativeBinningBisectionLikelihood::log_likelihood(
 
 RelativeBinningBisectionPolarizationsLikelihood::
     RelativeBinningBisectionPolarizationsLikelihood(
+        const ParameterMap& pmap,
         const PolarizationData& data,
         const std::vector<VECCPL>& fiducial_modes,
         const std::vector<VECCPL>& test_modes,
@@ -441,7 +452,8 @@ RelativeBinningBisectionPolarizationsLikelihood::
         const WaveformGenerator& waveform_generator,
         double epsilon, double f_ref, double gmst,
         bool shift_time, bool shift_phase, bool log_spacing)
-    : waveform_generator_(waveform_generator),
+    : pmap_(pmap),
+      waveform_generator_(waveform_generator),
       f_ref_(f_ref),
       gmst_(gmst),
       shift_time_(shift_time),
@@ -694,6 +706,17 @@ RelativeBinningBisectionPolarizationsLikelihood::log_likelihood_at_waveform(
     ll += sky_avg_factors_[m] * (-0.5 * h_h + d_h);
   }
   return ll;
+}
+
+std::vector<VECCPL> RelativeBinningBisectionPolarizationsLikelihood::generate_modes(
+    const double* theta, const VECDBL& freqs) const {
+  gen_params_base<double> gp;
+  pmap_.to_gen_params(theta, gp);
+  gp.f_ref = f_ref_;
+  gp.gmst = gmst_;
+  gp.shift_time = shift_time_;
+  gp.shift_phase = shift_phase_;
+  return waveform_generator_.generate_polarizations(&gp, freqs);
 }
 
 double RelativeBinningBisectionPolarizationsLikelihood::log_likelihood(

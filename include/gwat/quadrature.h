@@ -20,11 +20,11 @@ int downsize_uniform_grid_with_trapezoid_quad(
 /// Evaluates (h|h) = sum_m factor_m * (h_m|h_m) using wf_gen at each
 /// candidate grid size and halves until the relative change falls below @p tol.
 int downsize_uniform_grid_with_trapezoid_quad(
-    int N_initial, double f_min, double f_max, const std::string& psd_name,
-    gen_params_base<double>* params,
+    int N_initial, double f_min, double f_max, gen_params_base<double>* params,
     const waveform_generator::WaveformGenerator& wf_gen,
-    const std::vector<double>& sky_avg_factors,
-    double tol, bool log_spacing, int max_iterations = 15);
+    const std::string& psd_name, const std::vector<double>& sky_avg_factors,
+    double tol, bool log_spacing, double integration_time = 12.0,
+    int max_iterations = 15);
 
 // ----- QUADRATURE CLASSES -----
 

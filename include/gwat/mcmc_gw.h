@@ -220,6 +220,35 @@ bayesship::bayesshipSampler* RJPTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
     bool ignoreExistingCheckpoint, bool restrictSwapTemperatures,
     bool coldChainStorageOnly);
 
+/// Overload when using GWModel in mod_struct
+bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
+    bayesship::positionInfo* initialPosition, int independentSamples,
+    int ensembleSize, int ensembleN, double swapProb, int burnIterations,
+    int burnPriorIterations, int priorIterations, bool writePriorData,
+    int batchSize, int numThreads, bool pool, double gps_time,
+    MCMC_modification_struct* mod_struct, std::string outputDir,
+    std::string outputFileMoniker, bool ignoreExistingCheckpoint,
+    bool restrictSwapTemperatures, bool coldChainStorageOnly) {
+  if (mod_struct->model->active()) {
+    const GWModel* model = mod_struct->model;
+    return PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
+        model->param_map->dim(), independentSamples, ensembleSize, ensembleN,
+        initialPosition, (bayesship::positionInfo**)nullptr, swapProb,
+        burnIterations, burnPriorIterations, priorIterations, writePriorData,
+        batchSize, (double**)nullptr, model->prior, numThreads, pool,
+        model->likelihood->detector_number(), (std::complex<double>**)nullptr,
+        (double**)nullptr, (double**)nullptr, (int*)nullptr, gps_time,
+        (std::string*)nullptr, mod_struct, "", outputDir, outputFileMoniker,
+        ignoreExistingCheckpoint, restrictSwapTemperatures,
+        coldChainStorageOnly);
+  } else {
+    throw std::runtime_error(
+        "This is an overload of PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW "
+        "meant for GWModel, but mod_struct->model is not active.");
+  }
+  return nullptr;
+}
+
 double maximized_Log_Likelihood_aligned_spin_internal(
     std::complex<double>* data, double* psd, double* frequencies,
     std::complex<double>* detector_response, size_t length, fftw_outline* plan);
@@ -245,31 +274,15 @@ double MCMC_likelihood_extrinsic(bool save_waveform,
                                  std::string* detectors, int num_detectors);
 
 /// @brief Runs a Metropolis-Hastings chain from @p initial_params to locate
-/// good fiducial and test waveforms for relative-binning initialization.
-///
-/// \param model          GWModel supplying param_map, likelihood, and fisher.
-/// \param initial_params Starting MCMC parameter vector (length
-/// model.param_map->dim()).
-/// \param log_prior      Log-prior probability function for the model.
-/// \param param_scales   Typical scale for each parameter (e.g. prior width).
-/// \param num_mh_steps   Number of M-H steps.
-/// \param gen_resp       Callable (const double* theta) → std::vector<VECCPL>
-///                       that generates the model waveform(s) at theta. The
-///                       caller decides whether to return detector responses or
-///                       polarization modes — find_fiducial passes the result
-///                       through unchanged.
-/// \param fiducial_out  [out] gen_resp evaluated at the MAP point.
-/// \param test_out      [out] gen_resp evaluated at the final M-H step.
-/// \param test_gp_out   [out] gen_params at the final M-H step (optional).
-/// @brief Runs a Metropolis-Hastings chain from @p initial_params to locate
 /// good fiducial and test parameter points for relative-binning initialization.
 ///
 /// Returns the MAP parameter vector and the final M-H step parameter vector.
-/// The caller is responsible for generating the corresponding waveforms (e.g.
-/// via model.fisher->generate_modes or a likelihood call).
+/// The caller is responsible for generating the corresponding waveforms.
 ///
-/// \param model             GWModel supplying param_map, likelihood, and fisher.
-/// \param initial_params    Starting parameter vector (length param_map->dim()).
+/// \param model             GWModel supplying param_map, likelihood, and
+/// fisher.
+/// \param initial_params    Starting parameter vector (length
+/// param_map->dim()).
 /// \param log_prior         Log-prior probability function for the model.
 /// \param num_mh_steps      Number of M-H steps.
 /// \param map_params_out   [out] Parameter vector at the MAP point.
@@ -277,10 +290,8 @@ double MCMC_likelihood_extrinsic(bool save_waveform,
 ///
 /// M-H proposal widths are derived from the prior bounds in model.param_map:
 /// sigma_i = min(Fisher, 0.5 * w_i) where w_i = hi_i - lo_i.
-void find_fiducial(const GWModel& model,
-                   const double* initial_params,
-                   bayesship::probabilityFn* log_prior,
-                   int num_mh_steps,
+void find_fiducial(const GWModel& model, const VECDBL& initial_params,
+                   bayesship::probabilityFn* log_prior, int num_mh_steps,
                    std::vector<double>& map_params_out,
                    std::vector<double>& final_params_out);
 

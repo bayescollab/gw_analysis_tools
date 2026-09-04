@@ -348,16 +348,16 @@ private:
 	{
 		for(auto i =0u; i<numThreads-numSwpSWPThreads-numSwpSWPPThreads; i++)
 		{
-			mThreads.emplace_back([=]{
+			mThreads.emplace_back([=, this]{
 				while(true)
 				{
 					int j;
 					{
 						std::unique_lock<std::mutex> lock{EventMutexStep};
 
-						//EventVarStep.wait(lock,[=]{return mStopping || !step_queue.empty() ; });
-						//EventVarStep.wait(lock,[=]{return mStopping || ( (!step_queue.empty() && !randomize) ||(!step_queue_vector.empty() && randomize)) ; });
-						EventVarStep.wait(lock,[=]{return mStopping || !step_queue_empty() ; });
+						//EventVarStep.wait(lock,[=, this]{return mStopping || !step_queue.empty() ; });
+						//EventVarStep.wait(lock,[=, this]{return mStopping || ( (!step_queue.empty() && !randomize) ||(!step_queue_vector.empty() && randomize)) ; });
+						EventVarStep.wait(lock,[=, this]{return mStopping || !step_queue_empty() ; });
 						
 						
 						//if (mStopping && step_queue.empty())
@@ -377,14 +377,14 @@ private:
 		//Swapping thread
 		for(auto i =0u; i<numSwpSWPThreads; i++)
 		{
-			mThreads.emplace_back([=]{
+			mThreads.emplace_back([=, this]{
 				while(true)
 				{
 					int j, k=-1;
 					{
 						std::unique_lock<std::mutex> lock{EventMutexSWP_paired};
 
-						EventVarSWP_paired.wait(lock,[=]{return mStopping || !(swap_queue_paired.empty()); });
+						EventVarSWP_paired.wait(lock,[=, this]{return mStopping || !(swap_queue_paired.empty()); });
 						
 						if (mStopping && swap_queue_paired.empty())
 							break;	
@@ -401,14 +401,14 @@ private:
 		//Swapping thread
 		for(auto i =0u; i<numSwpSWPPThreads; i++)
 		{
-			mThreads.emplace_back([=]{
+			mThreads.emplace_back([=, this]{
 				while(true)
 				{
 					int j;
 					{
 						std::unique_lock<std::mutex> lock{EventMutexSWP_pre_pair};
 
-						EventVarSWP_pre_pair.wait(lock,[=]{return mStopping || !(swap_queue_pre_pair.empty()); });
+						EventVarSWP_pre_pair.wait(lock,[=, this]{return mStopping || !(swap_queue_pre_pair.empty()); });
 						
 						if (mStopping && swap_queue_pre_pair.empty())
 							break;	

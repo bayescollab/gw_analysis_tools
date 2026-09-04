@@ -477,12 +477,17 @@ RelativeBinningBisectionPolarizationsLikelihood::
 
   int n_edges = static_cast<int>(bin_inds_.size());
   std::vector<VECCPL> ht(number_of_modes_, VECCPL(n_edges));
+  std::vector<VECCPL> d(number_of_modes_, VECCPL(n_edges));
   for (int m = 0; m < number_of_modes_; ++m)
-    for (int k = 0; k < n_edges; ++k)
+    for (int k = 0; k < n_edges; ++k){
       ht[m][k] = test_modes[m][bin_inds_[k]];
+      d[m][k] = data.modes[m][bin_inds_[k]];
+    }
 
   double logL = log_likelihood_at_waveform(ht);
   RelativeBinningPrinter("logL of test data: " + std::to_string(logL));
+  double snr = std::sqrt(2.0  * std::max(0.0, log_likelihood_at_waveform(d)));
+  RelativeBinningPrinter("SNR of data: " + std::to_string(snr));
 }
 
 std::pair<int, int>

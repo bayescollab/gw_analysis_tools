@@ -5,6 +5,9 @@
 #include <bayesship/proposalFunctions.h>
 #include <bayesship/utilities.h>
 
+#include <fstream>
+#include <iomanip>
+
 #include "detector_util.h"
 #include "fisher.h"
 #include "gw_fisher.h"
@@ -1215,6 +1218,11 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
           sampler->ensembleN * sampler->ensembleSize, sampler->maxDim, sampler,
           blocksDiff, blocksProbDiff, 10, 10, 10, 1e-10, false,
           sampler->maxDim * 100);
+
+      std::cout << "Block DE and GMM proposals set for "
+                << std::to_string(ext_idx.size()) << " extrinsic and "
+                << std::to_string(int_idx.size()) << " intrinsic parameters.\n";
+
     } else {
       propArray[1] = new bayesship::differentialEvolutionProposal(sampler);
     }
@@ -1278,6 +1286,7 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
           sampler->ensembleN * sampler->ensembleSize, sampler->minDim,
           &MCMC_fisher_GWNumericalFishers_wrapper_explicit_marginalization,
           sampler->userParameters, 100, sampler, blocks, blockProb);
+      std::cout << "Block Fisher proposal set.\n";
     } else {
       propArray[3] = new bayesship::fisherProposal(
           sampler->ensembleN * sampler->ensembleSize, sampler->maxDim,
@@ -2448,16 +2457,32 @@ void find_fiducial(const GWModel& model, const VECDBL& initial_params,
     for (int i = 0; i < dimension; i++)
       fisher_mat[i] = fisher_storage.data() + i * dimension;
     model.fisher->compute_Fisher(fisher_mat.data(), current.data());
-    std::cout << "Fiducial Fisher diagonal (MCMC params):\n";
-    for (int i = 0; i < dimension; i++) {
-      double gamma_ii = fisher_mat[i][i];
-      double fisher_sigma =
-          (gamma_ii > 0.0) ? c_mh / std::sqrt(gamma_ii) : 0.1 * prior_widths[i];
-      double prior_half = 0.5 * prior_widths[i];
-      sigma[i] = std::min(fisher_sigma, prior_half);
-      std::cout << "  param " << i << ": Gamma_ii=" << gamma_ii
-                << "  sigma=" << sigma[i] << "  ["
-                << (sigma[i] < fisher_sigma ? "prior" : "Fisher") << "]\n";
+    {
+      const auto& names = pmap.names();
+      // Column widths
+      size_t nw = std::string("Parameter").size();
+      for (const auto& n : names) nw = std::max(nw, n.size());
+      const int gw = 14, sw = 12, srcw = 6;
+      std::cout << "\nFiducial Fisher diagonal:\n";
+      std::cout << "  " << std::left << std::setw(nw) << "Parameter"
+                << "  " << std::right << std::setw(gw) << "Gamma_ii"
+                << "  " << std::setw(sw) << "sigma"
+                << "  " << std::setw(srcw) << "Source" << "\n";
+      std::cout << "  " << std::string(nw, '-') << "  " << std::string(gw, '-')
+                << "  " << std::string(sw, '-') << "  "
+                << std::string(srcw, '-') << "\n";
+      for (int i = 0; i < dimension; i++) {
+        double gamma_ii = fisher_mat[i][i];
+        double fisher_sigma = (gamma_ii > 0.0) ? c_mh / std::sqrt(gamma_ii)
+                                               : 0.1 * prior_widths[i];
+        double prior_half = 0.5 * prior_widths[i];
+        sigma[i] = std::min(fisher_sigma, prior_half);
+        const char* src = (sigma[i] < fisher_sigma) ? "prior" : "Fisher";
+        std::cout << "  " << std::left << std::setw(nw) << names[i] << "  "
+                  << std::right << std::setw(gw) << gamma_ii << "  "
+                  << std::setw(sw) << sigma[i] << "  " << std::setw(srcw) << src
+                  << "\n";
+      }
     }
   }
 
@@ -2511,12 +2536,25 @@ void find_fiducial(const GWModel& model, const VECDBL& initial_params,
   std::cout << "M-H loop time: " << mh_ms << " ms\n";
   std::cout << "Proposal acceptance fraction: " << proposals_accepted << "/"
             << proposals_in_prior << " in-prior proposals accepted\n";
-  std::cout << "Per-parameter acceptance (in-prior):\n";
-  for (int i = 0; i < dimension; i++) {
-    int tot = param_in_prior[i], acc = param_accepted[i];
-    std::cout << "  param " << i << ": " << acc << "/" << tot;
-    if (tot > 0) std::cout << "  (" << (100 * acc / tot) << "%)";
-    std::cout << "\n";
+  {
+    const auto& names = pmap.names();
+    size_t nw = std::string("Parameter").size();
+    for (const auto& n : names) nw = std::max(nw, n.size());
+    std::cout << "\nPer-parameter acceptance (in-prior):\n";
+    std::cout << "  " << std::left << std::setw(nw) << "Parameter"
+              << "  " << std::right << std::setw(8) << "Accepted"
+              << "  " << std::setw(8) << "Total"
+              << "  " << std::setw(6) << "%" << "\n";
+    std::cout << "  " << std::string(nw, '-') << "  " << std::string(8, '-')
+              << "  " << std::string(8, '-') << "  " << std::string(6, '-')
+              << "\n";
+    for (int i = 0; i < dimension; i++) {
+      int tot = param_in_prior[i], acc = param_accepted[i];
+      std::cout << "  " << std::left << std::setw(nw) << names[i] << "  "
+                << std::right << std::setw(8) << acc << "  " << std::setw(8)
+                << tot << "  " << std::setw(6)
+                << (tot > 0 ? std::to_string(100 * acc / tot) : "-") << "\n";
+    }
   }
 
   map_params_out   = best;

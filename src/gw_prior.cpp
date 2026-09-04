@@ -109,6 +109,7 @@ BHBPriorFn::BHBPriorFn(const ParamSpecMap& specs, const ParameterMap& pmap,
       add_ln_prior_term([lnMc_idx, eta_idx](const double* v) {
         return std::log(chirpmass_eta_jac(std::exp(v[lnMc_idx]), v[eta_idx]));
       });
+      std::cout << "(m1,m2) -> (lnMc,eta) prior added.\n";
     }
   }
 
@@ -137,6 +138,7 @@ BHBPriorFn::BHBPriorFn(const ParamSpecMap& specs, const ParameterMap& pmap,
       add_ln_prior_term(
           [lnDL_idx](const double* v) { return 3.0 * v[lnDL_idx]; });
     }
+    std::cout << "Uniform in spatial volume prior added.\n";
   }
 }
 

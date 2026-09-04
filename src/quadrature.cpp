@@ -97,7 +97,7 @@ int downsize_uniform_grid_with_trapezoid_quad(
 
 int downsize_uniform_grid_with_trapezoid_quad(
     const int N_initial, const double f_min, const double f_max,
-    gen_params_base<double>* params,
+    const gen_params_base<double>* params,
     const waveform_generator::WaveformGenerator& wf_gen,
     const std::string& psd_name, const std::vector<double>& sky_avg_factors,
     const double tol, const bool log_spacing, double integration_time,

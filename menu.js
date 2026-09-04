@@ -140,7 +140,6 @@ function initMenu(relPath,treeview) {
       } else {
         slideUp(mainMenu, SLIDE_DELAY, () => {
           mainMenu.style.display = 'none';
-          initResizableIfExists();
         });
       }
     });
@@ -566,24 +565,5 @@ function initMenu(relPath,treeview) {
     }
   });
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  const configElem = document.getElementById('doxygen-config');
-  if (configElem) {
-    const config = JSON.parse(configElem.textContent);
-    initMenu(config.relPath, config.generateTreeView);
-    if (config.searchEngine) {
-      if (!config.serverBasedSearch) {
-        if (!config.disableIndex && config.dynamicMenus && !config.fullSidebar) {
-          if (typeof init_search === 'function') init_search();
-        }
-      } else {
-        if (document.querySelector('.searchresults') && typeof searchBox !== 'undefined') {
-          searchBox.DOMSearchField().focus();
-        }
-      }
-    }
-  }
-});
 
 /* @license-end */

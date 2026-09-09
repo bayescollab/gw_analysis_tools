@@ -20,39 +20,6 @@ virtual T phase_ins(T f, source_parameters<T> *param, T *pn_coeff,
 
 virtual T Dphase_ins(T f, source_parameters<T> *param, T *pn_coeff, lambda_parameters<T> *lambda);
 
-//virtual void fisher_calculation_sky_averaged(double *frequency, 
-//			int length, 
-//			gen_params *parameters,
-//			double **amplitude_deriv, 
-//			double **phase_deriv, 
-//			double *amplitude, 
-//			int *amp_tapes, 
-//			int *phase_tapes
-//			);
-//
-//virtual void amplitude_tape(source_parameters<double> *input_params, 
-//				int *tape 
-//				);
-//
-//virtual void phase_tape(source_parameters<double> *input_params, 
-//				int *tape
-//				);
-//
-//virtual void construct_amplitude_derivative(double *frequencies, 
-//				int length,
-//				int dimension,
-//				double **amplitude_derivative,
-//				source_parameters<double> *input_params,
-//				int *tapes=NULL 
-//				);
-//
-//virtual void construct_phase_derivative(double *frequencies, 
-//				int length,
-//				int dimension,
-//				double **phase_derivative,
-//				source_parameters<double> *input_params,
-//				int *tapes = NULL
-//				);
 };
 /*! Class that extends the IMRPhenomD waveform to include non-GR terms in the full
  * phase. This is an appropriate waveform choice for propagation effects
@@ -68,39 +35,6 @@ virtual T phase_mr(T f, source_parameters<T> *param, lambda_parameters<T> *lambd
 virtual T phase_int(T f, source_parameters<T> *param, lambda_parameters<T> *lambda );
 virtual T Dphase_int(T f, source_parameters<T> *param, lambda_parameters<T> *lambda);
 
-//virtual void fisher_calculation_sky_averaged(double *frequency, 
-//			int length, 
-//			gen_params *parameters,
-//			double **amplitude_deriv, 
-//			double **phase_deriv, 
-//			double *amplitude, 
-//			int *amp_tapes, 
-//			int *phase_tapes
-//			);
-//
-//virtual void amplitude_tape(source_parameters<double> *input_params, 
-//				int *tape 
-//				);
-//
-//virtual void phase_tape(source_parameters<double> *input_params, 
-//				int *tape
-//				);
-//
-//virtual void construct_amplitude_derivative(double *frequencies, 
-//				int length,
-//				int dimension,
-//				double **amplitude_derivative,
-//				source_parameters<double> *input_params,
-//				int *tapes=NULL 
-//				);
-//
-//virtual void construct_phase_derivative(double *frequencies, 
-//				int length,
-//				int dimension,
-//				double **phase_derivative,
-//				source_parameters<double> *input_params,
-//				int *tapes = NULL
-//				);
 };
 
 //template<class T> 

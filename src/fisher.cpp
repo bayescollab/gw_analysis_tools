@@ -1505,8 +1505,7 @@ void unpack_parameters(double* parameters,
         parameters[12] = input_params->phip;
       }
     } else if (has_substring(generation_method, "IMRPhenomD")) {
-      if ((has_substring(generation_method, "MCMC")) &&
-          !(has_substring(generation_method, "EOS"))) {
+      if ((has_substring(generation_method, "MCMC"))) {
         for (int i = 0; i < dimension; i++) {
           log_factors[i] = false;
         }
@@ -1523,44 +1522,26 @@ void unpack_parameters(double* parameters,
         parameters[4] = input_params->phiRef;
         parameters[5] = input_params->tc;
         parameters[6] = log(input_params->Luminosity_Distance);
-        parameters[7] =
-            log(calculate_chirpmass(input_params->mass1, input_params->mass2));
-        parameters[8] = calculate_eta(input_params->mass1, input_params->mass2);
-        parameters[9] = input_params->spin1[2];
-        parameters[10] = input_params->spin2[2];
-      } else if (has_substring(generation_method, "EOS")) {
-        for (int i = 0; i < dimension; i++) {
-          log_factors[i] = false;
+
+        // The EoS waveform does not have mass parameters.
+        if (!has_substring(generation_method, "EOS")) {
+          parameters[7] = log(
+              calculate_chirpmass(input_params->mass1, input_params->mass2));
+          parameters[8] =
+              calculate_eta(input_params->mass1, input_params->mass2);
         }
 
-        parameters[0] = input_params->RA;
-        parameters[1] = input_params->DEC;
-        if (input_params->equatorial_orientation) {
-          parameters[2] = input_params->theta_l;
-          parameters[3] = input_params->phi_l;
-        } else {
-          parameters[2] = input_params->psi;
-          parameters[3] = input_params->incl_angle;
-        }
-        parameters[4] = input_params->phiRef;
-        parameters[5] = input_params->tc;
-        parameters[6] = input_params->Luminosity_Distance;
-        parameters[7] = input_params->nbc1;
-        parameters[8] = input_params->nbc2;
         parameters[9] = input_params->spin1[2];
         parameters[10] = input_params->spin2[2];
-        parameters[11] = input_params->bump_mag;
-        parameters[12] = input_params->bump_width;
-        parameters[13] = input_params->bump_offset;
-        if (input_params->EOS_plat_flag) {
-          parameters[14] = input_params->plat;
-        }
       } else {
         for (int i = 0; i < dimension; i++) {
           log_factors[i] = false;
         }
         log_factors[6] = true;  // Distance
-        log_factors[7] = true;  // chirpmass
+        if (!has_substring(generation_method, "EOS")) {
+          log_factors[7] = true;  // Chirpmass
+          // The EoS waveform does not have mass parameters.
+        }
 
         parameters[0] = input_params->RA;
         parameters[1] = input_params->DEC;
@@ -1574,9 +1555,14 @@ void unpack_parameters(double* parameters,
         parameters[4] = input_params->phiRef;
         parameters[5] = input_params->tc;
         parameters[6] = input_params->Luminosity_Distance;
-        parameters[7] =
-            calculate_chirpmass(input_params->mass1, input_params->mass2);
-        parameters[8] = calculate_eta(input_params->mass1, input_params->mass2);
+
+        // The EoS waveform does not have mass parameters.
+        if (!has_substring(generation_method, "EOS")) {
+          parameters[7] =
+              calculate_chirpmass(input_params->mass1, input_params->mass2);
+          parameters[8] =
+              calculate_eta(input_params->mass1, input_params->mass2);
+        }
         parameters[9] = input_params->spin1[2];
         parameters[10] = input_params->spin2[2];
       }
@@ -1612,7 +1598,6 @@ void unpack_parameters(double* parameters,
         }
       }
     }
-
   } else {
     if (has_substring(generation_method, "IMRPhenomPv2") ||
         has_substring(generation_method, "IMRPhenomPv3")) {
@@ -1668,21 +1653,20 @@ void unpack_parameters(double* parameters,
                   << std::endl;
       }
     } else if (has_substring(generation_method, "IMRPhenomD")) {
-      if (has_substring(generation_method, "MCMC")) {
+      if (has_substring(generation_method, "EOS")) {
+        std::cout << "Sky averaged IMRPhenomD_NRT_EOS is not supported for "
+                     "regular fishers."
+                  << std::endl;
+      } else if (has_substring(generation_method, "MCMC")) {
         for (int i = 0; i < dimension; i++) {
           log_factors[i] = false;
         }
-        // log_factors[0] = true;//chirpmass
 
         parameters[0] =
             log(calculate_chirpmass(input_params->mass1, input_params->mass2));
         parameters[1] = calculate_eta(input_params->mass1, input_params->mass2);
         parameters[2] = input_params->spin1[2];
         parameters[3] = input_params->spin2[2];
-      } else if (has_substring(generation_method, "EOS")) {
-        std::cout << "Sky averaged IMRPhenomD_NRT_EOS is not supported for "
-                     "regular fishers."
-                  << std::endl;
       } else {
         for (int i = 0; i < dimension; i++) {
           log_factors[i] = false;
@@ -1743,6 +1727,20 @@ void unpack_parameters(double* parameters,
           }
           parameters[4] = log(input_params->tidal1);
           parameters[5] = log(input_params->tidal2);
+        }
+      }
+    }
+  } else if (has_substring(generation_method, "EOS")) {
+    if (!input_params->sky_average) {
+      if (has_substring(generation_method, "PhenomD")) {
+        // EoS parameters
+        parameters[7] = input_params->nbc1;
+        parameters[8] = input_params->nbc2;
+        parameters[11] = input_params->bump_mag;
+        parameters[12] = input_params->bump_width;
+        parameters[13] = input_params->bump_offset;
+        if (input_params->EOS_plat_flag) {
+          parameters[14] = input_params->plat;
         }
       }
     }
@@ -1820,6 +1818,7 @@ void unpack_parameters(double* parameters,
     }
   }
 }
+
 /*! \brief Repack the parameters from an adouble vector to a
  * gen_params_base<adouble> object and freqeuncy
  *
@@ -1957,35 +1956,15 @@ void repack_parameters(T* avec_parameters, gen_params_base<T>* a_params,
           a_params->mean_anomaly_start = avec_parameters[16];
         }
       }
-    } else if (has_substring(generation_method, "EOS")) {
-      a_params->RA = avec_parameters[0];
-      a_params->DEC = avec_parameters[1];
-      if (a_params->equatorial_orientation) {
-        a_params->theta_l = avec_parameters[2];
-        a_params->phi_l = avec_parameters[3];
-      } else {
-        a_params->psi = avec_parameters[2];
-        a_params->incl_angle = avec_parameters[3];
-      }
-      a_params->phiRef = avec_parameters[4];
-      a_params->tc = avec_parameters[5];
-      a_params->Luminosity_Distance = avec_parameters[6];
-      a_params->nbc1 = avec_parameters[7];
-      a_params->nbc2 = avec_parameters[8];
-      a_params->spin1[2] = avec_parameters[9];
-      a_params->spin2[2] = avec_parameters[10];
-      a_params->bump_mag = avec_parameters[11];
-      a_params->bump_width = avec_parameters[12];
-      a_params->bump_offset = avec_parameters[13];
-      if (a_params->EOS_plat_flag) {
-        a_params->plat = avec_parameters[14];
-      }
     } else if (has_substring(generation_method, "IMRPhenomD")) {
       if (has_substring(generation_method, "MCMC")) {
-        a_params->mass1 =
-            calculate_mass1(exp(avec_parameters[7]), avec_parameters[8]);
-        a_params->mass2 =
-            calculate_mass2(exp(avec_parameters[7]), avec_parameters[8]);
+        // EoS waveform does not have mass parameters.
+        if (!has_substring(generation_method, "EOS")) {
+          a_params->mass1 =
+              calculate_mass1(exp(avec_parameters[7]), avec_parameters[8]);
+          a_params->mass2 =
+              calculate_mass2(exp(avec_parameters[7]), avec_parameters[8]);
+        }
         a_params->Luminosity_Distance = exp(avec_parameters[6]);
         a_params->RA = avec_parameters[0];
         a_params->DEC = asin(avec_parameters[1]);
@@ -2002,10 +1981,14 @@ void repack_parameters(T* avec_parameters, gen_params_base<T>* a_params,
         a_params->phiRef = avec_parameters[4];
         a_params->tc = avec_parameters[5];
       } else {
-        a_params->mass1 =
-            calculate_mass1(avec_parameters[7], avec_parameters[8]);
-        a_params->mass2 =
-            calculate_mass2(avec_parameters[7], avec_parameters[8]);
+        // EoS waveform does not have mass parameters.
+        if (!has_substring(generation_method, "EOS")) {
+          a_params->mass1 =
+              calculate_mass1(avec_parameters[7], avec_parameters[8]);
+          a_params->mass2 =
+              calculate_mass2(avec_parameters[7], avec_parameters[8]);
+        }
+
         a_params->Luminosity_Distance = avec_parameters[6];
         a_params->RA = avec_parameters[0];
         a_params->DEC = avec_parameters[1];
@@ -2121,11 +2104,14 @@ void repack_parameters(T* avec_parameters, gen_params_base<T>* a_params,
         }
       }
     } else if (has_substring(generation_method, "IMRPhenomD")) {
+      // EoS waveform does not have mass parameters.
       if (has_substring(generation_method, "MCMC")) {
-        a_params->mass1 =
-            calculate_mass1(exp(avec_parameters[0]), avec_parameters[1]);
-        a_params->mass2 =
-            calculate_mass2(exp(avec_parameters[0]), avec_parameters[1]);
+        if (!has_substring(generation_method, "EOS")) {
+          a_params->mass1 =
+              calculate_mass1(exp(avec_parameters[0]), avec_parameters[1]);
+          a_params->mass2 =
+              calculate_mass2(exp(avec_parameters[0]), avec_parameters[1]);
+        }
 
         a_params->Luminosity_Distance = 1000;
         a_params->spin1[2] = avec_parameters[2];
@@ -2134,10 +2120,14 @@ void repack_parameters(T* avec_parameters, gen_params_base<T>* a_params,
         a_params->tc = 0;
         a_params->incl_angle = 0;
       } else {
-        a_params->mass1 =
-            calculate_mass1(avec_parameters[3], avec_parameters[4]);
-        a_params->mass2 =
-            calculate_mass2(avec_parameters[3], avec_parameters[4]);
+        // EoS waveform does not have mass parameters.
+        if (!has_substring(generation_method, "EOS")) {
+          a_params->mass1 =
+              calculate_mass1(avec_parameters[3], avec_parameters[4]);
+          a_params->mass2 =
+              calculate_mass2(avec_parameters[3], avec_parameters[4]);
+        }
+
         a_params->Luminosity_Distance =
             DL_from_A0((T)(avec_parameters[3] * MSOL_SEC), avec_parameters[0],
                        a_params->sky_average) /
@@ -2172,6 +2162,16 @@ void repack_parameters(T* avec_parameters, gen_params_base<T>* a_params,
           a_params->tidal2 = exp(avec_parameters[5]);
         }
       }
+    }
+  } else if (has_substring(generation_method, "EOS")) {
+    // EoS parameters
+    a_params->nbc1 = avec_parameters[7];
+    a_params->nbc2 = avec_parameters[8];
+    a_params->bump_mag = avec_parameters[11];
+    a_params->bump_width = avec_parameters[12];
+    a_params->bump_offset = avec_parameters[13];
+    if (a_params->EOS_plat_flag) {
+      a_params->plat = avec_parameters[14];
     }
   }
   // debugger_print(__FILE__,__LINE__,generation_method);
@@ -2497,7 +2497,7 @@ void calculate_fisher_elements(double* frequency, int length, int dimension,
 void calculate_fisher_elements(
     double** output,                        //< [return] Fisher matrix
     std::complex<double>** response_deriv,  //< Derivatives of the response from
-                                            //calculate_derivatives
+                                            // calculate_derivatives
     double* psd,                            //< PSD array
     int dimension,                          //< Dimension of parameter space
     Quadrature* quadMethod  //< Quadrature class to compute integrals
@@ -2551,8 +2551,8 @@ void prep_gsl_subroutine(gsl_subroutine* params_packed) {
   double vec_parameters[vec_param_length];
   assign_freq_boundaries(freq_boundaries, grad_freqs, boundary_num, params,
                          generation_method);
-  // unpack_parameters(&vec_parameters[1], params, generation_method, dimension,
-  // log_factors);
+  // unpack_parameters(&vec_parameters[1], params, generation_method,
+  // dimension, log_factors);
 }
 void tape_phase_gsl_subroutine(gsl_subroutine* params_packed) {
   int boundary_num = params_packed->boundary_num;
@@ -2561,8 +2561,8 @@ void tape_phase_gsl_subroutine(gsl_subroutine* params_packed) {
   std::string detector = params_packed->detector;
   std::string generation_method = params_packed->generation_method;
   gen_params* params = params_packed->gen_params_in;
-  // calculate hessian of phase, take [0][j] components to get the derivative of
-  // time
+  // calculate hessian of phase, take [0][j] components to get the derivative
+  // of time
   std::string local_gen_method = local_generation_method(generation_method);
 
   // calculate derivative of phase
@@ -2619,8 +2619,8 @@ void tape_time_gsl_subroutine(gsl_subroutine* params_packed) {
   std::string detector = params_packed->detector;
   std::string generation_method = params_packed->generation_method;
   gen_params* params = params_packed->gen_params_in;
-  // calculate hessian of phase, take [0][j] components to get the derivative of
-  // time
+  // calculate hessian of phase, take [0][j] components to get the derivative
+  // of time
   int vec_param_length = dimension + 1;  //+1 for frequency
   std::string local_gen_method = local_generation_method(generation_method);
   double vec_parameters[vec_param_length];
@@ -2756,8 +2756,8 @@ void tape_waveform_gsl_subroutine(gsl_subroutine* params_packed) {
 /*! \brief Routine that implements GSL numerical integration to calculate the
  * Fishers
  *
- * This can be faster than brute force calculations in fisher_autodiff, but that
- * depends
+ * This can be faster than brute force calculations in fisher_autodiff, but
+ * that depends
  *
  * Trade offs:
  *
@@ -2790,10 +2790,10 @@ void fisher_autodiff_gsl_integration(
     gen_params* parameters, /**< Generation parameters specifying source
                                                            parameters and
                                waveform options*/
-    double abserr, /**<Target absolute error (0 if this should be ignored -- ONE
-                                          type of error must be specified)*/
-    double relerr  /**<Target relative error (0 if this should be ignored -- ONE
-                                          type of error must be specified)*/
+    double abserr, /**<Target absolute error (0 if this should be ignored --
+                      ONE type of error must be specified)*/
+    double relerr  /**<Target relative error (0 if this should be ignored --
+                      ONE  type of error must be specified)*/
 ) {
   fisher_autodiff_gsl_integration(frequency_bounds, generation_method,
                                   sensitivity_curve, detector,
@@ -2804,8 +2804,8 @@ void fisher_autodiff_gsl_integration(
 /*! \brief Routine that implements GSL numerical integration to calculate the
  * Fishers
  *
- * This can be faster than brute force calculations in fisher_autodiff, but that
- * depends
+ * This can be faster than brute force calculations in fisher_autodiff, but
+ * that depends
  *
  * Trade offs:
  *
@@ -2822,8 +2822,8 @@ void fisher_autodiff_gsl_integration(
  *
  * Implements (GSL_INTEG_GAUSS15)
  *
- * Now includes option to log error instead of ending program for certain types
- * of errors
+ * Now includes option to log error instead of ending program for certain
+ * types of errors
  */
 void fisher_autodiff_gsl_integration(
     double* frequency_bounds,  /**<Bounds of integration in fourier space*/
@@ -2841,10 +2841,10 @@ void fisher_autodiff_gsl_integration(
     gen_params* parameters, /**< Generation parameters specifying source
                                                            parameters and
                                waveform options*/
-    double abserr, /**<Target absolute error (0 if this should be ignored -- ONE
-                                          type of error must be specified)*/
-    double relerr, /**<Target relative error (0 if this should be ignored -- ONE
-                                          type of error must be specified)*/
+    double abserr, /**<Target absolute error (0 if this should be ignored --
+                      ONE type of error must be specified)*/
+    double relerr, /**<Target relative error (0 if this should be ignored --
+                      ONE type of error must be specified)*/
     std::string error_log, /**< File to write non-critical error codes to
                                                           (roundoff error)*/
     bool logerr /**<Whether or not to end program with certain error codes, or
@@ -2947,14 +2947,14 @@ void fisher_autodiff_gsl_integration(
 /*! \brief Routine that implements GSL numerical integration to calculate the
  * Fishers -- batch modifications version
  *
- * Calculates Fisher for multiple modifications at a time, neglecting covariance
- * between modifications (set to 0 in Fisher)
+ * Calculates Fisher for multiple modifications at a time, neglecting
+ * covariance between modifications (set to 0 in Fisher)
  *
  * Modifications MUST BE evaluated at 0 for this routine to calculate correct
  * results
  *
- * This can be faster than brute force calculations in fisher_autodiff, but that
- * depends
+ * This can be faster than brute force calculations in fisher_autodiff, but
+ * that depends
  *
  * Trade offs:
  *
@@ -2988,10 +2988,10 @@ void fisher_autodiff_gsl_integration_batch_mod(
     gen_params* parameters, /**< Generation parameters specifying source
                                                            parameters and
                                waveform options*/
-    double abserr, /**<Target absolute error (0 if this should be ignored -- ONE
-                                          type of error must be specified)*/
-    double relerr  /**<Target relative error (0 if this should be ignored -- ONE
-                                          type of error must be specified)*/
+    double abserr, /**<Target absolute error (0 if this should be ignored --
+                      ONE type of error must be specified)*/
+    double relerr  /**<Target relative error (0 if this should be ignored --
+                      ONE  type of error must be specified)*/
 ) {
   fisher_autodiff_gsl_integration_batch_mod(
       frequency_bounds, generation_method, sensitivity_curve, detector,
@@ -3001,14 +3001,14 @@ void fisher_autodiff_gsl_integration_batch_mod(
 /*! \brief Routine that implements GSL numerical integration to calculate the
  * Fishers -- batch modifications version
  *
- * Calculates Fisher for multiple modifications at a time, neglecting covariance
- * between modifications (set to 0 in Fisher)
+ * Calculates Fisher for multiple modifications at a time, neglecting
+ * covariance between modifications (set to 0 in Fisher)
  *
  * Modifications MUST BE evaluated at 0 for this routine to calculate correct
  * results
  *
- * This can be faster than brute force calculations in fisher_autodiff, but that
- * depends
+ * This can be faster than brute force calculations in fisher_autodiff, but
+ * that depends
  *
  * Trade offs:
  *
@@ -3025,8 +3025,8 @@ void fisher_autodiff_gsl_integration_batch_mod(
  *
  * Implements (GSL_INTEG_GAUSS15)
  *
- * Now includes option to log error instead of ending program for certain types
- * of errors
+ * Now includes option to log error instead of ending program for certain
+ * types of errors
  */
 void fisher_autodiff_gsl_integration_batch_mod(
     double* frequency_bounds,  /**<Bounds of integration in fourier space*/
@@ -3045,10 +3045,10 @@ void fisher_autodiff_gsl_integration_batch_mod(
     gen_params* parameters, /**< Generation parameters specifying source
                                                            parameters and
                                waveform options*/
-    double abserr, /**<Target absolute error (0 if this should be ignored -- ONE
-                                          type of error must be specified)*/
-    double relerr, /**<Target relative error (0 if this should be ignored -- ONE
-                                          type of error must be specified)*/
+    double abserr, /**<Target absolute error (0 if this should be ignored --
+                      ONE type of error must be specified)*/
+    double relerr, /**<Target relative error (0 if this should be ignored --
+                      ONE type of error must be specified)*/
     std::string error_log, /**< File to write non-critical error codes to
                                                           (roundoff error)*/
     bool logerr /**<Whether or not to end program with certain error codes, or

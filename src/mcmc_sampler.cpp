@@ -766,16 +766,13 @@ void continue_PTMCMC_MH_dynamic_PT_alloc_full_ensemble_internal(std::string chec
 			ensemble_number++;
 		}
 	}
-	double chain_temp_averages[(int)(chains_per_ensemble - 2)];
-	int chain_N_per_group[(int)(chains_per_ensemble - 2)];
+	int n_temp_groups = std::max(0, (int)(chains_per_ensemble - 2));
+	std::vector<double> chain_temp_averages(n_temp_groups, 0.);
+	std::vector<int> chain_N_per_group(n_temp_groups, 0);
 	double temp_upper_bound = samplerptr->chain_temps[(int)(chains_per_ensemble-1)];
-	for(int i = 0 ; i < chains_per_ensemble-2;i++){
-		chain_temp_averages[i]=0;	
-		chain_N_per_group[i]=0;	
-	}
 	int ct = 0 ;
 	for(int i = 1 ; i < samplerptr->chain_N;i++){
-		if(fabs(samplerptr->chain_temps[i]-1) < DOUBLE_COMP_THRESH || 
+		if(fabs(samplerptr->chain_temps[i]-1) < DOUBLE_COMP_THRESH ||
 			fabs(samplerptr->chain_temps[i] - temp_upper_bound) < DOUBLE_COMP_THRESH){
 			ct=0;
 			continue;
@@ -785,13 +782,13 @@ void continue_PTMCMC_MH_dynamic_PT_alloc_full_ensemble_internal(std::string chec
 			chain_temp_averages[ct] +=std::log(samplerptr->chain_temps[i]);
 			chain_N_per_group[ct]+=1;
 			ct++;
-				
+
 		}
 	}
-	for(int i = 0 ; i < chains_per_ensemble-2;i++){
-		chain_temp_averages[i]/=chain_N_per_group[i];	
+	for(int i = 0 ; i < n_temp_groups;i++){
+		chain_temp_averages[i]/=chain_N_per_group[i];
 		chain_temp_averages[i] = std::exp(chain_temp_averages[i]);
-		//chain_temp_averages[i]=std::pow(chain_temp_averages[i],1./chain_N_per_group[i]);	
+		//chain_temp_averages[i]=std::pow(chain_temp_averages[i],1./chain_N_per_group[i]);
 		//debugger_print(__FILE__,__LINE__,chain_temp_averages[i]);
 	}
 	ct = 0;
@@ -1035,16 +1032,13 @@ void continue_RJPTMCMC_MH_dynamic_PT_alloc_full_ensemble_internal(std::string ch
 			ensemble_number++;
 		}
 	}
-	double chain_temp_averages[(int)(chains_per_ensemble - 2)];
-	int chain_N_per_group[(int)(chains_per_ensemble - 2)];
+	int n_temp_groups = std::max(0, (int)(chains_per_ensemble - 2));
+	std::vector<double> chain_temp_averages(n_temp_groups, 0.);
+	std::vector<int> chain_N_per_group(n_temp_groups, 0);
 	double temp_upper_bound = samplerptr->chain_temps[(int)(chains_per_ensemble-1)];
-	for(int i = 0 ; i < chains_per_ensemble-2;i++){
-		chain_temp_averages[i]=0;	
-		chain_N_per_group[i]=0;	
-	}
 	int ct = 0 ;
 	for(int i = 1 ; i < samplerptr->chain_N;i++){
-		if(fabs(samplerptr->chain_temps[i]-1) < DOUBLE_COMP_THRESH || 
+		if(fabs(samplerptr->chain_temps[i]-1) < DOUBLE_COMP_THRESH ||
 			fabs(samplerptr->chain_temps[i] - temp_upper_bound) < DOUBLE_COMP_THRESH){
 			ct=0;
 			continue;
@@ -1054,13 +1048,13 @@ void continue_RJPTMCMC_MH_dynamic_PT_alloc_full_ensemble_internal(std::string ch
 			chain_temp_averages[ct] +=std::log(samplerptr->chain_temps[i]);
 			chain_N_per_group[ct]+=1;
 			ct++;
-				
+
 		}
 	}
-	for(int i = 0 ; i < chains_per_ensemble-2;i++){
-		chain_temp_averages[i]/=chain_N_per_group[i];	
+	for(int i = 0 ; i < n_temp_groups;i++){
+		chain_temp_averages[i]/=chain_N_per_group[i];
 		chain_temp_averages[i] = std::exp(chain_temp_averages[i]);
-		//chain_temp_averages[i]=std::pow(chain_temp_averages[i],1./chain_N_per_group[i]);	
+		//chain_temp_averages[i]=std::pow(chain_temp_averages[i],1./chain_N_per_group[i]);
 		debugger_print(__FILE__,__LINE__,chain_temp_averages[i]);
 	}
 	ct = 0;

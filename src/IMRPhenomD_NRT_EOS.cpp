@@ -37,34 +37,6 @@
 /* ----------------------------- Public Methods ----------------------------- */
 
 /**
- * @brief Overrides the IMRPhenomD_NRT waveform constructor to add EoS
- * functionality
- *
- * @details Calculates the EoS using the specified parameters, then integrates
- * for the mass and tidal deformability using the central values. Updates
- * observable parameters that depend on the mass and tidal deformability, then
- * passes this information off to the base IMRPhenomD_NRT waveform constructor.
- *
- * @tparam T
- * @param frequencies
- * @param length
- * @param waveform
- * @param params
- * @return int
- */
-template <class T>
-int IMRPhenomD_NRT_EOS<T>::construct_waveform(T* frequencies, int length,
-                                              std::complex<T>* waveform,
-                                              source_parameters<T>* params) {
-  get_m_love(params);
-
-  int result = this->IMRPhenomD_NRT<T>::construct_waveform(frequencies, length,
-                                                           waveform, params);
-
-  return result;
-}
-
-/**
  * @brief Convert EOS parameters to neutron star masses and tidal
  * deformabilities.
  *
@@ -73,11 +45,11 @@ int IMRPhenomD_NRT_EOS<T>::construct_waveform(T* frequencies, int length,
  * corresponding astrophysical properties (masses and tidal deformabilities)
  * for a neutron star binary.
  *
- * @param[in,out] params On output, mass1, mass2, tidal1, and tidal2 as well as
- * dependent parameters are updated.
+ * @param[in,out] parameters On output, mass1, mass2, tidal1, and tidal2 as well
+ * as dependent parameters are updated.
  */
 template <class T>
-void IMRPhenomD_NRT_EOS<T>::get_m_love(source_parameters<T>* params) {
+void IMRPhenomD_NRT_EOS<T>::get_m_love(gen_params_base<T>* parameters) {
   // Central epsilon values
   double ec1;
   double ec2;
@@ -88,7 +60,7 @@ void IMRPhenomD_NRT_EOS<T>::get_m_love(source_parameters<T>* params) {
 
   // Constructs the bumpy EoS and stores that information in interpolated object
   Bumpy_EOS_Constructor* bumpy_eos = new Bumpy_EOS_Constructor;
-  bumpy_eos->store_EOS_params(params);
+  bumpy_eos->store_EOS_params(parameters);
   bumpy_eos->get_additional_EOS_params();
   bumpy_eos->construct_EOS();
   ec1 = bumpy_eos->eos.eps_c1;
@@ -118,44 +90,19 @@ void IMRPhenomD_NRT_EOS<T>::get_m_love(source_parameters<T>* params) {
     std::cout << "This curvature... is bad. Sobs." << std::endl;
   } */
 
-  // Store observables into params structure
-  params->mass1 = observables1[1] * MSOL_SEC;
-  params->mass2 = observables2[1] * MSOL_SEC;
-  params->tidal1 = observables1[2];
-  params->tidal2 = observables2[2];
+  // TODO: (Kaitlyn) This is for debugging, remove when finished
+  std::ofstream log("data/parameters.csv",
+                    std::ios_base::app | std::ios_base::out);
+  log << parameters->nbc1 << ", " << parameters->bump_mag << ", "
+      << parameters->bump_width << ", " << parameters->bump_offset << ", "
+      << observables1[1] << ", " << observables1[2] << "\n";
+  log.close();
 
-  // TODO: (Kaitlyn) Perhaps replace this with the repopulate source parameters
-  // function? The only issue with this is I only need the mass-dependent
-  // parameters, the repopulate function calculates EVERYTHING.
-
-  // Update dependent observable parameters
-  get_observable_params(params);
-}
-
-/**
- * @brief Calculate mass-derived parameters for source_parameters.
- *
- * @details After integrating for the mass and tidal deformability, this
- * repopulates all of the parameters that are dependent on mass. Without this,
- * GWAT would think these values are NaN.
- *
- * @tparam T Double/adouble specification for source_parameters.
- * @param params GWAT's source_parameters object.
- */
-template <class T>
-void IMRPhenomD_NRT_EOS<T>::get_observable_params(
-    source_parameters<T>* params) {
-  params->chirpmass = calculate_chirpmass(params->mass1, params->mass2);
-  params->eta = calculate_eta(params->mass1, params->mass2);
-  params->M = params->mass1 + params->mass2;
-  params->chi_eff =
-      (params->mass1 * (params->spin1z) + params->mass2 * (params->spin2z)) /
-      (params->M);
-  params->chi_pn =
-      params->chi_eff - (38 * params->eta / 113) * (2 * params->chi_s);
-  params->delta_mass = sqrt(1. - 4 * params->eta);
-  params->A0 = A0_from_DL(params->chirpmass, params->DL, params->sky_average);
-  return;
+  // Store observables into parameters structure
+  parameters->mass1 = observables1[1];
+  parameters->mass2 = observables2[1];
+  parameters->tidal1 = observables1[2];
+  parameters->tidal2 = observables2[2];
 }
 
 // Because GWAT hates me (DON'T REMOVE THIS THE COMPILER WILL FAIL TO FIND THE
@@ -312,8 +259,7 @@ void EOS_Constructor::convert_cs2_to_eos(std::size_t start_index) {
  *
  * @param params GWAT's source_parameters object.
  */
-void Bumpy_EOS_Constructor::store_EOS_params(
-    source_parameters<adouble>* params) {
+void Bumpy_EOS_Constructor::store_EOS_params(gen_params_base<adouble>* params) {
   eos_params.bump_magnitude = params->bump_mag.value();
   eos_params.bump_width = convert_nsat_to_MeV(params->bump_width.value());
   eos_params.bump_offset = convert_nsat_to_MeV(params->bump_offset.value());
@@ -328,8 +274,7 @@ void Bumpy_EOS_Constructor::store_EOS_params(
  *
  * @param params GWAT's source_parameters object.
  */
-void Bumpy_EOS_Constructor::store_EOS_params(
-    source_parameters<double>* params) {
+void Bumpy_EOS_Constructor::store_EOS_params(gen_params_base<double>* params) {
   eos_params.bump_magnitude = params->bump_mag;
   eos_params.bump_width = convert_nsat_to_MeV(params->bump_width);
   eos_params.bump_offset = convert_nsat_to_MeV(params->bump_offset);

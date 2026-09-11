@@ -69,17 +69,8 @@ class Interpolation {
 template <class T>
 class IMRPhenomD_NRT_EOS : public IMRPhenomD_NRT<T> {
  public:
-  // Function to override IMRPhenomD_NRT construct_waveform
-  virtual int construct_waveform(T* frequencies, int length,
-                                 std::complex<T>* waveform,
-                                 source_parameters<T>* params) override;
-
   // Function to calculate and update masses and tidal love numbers
-  void get_m_love(source_parameters<T>* params);
-
- protected:
-  // Function to update mass-dependent parameters
-  void get_observable_params(source_parameters<T>* params);
+  static void get_m_love(gen_params_base<T>* params);
 };
 
 /* -------------------------------------------------------------------------- */
@@ -190,8 +181,8 @@ class Bumpy_EOS_Constructor : public EOS_Constructor {
   BumpyParams eos_params;
 
   // Functions to store parameters
-  void store_EOS_params(source_parameters<adouble>* params);
-  void store_EOS_params(source_parameters<double>* params);
+  void store_EOS_params(gen_params_base<adouble>* params);
+  void store_EOS_params(gen_params_base<double>* params);
   virtual void get_additional_EOS_params();
 
   // Function to inject a parabolic bump into a crust EoS

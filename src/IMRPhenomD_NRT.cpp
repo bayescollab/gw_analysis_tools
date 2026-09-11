@@ -694,41 +694,40 @@ int IMRPhenomD_NRT<T>::construct_waveform(T *frequencies, int length, std::compl
   std::complex<T> i;
   i = std::complex<T> (0,1.);
   T fcut = .2/M; //Cutoff frequency for IMRPhenomD - all higher frequencies return 0
-  for (size_t j =0; j< length; j++)
-    {
-      f = frequencies[j];
-      if(f>fcut){
-	amp = 0.0;
-	waveform[j] = 0.0;
+  for (size_t j = 0; j < length; j++) {
+    f = frequencies[j];
+    if (f > fcut) {
+      amp = 0.0;
+      waveform[j] = 0.0;
+    } else {
+      // if (f<params->f1_phase)
+      // This is always needed for NRT
+      this->precalc_powers_ins(f, M, &pows);
+
+      amp = (A0 *
+             this->build_amp(f, &lambda, params, &pows, pn_amp_coeffs, deltas));
+      phase = (this->build_phase(f, &lambda, params, &pows, pn_phase_coeffs));
+      /*Append phase_ins_NRT and amp_ins_NRT to the entire waveform*/
+      {
+        T phaseNRT = this->phase_ins_NRT(f, &pows, params);
+        phase += phaseNRT;
+        T phaseSpinNRT = this->phase_spin_NRT(f, &pows, params);
+        phase += phaseSpinNRT;
+        // I don't know why this would be minus instead of plus, but it seems to
+        // get closer to LAL's result if it's minus phaseSpinNRT
+        T ampNRT = (A0 * this->amp_ins_NRT(f, &pows, params));
+        amp += ampNRT;
+
+        // Dissipative tidal contribution to the phase
+        T phaseNRT_D = this->phase_ins_NRT_D(f, &pows, params);
+        phase += phaseNRT_D;
       }
-      else{	
-	//if (f<params->f1_phase)
-	//This is always needed for NRT
-	this->precalc_powers_ins(f, M, &pows);
-  
-	amp = (A0 * this->build_amp(f,&lambda,params,&pows,pn_amp_coeffs,deltas));
-	phase = (this->build_phase(f,&lambda,params,&pows,pn_phase_coeffs));
-	/*Append phase_ins_NRT and amp_ins_NRT to the entire waveform*/
-	{
-		T phaseNRT = this->phase_ins_NRT(f,&pows,params);
-		phase += phaseNRT;
-		T phaseSpinNRT = this->phase_spin_NRT(f, &pows,params);
-		phase += phaseSpinNRT;
-		//I don't know why this would be minus instead of plus, but it seems to get closer to LAL's result if it's minus phaseSpinNRT
-		T ampNRT = (A0*this->amp_ins_NRT(f,&pows, params));
-		amp +=ampNRT;
-               
-                // Dissipative tidal contribution to the phase 
-                T phaseNRT_D = this->phase_ins_NRT_D(f,&pows,params);
-                phase += phaseNRT_D;	
-	}
-	//phase +=   (T)(tc*(f-f_ref) - phic);
-	phase -=   (T)(tc*(f-f_ref) + phic);
-	waveform[j] = amp * std::exp(-i * phase);
-      }
-      
+      // phase +=   (T)(tc*(f-f_ref) - phic);
+      phase -= (T)(tc * (f - f_ref) + phic);
+      waveform[j] = amp * std::exp(-i * phase);
     }
-	
+  }
+
   //###################################### The next part applies the taper.  
   for(int i = 0; i<length; i++)
     {

@@ -334,7 +334,7 @@ void read_file(std::string filename, std::vector<std::vector<double>>& output,
   }
 }
 
-// TODO: Figure out how to properly document this
+// TODO: (Kaitlyn) Figure out how to properly document this
 void read_file(std::string filename, std::vector<std::vector<double>>& output,
                char delimiter) {
   read_file(filename, output, delimiter, 0);

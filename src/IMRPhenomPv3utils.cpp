@@ -284,8 +284,10 @@ template <class T> vector3D<T> Roots(const T L_norm, const T J_norm, const syspr
     }
     else{
         out.z = 2.*sqrtarg*cos(theta) - ((*system).onethird)*coeffs.x;
-        out.y = 2.*sqrtarg*cos(theta - GWAT_TWOPI*((*system).onethird)) - ((*system).onethird)*coeffs.x;
-        out.x = 2.*sqrtarg*cos(theta - 2.*GWAT_TWOPI*((*system).onethird)) - ((*system).onethird)*coeffs.x;
+        out.y = 2. * sqrtarg * cos(theta - kTwoPi * ((*system).onethird)) -
+                ((*system).onethird) * coeffs.x;
+        out.x = 2. * sqrtarg * cos(theta - 2. * kTwoPi * ((*system).onethird)) -
+                ((*system).onethird) * coeffs.x;
 
         A3 = fmax(fmax(out.x,out.y),out.z);
         A1 = fmin(fmin(out.x,out.y),out.z);
@@ -805,7 +807,25 @@ template <class T> int InitializePrecession(sysprecquant<T>* system, /** [out] P
 {
     system->onethird = 1./3.;
 
-    const T domegadt_csts_nonspin[17] = {96./5.,-1486./35.,-264./5.,384.*M_PI/5.,34103./945.,13661./105.,944./15.,M_PI*(-4159./35.),M_PI*(-2268./5.),(16447322263./7276500. + M_PI*M_PI*512./5. - GWAT_LN2*109568./175. -gamma_E*54784./175.),(-56198689./11340. + M_PI*M_PI*902./5.),1623./140.,-1121./27.,-54784./525.,-M_PI*883./42.,M_PI*71735./63.,M_PI*73196./63.};
+    const T domegadt_csts_nonspin[17] = {
+        96. / 5.,
+        -1486. / 35.,
+        -264. / 5.,
+        384. * M_PI / 5.,
+        34103. / 945.,
+        13661. / 105.,
+        944. / 15.,
+        M_PI * (-4159. / 35.),
+        M_PI * (-2268. / 5.),
+        (16447322263. / 7276500. + M_PI * M_PI * 512. / 5. -
+         kLn2 * 109568. / 175. - kGammaE * 54784. / 175.),
+        (-56198689. / 11340. + M_PI * M_PI * 902. / 5.),
+        1623. / 140.,
+        -1121. / 27.,
+        -54784. / 525.,
+        -M_PI * 883. / 42.,
+        M_PI * 71735. / 63.,
+        M_PI * 73196. / 63.};
     const T domegadt_csts_spinorbit[18] = {-904./5.,-120.,-62638./105.,4636./5.,-6472./35.,3372./5.,-M_PI*720.,-M_PI*2416./5.,-208520./63.,796069./105.,-100019./45.,-1195759./945.,514046./105.,-8709./5.,-M_PI*307708./105.,M_PI*44011./7.,-M_PI*7992./7.,M_PI*151449./35.};
     const T domegadt_csts_spinspin[4] = {-494./5.,-1442./5.,-233./5.,-719./5.};
     const T L_csts_nonspin[9] = {3./2.,1./6.,27./8.,-19./8.,1./24.,135./16.,-6889/144.+ 41./24.*M_PI*M_PI,31./24.,7./1296.};
@@ -1551,7 +1571,8 @@ template <class T> T OrbitalAngMom3PNSpinning(
     InitializePrecession(system, m1_SI, m2_SI, mul, phl, mu1, ph1, ch1, mu2, ph2, ch2, f_0, ExpansionOrder);
 
     T xi, xi_2, L_norm;
-    const T twopiGM_over_cthree = GWAT_TWOPI * GWAT_G_SI * (m1_SI + m2_SI) / (c*c*c);
+    const T twopiGM_over_cthree =
+        kTwoPi * GWAT_G_SI * (m1_SI + m2_SI) / (c * c * c);
 
     xi = pow(f_orb_hz * twopiGM_over_cthree, system->onethird);
     xi_2 = xi*xi;

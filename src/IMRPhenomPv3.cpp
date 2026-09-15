@@ -184,7 +184,7 @@ int IMRPhenomPv3<T>::construct_waveform(T *frequencies, /**< T array of frequenc
         // Phase correction
         T phase_corr_term;
         std::complex<T> phase_corr;
-        T two_pi_t_corr = GWAT_TWOPI * t_corr_fixed;
+        T two_pi_t_corr = kTwoPi * t_corr_fixed;
         for (int j = 0; j<lengthCut; j++)
         {
             phase_corr_term = two_pi_t_corr * frequencies[j];

@@ -1023,12 +1023,14 @@ void IMRPhenomD<T>::assign_static_pn_phase_coeff(source_parameters<T> *source_pa
     		delta*(-732985./2268 - 140.*eta/9)*chi_a + 
     		(-732985./2268 + 24260.*eta/81 + 340.*eta2/9)*chi_s);
 	coeff[9] = coeff[8];
-	coeff[10] = 11583231236531./4694215680 - 6848.*gamma_E/21 -\
-     		640.*pi2/3 + (-15737765635./3048192 + 2255.*pi2/12)*eta + 
-     		76055.*eta2/1728 - 127825.*eta3/1296 
-     		+ 2270.*delta*chi_a*M_PI/3 + 
-     		(2270.*M_PI/3 - 520.*M_PI*eta)*chi_s- 6848.*( log_64)/63;
-	coeff[11] = 6848./63.;
+        coeff[10] = 11583231236531. / 4694215680 - 6848. * kGammaE / 21 -
+                    640. * pi2 / 3 +
+                    (-15737765635. / 3048192 + 2255. * pi2 / 12) * eta +
+                    76055. * eta2 / 1728 - 127825. * eta3 / 1296 +
+                    2270. * delta * chi_a * M_PI / 3 +
+                    (2270. * M_PI / 3 - 520. * M_PI * eta) * chi_s -
+                    6848. * (log_64) / 63;
+        coeff[11] = 6848./63.;
 }
 
 /*! 

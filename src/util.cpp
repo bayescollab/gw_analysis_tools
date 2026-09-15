@@ -1949,8 +1949,8 @@ void spin_cartesian_to_spherical(double sx, double sy, double sz,
   if (phi < 0.) phi += 2. * M_PI;
 }
 
-void spin_spherical_to_cartestion(double a, double cos_tilt, double phi,
-                                  double& sx, double& sy, double& sz) {
+void spin_spherical_to_cartesian(double a, double cos_tilt, double phi,
+                                 double& sx, double& sy, double& sz) {
   if (a == 0.0) {
     sx = sy = sz = 0.0;
     return;

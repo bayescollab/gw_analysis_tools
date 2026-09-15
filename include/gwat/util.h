@@ -8,6 +8,7 @@
 #include <gsl/gsl_spline.h>
 
 #include <complex>
+#include <numbers>
 #include <string>
 
 #include "adolc/adouble.h"
@@ -45,14 +46,14 @@ using PAIRDBL = std::pair<double, double>;
 
 // TODO: 1) Use std::constants once available, 2) rename constants to fit style
 // guide (see https://google.github.io/styleguide/cppguide.html#Constant_Names)
-constexpr double kPi = M_PI;
+constexpr double kPi = std::numbers::pi;
 
 /*! natural log of 2*/
-constexpr double GWAT_LN2 = 0.693147180559945309417232121458176568;
+constexpr double kLn2 = std::numbers::ln2;
 /*! Gravitational constant in SI */
 constexpr double GWAT_G_SI = 6.67430e-11;
 /*! 2*PI*/
-constexpr double GWAT_TWOPI = 6.283185307179586476925286766559005768;
+constexpr double kTwoPi = 2.0 * kPi;
 
 /**
  *! Nominal solar mass, kg
@@ -74,7 +75,7 @@ constexpr double GWAT_MTSUN_SI = 4.925490947641266978197229498498379006e-6;
 constexpr double GWAT_MRSUN_SI = 1.476625038050124729627979840144936351e3;
 
 /*! Euler number*/
-constexpr double gamma_E = 0.5772156649015328606065120900824024310421;
+constexpr double kGammaE = std::numbers::egamma;
 /*!Speed of light m/s*/
 constexpr double c = 299792458.;
 /*!Gravitational constant in m**3/(s**2 SolMass)*/
@@ -938,7 +939,7 @@ void spin_cartesian_to_spherical(double sx, double sy, double sz,
 /// @param cos_tilt 	Cosine of the tilt angle.
 /// @param phi 				Azimuthal angle.
 /// @param[out] sx, sy, sz Cartesian components.
-void spin_spherical_to_cartestion(double a, double cos_tilt, double phi,
-                                  double& sx, double& sy, double& sz);
+void spin_spherical_to_cartesian(double a, double cos_tilt, double phi,
+                                 double& sx, double& sy, double& sz);
 
 #endif

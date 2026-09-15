@@ -288,8 +288,8 @@ ParameterMap::ParameterMap(const ParamSpecMap& specs) : specs_(specs) {
       double a = (a1_idx >= 0) ? vec[a1_idx] : a1_v;
       double cosT = (cosT1_idx >= 0) ? vec[cosT1_idx] : cosT1_v;
       double phi = (phi1_idx >= 0) ? vec[phi1_idx] : phi1_v;
-      spin_spherical_to_cartestion(a, cosT, phi, p.spin1[0], p.spin1[1],
-                                   p.spin1[2]);
+      spin_spherical_to_cartesian(a, cosT, phi, p.spin1[0], p.spin1[1],
+                                  p.spin1[2]);
     };
     gt.from_gen = [a1_idx, cosT1_idx, phi1_idx](
                       const gen_params_base<double>& p, double* vec) {
@@ -322,8 +322,8 @@ ParameterMap::ParameterMap(const ParamSpecMap& specs) : specs_(specs) {
       double a = (a2_idx >= 0) ? vec[a2_idx] : a2_v;
       double cosT = (cosT2_idx >= 0) ? vec[cosT2_idx] : cosT2_v;
       double phi = (phi2_idx >= 0) ? vec[phi2_idx] : phi2_v;
-      spin_spherical_to_cartestion(a, cosT, phi, p.spin2[0], p.spin2[1],
-                                   p.spin2[2]);
+      spin_spherical_to_cartesian(a, cosT, phi, p.spin2[0], p.spin2[1],
+                                  p.spin2[2]);
     };
     gt.from_gen = [a2_idx, cosT2_idx, phi2_idx](
                       const gen_params_base<double>& p, double* vec) {

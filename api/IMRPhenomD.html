@@ -117,13 +117,13 @@
              
   <section id="imrphenomd">
 <span id="api-imrphenomd"></span><h1>IMRPhenomD<a class="headerlink" href="#imrphenomd" title="Link to this heading"></a></h1>
-<p>Header file for utilities / /*! </p>
+<p>Header file for utilities ‍/ /*! </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-variables">Variables</p>
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv417lambda_num_params">
 <span id="_CPPv317lambda_num_params"></span><span id="_CPPv217lambda_num_params"></span><span id="lambda_num_params__doubleCAA"></span><span class="target" id="IMRPhenomD_8h_1ab4244995783dcaa1f99791db55aeb118"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lambda_num_params</span></span></span><span class="p"><span class="pre">[</span></span><span class="m"><span class="pre">19</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">[</span></span><span class="m"><span class="pre">11</span></span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#_CPPv417lambda_num_params" title="Link to this definition"></a><br /></dt>
-<dd><p>Structure to facilitate IMRPhenomD parameter transfers /</p>
+<dd><p>Structure to facilitate IMRPhenomD parameter transfers ‍/</p>
 <p>template &lt;class T&gt; struct lambda_parameters { <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">T</span><span class="w"> </span><span class="n">rho</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span>
 <span class="n">T</span><span class="w"> </span><span class="n">v2</span><span class="p">;</span>
 <span class="n">T</span><span class="w"> </span><span class="n">gamma</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span>
@@ -135,21 +135,6 @@
  };</p>
 <p>########################################################################## function declarations template &lt;class T&gt; class IMRPhenomD { public:</p>
 <p>virtual ~IMRPhenomD() = default;</p>
-<p><p>virtual void fisher_calculation_sky_averaged(double *frequency,</p>
-<p>int length,</p>
-<p>double *parameters,</p>
-<p>gen_params *parameters,</p>
-<p>double **amplitude_deriv,</p>
-<p>double **phase_deriv,</p>
-<p>double *amplitude,</p>
-<p>int *amp_tapes,</p>
-<p>int *phase_tapes</p>
-<p>); virtual void change_parameter_basis(T *old_param,</p>
-<p>T *new_param,</p>
-<p>bool sky_average</p>
-<p>); virtual void construct_amplitude_derivative(double *frequencies, int length, int dimension, double **amplitude_derivative,</p>
-<a class="reference internal" href="util.html#structsource__parameters"><span class="std std-ref">source_parameters&lt;double&gt;</span></a> *input_params, int *tapes=NULL ); virtual void construct_phase_derivative(double *frequencies, int length, int dimension, double **phase_derivative, <a class="reference internal" href="util.html#structsource__parameters"><span class="std std-ref">source_parameters&lt;double&gt;</span></a> *input_params, int *tapes=NULL ); virtual void amplitude_tape(source_parameters&lt;double&gt; *input_params, int *tape);</p>
-<p>virtual void phase_tape(source_parameters&lt;double&gt; *input_params, int *tape);</p>
 <p>virtual int construct_waveform(T *frequencies, int length, std::complex&lt;T&gt; *waveform, source_parameters&lt;T&gt; *params);</p>
 <p><p>virtual std::complex&lt;T&gt; construct_waveform(T frequency,                 \ilinebr&lt;br&gt;</p>
 <p>source_parameters&lt;T&gt; *params );</p>

@@ -192,12 +192,12 @@
 <p>First row is the starting index of that segment</p>
 <p>Second row is the length of that segment</p>
 <p>If cumulative, the ac is calculated in the following format:</p>
-<p>|—-&amp;#8212;|</p>
-<p>|———–&amp;#8212;|</p>
-<p>|———————-&amp;#8212;|</p>
+<p>|—-—|</p>
+<p>|———–—|</p>
+<p>|———————-—|</p>
 <p>…</p>
 <p>Else, the ac is calculated as :</p>
-<p>|—-&amp;#8212;| <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="o">|------|</span>
+<p>|—-—| <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="o">|------|</span>
 
 <span class="w">            </span><span class="o">|--------|</span>
 </pre></div>
@@ -223,16 +223,16 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv425auto_corr_from_data_batchPPPdiiiPPPiidib">
 <span id="_CPPv325auto_corr_from_data_batchPPPdiiiPPPiidib"></span><span id="_CPPv225auto_corr_from_data_batchPPPdiiiPPPiidib"></span><span id="auto_corr_from_data_batch__doublePPP.i.i.i.iPPP.i.double.i.b"></span><span class="target" id="autocorrelation_8h_1ab9812ba50775fc8453e7b4df14cafca0"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">auto_corr_from_data_batch</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">data</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">length</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">dimension</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">chain_N</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">output</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">num_segments</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">target_corr</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">num_threads</span></span>, <span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">cumulative</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv425auto_corr_from_data_batchPPPdiiiPPPiidib" title="Link to this definition"></a><br /></dt>
-<dd><p>Calculates the autocorrelation length for a set of data for a number of segments for each dimension &amp;#8212; completely host code, utilitizes FFTW3 for longer chuncks of the chains &amp;#8212; Batch version for multiple chains at a time. </p>
+<dd><p>Calculates the autocorrelation length for a set of data for a number of segments for each dimension – completely host code, utilitizes FFTW3 for longer chuncks of the chains – Batch version for multiple chains at a time. </p>
 <p>Takes in the data from a sampler, shape data[chain_N][N_steps][dimension]</p>
-<p>Outputs lags that correspond to the target_corr &amp;#8212; shape output[chain_N][dimension][num_segments]</p>
+<p>Outputs lags that correspond to the target_corr – shape output[chain_N][dimension][num_segments]</p>
 <p>If cumulative, the ac is calculated in the following format:</p>
-<p>|—-&amp;#8212;|</p>
-<p>|———–&amp;#8212;|</p>
-<p>|———————-&amp;#8212;|</p>
+<p>|—-—|</p>
+<p>|———–—|</p>
+<p>|———————-—|</p>
 <p>…</p>
 <p>Else, the ac is calculated as :</p>
-<p>|—-&amp;#8212;| <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="o">|------|</span>
+<p>|—-—| <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="o">|------|</span>
 
 <span class="w">            </span><span class="o">|--------|</span>
 </pre></div>
@@ -245,7 +245,7 @@
 <li><p><strong>data</strong> – Input data </p></li>
 <li><p><strong>length</strong> – length of input data </p></li>
 <li><p><strong>dimension</strong> – dimension of data </p></li>
-<li><p><strong>output</strong> – [out] array that stores the auto-corr lengths &amp;#8212; array[num_segments] </p></li>
+<li><p><strong>output</strong> – [out] array that stores the auto-corr lengths – array[num_segments] </p></li>
 <li><p><strong>num_segments</strong> – number of segements to compute the auto-corr length </p></li>
 <li><p><strong>target_corr</strong> – Autocorrelation for which the autocorrelation length is defined (lag of autocorrelation for which it equals the target_corr) </p></li>
 <li><p><strong>num_threads</strong> – Total number of threads to use </p></li>
@@ -258,16 +258,16 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv419auto_corr_from_dataPPdiiPPiidib">
 <span id="_CPPv319auto_corr_from_dataPPdiiPPiidib"></span><span id="_CPPv219auto_corr_from_dataPPdiiPPiidib"></span><span id="auto_corr_from_data__doublePP.i.i.iPP.i.double.i.b"></span><span class="target" id="autocorrelation_8h_1a393fd6777961493a09c5c0923b185d3d"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">auto_corr_from_data</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">data</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">length</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">dimension</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">output</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">num_segments</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">target_corr</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">num_threads</span></span>, <span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">cumulative</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv419auto_corr_from_dataPPdiiPPiidib" title="Link to this definition"></a><br /></dt>
-<dd><p>Calculates the autocorrelation length for a set of data for a number of segments for each dimension &amp;#8212; completely host code, utilitizes FFTW3 for longer chuncks of the chains. </p>
+<dd><p>Calculates the autocorrelation length for a set of data for a number of segments for each dimension – completely host code, utilitizes FFTW3 for longer chuncks of the chains. </p>
 <p>Takes in the data from a sampler, shape data[N_steps][dimension]</p>
-<p>Outputs lags that correspond to the target_corr &amp;#8212; shape output[dimension][num_segments]</p>
+<p>Outputs lags that correspond to the target_corr – shape output[dimension][num_segments]</p>
 <p>If cumulative, the ac is calculated in the following format:</p>
-<p>|—-&amp;#8212;|</p>
-<p>|———–&amp;#8212;|</p>
-<p>|———————-&amp;#8212;|</p>
+<p>|—-—|</p>
+<p>|———–—|</p>
+<p>|———————-—|</p>
 <p>…</p>
 <p>Else, the ac is calculated as :</p>
-<p>|—-&amp;#8212;| <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="o">|------|</span>
+<p>|—-—| <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="o">|------|</span>
 
 <span class="w">            </span><span class="o">|--------|</span>
 </pre></div>
@@ -280,7 +280,7 @@
 <li><p><strong>data</strong> – Input data </p></li>
 <li><p><strong>length</strong> – length of input data </p></li>
 <li><p><strong>dimension</strong> – dimension of data </p></li>
-<li><p><strong>output</strong> – [out] array that stores the auto-corr lengths &amp;#8212; array[num_segments] </p></li>
+<li><p><strong>output</strong> – [out] array that stores the auto-corr lengths – array[num_segments] </p></li>
 <li><p><strong>num_segments</strong> – number of segements to compute the auto-corr length </p></li>
 <li><p><strong>target_corr</strong> – Autocorrelation for which the autocorrelation length is defined (lag of autocorrelation for which it equals the target_corr) </p></li>
 <li><p><strong>num_threads</strong> – Total number of threads to use </p></li>
@@ -335,16 +335,16 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv425auto_correlation_spectralPdiPdP12fftw_outlineP12fftw_outline">
 <span id="_CPPv325auto_correlation_spectralPdiPdP12fftw_outlineP12fftw_outline"></span><span id="_CPPv225auto_correlation_spectralPdiPdP12fftw_outlineP12fftw_outline"></span><span id="auto_correlation_spectral__doubleP.i.doubleP.fftw_outlineP.fftw_outlineP"></span><span class="target" id="autocorrelation_8h_1ab2b46532c9a5857bc08a5b7af33c19d2"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">auto_correlation_spectral</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">chain</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">length</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">autocorr</span></span>, <a class="reference internal" href="util.html#_CPPv412fftw_outline" title="fftw_outline"><span class="n"><span class="pre">fftw_outline</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">plan_forw</span></span>, <a class="reference internal" href="util.html#_CPPv412fftw_outline" title="fftw_outline"><span class="n"><span class="pre">fftw_outline</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">plan_rev</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv425auto_correlation_spectralPdiPdP12fftw_outlineP12fftw_outline" title="Link to this definition"></a><br /></dt>
-<dd><p>Wrapper function for convience &amp;#8212; assumes the data array starts at 0. </p>
+<dd><p>Wrapper function for convience – assumes the data array starts at 0. </p>
 </dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv425auto_correlation_spectralPdiiPdP12fftw_outlineP12fftw_outline">
 <span id="_CPPv325auto_correlation_spectralPdiiPdP12fftw_outlineP12fftw_outline"></span><span id="_CPPv225auto_correlation_spectralPdiiPdP12fftw_outlineP12fftw_outline"></span><span id="auto_correlation_spectral__doubleP.i.i.doubleP.fftw_outlineP.fftw_outlineP"></span><span class="target" id="autocorrelation_8h_1a495b7476fb13c79c22c6785ca5c37e9c"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">auto_correlation_spectral</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">chain</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">length</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">start</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">autocorr</span></span>, <a class="reference internal" href="util.html#_CPPv412fftw_outline" title="fftw_outline"><span class="n"><span class="pre">fftw_outline</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">plan_forw</span></span>, <a class="reference internal" href="util.html#_CPPv412fftw_outline" title="fftw_outline"><span class="n"><span class="pre">fftw_outline</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">plan_rev</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv425auto_correlation_spectralPdiiPdP12fftw_outlineP12fftw_outline" title="Link to this definition"></a><br /></dt>
-<dd><p>Faster approximation of the autocorrelation of a chain. Implements FFT/IFFT &amp;#8212; accepts FFTW plan as argument for plan reuse and multi-threaded applications. </p>
+<dd><p>Faster approximation of the autocorrelation of a chain. Implements FFT/IFFT – accepts FFTW plan as argument for plan reuse and multi-threaded applications. </p>
 <p>Based on the Wiener-Khinchin Theorem.</p>
 <p>Algorithm used from <a class="reference external" href="https://lingpipe-blog.com/2012/06/08/autocorrelation-fft-kiss-eigen/">https://lingpipe-blog.com/2012/06/08/autocorrelation-fft-kiss-eigen/</a></p>
-<p><em>NOTE</em> the length used in initializing the fftw plans should be L = pow(2, std::ceil( std::log2(length) ) ) &amp;#8212; the plans are padded so the total length is a power of two</p>
+<p><em>NOTE</em> the length used in initializing the fftw plans should be L = pow(2, std::ceil( std::log2(length) ) ) – the plans are padded so the total length is a power of two</p>
 <p>Option to provide starting index for multi-dimension arrays in collapsed to one dimension</p>
 <p>length is the length of the segment to be analyzed, not necessarily the dimension of the chain </p>
 </dd></dl>
@@ -360,19 +360,19 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv416auto_correlationPdid">
 <span id="_CPPv316auto_correlationPdid"></span><span id="_CPPv216auto_correlationPdid"></span><span id="auto_correlation__doubleP.i.double"></span><span class="target" id="autocorrelation_8h_1ab1cc0e008417e22feb67c596f9d84391"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">auto_correlation</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">arr</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">length</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">tolerance</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv416auto_correlationPdid" title="Link to this definition"></a><br /></dt>
-<dd><p>OUTDATED &amp;#8212; numerically finds autocorrelation length &amp;#8212; not reliable. </p>
+<dd><p>OUTDATED – numerically finds autocorrelation length – not reliable. </p>
 </dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv427auto_correlation_serial_oldPdi">
 <span id="_CPPv327auto_correlation_serial_oldPdi"></span><span id="_CPPv227auto_correlation_serial_oldPdi"></span><span id="auto_correlation_serial_old__doubleP.i"></span><span class="target" id="autocorrelation_8h_1ad21465a6ab600a7776dd763e2f8dd577"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">auto_correlation_serial_old</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">arr</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">length</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv427auto_correlation_serial_oldPdi" title="Link to this definition"></a><br /></dt>
-<dd><p>OUTDATED Calculates the autocorrelation &amp;#8212; less general version. </p>
+<dd><p>OUTDATED Calculates the autocorrelation – less general version. </p>
 </dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv428auto_correlation_grid_searchPdiiid">
 <span id="_CPPv328auto_correlation_grid_searchPdiiid"></span><span id="_CPPv228auto_correlation_grid_searchPdiiid"></span><span id="auto_correlation_grid_search__doubleP.i.i.i.double"></span><span class="target" id="autocorrelation_8h_1acdff562d907293edd8fe8a9e9037e0be"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">auto_correlation_grid_search</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">arr</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">length</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">box_num</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">10</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">final_length</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">50</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">target_length</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">.01</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv428auto_correlation_grid_searchPdiiid" title="Link to this definition"></a><br /></dt>
-<dd><p>OUTDATED &amp;#8212; Grid search method of computing the autocorrelation &amp;#8212; unreliable. </p>
+<dd><p>OUTDATED – Grid search method of computing the autocorrelation – unreliable. </p>
 <p>Hopefully more reliable than the box-search method, which can sometimes get caught in a recursive loop when the stepsize isn’t tuned, but also faster than the basic linear, serial search </p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -397,13 +397,13 @@
 <dt class="sig sig-object cpp" id="_CPPv428auto_corr_intervals_outdatedPdiPdid">
 <span id="_CPPv328auto_corr_intervals_outdatedPdiPdid"></span><span id="_CPPv228auto_corr_intervals_outdatedPdiPdid"></span><span id="auto_corr_intervals_outdated__doubleP.i.doubleP.i.double"></span><span class="target" id="autocorrelation_8h_1a59cc7470885bbc68e5c9a7725fb237d9"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">auto_corr_intervals_outdated</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">data</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">length</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">output</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">num_segments</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">accuracy</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv428auto_corr_intervals_outdatedPdiPdid" title="Link to this definition"></a><br /></dt>
 <dd><p>Function that computes the autocorrelation length on an array of data at set intervals to help determine convergence. </p>
-<p>outdated version &amp;#8212; new version uses FFTs </p>
+<p>outdated version – new version uses FFTs </p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> – Input data </p></li>
 <li><p><strong>length</strong> – length of input data </p></li>
-<li><p><strong>output</strong> – [out] array that stores the auto-corr lengths &amp;#8212; array[num_segments] </p></li>
+<li><p><strong>output</strong> – [out] array that stores the auto-corr lengths – array[num_segments] </p></li>
 <li><p><strong>num_segments</strong> – number of segements to compute the auto-corr length </p></li>
 <li><p><strong>accuracy</strong> – longer chains are computed numerically, this specifies the tolerance </p></li>
 </ul>
@@ -414,13 +414,13 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv430write_auto_corr_file_from_dataNSt6stringEPPdiii">
 <span id="_CPPv330write_auto_corr_file_from_dataNSt6stringEPPdiii"></span><span id="_CPPv230write_auto_corr_file_from_dataNSt6stringEPPdiii"></span><span id="write_auto_corr_file_from_data__ss.doublePP.i.i.i"></span><span class="target" id="autocorrelation_8h_1af9cfa7c28d17c0fc56c4277ca11fcff5"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">write_auto_corr_file_from_data</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">autocorr_filename</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">output</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">intervals</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">dimension</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">N_steps</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv430write_auto_corr_file_from_dataNSt6stringEPPdiii" title="Link to this definition"></a><br /></dt>
-<dd><p>OUTDATED &amp;#8212; writes autocorrelation lengths for a data array, but only with the serial method and only for a target correlation of .01. </p>
+<dd><p>OUTDATED – writes autocorrelation lengths for a data array, but only with the serial method and only for a target correlation of .01. </p>
 </dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv435write_auto_corr_file_from_data_fileNSt6stringENSt6stringEiii">
 <span id="_CPPv335write_auto_corr_file_from_data_fileNSt6stringENSt6stringEiii"></span><span id="_CPPv235write_auto_corr_file_from_data_fileNSt6stringENSt6stringEiii"></span><span id="write_auto_corr_file_from_data_file__ss.ss.i.i.i"></span><span class="target" id="autocorrelation_8h_1a4454fd7377be44ed756be6c0d25a46f2"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">write_auto_corr_file_from_data_file</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">autocorr_filename</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">output_file</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">intervals</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">dimension</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">N_steps</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv435write_auto_corr_file_from_data_fileNSt6stringENSt6stringEiii" title="Link to this definition"></a><br /></dt>
-<dd><p>OUTDATED &amp;#8212; writes autocorrelation lengths for a data file, but only with the serial method and only for a target correlation of .01. </p>
+<dd><p>OUTDATED – writes autocorrelation lengths for a data file, but only with the serial method and only for a target correlation of .01. </p>
 </dd></dl>
 
 </div>
@@ -440,31 +440,31 @@
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N20threaded_ac_jobs_fft6lengthE">
 <span id="_CPPv3N20threaded_ac_jobs_fft6lengthE"></span><span id="_CPPv2N20threaded_ac_jobs_fft6lengthE"></span><span id="threaded_ac_jobs_fft::length__iP"></span><span class="target" id="classthreaded__ac__jobs__fft_1ad2c291ac1d43caab4e0c311653526d78"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">length</span></span></span><a class="headerlink" href="#_CPPv4N20threaded_ac_jobs_fft6lengthE" title="Link to this definition"></a><br /></dt>
-<dd><p>Read only &amp;#8212; Data to use &amp;#8212; full chain </p>
+<dd><p>Read only – Data to use – full chain </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N20threaded_ac_jobs_fft5startE">
 <span id="_CPPv3N20threaded_ac_jobs_fft5startE"></span><span id="_CPPv2N20threaded_ac_jobs_fft5startE"></span><span id="threaded_ac_jobs_fft::start__iP"></span><span class="target" id="classthreaded__ac__jobs__fft_1ab53d18101cba2f6e8894076aec04e033"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">start</span></span></span><a class="headerlink" href="#_CPPv4N20threaded_ac_jobs_fft5startE" title="Link to this definition"></a><br /></dt>
-<dd><p>Read only &amp;#8212; length of total data </p>
+<dd><p>Read only – length of total data </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N20threaded_ac_jobs_fft3endE">
 <span id="_CPPv3N20threaded_ac_jobs_fft3endE"></span><span id="_CPPv2N20threaded_ac_jobs_fft3endE"></span><span id="threaded_ac_jobs_fft::end__iP"></span><span class="target" id="classthreaded__ac__jobs__fft_1a86501045468f92ae2c49b34cffe1aea3"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">end</span></span></span><a class="headerlink" href="#_CPPv4N20threaded_ac_jobs_fft3endE" title="Link to this definition"></a><br /></dt>
-<dd><p>Read only &amp;#8212; start index </p>
+<dd><p>Read only – start index </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N20threaded_ac_jobs_fft9dimensionE">
 <span id="_CPPv3N20threaded_ac_jobs_fft9dimensionE"></span><span id="_CPPv2N20threaded_ac_jobs_fft9dimensionE"></span><span id="threaded_ac_jobs_fft::dimension__i"></span><span class="target" id="classthreaded__ac__jobs__fft_1a9bf661425ff94cfa740827b2e2affd18"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">dimension</span></span></span><a class="headerlink" href="#_CPPv4N20threaded_ac_jobs_fft9dimensionE" title="Link to this definition"></a><br /></dt>
-<dd><p>Read only &amp;#8212; end index </p>
+<dd><p>Read only – end index </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N20threaded_ac_jobs_fft11planforwardE">
 <span id="_CPPv3N20threaded_ac_jobs_fft11planforwardE"></span><span id="_CPPv2N20threaded_ac_jobs_fft11planforwardE"></span><span id="threaded_ac_jobs_fft::planforward__fftw_outlineP"></span><span class="target" id="classthreaded__ac__jobs__fft_1ac862074b94a8a1403f355110bf428cfc"></span><a class="reference internal" href="util.html#_CPPv412fftw_outline" title="fftw_outline"><span class="n"><span class="pre">fftw_outline</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">planforward</span></span></span><a class="headerlink" href="#_CPPv4N20threaded_ac_jobs_fft11planforwardE" title="Link to this definition"></a><br /></dt>
-<dd><p>Read only &amp;#8212; dimension being analyzed </p>
+<dd><p>Read only – dimension being analyzed </p>
 </dd></dl>
 
 <dl class="cpp var">
@@ -482,7 +482,7 @@
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N20threaded_ac_jobs_fft6targetE">
 <span id="_CPPv3N20threaded_ac_jobs_fft6targetE"></span><span id="_CPPv2N20threaded_ac_jobs_fft6targetE"></span><span id="threaded_ac_jobs_fft::target__doubleP"></span><span class="target" id="classthreaded__ac__jobs__fft_1a3a7fa6df5c4af8bce5820c483598fc9e"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">target</span></span></span><a class="headerlink" href="#_CPPv4N20threaded_ac_jobs_fft6targetE" title="Link to this definition"></a><br /></dt>
-<dd><p>READ AND WRITE &amp;#8212; final lag </p>
+<dd><p>READ AND WRITE – final lag </p>
 </dd></dl>
 
 </div>
@@ -504,37 +504,37 @@
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N23threaded_ac_jobs_serial6lengthE">
 <span id="_CPPv3N23threaded_ac_jobs_serial6lengthE"></span><span id="_CPPv2N23threaded_ac_jobs_serial6lengthE"></span><span id="threaded_ac_jobs_serial::length__iP"></span><span class="target" id="classthreaded__ac__jobs__serial_1ae6153a4df9771175723ec04d7eec03b4"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">length</span></span></span><a class="headerlink" href="#_CPPv4N23threaded_ac_jobs_serial6lengthE" title="Link to this definition"></a><br /></dt>
-<dd><p>Read only &amp;#8212; Data to use &amp;#8212; full chain </p>
+<dd><p>Read only – Data to use – full chain </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N23threaded_ac_jobs_serial5startE">
 <span id="_CPPv3N23threaded_ac_jobs_serial5startE"></span><span id="_CPPv2N23threaded_ac_jobs_serial5startE"></span><span id="threaded_ac_jobs_serial::start__iP"></span><span class="target" id="classthreaded__ac__jobs__serial_1a358a286626c91db48b779ee0a1be7201"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">start</span></span></span><a class="headerlink" href="#_CPPv4N23threaded_ac_jobs_serial5startE" title="Link to this definition"></a><br /></dt>
-<dd><p>Read only &amp;#8212; length of total data </p>
+<dd><p>Read only – length of total data </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N23threaded_ac_jobs_serial3endE">
 <span id="_CPPv3N23threaded_ac_jobs_serial3endE"></span><span id="_CPPv2N23threaded_ac_jobs_serial3endE"></span><span id="threaded_ac_jobs_serial::end__iP"></span><span class="target" id="classthreaded__ac__jobs__serial_1afcb4978468003aae945aa2a63681b86e"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">end</span></span></span><a class="headerlink" href="#_CPPv4N23threaded_ac_jobs_serial3endE" title="Link to this definition"></a><br /></dt>
-<dd><p>Read only &amp;#8212; start index </p>
+<dd><p>Read only – start index </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N23threaded_ac_jobs_serial9dimensionE">
 <span id="_CPPv3N23threaded_ac_jobs_serial9dimensionE"></span><span id="_CPPv2N23threaded_ac_jobs_serial9dimensionE"></span><span id="threaded_ac_jobs_serial::dimension__i"></span><span class="target" id="classthreaded__ac__jobs__serial_1a5ecfde8b822ea61788c90739a1a3929c"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">dimension</span></span></span><a class="headerlink" href="#_CPPv4N23threaded_ac_jobs_serial9dimensionE" title="Link to this definition"></a><br /></dt>
-<dd><p>Read only &amp;#8212; end index </p>
+<dd><p>Read only – end index </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N23threaded_ac_jobs_serial3lagE">
 <span id="_CPPv3N23threaded_ac_jobs_serial3lagE"></span><span id="_CPPv2N23threaded_ac_jobs_serial3lagE"></span><span id="threaded_ac_jobs_serial::lag__iP"></span><span class="target" id="classthreaded__ac__jobs__serial_1a6a149a8f7f02ed82c6ade734208acc0a"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">lag</span></span></span><a class="headerlink" href="#_CPPv4N23threaded_ac_jobs_serial3lagE" title="Link to this definition"></a><br /></dt>
-<dd><p>Read only &amp;#8212; dimension being analyzed </p>
+<dd><p>Read only – dimension being analyzed </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N23threaded_ac_jobs_serial6targetE">
 <span id="_CPPv3N23threaded_ac_jobs_serial6targetE"></span><span id="_CPPv2N23threaded_ac_jobs_serial6targetE"></span><span id="threaded_ac_jobs_serial::target__doubleP"></span><span class="target" id="classthreaded__ac__jobs__serial_1a0a870c7ac95ad680d3bc8ca80f1df9f3"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">target</span></span></span><a class="headerlink" href="#_CPPv4N23threaded_ac_jobs_serial6targetE" title="Link to this definition"></a><br /></dt>
-<dd><p>READ AND WRITE &amp;#8212; final lag </p>
+<dd><p>READ AND WRITE – final lag </p>
 </dd></dl>
 
 </div>

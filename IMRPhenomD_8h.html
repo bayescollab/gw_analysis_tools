@@ -148,20 +148,6 @@ T alpha[7];
 </pre><p> };</p>
 <p>########################################################################## function declarations template &lt;class T&gt; class IMRPhenomD { public:</p>
 <p>virtual ~IMRPhenomD() = default;</p>
-<p>virtual void fisher_calculation_sky_averaged(double *frequency, 
-            int length, 
-double *parameters,
-            gen_params *parameters,
-            double **amplitude_deriv, 
-            double **phase_deriv, 
-            double *amplitude, 
-            int *amp_tapes, 
-            int *phase_tapes
-            ); virtual void change_parameter_basis(T *old_param,
-                    T *new_param,
-                    bool sky_average
-                    ); virtual void construct_amplitude_derivative(double *frequencies, int length, int dimension, double **amplitude_derivative, <a class="el" href="structsource__parameters.html" title="For internal data transfers.">source_parameters&lt;double&gt;</a> *input_params, int *tapes=NULL ); virtual void construct_phase_derivative(double *frequencies, int length, int dimension, double **phase_derivative, <a class="el" href="structsource__parameters.html" title="For internal data transfers.">source_parameters&lt;double&gt;</a> *input_params, int *tapes=NULL ); virtual void amplitude_tape(source_parameters&lt;double&gt; *input_params, int *tape);</p>
-<p>virtual void phase_tape(source_parameters&lt;double&gt; *input_params, int *tape);</p>
 <p>virtual int construct_waveform(T *frequencies, int length, std::complex&lt;T&gt; *waveform, source_parameters&lt;T&gt; *params);</p>
 <p>virtual std::complex&lt;T&gt; construct_waveform(T frequency,                 \ilinebr&lt;br&gt;
             source_parameters&lt;T&gt; *params );</p>

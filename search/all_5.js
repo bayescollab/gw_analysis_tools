@@ -113,7 +113,6 @@ var searchData=
   ['eventvarswp_5fpre_5fpair_110',['EventVarSWP_pre_pair',['../classThreadPool.html#a658134c35d4975122dcb7539b5e51e04',1,'ThreadPool']]],
   ['evidence_111',['evidence',['../classmcmc__sampler__output.html#ae1df7413c01ae4b6b67640188bd93ce1',1,'mcmc_sampler_output']]],
   ['evidence_5ferror_112',['evidence_error',['../classmcmc__sampler__output.html#a53dc0f616a62be421d654d26a0d449a8',1,'mcmc_sampler_output']]],
-  ['extra_5fmodifications_113',['extra_modifications',['../ppE__utilities_8h.html#aa9f96fa690eb31af11ed33e6b8dc40e1',1,'ppE_utilities.h']]],
-  ['extra_5fpolarizations_114',['extra_polarizations',['../structtheory__ppE__map.html#ade9315b2fc0cdd21072678649117d311',1,'theory_ppE_map']]],
-  ['extradimension_5fbeta_115',['ExtraDimension_beta',['../ppE__utilities_8h.html#a3ef59a1465811e44cfefdc9b2201cd4f',1,'ppE_utilities.h']]]
+  ['extra_5fpolarizations_113',['extra_polarizations',['../structtheory__ppE__map.html#ade9315b2fc0cdd21072678649117d311',1,'theory_ppE_map']]],
+  ['extradimension_5fbeta_114',['ExtraDimension_beta',['../ppE__utilities_8h.html#a3ef59a1465811e44cfefdc9b2201cd4f',1,'ppE_utilities.h']]]
 ];

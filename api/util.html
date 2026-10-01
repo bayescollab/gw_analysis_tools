@@ -612,7 +612,7 @@
 <dt class="sig sig-object cpp" id="_CPPv415matrix_multiplyPPdPPdPPdiii">
 <span id="_CPPv315matrix_multiplyPPdPPdPPdiii"></span><span id="_CPPv215matrix_multiplyPPdPPdPPdiii"></span><span id="matrix_multiply__doublePP.doublePP.doublePP.i.i.i"></span><span class="target" id="util_8h_1a918c1d3fafe5813a817cbc04fb3a3850"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">matrix_multiply</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">A</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">B</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">C</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">dim1</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">dim2</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">dim3</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv415matrix_multiplyPPdPPdPPdiii" title="Link to this definition"></a><br /></dt>
 <dd><p>Matrix multiplication. </p>
-<p>Takes A &amp;#8212; [dim1,dim2], B &amp;#8212; [dim2,dim3], and produces C &amp;#8212; [dim1,dim3]</p>
+<p>Takes A – [dim1,dim2], B – [dim2,dim3], and produces C – [dim1,dim3]</p>
 <p>Arrays should be pre-allocated </p>
 </dd></dl>
 
@@ -676,7 +676,7 @@
 <dt class="sig sig-object cpp" id="_CPPv422initiate_LumD_Z_interpPP16gsl_interp_accelPP10gsl_spline">
 <span id="_CPPv322initiate_LumD_Z_interpPP16gsl_interp_accelPP10gsl_spline"></span><span id="_CPPv222initiate_LumD_Z_interpPP16gsl_interp_accelPP10gsl_spline"></span><span id="initiate_LumD_Z_interp__gsl_interp_accelPP.gsl_splinePP"></span><span class="target" id="util_8h_1abd99f3492eda3805283a6a6c1161f61f"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">initiate_LumD_Z_interp</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">gsl_interp_accel</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">Z_DL_accel_ptr</span></span>, <span class="n"><span class="pre">gsl_spline</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">Z_DL_spline_ptr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv422initiate_LumD_Z_interpPP16gsl_interp_accelPP10gsl_spline" title="Link to this definition"></a><br /></dt>
 <dd><p>Function that uses the GSL libraries to interpolate pre-calculated Z-D_L data. </p>
-<p>Initiates the requried functions &amp;#8212; GSL interpolation requires allocating memory before hand </p>
+<p>Initiates the requried functions – GSL interpolation requires allocating memory before hand </p>
 </dd></dl>
 
 <dl class="cpp function">
@@ -688,21 +688,21 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv416Z_from_DL_interp7adoubleP16gsl_interp_accelP10gsl_spline">
 <span id="_CPPv316Z_from_DL_interp7adoubleP16gsl_interp_accelP10gsl_spline"></span><span id="_CPPv216Z_from_DL_interp7adoubleP16gsl_interp_accelP10gsl_spline"></span><span id="Z_from_DL_interp__adouble.gsl_interp_accelP.gsl_splineP"></span><span class="target" id="util_8h_1aec48ba6d02ebe433a684e09884e6a31b"></span><span class="n"><span class="pre">adouble</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Z_from_DL_interp</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">adouble</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">DL</span></span>, <span class="n"><span class="pre">gsl_interp_accel</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">Z_DL_accel_ptr</span></span>, <span class="n"><span class="pre">gsl_spline</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">Z_DL_spline_ptr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv416Z_from_DL_interp7adoubleP16gsl_interp_accelP10gsl_spline" title="Link to this definition"></a><br /></dt>
-<dd><p>Function that returns Z from a given luminosity Distance &amp;#8212; only Planck15</p>
+<dd><p>Function that returns Z from a given luminosity Distance – only Planck15</p>
 <p>adouble version for ADOL-C calculations </p>
 </dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv416Z_from_DL_interpdP16gsl_interp_accelP10gsl_spline">
 <span id="_CPPv316Z_from_DL_interpdP16gsl_interp_accelP10gsl_spline"></span><span id="_CPPv216Z_from_DL_interpdP16gsl_interp_accelP10gsl_spline"></span><span id="Z_from_DL_interp__double.gsl_interp_accelP.gsl_splineP"></span><span class="target" id="util_8h_1a8d080a588955cc9cb0a4efc831187936"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Z_from_DL_interp</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">DL</span></span>, <span class="n"><span class="pre">gsl_interp_accel</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">Z_DL_accel_ptr</span></span>, <span class="n"><span class="pre">gsl_spline</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">Z_DL_spline_ptr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv416Z_from_DL_interpdP16gsl_interp_accelP10gsl_spline" title="Link to this definition"></a><br /></dt>
-<dd><p>Function that returns Z from a given luminosity Distance &amp;#8212; only Planck15 </p>
+<dd><p>Function that returns Z from a given luminosity Distance – only Planck15 </p>
 </dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv49Z_from_DLdNSt6stringE">
 <span id="_CPPv39Z_from_DLdNSt6stringE"></span><span id="_CPPv29Z_from_DLdNSt6stringE"></span><span id="Z_from_DL__double.ss"></span><span class="target" id="util_8h_1a415ef00e103efe73c8eabc235b202b12"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Z_from_DL</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">DL</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">cosmology</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv49Z_from_DLdNSt6stringE" title="Link to this definition"></a><br /></dt>
 <dd><p>Calculates the redshift given the luminosity distance. </p>
-<p>Based on Astropy.cosmology calculations &amp;#8212; see python script in the ./data folder of the project &amp;#8212; numerically calculated given astropy.cosmology’s definitions (<a class="reference external" href="http://docs.astropy.org/en/stable/cosmology/">http://docs.astropy.org/en/stable/cosmology/</a>) and used scipy.optimize to fit to a power series, stepping in half powers of DL. These coefficients are then output to a header file (D_Z_config.h) which are used here to calculate redshift. Custom cosmologies etc can easily be acheived by editing the python script D_Z_config.py, the c++ functions do not need modification. They use whatever data is available in the header file.</p>
+<p>Based on Astropy.cosmology calculations – see python script in the ./data folder of the project – numerically calculated given astropy.cosmology’s definitions (<a class="reference external" href="http://docs.astropy.org/en/stable/cosmology/">http://docs.astropy.org/en/stable/cosmology/</a>) and used scipy.optimize to fit to a power series, stepping in half powers of DL. These coefficients are then output to a header file (D_Z_config.h) which are used here to calculate redshift. Custom cosmologies etc can easily be acheived by editing the python script D_Z_config.py, the c++ functions do not need modification. They use whatever data is available in the header file.</p>
 <p>5 cosmological models are available (this argument must be spelled exactly, although case insensitive):</p>
 <p>PLANCK15, PLANCK13, WMAP9, WMAP7, WMAP5 </p>
 </dd></dl>
@@ -711,7 +711,7 @@
 <dt class="sig sig-object cpp" id="_CPPv49DL_from_ZdNSt6stringE">
 <span id="_CPPv39DL_from_ZdNSt6stringE"></span><span id="_CPPv29DL_from_ZdNSt6stringE"></span><span id="DL_from_Z__double.ss"></span><span class="target" id="util_8h_1a88960e6947432b203d2c7ebb436e1984"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">DL_from_Z</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">Z</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">cosmology</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv49DL_from_ZdNSt6stringE" title="Link to this definition"></a><br /></dt>
 <dd><p>Calculates the luminosity distance given the redshift. </p>
-<p>Based on Astropy.cosmology calculations &amp;#8212; see python script in the ./data folder of the project &amp;#8212; numerically calculated given astropy.cosmology’s definitions (<a class="reference external" href="http://docs.astropy.org/en/stable/cosmology/">http://docs.astropy.org/en/stable/cosmology/</a>) and used scipy.optimize to fit to a power series, stepping in half powers of Z. These coefficients are then output to a header file (D_Z_config.h) which are used here to calculate distance. Custom cosmologies etc can easily be acheived by editing the python script D_Z_config.py, the c++ functions do not need modification. They use whatever data is available in the header file. If the functional form of the fitting function changes, these functions DO need to change.</p>
+<p>Based on Astropy.cosmology calculations – see python script in the ./data folder of the project – numerically calculated given astropy.cosmology’s definitions (<a class="reference external" href="http://docs.astropy.org/en/stable/cosmology/">http://docs.astropy.org/en/stable/cosmology/</a>) and used scipy.optimize to fit to a power series, stepping in half powers of Z. These coefficients are then output to a header file (D_Z_config.h) which are used here to calculate distance. Custom cosmologies etc can easily be acheived by editing the python script D_Z_config.py, the c++ functions do not need modification. They use whatever data is available in the header file. If the functional form of the fitting function changes, these functions DO need to change.</p>
 <p>5 cosmological models are available (this argument must be spelled exactly):</p>
 <p>PLANCK15, PLANCK13, WMAP9, WMAP7, WMAP5 </p>
 </dd></dl>
@@ -765,8 +765,8 @@
 <dt class="sig sig-object cpp" id="_CPPv4I0E19list_intersect_ptrsvPP1TiPP1TiPP1TPi">
 <span id="_CPPv3I0E19list_intersect_ptrsPP1TiPP1TiPP1TPi"></span><span id="_CPPv2I0E19list_intersect_ptrsPP1TiPP1TiPP1TPi"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="util_8h_1a9d0768e0355feef9d4d9681e6eed27b4"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">list_intersect_ptrs</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0E19list_intersect_ptrsvPP1TiPP1TiPP1TPi" title="list_intersect_ptrs::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">A</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">lenA</span></span>, <a class="reference internal" href="#_CPPv4I0E19list_intersect_ptrsvPP1TiPP1TiPP1TPi" title="list_intersect_ptrs::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">B</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">lenB</span></span>, <a class="reference internal" href="#_CPPv4I0E19list_intersect_ptrsvPP1TiPP1TiPP1TPi" title="list_intersect_ptrs::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">C</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">lenC</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0E19list_intersect_ptrsvPP1TiPP1TiPP1TPi" title="Link to this definition"></a><br /></dt>
 <dd><p>SHOULDN’T BE USED FOR DOUBLESCustom list-interesction implementation for sorted lists. </p>
-<p>Uses pointers for efficiency &amp;#8212; NOT COPIED &amp;#8212; used std library for that</p>
-<p>Takes A and B and puts the intersection in C &amp;#8212; C = A /\ B</p>
+<p>Uses pointers for efficiency – NOT COPIED – used std library for that</p>
+<p>Takes A and B and puts the intersection in C – C = A /\ B</p>
 <p>Takes the length of C and puts it in lenC</p>
 <p>C should have allocated memory for at least as large as the smallest list</p>
 <p>WILL NOT work in-place, A, B, and C must be separate </p>
@@ -776,8 +776,8 @@
 <dt class="sig sig-object cpp" id="_CPPv4I0E14list_intersectvP1TiP1TiPP1TPi">
 <span id="_CPPv3I0E14list_intersectP1TiP1TiPP1TPi"></span><span id="_CPPv2I0E14list_intersectP1TiP1TiPP1TPi"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="util_8h_1a6a20a9cb79b3c847fc75f3e3eb45f933"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">list_intersect</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0E14list_intersectvP1TiP1TiPP1TPi" title="list_intersect::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">A</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">lenA</span></span>, <a class="reference internal" href="#_CPPv4I0E14list_intersectvP1TiP1TiPP1TPi" title="list_intersect::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">B</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">lenB</span></span>, <a class="reference internal" href="#_CPPv4I0E14list_intersectvP1TiP1TiPP1TPi" title="list_intersect::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">C</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">lenC</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0E14list_intersectvP1TiP1TiPP1TPi" title="Link to this definition"></a><br /></dt>
 <dd><p>Custom list-interesction implementation for sorted lists. </p>
-<p>Uses pointers for efficiency &amp;#8212; NOT COPIED &amp;#8212; used std library for that</p>
-<p>Takes A and B and puts the intersection in C &amp;#8212; C = A /\ B</p>
+<p>Uses pointers for efficiency – NOT COPIED – used std library for that</p>
+<p>Takes A and B and puts the intersection in C – C = A /\ B</p>
 <p>Takes the length of C and puts it in lenC</p>
 <p>C should have allocated memory for at least as large as the smallest list</p>
 <p>WILL NOT work in-place, A, B, and C must be separate </p>
@@ -787,8 +787,8 @@
 <dt class="sig sig-object cpp" id="_CPPv4I0E20list_intersect_valuevP1TiP1TiP1TPi">
 <span id="_CPPv3I0E20list_intersect_valueP1TiP1TiP1TPi"></span><span id="_CPPv2I0E20list_intersect_valueP1TiP1TiP1TPi"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="util_8h_1a52ba97982df939cea3191098152fbbb2"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">list_intersect_value</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0E20list_intersect_valuevP1TiP1TiP1TPi" title="list_intersect_value::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">A</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">lenA</span></span>, <a class="reference internal" href="#_CPPv4I0E20list_intersect_valuevP1TiP1TiP1TPi" title="list_intersect_value::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">B</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">lenB</span></span>, <a class="reference internal" href="#_CPPv4I0E20list_intersect_valuevP1TiP1TiP1TPi" title="list_intersect_value::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">C</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">lenC</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0E20list_intersect_valuevP1TiP1TiP1TPi" title="Link to this definition"></a><br /></dt>
 <dd><p>Custom list-interesction implementation for sorted lists. </p>
-<p>Uses pointers for efficiency &amp;#8212; NOT COPIED &amp;#8212; used std library for that</p>
-<p>Takes A and B and puts the intersection in C &amp;#8212; C = A /\ B</p>
+<p>Uses pointers for efficiency – NOT COPIED – used std library for that</p>
+<p>Takes A and B and puts the intersection in C – C = A /\ B</p>
 <p>Takes the length of C and puts it in lenC</p>
 <p>C should have allocated memory for at least as large as the smallest list</p>
 <p>WILL NOT work in-place, A, B, and C must be separate </p>
@@ -885,7 +885,7 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv425allocate_FFTW_mem_reverseP12fftw_outlinei">
 <span id="_CPPv325allocate_FFTW_mem_reverseP12fftw_outlinei"></span><span id="_CPPv225allocate_FFTW_mem_reverseP12fftw_outlinei"></span><span id="allocate_FFTW_mem_reverse__fftw_outlineP.i"></span><span class="target" id="util_8h_1abfb132a88c05af083194d8ee163c6dcd"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">allocate_FFTW_mem_reverse</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv412fftw_outline" title="fftw_outline"><span class="n"><span class="pre">fftw_outline</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">plan</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">length</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv425allocate_FFTW_mem_reverseP12fftw_outlinei" title="Link to this definition"></a><br /></dt>
-<dd><p>Allocate memory for FFTW3 methods used in a lot of inner products &amp;#8212;INVERSE input is a locally defined structure that houses all the pertinent data. </p>
+<dd><p>Allocate memory for FFTW3 methods used in a lot of inner products –INVERSE input is a locally defined structure that houses all the pertinent data. </p>
 </dd></dl>
 
 <dl class="cpp function">
@@ -1251,79 +1251,79 @@
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-variables">Variables</p>
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv47gamma_E">
-<span id="_CPPv37gamma_E"></span><span id="_CPPv27gamma_E"></span><span id="gamma_E__double"></span><span class="target" id="util_8h_1a3ca223e4bafae02b1b6a2b684f8bae59"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">gamma_E</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0.5772156649015328606065120900824024310421</span></span><a class="headerlink" href="#_CPPv47gamma_E" title="Link to this definition"></a><br /></dt>
+<span id="_CPPv37gamma_E"></span><span id="_CPPv27gamma_E"></span><span id="gamma_E__double"></span><span class="target" id="util_8h_1a3ca223e4bafae02b1b6a2b684f8bae59"></span><span class="k"><span class="pre">constexpr</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">gamma_E</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0.5772156649015328606065120900824024310421</span></span><a class="headerlink" href="#_CPPv47gamma_E" title="Link to this definition"></a><br /></dt>
 <dd><p>Euler number </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv41c">
-<span id="_CPPv31c"></span><span id="_CPPv21c"></span><span id="c__double"></span><span class="target" id="util_8h_1a6753ecfe87da659675b18c2f81d6ec12"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">c</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">299792458.</span></span><a class="headerlink" href="#_CPPv41c" title="Link to this definition"></a><br /></dt>
+<span id="_CPPv31c"></span><span id="_CPPv21c"></span><span id="c__double"></span><span class="target" id="util_8h_1a6753ecfe87da659675b18c2f81d6ec12"></span><span class="k"><span class="pre">constexpr</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">c</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">299792458.</span></span><a class="headerlink" href="#_CPPv41c" title="Link to this definition"></a><br /></dt>
 <dd><p>Speed of light m/s </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv41G">
-<span id="_CPPv31G"></span><span id="_CPPv21G"></span><span id="G__double"></span><span class="target" id="util_8h_1a15e850ca6750158a3b80bb7b51d2bd13"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">G</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">GWAT_G_SI</span></span><span class="w"> </span><span class="o"><span class="pre">*</span></span><span class="w"> </span><span class="p"><span class="pre">(</span></span><span class="m"><span class="pre">1.988409902147041637325262574352366540e30</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#_CPPv41G" title="Link to this definition"></a><br /></dt>
+<span id="_CPPv31G"></span><span id="_CPPv21G"></span><span id="G__double"></span><span class="target" id="util_8h_1a15e850ca6750158a3b80bb7b51d2bd13"></span><span class="k"><span class="pre">constexpr</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">G</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">GWAT_G_SI</span></span><span class="w"> </span><span class="o"><span class="pre">*</span></span><span class="w"> </span><span class="p"><span class="pre">(</span></span><span class="m"><span class="pre">1.988409902147041637325262574352366540e30</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#_CPPv41G" title="Link to this definition"></a><br /></dt>
 <dd><p>Gravitational constant in m**3/(s**2 SolMass) </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv48MSOL_SEC">
-<span id="_CPPv38MSOL_SEC"></span><span id="_CPPv28MSOL_SEC"></span><span id="MSOL_SEC__double"></span><span class="target" id="util_8h_1a923a5ef664721f03102dfc337bb9dda4"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">MSOL_SEC</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">4.925491025543575903411922162094833998e-6</span></span><a class="headerlink" href="#_CPPv48MSOL_SEC" title="Link to this definition"></a><br /></dt>
+<span id="_CPPv38MSOL_SEC"></span><span id="_CPPv28MSOL_SEC"></span><span id="MSOL_SEC__double"></span><span class="target" id="util_8h_1a923a5ef664721f03102dfc337bb9dda4"></span><span class="k"><span class="pre">constexpr</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">MSOL_SEC</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">4.925491025543575903411922162094833998e-6</span></span><a class="headerlink" href="#_CPPv48MSOL_SEC" title="Link to this definition"></a><br /></dt>
 <dd><p>G/c**3 seconds per solar mass </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv411GWAT_MPC_SI">
-<span id="_CPPv311GWAT_MPC_SI"></span><span id="_CPPv211GWAT_MPC_SI"></span><span id="GWAT_MPC_SI__double"></span><span class="target" id="util_8h_1afd822c18ceb5f557cf78e0dc8788d66d"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">GWAT_MPC_SI</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">3.085677581491367278913937957796471611e22</span></span><a class="headerlink" href="#_CPPv411GWAT_MPC_SI" title="Link to this definition"></a><br /></dt>
+<span id="_CPPv311GWAT_MPC_SI"></span><span id="_CPPv211GWAT_MPC_SI"></span><span id="GWAT_MPC_SI__double"></span><span class="target" id="util_8h_1afd822c18ceb5f557cf78e0dc8788d66d"></span><span class="k"><span class="pre">constexpr</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">GWAT_MPC_SI</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">3.085677581491367278913937957796471611e22</span></span><a class="headerlink" href="#_CPPv411GWAT_MPC_SI" title="Link to this definition"></a><br /></dt>
 <dd><p>Meters in a megaparsec </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv47MPC_SEC">
-<span id="_CPPv37MPC_SEC"></span><span id="_CPPv27MPC_SEC"></span><span id="MPC_SEC__double"></span><span class="target" id="util_8h_1afec29e76297daa90c7fdf768ab8e4ae0"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">MPC_SEC</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv411GWAT_MPC_SI" title="GWAT_MPC_SI"><span class="n"><span class="pre">GWAT_MPC_SI</span></span></a><span class="w"> </span><span class="o"><span class="pre">/</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv41c" title="c"><span class="n"><span class="pre">c</span></span></a><a class="headerlink" href="#_CPPv47MPC_SEC" title="Link to this definition"></a><br /></dt>
+<span id="_CPPv37MPC_SEC"></span><span id="_CPPv27MPC_SEC"></span><span id="MPC_SEC__double"></span><span class="target" id="util_8h_1afec29e76297daa90c7fdf768ab8e4ae0"></span><span class="k"><span class="pre">constexpr</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">MPC_SEC</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv411GWAT_MPC_SI" title="GWAT_MPC_SI"><span class="n"><span class="pre">GWAT_MPC_SI</span></span></a><span class="w"> </span><span class="o"><span class="pre">/</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv41c" title="c"><span class="n"><span class="pre">c</span></span></a><a class="headerlink" href="#_CPPv47MPC_SEC" title="Link to this definition"></a><br /></dt>
 <dd><p>consts.kpc.to(‘m’)*1000/c Mpc in sec </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv46T_year">
-<span id="_CPPv36T_year"></span><span id="_CPPv26T_year"></span><span id="T_year__double"></span><span class="target" id="util_8h_1aee585465f09ad5bbdf47588d5ba4bb3b"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T_year</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">31557600.</span></span><a class="headerlink" href="#_CPPv46T_year" title="Link to this definition"></a><br /></dt>
-<dd><p>1 year in seconds &amp;#8212; ie seconds/year </p>
+<span id="_CPPv36T_year"></span><span id="_CPPv26T_year"></span><span id="T_year__double"></span><span class="target" id="util_8h_1aee585465f09ad5bbdf47588d5ba4bb3b"></span><span class="k"><span class="pre">constexpr</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T_year</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">31557600.</span></span><a class="headerlink" href="#_CPPv46T_year" title="Link to this definition"></a><br /></dt>
+<dd><p>1 year in seconds – ie seconds/year </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv45T_day">
-<span id="_CPPv35T_day"></span><span id="_CPPv25T_day"></span><span id="T_day__double"></span><span class="target" id="util_8h_1a9a6e80c5313ae34ede162c3a39c932b6"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T_day</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">24</span></span><span class="w"> </span><span class="o"><span class="pre">*</span></span><span class="w"> </span><span class="m"><span class="pre">3600.</span></span><a class="headerlink" href="#_CPPv45T_day" title="Link to this definition"></a><br /></dt>
+<span id="_CPPv35T_day"></span><span id="_CPPv25T_day"></span><span id="T_day__double"></span><span class="target" id="util_8h_1a9a6e80c5313ae34ede162c3a39c932b6"></span><span class="k"><span class="pre">constexpr</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T_day</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">24</span></span><span class="w"> </span><span class="o"><span class="pre">*</span></span><span class="w"> </span><span class="m"><span class="pre">3600.</span></span><a class="headerlink" href="#_CPPv45T_day" title="Link to this definition"></a><br /></dt>
 <dd><p>1 day in seconds </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv410AXIAL_TILT">
-<span id="_CPPv310AXIAL_TILT"></span><span id="_CPPv210AXIAL_TILT"></span><span id="AXIAL_TILT__double"></span><span class="target" id="util_8h_1a0291df9d94b133d580311444146853b3"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">AXIAL_TILT</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0.409092627749</span></span><a class="headerlink" href="#_CPPv410AXIAL_TILT" title="Link to this definition"></a><br /></dt>
+<span id="_CPPv310AXIAL_TILT"></span><span id="_CPPv210AXIAL_TILT"></span><span id="AXIAL_TILT__double"></span><span class="target" id="util_8h_1a0291df9d94b133d580311444146853b3"></span><span class="k"><span class="pre">constexpr</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">AXIAL_TILT</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0.409092627749</span></span><a class="headerlink" href="#_CPPv410AXIAL_TILT" title="Link to this definition"></a><br /></dt>
 <dd><p>Earth’s Axial tilt in radian </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv46AU_SEC">
-<span id="_CPPv36AU_SEC"></span><span id="_CPPv26AU_SEC"></span><span id="AU_SEC__double"></span><span class="target" id="util_8h_1a4ad5e2a1146dc491890966172ddeef96"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">AU_SEC</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">499.005</span></span><a class="headerlink" href="#_CPPv46AU_SEC" title="Link to this definition"></a><br /></dt>
+<span id="_CPPv36AU_SEC"></span><span id="_CPPv26AU_SEC"></span><span id="AU_SEC__double"></span><span class="target" id="util_8h_1a4ad5e2a1146dc491890966172ddeef96"></span><span class="k"><span class="pre">constexpr</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">AU_SEC</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">499.005</span></span><a class="headerlink" href="#_CPPv46AU_SEC" title="Link to this definition"></a><br /></dt>
 <dd><p>1AU in seconds </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv48h_planck">
-<span id="_CPPv38h_planck"></span><span id="_CPPv28h_planck"></span><span id="h_planck__double"></span><span class="target" id="util_8h_1a87a7e8d453f8565ae418058b84a946dc"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">h_planck</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">4.135667696e-15</span></span><a class="headerlink" href="#_CPPv48h_planck" title="Link to this definition"></a><br /></dt>
+<span id="_CPPv38h_planck"></span><span id="_CPPv28h_planck"></span><span id="h_planck__double"></span><span class="target" id="util_8h_1a87a7e8d453f8565ae418058b84a946dc"></span><span class="k"><span class="pre">constexpr</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">h_planck</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">4.135667696e-15</span></span><a class="headerlink" href="#_CPPv48h_planck" title="Link to this definition"></a><br /></dt>
 <dd><p>Planck’s constant (unbarred) in ev sec </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv410ROOT_THREE">
-<span id="_CPPv310ROOT_THREE"></span><span id="_CPPv210ROOT_THREE"></span><span id="ROOT_THREE__double"></span><span class="target" id="util_8h_1a2e521812477c882bcc6c674b3ff912ab"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ROOT_THREE</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">1.73205080756887729</span></span><a class="headerlink" href="#_CPPv410ROOT_THREE" title="Link to this definition"></a><br /></dt>
+<span id="_CPPv310ROOT_THREE"></span><span id="_CPPv210ROOT_THREE"></span><span id="ROOT_THREE__double"></span><span class="target" id="util_8h_1a2e521812477c882bcc6c674b3ff912ab"></span><span class="k"><span class="pre">constexpr</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ROOT_THREE</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">1.73205080756887729</span></span><a class="headerlink" href="#_CPPv410ROOT_THREE" title="Link to this definition"></a><br /></dt>
 <dd><p>Sqrt(3) comes up often, precompute it </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv45LOG10">
-<span id="_CPPv35LOG10"></span><span id="_CPPv25LOG10"></span><span id="LOG10__double"></span><span class="target" id="util_8h_1a06b36b742b0e50d668daa0b79c384c10"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">LOG10</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">2.302585092994045684</span></span><a class="headerlink" href="#_CPPv45LOG10" title="Link to this definition"></a><br /></dt>
+<span id="_CPPv35LOG10"></span><span id="_CPPv25LOG10"></span><span id="LOG10__double"></span><span class="target" id="util_8h_1a06b36b742b0e50d668daa0b79c384c10"></span><span class="k"><span class="pre">constexpr</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">LOG10</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">2.302585092994045684</span></span><a class="headerlink" href="#_CPPv45LOG10" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="cpp var">
@@ -1606,7 +1606,7 @@
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N15gen_params_base4gmstE">
 <span id="_CPPv3N15gen_params_base4gmstE"></span><span id="_CPPv2N15gen_params_base4gmstE"></span><span id="gen_params_base::gmst__double"></span><span class="target" id="classgen__params__base_1a9cf0459a975c748e8fa828b8af093611"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">gmst</span></span></span><a class="headerlink" href="#_CPPv4N15gen_params_base4gmstE" title="Link to this definition"></a><br /></dt>
-<dd><p>Greenwich Mean Sidereal time (for detector orientation - start of data &amp;#8212; IN RADIANS NOT HOURS </p>
+<dd><p>Greenwich Mean Sidereal time (for detector orientation - start of data – IN RADIANS NOT HOURS </p>
 </dd></dl>
 
 <dl class="cpp var">
@@ -1658,14 +1658,14 @@
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N15gen_params_base4nbc2E">
 <span id="_CPPv3N15gen_params_base4nbc2E"></span><span id="_CPPv2N15gen_params_base4nbc2E"></span><span id="gen_params_base::nbc2__T"></span><span class="target" id="classgen__params__base_1a2aa143e796d311a019727be9ae79f5bd"></span><a class="reference internal" href="#_CPPv4I0E15gen_params_base" title="gen_params_base::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">nbc2</span></span></span><a class="headerlink" href="#_CPPv4N15gen_params_base4nbc2E" title="Link to this definition"></a><br /></dt>
-<dd><p>Central baryon number density of star 1 &amp;#8212; to replace mass in sampling </p>
+<dd><p>Central baryon number density of star 1 – to replace mass in sampling </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N15gen_params_base14dep_postmergerE">
 <span id="_CPPv3N15gen_params_base14dep_postmergerE"></span><span id="_CPPv2N15gen_params_base14dep_postmergerE"></span><span id="gen_params_base::dep_postmerger__b"></span><span class="target" id="classgen__params__base_1aa804534bbf3c37e7720d13acee92d5ba"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">dep_postmerger</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">false</span></span><a class="headerlink" href="#_CPPv4N15gen_params_base14dep_postmergerE" title="Link to this definition"></a><br /></dt>
-<dd><p>Central baryon number density of star 2 &amp;#8212; to replace mass in sampling</p>
-<p>Flag to force the use of deprecated postmerger calculations &amp;#8212; ADOLC friendly </p>
+<dd><p>Central baryon number density of star 2 – to replace mass in sampling</p>
+<p>Flag to force the use of deprecated postmerger calculations – ADOLC friendly </p>
 </dd></dl>
 
 <dl class="cpp var">
@@ -1699,7 +1699,7 @@
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N15gen_params_base7thetaJNE">
 <span id="_CPPv3N15gen_params_base7thetaJNE"></span><span id="_CPPv2N15gen_params_base7thetaJNE"></span><span id="gen_params_base::thetaJN__T"></span><span class="target" id="classgen__params__base_1ac855eff52f4ec75a63900f63fb8a1942"></span><a class="reference internal" href="#_CPPv4I0E15gen_params_base" title="gen_params_base::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">thetaJN</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="o"><span class="pre">-</span></span><span class="m"><span class="pre">10</span></span><a class="headerlink" href="#_CPPv4N15gen_params_base7thetaJNE" title="Link to this definition"></a><br /></dt>
-<dd><p>thetaJ &amp;#8212; optional domain is [0,M_PI] </p>
+<dd><p>thetaJ – optional domain is [0,M_PI] </p>
 </dd></dl>
 
 <dl class="cpp var">
@@ -1736,7 +1736,7 @@
 <dt class="sig sig-object cpp" id="_CPPv4N15gen_params_base11theta_j_eclE">
 <span id="_CPPv3N15gen_params_base11theta_j_eclE"></span><span id="_CPPv2N15gen_params_base11theta_j_eclE"></span><span id="gen_params_base::theta_j_ecl__T"></span><span class="target" id="classgen__params__base_1aa42604158c43f56290551a92316fdce3"></span><a class="reference internal" href="#_CPPv4I0E15gen_params_base" title="gen_params_base::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">theta_j_ecl</span></span></span><a class="headerlink" href="#_CPPv4N15gen_params_base11theta_j_eclE" title="Link to this definition"></a><br /></dt>
 <dd><p>Polar angle in ecliptic coordinates</p>
-<p>Azimuthal angle in ecliptic coordinates for the total angular momentum &amp;#8212; internal, and should not be specified </p>
+<p>Azimuthal angle in ecliptic coordinates for the total angular momentum – internal, and should not be specified </p>
 </dd></dl>
 
 <dl class="cpp var">
@@ -2246,7 +2246,7 @@
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N17source_parameters14dep_postmergerE">
 <span id="_CPPv3N17source_parameters14dep_postmergerE"></span><span id="_CPPv2N17source_parameters14dep_postmergerE"></span><span id="source_parameters::dep_postmerger__b"></span><span class="target" id="structsource__parameters_1a8c26b03728b65a09c54d43d4e5dbbacb"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">dep_postmerger</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">false</span></span><a class="headerlink" href="#_CPPv4N17source_parameters14dep_postmergerE" title="Link to this definition"></a><br /></dt>
-<dd><p>Flag to force the use of deprecated postmerger calculations &amp;#8212; ADOLC friendly </p>
+<dd><p>Flag to force the use of deprecated postmerger calculations – ADOLC friendly </p>
 </dd></dl>
 
 <dl class="cpp var">
@@ -2473,13 +2473,13 @@
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N17source_parameters4nbc2E">
 <span id="_CPPv3N17source_parameters4nbc2E"></span><span id="_CPPv2N17source_parameters4nbc2E"></span><span id="source_parameters::nbc2__T"></span><span class="target" id="structsource__parameters_1a5af4799a7e4523fd3539532f02f92c5b"></span><a class="reference internal" href="#_CPPv4I0E17source_parameters" title="source_parameters::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">nbc2</span></span></span><a class="headerlink" href="#_CPPv4N17source_parameters4nbc2E" title="Link to this definition"></a><br /></dt>
-<dd><p>Central baryon number density of star 1 &amp;#8212; to replace mass in sampling </p>
+<dd><p>Central baryon number density of star 1 – to replace mass in sampling </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N17source_parameters7betappeE">
 <span id="_CPPv3N17source_parameters7betappeE"></span><span id="_CPPv2N17source_parameters7betappeE"></span><span id="source_parameters::betappe__TP"></span><span class="target" id="structsource__parameters_1adce0e179be1c7a14db7c4c852fd6be03"></span><a class="reference internal" href="#_CPPv4I0E17source_parameters" title="source_parameters::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">betappe</span></span></span><a class="headerlink" href="#_CPPv4N17source_parameters7betappeE" title="Link to this definition"></a><br /></dt>
-<dd><p>Central baryon number density of star 2 &amp;#8212; to replace mass in sampling </p>
+<dd><p>Central baryon number density of star 2 – to replace mass in sampling </p>
 </dd></dl>
 
 <dl class="cpp var">
@@ -2531,7 +2531,7 @@
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N17source_parameters10shift_timeE">
 <span id="_CPPv3N17source_parameters10shift_timeE"></span><span id="_CPPv2N17source_parameters10shift_timeE"></span><span id="source_parameters::shift_time__b"></span><span class="target" id="structsource__parameters_1acc29cebe856d34141837e5c118c31d70"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">shift_time</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">true</span></span><a class="headerlink" href="#_CPPv4N17source_parameters10shift_timeE" title="Link to this definition"></a><br /></dt>
-<dd><p>Boolean &amp;#8212; shift time to 0 before shifting to tc or not </p>
+<dd><p>Boolean – shift time to 0 before shifting to tc or not </p>
 </dd></dl>
 
 <dl class="cpp var">

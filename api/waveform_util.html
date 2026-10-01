@@ -173,7 +173,7 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>reuse_WF</strong> – If using the same exact frequencies for each detector, we can save a lot of time by only computing the waveform once </p></li>
 <li><p><strong>gen_params</strong> – tc in <a class="reference internal" href="util.html#classgen__params"><span class="std std-ref">gen_params</span></a> refers to the time of coalescence, relative to the initial time of the data stream, for the FIRST detector, the other detectors are shifted by the appropriate amount </p></li>
-<li><p><strong>responses</strong> – [out] Responses for the source at each detector, same order as detectors parameter &amp;#8212; should be pre allocated shape [detector_N][lengths[i]] </p></li>
+<li><p><strong>responses</strong> – [out] Responses for the source at each detector, same order as detectors parameter – should be pre allocated shape [detector_N][lengths[i]] </p></li>
 </ul>
 </dd>
 </dl>
@@ -191,7 +191,7 @@
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>gen_params</strong> – tc in <a class="reference internal" href="util.html#classgen__params"><span class="std std-ref">gen_params</span></a> refers to the time of coalescence, relative to the initial time of the data stream, for the FIRST detector, the other detectors are shifted by the appropriate amount </p></li>
-<li><p><strong>responses</strong> – [out] Responses for the source at each detector, same order as detectors parameter &amp;#8212; should be pre allocated shape [detector_N][length] </p></li>
+<li><p><strong>responses</strong> – [out] Responses for the source at each detector, same order as detectors parameter – should be pre allocated shape [detector_N][length] </p></li>
 </ul>
 </dd>
 </dl>
@@ -214,8 +214,8 @@
 <li><p><strong>length</strong> – length of the data </p></li>
 <li><p><strong>data</strong> – input data in the fourier domain </p></li>
 <li><p><strong>psd</strong> – PSD for the detector that created the data </p></li>
-<li><p><strong>detector</strong> – Name of the detector &amp;#8212;See noise_util for options </p></li>
-<li><p><strong>generation_method</strong> – Generation method for the template &amp;#8212; See waveform_generation.cpp for options </p></li>
+<li><p><strong>detector</strong> – Name of the detector –See noise_util for options </p></li>
+<li><p><strong>generation_method</strong> – Generation method for the template – See waveform_generation.cpp for options </p></li>
 <li><p><strong>param</strong> – <a class="reference internal" href="util.html#classgen__params"><span class="std std-ref">gen_params</span></a> structure for the template </p></li>
 </ul>
 </dd>
@@ -232,11 +232,11 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>frequencies</strong> – Frequencies used by data </p></li>
 <li><p><strong>length</strong> – length of the data </p></li>
-<li><p><strong>data_real</strong> – input data in the fourier domain &amp;#8212; real part </p></li>
-<li><p><strong>data_imag</strong> – input data in the fourier domain &amp;#8212; imaginary part </p></li>
+<li><p><strong>data_real</strong> – input data in the fourier domain – real part </p></li>
+<li><p><strong>data_imag</strong> – input data in the fourier domain – imaginary part </p></li>
 <li><p><strong>psd</strong> – PSD for the detector that created the data </p></li>
-<li><p><strong>detector</strong> – Name of the detector &amp;#8212;See noise_util for options </p></li>
-<li><p><strong>generation_method</strong> – Generation method for the template &amp;#8212; See waveform_generation.cpp for options </p></li>
+<li><p><strong>detector</strong> – Name of the detector –See noise_util for options </p></li>
+<li><p><strong>generation_method</strong> – Generation method for the template – See waveform_generation.cpp for options </p></li>
 <li><p><strong>param</strong> – <a class="reference internal" href="util.html#classgen__params"><span class="std std-ref">gen_params</span></a> structure for the template </p></li>
 </ul>
 </dd>
@@ -459,7 +459,7 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4I0E25fourier_detector_responseiP1TiPNSt7complexI1TEENSt6stringENSt6stringEP15gen_params_baseI1TEP1T">
 <span id="_CPPv3I0E25fourier_detector_responseP1TiPNSt7complexI1TEENSt6stringENSt6stringEP15gen_params_baseI1TEP1T"></span><span id="_CPPv2I0E25fourier_detector_responseP1TiPNSt7complexI1TEENSt6stringENSt6stringEP15gen_params_baseI1TEP1T"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="waveform__util_8h_1a759e633c6a807efa7b48fd66eb74ccf6"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">fourier_detector_response</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0E25fourier_detector_responseiP1TiPNSt7complexI1TEENSt6stringENSt6stringEP15gen_params_baseI1TEP1T" title="fourier_detector_response::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">frequencies</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">length</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">complex</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0E25fourier_detector_responseiP1TiPNSt7complexI1TEENSt6stringENSt6stringEP15gen_params_baseI1TEP1T" title="fourier_detector_response::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">response</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">detector</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">generation_method</span></span>, <a class="reference internal" href="util.html#_CPPv4I0E15gen_params_base" title="gen_params_base"><span class="n"><span class="pre">gen_params_base</span></span></a><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0E25fourier_detector_responseiP1TiPNSt7complexI1TEENSt6stringENSt6stringEP15gen_params_baseI1TEP1T" title="fourier_detector_response::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">parameters</span></span>, <a class="reference internal" href="#_CPPv4I0E25fourier_detector_responseiP1TiPNSt7complexI1TEENSt6stringENSt6stringEP15gen_params_baseI1TEP1T" title="fourier_detector_response::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">times</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">NULL</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0E25fourier_detector_responseiP1TiPNSt7complexI1TEENSt6stringENSt6stringEP15gen_params_baseI1TEP1T" title="Link to this definition"></a><br /></dt>
-<dd><p>Wrapper to handle all detector_response calls &amp;#8212; horizon and equatorial. </p>
+<dd><p>Wrapper to handle all detector_response calls – horizon and equatorial. </p>
 </dd></dl>
 
 <dl class="cpp function">
@@ -473,10 +473,10 @@
 <dt class="sig sig-object cpp" id="_CPPv429time_phase_corrected_autodiffPdiPdP15gen_params_baseIdENSt6stringEbPii">
 <span id="_CPPv329time_phase_corrected_autodiffPdiPdP15gen_params_baseIdENSt6stringEbPii"></span><span id="_CPPv229time_phase_corrected_autodiffPdiPdP15gen_params_baseIdENSt6stringEbPii"></span><span id="time_phase_corrected_autodiff__doubleP.i.doubleP.gen_params_base:double:P.ss.b.iP.i"></span><span class="target" id="waveform__util_8h_1ab4d78c16f314b1d060dd6246a6fd8a4f"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">time_phase_corrected_autodiff</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">times</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">length</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">frequencies</span></span>, <a class="reference internal" href="util.html#_CPPv4I0E15gen_params_base" title="gen_params_base"><span class="n"><span class="pre">gen_params_base</span></span></a><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">double</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">params</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">generation_method</span></span>, <span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">correct_time</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">tapes_in</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">NULL</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">order</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">1</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv429time_phase_corrected_autodiffPdiPdP15gen_params_baseIdENSt6stringEbPii" title="Link to this definition"></a><br /></dt>
 <dd><p>Mapping from phase to time AUTODIFFERENTIATION using ADOL-C. </p>
-<p><em></em> Currently, only IMRPhenomD is used for the time-phase relationship, as this is simpler and captures almost all of the physics. The generation_method parameter does NOTHING right now.</p>
+<p><em><strong>NOTE</strong></em> Currently, only IMRPhenomD is used for the time-phase relationship, as this is simpler and captures almost all of the physics. The generation_method parameter does NOTHING right now.</p>
 <p>This is NOT autodiff safe. ADOL-C does not support wrapping a section of code as active twice. To find the derivative of this function, you must use the hessian function of ADOL-C</p>
 <p>Made for use with detectors like LISA</p>
-<p>Uses the deprecated postmerger calculation for IMRPhenomD &amp;#8212; this is ADOL-C friendly</p>
+<p>Uses the deprecated postmerger calculation for IMRPhenomD – this is ADOL-C friendly</p>
 <p>Using <a class="reference external" href="https://arxiv.org/abs/1809.04799">https://arxiv.org/abs/1809.04799</a> t = (1/2PI) d phi/ d f</p>
 <p>correct_time is currently not supported</p>
 <p>For <a class="reference internal" href="IMRPhenomP.html#classIMRPhenomPv2"><span class="std std-ref">IMRPhenomPv2</span></a>, the phase has to be wrapped, because arctan is taken of the waveform because of the euler rotations. This might make the numerical derivative unpredictable</p>
@@ -487,13 +487,13 @@
 <dt class="sig sig-object cpp" id="_CPPv4I0E20time_phase_correctedvP1TiP1TP15gen_params_baseI1TENSt6stringEbi">
 <span id="_CPPv3I0E20time_phase_correctedP1TiP1TP15gen_params_baseI1TENSt6stringEbi"></span><span id="_CPPv2I0E20time_phase_correctedP1TiP1TP15gen_params_baseI1TENSt6stringEbi"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="waveform__util_8h_1a772f5f53b796959c3ecef1389389ff58"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">time_phase_corrected</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0E20time_phase_correctedvP1TiP1TP15gen_params_baseI1TENSt6stringEbi" title="time_phase_corrected::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">times</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">length</span></span>, <a class="reference internal" href="#_CPPv4I0E20time_phase_correctedvP1TiP1TP15gen_params_baseI1TENSt6stringEbi" title="time_phase_corrected::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">frequencies</span></span>, <a class="reference internal" href="util.html#_CPPv4I0E15gen_params_base" title="gen_params_base"><span class="n"><span class="pre">gen_params_base</span></span></a><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0E20time_phase_correctedvP1TiP1TP15gen_params_baseI1TENSt6stringEbi" title="time_phase_corrected::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">params</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">generation_method</span></span>, <span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">correct_time</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">order</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">1</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0E20time_phase_correctedvP1TiP1TP15gen_params_baseI1TENSt6stringEbi" title="Link to this definition"></a><br /></dt>
 <dd><p>Mapping from phase to time NUMERICAL. </p>
-<p><em></em> Currently, only IMRPhenomD is used for the time-phase relationship, as this is simpler and captures almost all of the physics. The generation_method parameter does NOTHING right now.</p>
+<p><em><strong>NOTE</strong></em> Currently, only IMRPhenomD is used for the time-phase relationship, as this is simpler and captures almost all of the physics. The generation_method parameter does NOTHING right now.</p>
 <p>Made for use with detectors like LISA</p>
 <p>Using <a class="reference external" href="https://arxiv.org/abs/1809.04799">https://arxiv.org/abs/1809.04799</a> t = (1/2PI) d phi/ d f</p>
 <p>correct_time is currently not supported</p>
 <p>For <a class="reference internal" href="IMRPhenomP.html#classIMRPhenomPv2"><span class="std std-ref">IMRPhenomPv2</span></a>, the phase has to be wrapped, because arctan is taken of the waveform because of the euler rotations. This might make the numerical derivative unpredictable</p>
 <p>Just uses a second order numerical derivative for now</p>
-<p>Second order is only available for 1 frequency at a time &amp;#8212; something’s funky with this </p>
+<p>Second order is only available for 1 frequency at a time – something’s funky with this </p>
 </dd></dl>
 
 <dl class="cpp function">
@@ -541,7 +541,7 @@
 <li><p><strong>fmax</strong> – max frequency to use (specific to the detector) </p></li>
 <li><p><strong>signal_to_noise</strong> – Target ratio of |h|/ sqrt(S) (typically ~0.1) </p></li>
 <li><p><strong>tol</strong> – This is a numerical algorithm, so the tolerance must be specified </p></li>
-<li><p><strong>integration_bounds</strong> – [out] bounds fo the integral shape &amp;#8212; [2] &amp;#8212; (fmin,fmax) </p></li>
+<li><p><strong>integration_bounds</strong> – [out] bounds fo the integral shape – [2] – (fmin,fmax) </p></li>
 </ul>
 </dd>
 </dl>
@@ -562,7 +562,7 @@
 <li><p><strong>sampling_freq</strong> – Frequency at which the detector operates </p></li>
 <li><p><strong>integration_time</strong> – Time of observation in seconds </p></li>
 <li><p><strong>detector</strong> – Detector to use for the response function </p></li>
-<li><p><strong>sensitivity_curve</strong> – Sensitivity curve to use &amp;#8212; must match analytic choices in detector_util </p></li>
+<li><p><strong>sensitivity_curve</strong> – Sensitivity curve to use – must match analytic choices in detector_util </p></li>
 <li><p><strong>generation_method</strong> – method to use for the waveform generation </p></li>
 <li><p><strong>params</strong> – parameters of the source </p></li>
 <li><p><strong>freq_bounds</strong> – [out] Output bounds </p></li>
@@ -578,7 +578,7 @@
 <p>Tbm should be positive</p>
 <p>tol refers to the tolerance of the bisection search. If using numerical derivatives, tolerance is not guaranteed because of errors introduced in the phase-time conversion</p>
 <p>Also, tolerance is associated with Tbm. Closer to merger, this can correspond to much larger errors on frequency because the relationship is so steep between time and frequency near merger.</p>
-<p>Uses numerical if autodiff set to false&amp;#8212; omp safe and thread safe</p>
+<p>Uses numerical if autodiff set to false– omp safe and thread safe</p>
 <p>Numerical accuracy is spotty. The second derivative isn’t always reliable</p>
 <p>Relative time: <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="nb">true</span><span class="w"> </span><span class="o">--</span><span class="w"> </span><span class="n">Tbm</span><span class="w"> </span><span class="n">is</span><span class="w"> </span><span class="n">interpreted</span><span class="w"> </span><span class="n">as</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">time</span><span class="w"> </span><span class="n">before</span><span class="w"> </span><span class="n">tc</span><span class="p">,</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="n">is</span><span class="w"> </span><span class="n">shifted</span><span class="w"> </span><span class="n">accordingly</span>
 
@@ -586,13 +586,13 @@
 </pre></div>
 </div>
 </p>
-<p>Return values &amp;#8212; See util.cpp, newton_raphson_method_1d </p>
+<p>Return values – See util.cpp, newton_raphson_method_1d </p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>params</strong> – Generation parameters of the source </p></li>
 <li><p><strong>generation_method</strong> – Generation method for the waveform </p></li>
-<li><p><strong>Tbm</strong> – target time before merger &amp;#8212; in seconds or years (years if YEARS==true) </p></li>
+<li><p><strong>Tbm</strong> – target time before merger – in seconds or years (years if YEARS==true) </p></li>
 <li><p><strong>freq</strong> – Frequency at the input time before merger </p></li>
 <li><p><strong>tol</strong> – Tolerance for the scheme </p></li>
 <li><p><strong>autodiff</strong> – Use autodiff routines instead of numerical derivatives </p></li>
@@ -627,11 +627,11 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv419threshold_times_gslP15gen_params_baseIdENSt6stringEddddNSt6stringEdPdPddP25gsl_integration_workspacei">
 <span id="_CPPv319threshold_times_gslP15gen_params_baseIdENSt6stringEddddNSt6stringEdPdPddP25gsl_integration_workspacei"></span><span id="_CPPv219threshold_times_gslP15gen_params_baseIdENSt6stringEddddNSt6stringEdPdPddP25gsl_integration_workspacei"></span><span id="threshold_times_gsl__gen_params_base:double:P.ss.double.double.double.double.ss.double.doubleP.doubleP.double.gsl_integration_workspaceP.i"></span><span class="target" id="waveform__util_8h_1a935ed44e83bc66d030944cc163dd4694"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">threshold_times_gsl</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="util.html#_CPPv4I0E15gen_params_base" title="gen_params_base"><span class="n"><span class="pre">gen_params_base</span></span></a><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">double</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">params</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">generation_method</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">T_obs</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">T_wait</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">fmin</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">fmax</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">SN</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">SNR_thresh</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">threshold_times_out</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">T_obs_SNR</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">tolerance</span></span>, <span class="n"><span class="pre">gsl_integration_workspace</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">w</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">np</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv419threshold_times_gslP15gen_params_baseIdENSt6stringEddddNSt6stringEdPdPddP25gsl_integration_workspacei" title="Link to this definition"></a><br /></dt>
-<dd><p>Utility for calculating the threshold times before merger that result in an SNR&gt;SNR_thresh &amp;#8212;GSL quad integration implementation. </p>
+<dd><p>Utility for calculating the threshold times before merger that result in an SNR&gt;SNR_thresh –GSL quad integration implementation. </p>
 <p>See arXiv 1902.00021</p>
 <p>Binary must merge within time T_wait</p>
 <p>SNR is calculated with frequencies [f(t_mer),f(t_mer-T_obs)] or [f(t_mer),0] depending on whether the binary has merged or not</p>
-<p>Assumes sky average &amp;#8212; Only supports PhenomD for now &amp;#8212; No angular dependence used ( only uses plus polarization &amp;#8212; assumes iota = psi = 0 )</p>
+<p>Assumes sky average – Only supports PhenomD for now – No angular dependence used ( only uses plus polarization – assumes iota = psi = 0 )</p>
 <p>If no time before merger satisfies the requirements, both are set to -1</p>
 <p>ALL temporal quantities in seconds or Hz</p>
 <p>Return values: <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="mi">0</span><span class="w"> </span><span class="o">--</span><span class="w"> </span><span class="n">success</span>
@@ -654,8 +654,8 @@
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>generation_method</strong> – Generation method to use for the waveform </p></li>
-<li><p><strong>T_obs</strong> – Observation time &amp;#8212; also specifies the frequency spacing (\delta f = 1./T_obs) </p></li>
-<li><p><strong>T_wait</strong> – Wait time &amp;#8212; Maximum time for binaries to coalesce </p></li>
+<li><p><strong>T_obs</strong> – Observation time – also specifies the frequency spacing (\delta f = 1./T_obs) </p></li>
+<li><p><strong>T_wait</strong> – Wait time – Maximum time for binaries to coalesce </p></li>
 <li><p><strong>fmin</strong> – Maximum frequency array </p></li>
 <li><p><strong>fmax</strong> – Maximum frequency array </p></li>
 <li><p><strong>SN</strong> – Noise curve array, should be prepopulated from f_lower to f_upper with spacing 1./T_obs </p></li>
@@ -670,12 +670,12 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv424threshold_times_full_gslP15gen_params_baseIdENSt6stringEddddNSt6stringEdPddP25gsl_integration_workspacei">
 <span id="_CPPv324threshold_times_full_gslP15gen_params_baseIdENSt6stringEddddNSt6stringEdPddP25gsl_integration_workspacei"></span><span id="_CPPv224threshold_times_full_gslP15gen_params_baseIdENSt6stringEddddNSt6stringEdPddP25gsl_integration_workspacei"></span><span id="threshold_times_full_gsl__gen_params_base:double:P.ss.double.double.double.double.ss.double.doubleP.double.gsl_integration_workspaceP.i"></span><span class="target" id="waveform__util_8h_1aaa247b2c636723aae2222f1c358a602a"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">threshold_times_full_gsl</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="util.html#_CPPv4I0E15gen_params_base" title="gen_params_base"><span class="n"><span class="pre">gen_params_base</span></span></a><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">double</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">params</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">generation_method</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">T_obs</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">T_wait</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">fmin</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">fmax</span></span>, <a class="reference internal" href="fisher.html#_CPPv4St" title="std"><span class="n"><span class="pre">std</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">SN</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">SNR_thresh</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">threshold_times_out</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">tolerance</span></span>, <span class="n"><span class="pre">gsl_integration_workspace</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">w</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">np</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv424threshold_times_full_gslP15gen_params_baseIdENSt6stringEddddNSt6stringEdPddP25gsl_integration_workspacei" title="Link to this definition"></a><br /></dt>
-<dd><p><strong>NOT FINISHED  DO NOT USE</strong> Utility for calculating the threshold times before merger that result in an SNR&gt;SNR_thresh &amp;#8212;GSL quad integration implementation </p>
-<p>NOT FINISHED &amp;#8212; DO NOT USE</p>
+<dd><p><strong>NOT FINISHED – DO NOT USE</strong> Utility for calculating the threshold times before merger that result in an SNR&gt;SNR_thresh –GSL quad integration implementation </p>
+<p>NOT FINISHED – DO NOT USE</p>
 <p>See arXiv 1902.00021</p>
 <p>Binary must merge within time T_wait</p>
 <p>SNR is calculated with frequencies [f(t_mer),f(t_mer-T_obs)] or [f(t_mer),0] depending on whether the binary has merged or not</p>
-<p>Assumes sky average &amp;#8212; Only supports PhenomD for now &amp;#8212; No angular dependence used ( only uses plus polarization &amp;#8212; assumes iota = psi = 0 )</p>
+<p>Assumes sky average – Only supports PhenomD for now – No angular dependence used ( only uses plus polarization – assumes iota = psi = 0 )</p>
 <p>If no time before merger satisfies the requirements, both are set to -1</p>
 <p>ALL temporal quantities in seconds or Hz</p>
 <p>Return values: <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="mi">0</span><span class="w"> </span><span class="o">--</span><span class="w"> </span><span class="n">success</span>
@@ -698,8 +698,8 @@
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>generation_method</strong> – Generation method to use for the waveform </p></li>
-<li><p><strong>T_obs</strong> – Observation time &amp;#8212; also specifies the frequency spacing (\delta f = 1./T_obs) </p></li>
-<li><p><strong>T_wait</strong> – Wait time &amp;#8212; Maximum time for binaries to coalesce </p></li>
+<li><p><strong>T_obs</strong> – Observation time – also specifies the frequency spacing (\delta f = 1./T_obs) </p></li>
+<li><p><strong>T_wait</strong> – Wait time – Maximum time for binaries to coalesce </p></li>
 <li><p><strong>fmin</strong> – Maximum frequency array </p></li>
 <li><p><strong>fmax</strong> – Maximum frequency array </p></li>
 <li><p><strong>SN</strong> – Noise curve array, should be prepopulated from f_lower to f_upper with spacing 1./T_obs </p></li>

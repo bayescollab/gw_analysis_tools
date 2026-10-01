@@ -392,34 +392,7 @@ T IMRPhenomD<T>::build_amp(T f,
 		T *amp_coeff, 
 		T *deltas)
 {
-	//##################################################3
-	//##################################################3
-	//##################################################3
-	//TESTING -- FOR THE LOVE OF GOD DON'T FORGET ABOUT THIS PLEASE
-	//##################################################3
-	//##################################################3
-	//debugger_print(__FILE__,__LINE__,"DO NOT FORGET THIS");
-	//T pn_amp=0;
-	//T M = params->M;
 
-	//pn_amp = amp_coeff[0];// + amp_coeff[1] * pows->PIthird * pows->MFthird + 0;
-	//	 //amp_coeff[2] * pows->PI2third * pows->MF2third + 
-	//	 //amp_coeff[3] * M_PI * M * f + 
-	//	 //amp_coeff[4] * pows->PI4third * pows->MF4third +
-	//	 //amp_coeff[5] * pows->PI5third * pows->MF5third +
-	//	 //amp_coeff[6] * pows->PIsquare * pows->MFsquare ;
-	//
-	//T nr_amp=0;
-	////nr_amp= (lambda->rho[0]) * pows->MF7third +0;
-	////	(lambda->rho[1]) * pows->MF8third +
-	////	(lambda->rho[2]) * pows->MFcube ;
-	//
-	//return 1./(pows->MF7sixth) *pn_amp+nr_amp;
-	//##################################################3
-	//##################################################3
-	//##################################################3
-	//##################################################3
-	//##################################################3
 	if(f<params->f1)	
 	{
 		//return  pow(f,-7./6)* this->amp_ins(f, params, amp_coeff, lambda, pows);

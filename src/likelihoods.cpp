@@ -77,24 +77,19 @@ RelativeBinningPNansatzLikelihood::RelativeBinningPNansatzLikelihood(
 double RelativeBinningPNansatzLikelihood::find_max_frequency(
     const CPL* const* fiducial_data_in, const double* frequencies,
     const int data_length, const int num_detectors) {
-  VECCPL fiducial_data;
-  VECCPL::reverse_iterator ref;
-  int idx;
   double maxFreq = frequencies[data_length - 1];
 
   for (int d = 0; d < num_detectors; d++) {
-    fiducial_data =
-        VECCPL(fiducial_data_in[d], fiducial_data_in[d] + data_length);
+    const CPL* data = fiducial_data_in[d];
 
-    ref = std::find_if(fiducial_data.rbegin(), fiducial_data.rend(),
-                       [](CPL& dat) { return dat != CPL(0.); });
-    if (ref == fiducial_data.rbegin()) {
-      // If the last data point is non-zero
-      continue;
+    int idx = data_length - 1;
+    while (idx >= 0 && data[idx] == CPL(0.)) {
+      idx--;
     }
 
-    idx = std::distance(ref, fiducial_data.rend()) - 1;
-    maxFreq = fmin(frequencies[idx], maxFreq);
+    if (idx >= 0) {
+      maxFreq = std::min(maxFreq, frequencies[idx]);
+    }
   }
 
   return maxFreq;

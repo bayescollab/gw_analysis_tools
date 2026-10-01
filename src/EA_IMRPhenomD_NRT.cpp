@@ -83,34 +83,7 @@ T EA_IMRPhenomD_NRT<T>::calculate_EA_sensitivity(int body, source_parameters<T> 
   
   s = coeff1 * (OmRatio) + coeff2 * (OmRatio*OmRatio) + coeff3 * (pow(OmRatio, 3.));
   
-  /*
-  //Coded s(C) directly from eqn.79 of arXiv:2104.04596v1 for comparison purposes. This gives exactly the same answer as what was used above (a good sign obviously)
-  coeff1 = (5./21.)*(-3*p->alpha1_EA + 2*p->alpha2_EA);
-  coeff2 = (5./(252252.*p->alpha1_EA))*(573.*pow(p->alpha1_EA, 3.) + (67669. - 746.*p->alpha2_EA)*p->alpha1_EA*p->alpha1_EA + 96416.*p->alpha2_EA*p->alpha2_EA + 68.*p->alpha1_EA*p->alpha2_EA*(-2632.+9.*p->alpha2_EA));
-  coeff3 = 1./(1801079280.*p->cw_EA*p->alpha1_EA*p->alpha1_EA)*(16.*p->alpha1_EA*p->alpha1_EA*(8+p->alpha1_EA)*(36773030.*p->alpha1_EA*p->alpha1_EA - 39543679.*p->alpha1_EA*p->alpha2_EA + 11403314.*p->alpha2_EA*p->alpha2_EA) + p->cw_EA*(-1970100.*pow(p->alpha1_EA, 5.) + 13995878400.*pow(p->alpha2_EA, 3.) + 640.*p->alpha1_EA*p->alpha2_EA*p->alpha2_EA*(-49528371. + 345040.*p->alpha2_EA) + 5*pow(p->alpha1_EA, 4.)*(-19596941. + 788040.*p->alpha2_EA) + pow(p->alpha1_EA, 3.)*(-2699192440. + 440184934.*p->alpha2_EA - 5974000.*p->alpha2_EA*p->alpha2_EA)*(16.*p->alpha1_EA*p->alpha1_EA*p->alpha2_EA*(1294533212. - 29152855.*p->alpha2_EA + 212350.*p->alpha2_EA*p->alpha2_EA)))); 
-
-  s = coeff1 * (compact) + coeff2 * (compact*compact) + coeff3 * (pow(compact, 3.));
-  */
   
-  //if(p->c14_EA < pow(10, -32.)){
-  /* std::cout<<"c1: "<<p->c1_EA<<", c14: "<<p->c14_EA<<", c13: "<<p->c13_EA<<", cminus: "<<p->cminus_EA<<std::endl;
-      
-      std::cout<<"alpha1: "<<p->alpha1_EA<<std::endl;
-      std::cout<<"alpha2: "<<p->alpha2_EA<<std::endl;
-      std::cout<<"Coeff1: "<<coeff1<<std::endl;
-      std::cout<<"Coeff2: "<<coeff2<<std::endl;
-      std::cout<<"Coeff3: "<<coeff3<<std::endl;
-      std::cout<<"tidal1: "<<p->tidal1<<", tidal2: "<<p->tidal2<<std::endl;
-      std::cout<<"lambda: "<<lambda<<std::endl; 
-      std::cout<<"lambda^(-1/5): "<<lambda_pow[0]<<std::endl; 
-      std::cout<<"compact: "<<compact<<std::endl; 
-      std::cout<<"OmRatio: "<<OmRatio<<std::endl;
-      std::cout<<"s "<<s<<std::endl;*/
-      // }
-  //if(p->c14_EA < pow(10, -32.)){std::cout<<"s "<<s<<std::endl;}
-  /*if(s > 1){
-    std::cout<<"sensitivity = "<<s<<", coeff1 = "<<coeff1<<", coeff2 = "<<coeff2<<", coeff3 = "<<coeff3<<std::endl;
-    }*/
   return s;
 }
 
@@ -275,23 +248,9 @@ void EA_IMRPhenomD_NRT<T>::pre_calculate_EA_factors(source_parameters<T> *p)
   
 
   EA_check_nan(p);
-
-  //debugger_print(__FILE__,__LINE__,"EA Debugging");
-  //std::cout<<"aBL "<<p->abL_EA<<std::endl;
-  //std::cout<<"gb1 "<<p->gb1_EA<<std::endl;
-  //std::cout<<"gX1 "<<p->gX1_EA<<std::endl;
-  //std::cout<<"epsilon_x "<<p->epsilon_x_EA<<std::endl;
-  //std::cout<<"S "<<p->S_EA<<std::endl;
-  //std::cout<<"alpha "<<p->alpha_ppE_2T_0_EA<<std::endl;
-  //std::cout<<"k3 "<<p->kappa3_EA<<std::endl;
-  //std::cout<<"cT "<<p->cT_EA<<std::endl;
-  //std::cout<<"cV "<<p->cV_EA<<std::endl;
-  //std::cout<<"cS "<<p->cS_EA<<std::endl;
-
     
 }
-//template void pre_calculate_EA_factors(source_parameters<double> *);
-//template void pre_calculate_EA_factors(source_parameters<adouble> *);
+
 //#############################################################
 
 

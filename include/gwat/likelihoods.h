@@ -215,6 +215,20 @@ class RelativeBinningBisectionLikelihood : public Likelihood {
 /// sky-average factor.
 class RelativeBinningBisectionPolarizationsLikelihood : public Likelihood {
  public:
+  /// @param validity_guard_tol Relative tolerance (|r_mid - r0| / |r0|) for
+  ///     the guard below. A finite value turns the guard on; the default
+  ///     (kInf) turns it off with no extra per-evaluation cost (no bin-center
+  ///     evaluation, no check). When finite, log_likelihood() additionally
+  ///     evaluates the trial waveform at one extra (interior) frequency per
+  ///     bin and rejects (-infinity) any evaluation where the bin's linear
+  ///     ratio model (r0, r1, fit from the two edges) disagrees with the
+  ///     actual ratio at that interior point by more than this tolerance.
+  ///     This guards against the bins' linear-in-frequency approximation
+  ///     being trusted far outside the region it was validated for at
+  ///     construction time (e.g. a temperature-swap-injected trial point),
+  ///     independent of how far the trial parameters are from the fiducial
+  ///     in any statistical sense. Use set_validity_guard_tol() to change
+  ///     this after construction without rebuilding the bin structure.
   RelativeBinningBisectionPolarizationsLikelihood(
       const ParameterMap& pmap,
       const PolarizationData& data,
@@ -224,7 +238,8 @@ class RelativeBinningBisectionPolarizationsLikelihood : public Likelihood {
       const WaveformGenerator& waveform_generator,
       double epsilon, double f_ref, double gmst,
       bool shift_time, bool shift_phase,
-      bool log_spacing = false);
+      bool log_spacing = false,
+      double validity_guard_tol = kInf);
 
   double log_likelihood(gen_params_base<double>* params) const override;
   std::vector<VECCPL> generate_modes(const double* theta,
@@ -240,6 +255,27 @@ class RelativeBinningBisectionPolarizationsLikelihood : public Likelihood {
 
   VECDBL get_bin_freqs() const { return bin_freqs_; }
   VECINT get_bin_inds() const { return bin_inds_; }
+
+  /// @brief Diagnostics for the validity guard, valid after the most recent
+  /// log_likelihood() call when validity_guard_tol() is finite.
+  /// last_guard_residual()/_mode()/_bin() report the worst-case per-bin
+  /// relative ratio residual found by that check and where it occurred --
+  /// they are set on every checked call, not only when the guard actually
+  /// fires. last_guard_fired() is the only one of these that reflects
+  /// whether that residual exceeded validity_guard_tol().
+  bool last_guard_fired() const { return last_guard_fired_; }
+  int last_guard_mode() const { return last_guard_mode_; }
+  int last_guard_bin() const { return last_guard_bin_; }
+  double last_guard_residual() const { return last_guard_residual_; }
+
+  /// @brief Current validity-guard tolerance (kInf if the guard is off).
+  double validity_guard_tol() const { return validity_guard_tol_; }
+
+  /// @brief Changes the validity-guard tolerance without rebuilding the bin
+  /// structure -- e.g. to lock in a value picked by
+  /// calibrate_validity_guard_tol() after constructing with the guard off
+  /// (or at a placeholder tolerance) for calibration.
+  void set_validity_guard_tol(double tol) { validity_guard_tol_ = tol; }
 
   /// Per-mode template-template summary data; B0/B1 are used by the Fisher.
   struct SummaryData {
@@ -265,6 +301,7 @@ class RelativeBinningBisectionPolarizationsLikelihood : public Likelihood {
   const double f_ref_, gmst_;
   const bool shift_time_, shift_phase_;
   const std::vector<double> sky_avg_factors_;
+  double validity_guard_tol_;
 
   int number_of_bins_;
   int number_of_modes_;
@@ -276,6 +313,25 @@ class RelativeBinningBisectionPolarizationsLikelihood : public Likelihood {
   VECDBL bin_freqs_;
   VECDBL bin_widths_;
   VECDBL bin_centers_;
+
+  // Validity guard: one interior (full-resolution-grid) sample per bin, used
+  // to check the linear ratio model against the actual waveform instead of
+  // trusting it unconditionally past construction time.
+  VECINT bin_center_inds_;                  // full-resolution index per bin; -1 if degenerate
+  VECDBL bin_center_freqs_;                 // frequency at bin_center_inds_[b]
+  std::vector<VECCPL> fiducial_at_centers_; // [mode][bin]
+  mutable bool last_guard_fired_ = false;
+  mutable int last_guard_mode_ = -1;
+  mutable int last_guard_bin_ = -1;
+  mutable double last_guard_residual_ = 0.0;
+
+  /// @brief True if the trial waveform's ratio at each bin's interior sample
+  /// is consistent (within validity_guard_tol_) with the linear (r0, r1)
+  /// model fit from the bin's edges. Always records the worst-case residual
+  /// found (last_guard_residual_/_mode_/_bin_); last_guard_fired_ is the
+  /// only one of these gated on validity_guard_tol_.
+  bool check_validity(const std::vector<VECCPL>& h_at_bins,
+                      const std::vector<VECCPL>& h_at_centers) const;
 
   std::pair<int, int> find_min_max_indices(const std::vector<VECCPL>& modes);
 

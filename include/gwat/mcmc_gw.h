@@ -295,4 +295,49 @@ void find_fiducial(const GWModel& model, const VECDBL& initial_params,
                    std::vector<double>& map_params_out,
                    std::vector<double>& final_params_out);
 
+/// @brief Calibrates a validity_guard_tol for a
+/// RelativeBinningBisectionPolarizationsLikelihood, specific to the given
+/// injection/Fisher matrix, instead of hardcoding a cross-injection constant.
+///
+/// Runs a staged per-parameter (Gibbs) M-H chain around @p fiducial_params --
+/// the same proposal scheme find_fiducial uses (sigma_i = min(c_mh/sqrt(Gamma_ii),
+/// 0.5*prior_width_i), c_mh = 2.38/sqrt(dim), one parameter proposed per step,
+/// Metropolis acceptance) -- in blocks of @p stage_steps, tracking the
+/// post-burn-in running max of rb_ll's guard residual (the same diagnostic
+/// last_guard_residual() reports). Stops once that max grows by less than
+/// @p plateau_rel_tol between consecutive stages, or after @p max_stages
+/// stages, whichever comes first.
+///
+/// A plain joint (all-parameters-at-once) Gaussian proposal from the full
+/// Fisher covariance does not work for this: at realistic SNR the Fisher
+/// matrix is typically too ill-conditioned (the tightest- and
+/// loosest-constrained directions can differ by many orders of magnitude)
+/// for a joint step to mix, so it predominantly proposes points with
+/// catastrophic likelihood -- the same failure find_fiducial itself avoids
+/// by proposing one parameter at a time, reused here for the same reason.
+///
+/// rb_ll's own validity_guard_tol() is saved and restored around the
+/// calibration run (temporarily set large enough to never reject, so every
+/// step's residual is recorded); call rb_ll.set_validity_guard_tol() yourself
+/// with the returned value once you're satisfied with it.
+///
+/// \param rb_ll            RB likelihood to calibrate against.
+/// \param model            Supplies param_map, prior, and fisher (the same
+/// GWModel bundle find_fiducial takes).
+/// \param fiducial_params  Chain starting point (typically find_fiducial's
+/// map_params_out).
+/// \param stage_steps      Gibbs steps per stage.
+/// \param max_stages       Upper bound on stages run.
+/// \param plateau_rel_tol  Stop once the running max residual grows by less
+/// than this fraction between consecutive stages.
+/// \param safety_margin    Returned tol = safety_margin * plateaued max
+/// residual.
+///
+/// \return Recommended validity_guard_tol.
+double calibrate_validity_guard_tol(
+    gw_likelihoods::RelativeBinning::RelativeBinningBisectionPolarizationsLikelihood& rb_ll,
+    const GWModel& model, const VECDBL& fiducial_params,
+    int stage_steps = 20000, int max_stages = 15,
+    double plateau_rel_tol = 0.05, double safety_margin = 10.0);
+
 #endif

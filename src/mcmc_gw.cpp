@@ -2562,3 +2562,106 @@ void find_fiducial(const GWModel& model, const VECDBL& initial_params,
 
   gsl_rng_free(rng);
 }
+
+double calibrate_validity_guard_tol(
+    gw_likelihoods::RelativeBinning::RelativeBinningBisectionPolarizationsLikelihood& rb_ll,
+    const GWModel& model, const VECDBL& fiducial_params, int stage_steps,
+    int max_stages, double plateau_rel_tol, double safety_margin) {
+  const ParameterMap& pmap = *model.param_map;
+  const int dim = pmap.dim();
+
+  // Per-parameter Gibbs step sizes -- identical recipe to find_fiducial.
+  std::vector<double> prior_widths(dim, 1.0);
+  for (const auto& kv : pmap.specs()) {
+    if (kv.second.fixed) continue;
+    int idx = pmap.index_of(kv.first);
+    if (idx >= 0) prior_widths[idx] = kv.second.hi - kv.second.lo;
+  }
+
+  std::vector<double> fisher_storage(dim * dim, 0.0);
+  std::vector<double*> fisher_mat(dim);
+  for (int i = 0; i < dim; i++) fisher_mat[i] = fisher_storage.data() + i * dim;
+  model.fisher->compute_Fisher(fisher_mat.data(), fiducial_params.data());
+
+  const double c_mh = 2.38 / std::sqrt(static_cast<double>(dim));
+  std::vector<double> sigma(dim);
+  for (int i = 0; i < dim; i++) {
+    double gamma_ii = fisher_mat[i][i];
+    double fisher_sigma =
+        (gamma_ii > 0.0) ? c_mh / std::sqrt(gamma_ii) : 0.1 * prior_widths[i];
+    sigma[i] = std::min(fisher_sigma, 0.5 * prior_widths[i]);
+  }
+
+  // Evaluates logPrior, RB logL, and the guard residual at theta in one call.
+  bayesship::positionInfo pos_tmp(dim);
+  auto eval = [&](const std::vector<double>& theta, double& logL_out,
+                 double& resid_out) -> double {
+    gen_params_base<double> gp;
+    pmap.to_gen_params(theta.data(), gp);
+    logL_out = rb_ll.log_likelihood(&gp);  // populates last_guard_residual()
+    resid_out = rb_ll.last_guard_residual();
+    for (int i = 0; i < dim; i++) pos_tmp.parameters[i] = theta[i];
+    return model.prior->eval(&pos_tmp, 0);
+  };
+
+  // Must be finite (not kInf) so check_validity() actually runs every call,
+  // but large enough to never reject during calibration; restored below.
+  const double original_tol = rb_ll.validity_guard_tol();
+  rb_ll.set_validity_guard_tol(1.0e300);
+
+  double fiducial_logL = 0.0, fiducial_resid = 0.0;
+  double fiducial_lp = eval(fiducial_params, fiducial_logL, fiducial_resid);
+
+  gsl_rng* rng = gsl_rng_alloc(gsl_rng_default);
+  const double burn_in_frac = 0.2;  // applied once, within stage 1 only
+
+  std::vector<double> current = fiducial_params;
+  double current_logL = fiducial_logL, current_lp = fiducial_lp,
+         current_resid = fiducial_resid;
+
+  std::vector<double> residuals;
+  int steps_total = 0;
+  double prev_max = std::numeric_limits<double>::quiet_NaN();
+  double final_max = 0.0;
+
+  for (int stage = 1; stage <= max_stages; stage++) {
+    for (int s = 0; s < stage_steps; s++) {
+      int i = steps_total % dim;  // cycle through parameters
+      std::vector<double> proposal = current;
+      proposal[i] = current[i] + gsl_ran_gaussian(rng, sigma[i]);
+
+      double prop_logL = 0.0, prop_resid = 0.0;
+      double prop_lp = eval(proposal, prop_logL, prop_resid);
+
+      bool accept = false;
+      if (std::isfinite(prop_lp) && std::isfinite(prop_logL)) {
+        double log_alpha = (prop_logL + prop_lp) - (current_logL + current_lp);
+        accept = (log_alpha >= 0.0) || (std::log(gsl_rng_uniform(rng)) < log_alpha);
+      }
+      if (accept) {
+        current = proposal;
+        current_logL = prop_logL;
+        current_lp = prop_lp;
+        current_resid = prop_resid;
+      }
+      residuals.push_back(current_resid);
+      steps_total++;
+    }
+
+    size_t burn = (stage == 1)
+                      ? static_cast<size_t>(burn_in_frac * residuals.size())
+                      : 0;
+    double cur_max = *std::max_element(residuals.begin() + burn, residuals.end());
+    double rel_growth = std::isfinite(prev_max) && prev_max > 0.0
+                            ? (cur_max - prev_max) / prev_max
+                            : kInf;
+    final_max = cur_max;
+    if (stage > 1 && rel_growth < plateau_rel_tol) break;
+    prev_max = cur_max;
+  }
+
+  gsl_rng_free(rng);
+  rb_ll.set_validity_guard_tol(original_tol);
+
+  return safety_margin * final_max;
+}

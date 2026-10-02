@@ -8,6 +8,7 @@
 #include <gsl/gsl_spline.h>
 
 #include <complex>
+#include <limits>
 #include <numbers>
 #include <string>
 
@@ -47,6 +48,9 @@ using PAIRDBL = std::pair<double, double>;
 // TODO: 1) Use std::constants once available, 2) rename constants to fit style
 // guide (see https://google.github.io/styleguide/cppguide.html#Constant_Names)
 constexpr double kPi = std::numbers::pi;
+
+/*! +infinity */
+constexpr double kInf = std::numeric_limits<double>::infinity();
 
 /*! natural log of 2*/
 constexpr double kLn2 = std::numbers::ln2;

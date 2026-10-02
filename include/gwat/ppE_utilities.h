@@ -22,8 +22,6 @@ struct theory_ppE_map{
 	std::string ppE_method;
 };
 
-template<class T>
-void extra_modifications(std::string generation_method,gen_params_base<T> *gp,source_parameters<T> *p, waveform_polarizations<T> *wp, T *freqs, int length);
 
 int check_num_polar(std::string generation_method);
 bool check_mod(std::string generation_method);
@@ -102,7 +100,5 @@ T DL_from_Z_MD(T Z, double alpha);
 //template<class T>
 //void pre_calculate_EA_factors(source_parameters<T> *p);
 
-//template<class T>
-//void EA_fully_restricted_v1_additional_modifications(source_parameters<T> *param, waveform_polarizations<T> *wp);
 
 #endif

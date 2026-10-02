@@ -36,37 +36,7 @@ public:
 
 virtual ~IMRPhenomD() = default;
 
-virtual void fisher_calculation_sky_averaged(double *frequency, 
-			int length, 
-			//double *parameters,
-			gen_params *parameters,
-			double **amplitude_deriv, 
-			double **phase_deriv, 
-			double *amplitude, 
-			int *amp_tapes, 
-			int *phase_tapes
-			);
-virtual void change_parameter_basis(T *old_param,
-					T *new_param,
-					bool sky_average
-					);
-virtual void construct_amplitude_derivative(double *frequencies, 
-				int length,
-				int dimension, 
-				double **amplitude_derivative,
-				source_parameters<double> *input_params,
-				int *tapes=NULL
-				);
-virtual void construct_phase_derivative(double *frequencies, 
-				int length,
-				int dimension, 
-				double **phase_derivative,
-				source_parameters<double> *input_params,
-				int *tapes=NULL
-				);
-virtual void amplitude_tape(source_parameters<double> *input_params, int *tape);
 
-virtual void phase_tape(source_parameters<double> *input_params, int *tape);
 
 
 virtual int construct_waveform(T *frequencies, int length, std::complex<T> *waveform, source_parameters<T> *params);

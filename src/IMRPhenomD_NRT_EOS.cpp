@@ -90,14 +90,6 @@ void IMRPhenomD_NRT_EOS<T>::get_m_love(gen_params_base<T>* parameters) {
     std::cout << "This curvature... is bad. Sobs." << std::endl;
   } */
 
-  // TODO: (Kaitlyn) This is for debugging, remove when finished
-  std::ofstream log("data/parameters.csv",
-                    std::ios_base::app | std::ios_base::out);
-  log << parameters->nbc1 << ", " << parameters->bump_mag << ", "
-      << parameters->bump_width << ", " << parameters->bump_offset << ", "
-      << observables1[1] << ", " << observables1[2] << "\n";
-  log.close();
-
   // Store observables into parameters structure
   parameters->mass1 = observables1[1];
   parameters->mass2 = observables2[1];

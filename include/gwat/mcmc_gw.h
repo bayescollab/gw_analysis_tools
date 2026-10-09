@@ -300,13 +300,36 @@ void find_fiducial(const GWModel& model, const VECDBL& initial_params,
 /// injection/Fisher matrix, instead of hardcoding a cross-injection constant.
 ///
 /// Runs a staged per-parameter (Gibbs) M-H chain around @p fiducial_params --
-/// the same proposal scheme find_fiducial uses (sigma_i = min(c_mh/sqrt(Gamma_ii),
-/// 0.5*prior_width_i), c_mh = 2.38/sqrt(dim), one parameter proposed per step,
-/// Metropolis acceptance) -- in blocks of @p stage_steps, tracking the
-/// post-burn-in running max of rb_ll's guard residual (the same diagnostic
-/// last_guard_residual() reports). Stops once that max grows by less than
-/// @p plateau_rel_tol between consecutive stages, or after @p max_stages
-/// stages, whichever comes first.
+/// the same proposal scheme find_fiducial uses (sigma_i =
+/// min(c_mh/sqrt(Gamma_ii), 0.5*prior_width_i), c_mh = 2.38/sqrt(dim), one
+/// parameter proposed per step, Metropolis acceptance) -- in blocks of @p
+/// stage_steps, each stage computing its own (independent,
+/// post-burn-in-for-stage-1-only) max of rb_ll's guard residual (the same
+/// diagnostic last_guard_residual() reports). Plateau is judged by comparing
+/// consecutive stages' own maxes, not a cumulative running max: a cumulative
+/// max can only grow or stay flat, so a single outlier step in one stage would
+/// permanently floor every later stage's reading there, making the very next
+/// stage trivially look plateaued regardless of whether the chain actually
+/// stabilized. The function stops once consecutive stage maxes agree within @p
+/// plateau_rel_tol (relative, either direction), or after @p max_stages stages,
+/// whichever comes first; the returned tol is based on that plateaued per-stage
+/// value, not the all-time running max across all stages. An unguarded
+/// calibration chain can itself wander into a genuine phantom-mode excursion (a
+/// huge, one-off residual spike) -- that is precisely the kind of point the
+/// guard exists to reject, so it must stay well below tol rather than inflate
+/// tol past itself. The all-time running max is tracked only to emit a stdout
+/// NOTE when it significantly exceeds the plateaued value, flagging that such
+/// an excursion occurred.
+///
+/// If a stage has zero accepted proposals, the chain has frozen: it landed
+/// where every neighboring step evaluates to a non-finite RB log-likelihood,
+/// so nothing can ever be accepted again. That frozen residual is real but
+/// not a representative tail value, so it is discarded -- the function logs
+/// a warning and returns using the last stage that still had
+/// healthy mixing (or the fiducial's own residual, if even the first stage
+/// froze) instead. Seeing this warning means the fiducial/test-point pair
+/// used to build rb_ll's bins is not robust and the returned tol should not
+/// be trusted as a tight threshold.
 ///
 /// A plain joint (all-parameters-at-once) Gaussian proposal from the full
 /// Fisher covariance does not work for this: at realistic SNR the Fisher
@@ -339,5 +362,59 @@ double calibrate_validity_guard_tol(
     const GWModel& model, const VECDBL& fiducial_params,
     int stage_steps = 20000, int max_stages = 15,
     double plateau_rel_tol = 0.05, double safety_margin = 10.0);
+
+/// @brief Generates deterministic candidate points along each parameter's
+/// own Fisher axis at @p fiducial_params, for use as additional RB
+/// bin-construction test points (see
+/// RelativeBinningBisectionPolarizationsLikelihood's multi-test-point
+/// constructor) instead of relying on a single find_fiducial draw.
+///
+/// find_fiducial's final_params_out is just the chain's raw position after a
+/// fixed number of steps -- one draw whose excursion size from the fiducial
+/// varies by an order of magnitude or more between otherwise-identical runs
+/// (seen directly: the same system's RB bin count swung from 5 to 21 purely
+/// from varying fiducial_mh_steps). Since RelativeBinningBisection*'s bins are
+/// built from comparing the fiducial against whichever single point it is
+/// handed, a single unlucky draw can leave the bins too coarse. This
+/// function instead returns fiducial_params +/- n_sigma/sqrt(Gamma_ii) along
+/// every parameter's own axis, deterministic and reproducible. Gamma is
+/// regularized via apply_prior_regularization() first (Gamma_ii += 1/w_i^2,
+/// w_i the prior width) so a weakly-constrained direction gets a sensibly
+/// bounded sigma_i (<= w_i) instead of an unbounded one whose candidate
+/// would otherwise just be silently dropped by the prior check below --
+/// unlike find_fiducial/calibrate_validity_guard_tol, this function has no
+/// separate min(sigma, 0.5*prior_width) clip to fall back on.
+///
+/// An earlier version of this function used the Fisher matrix's full
+/// eigen-decomposition instead of per-parameter axes, to also cover
+/// correlated/degenerate directions (e.g. a phiRef-tc degeneracy) that
+/// per-parameter exploration can miss. That does not work for a Fisher
+/// matrix this ill-conditioned (condition number ~1e13, from
+/// Gamma_lnMc~2.3e16 vs Gamma_tc~900): its smallest eigenvalues are
+/// dominated by numerical noise in the finite-difference off-diagonal
+/// terms, not real degeneracies, giving some eigenvectors an astronomically
+/// large (physically meaningless) implied sigma -- whitening by each
+/// parameter's own diagonal scale first did not fix this. Per-parameter
+/// axes reuse the exact diagonal-only formula find_fiducial and
+/// calibrate_validity_guard_tol already rely on, which is numerically sane
+/// for this same matrix, at the cost of not covering correlated directions.
+///
+/// A candidate is dropped (not clipped) if @p model's prior rejects it:
+/// BHBPriorFn's non-rectangular mass/spin constraints mean an axis-aligned
+/// Fisher step can land outside the physically allowed region even when
+/// each parameter individually stays in its own prior box, and RB does not
+/// need to be resolved somewhere the prior already forbids the sampler from
+/// going.
+///
+/// \param model            Supplies param_map, prior, and fisher (the same
+/// GWModel bundle find_fiducial takes).
+/// \param fiducial_params  Point the Fisher matrix is evaluated at.
+/// \param n_sigma          Distance along each parameter's own axis, in
+/// that parameter's own stdev (1/sqrt(Gamma_ii)).
+/// \return One VECDBL per kept candidate (up to 2*dim; fewer if some are
+/// rejected by the prior).
+std::vector<VECDBL> fisher_axis_points(const GWModel& model,
+                                       const VECDBL& fiducial_params,
+                                       double n_sigma = 5.0);
 
 #endif

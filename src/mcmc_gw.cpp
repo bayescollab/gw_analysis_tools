@@ -5,8 +5,10 @@
 #include <bayesship/proposalFunctions.h>
 #include <bayesship/utilities.h>
 
+#include <cstdlib>
 #include <fstream>
 #include <iomanip>
+#include <iostream>
 
 #include "detector_util.h"
 #include "fisher.h"
@@ -2567,6 +2569,7 @@ double calibrate_validity_guard_tol(
     gw_likelihoods::RelativeBinning::RelativeBinningBisectionPolarizationsLikelihood& rb_ll,
     const GWModel& model, const VECDBL& fiducial_params, int stage_steps,
     int max_stages, double plateau_rel_tol, double safety_margin) {
+  const bool debug = std::getenv("GWAT_CALIB_DEBUG") != nullptr;
   const ParameterMap& pmap = *model.param_map;
   const int dim = pmap.dim();
 
@@ -2590,6 +2593,19 @@ double calibrate_validity_guard_tol(
     double fisher_sigma =
         (gamma_ii > 0.0) ? c_mh / std::sqrt(gamma_ii) : 0.1 * prior_widths[i];
     sigma[i] = std::min(fisher_sigma, 0.5 * prior_widths[i]);
+  }
+
+  if (debug) {
+    auto names = pmap.names();
+    std::cerr << "[calib debug] dim=" << dim << " c_mh=" << c_mh << "\n";
+    for (int i = 0; i < dim; i++) {
+      std::cerr << "[calib debug]  " << names[i]
+                << "  Gamma_ii=" << fisher_mat[i][i]
+                << "  prior_width=" << prior_widths[i] << "  sigma=" << sigma[i]
+                << (sigma[i] >= 0.5 * prior_widths[i] ? "  (CLAMPED to prior)"
+                                                      : "")
+                << "\n";
+    }
   }
 
   // Evaluates logPrior, RB logL, and the guard residual at theta in one call.
@@ -2619,12 +2635,15 @@ double calibrate_validity_guard_tol(
   double current_logL = fiducial_logL, current_lp = fiducial_lp,
          current_resid = fiducial_resid;
 
-  std::vector<double> residuals;
   int steps_total = 0;
-  double prev_max = std::numeric_limits<double>::quiet_NaN();
-  double final_max = 0.0;
+  double prev_stage_max = std::numeric_limits<double>::quiet_NaN();
+  double running_max = fiducial_resid;  // all-time worst seen; never resets
+  double final_max = fiducial_resid;
 
   for (int stage = 1; stage <= max_stages; stage++) {
+    std::vector<double> stage_residuals;
+    stage_residuals.reserve(stage_steps);
+    int accepted_in_stage = 0;
     for (int s = 0; s < stage_steps; s++) {
       int i = steps_total % dim;  // cycle through parameters
       std::vector<double> proposal = current;
@@ -2643,25 +2662,115 @@ double calibrate_validity_guard_tol(
         current_logL = prop_logL;
         current_lp = prop_lp;
         current_resid = prop_resid;
+        accepted_in_stage++;
       }
-      residuals.push_back(current_resid);
+      stage_residuals.push_back(current_resid);
       steps_total++;
     }
 
-    size_t burn = (stage == 1)
-                      ? static_cast<size_t>(burn_in_frac * residuals.size())
-                      : 0;
-    double cur_max = *std::max_element(residuals.begin() + burn, residuals.end());
-    double rel_growth = std::isfinite(prev_max) && prev_max > 0.0
-                            ? (cur_max - prev_max) / prev_max
-                            : kInf;
-    final_max = cur_max;
+    // Zero acceptance for a whole stage means the chain is frozen, not
+    // converged: it landed somewhere whose neighborhood evaluates to a
+    // non-finite RB logL for every proposal direction (a genuine RB
+    // breakdown region), so nothing can ever be accepted again. The
+    // residual there is real but not a trustworthy "typical" tail value --
+    // treat it as a hard stop and report the last stage that still had
+    // healthy mixing instead of the frozen value.
+    if (accepted_in_stage == 0) {
+      std::cout << "[calibrate_validity_guard_tol] WARNING: stage " << stage
+                << " had zero accepted proposals (chain frozen in an RB "
+                   "breakdown region); discarding this stage and reporting "
+                << (std::isfinite(prev_stage_max)
+                        ? "the last healthy stage's max."
+                        : "the fiducial's own residual.")
+                << " The fiducial/test-point pair feeding this RB "
+                   "likelihood's bins may not be robust.\n";
+      break;
+    }
+
+    // Plateau is judged on each stage's OWN (independent) max, not a
+    // cumulative running max: a cumulative max can only ever grow or stay
+    // flat, so a single outlier step in one stage would permanently floor
+    // every later stage's reading at that value, making the very next
+    // stage trivially look "plateaued" (zero growth) regardless of whether
+    // the chain actually stabilized.
+    //
+    // The RETURNED tol is based on this plateaued per-stage value, not the
+    // all-time running max: an unguarded calibration chain can itself
+    // wander into a genuine phantom-mode excursion (a huge, one-off
+    // residual spike) -- that is precisely the kind of point the guard
+    // exists to reject, so it must stay well BELOW tol, not be allowed to
+    // inflate tol past itself. running_max is kept only as a diagnostic.
+    size_t burn =
+        (stage == 1)
+            ? static_cast<size_t>(burn_in_frac * stage_residuals.size())
+            : 0;
+    double stage_max = *std::max_element(stage_residuals.begin() + burn,
+                                         stage_residuals.end());
+    running_max = std::max(running_max, stage_max);
+    final_max = stage_max;
+
+    double rel_growth =
+        std::isfinite(prev_stage_max) && prev_stage_max > 0.0
+            ? std::abs(stage_max - prev_stage_max) / prev_stage_max
+            : kInf;
+    if (debug) {
+      std::cerr << "[calib debug] stage=" << stage
+                << " steps_total=" << steps_total
+                << " accepted_in_stage=" << accepted_in_stage
+                << " stage_max=" << stage_max << " running_max=" << running_max
+                << " rel_growth=" << rel_growth << "\n";
+    }
     if (stage > 1 && rel_growth < plateau_rel_tol) break;
-    prev_max = cur_max;
+    prev_stage_max = stage_max;
+  }
+
+  if (running_max > final_max * 2.0) {
+    std::cout << "[calibrate_validity_guard_tol] NOTE: the calibration chain "
+                 "briefly saw a residual of "
+              << running_max << " mid-run, well above the plateaued value "
+              << final_max
+              << " the returned tol is based on. "
+                 "If it recurs often, "
+                 "it may indicate that the fiducial/test-point pair's RB "
+                 "bins are fragile.\n";
   }
 
   gsl_rng_free(rng);
   rb_ll.set_validity_guard_tol(original_tol);
 
   return safety_margin * final_max;
+}
+
+std::vector<VECDBL> fisher_axis_points(const GWModel& model,
+                                       const VECDBL& fiducial_params,
+                                       double n_sigma) {
+  const ParameterMap& pmap = *model.param_map;
+  const int dim = pmap.dim();
+
+  std::vector<double> fisher_storage(dim * dim, 0.0);
+  std::vector<double*> fisher_mat(dim);
+  for (int i = 0; i < dim; i++) fisher_mat[i] = fisher_storage.data() + i * dim;
+  model.fisher->compute_Fisher(fisher_mat.data(), fiducial_params.data());
+  gw_fishers::apply_prior_regularization(fisher_mat.data(), pmap);
+
+  const bool debug = std::getenv("GWAT_FISHER_POINTS_DEBUG") != nullptr;
+  std::vector<VECDBL> points;
+  bayesship::positionInfo pos_tmp(dim);
+  for (int i = 0; i < dim; i++) {
+    double gii = fisher_mat[i][i];
+    if (!(gii > 0.0)) continue;  // skip non-positive-definite diagonal entries
+    double sigma_i = 1.0 / std::sqrt(gii);
+    if (debug) {
+      auto names = pmap.names();
+      std::cerr << "[fisher points debug] " << names[i] << "  Gamma_ii=" << gii
+                << " sigma_i=" << sigma_i << "\n";
+    }
+    for (double sign : {-1.0, 1.0}) {
+      VECDBL candidate = fiducial_params;
+      candidate[i] += sign * n_sigma * sigma_i;
+      for (int k = 0; k < dim; k++) pos_tmp.parameters[k] = candidate[k];
+      if (std::isfinite(model.prior->eval(&pos_tmp, 0))) points.push_back(candidate);
+    }
+  }
+  return points;
 }

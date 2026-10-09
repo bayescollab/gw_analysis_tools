@@ -24,11 +24,13 @@ class Likelihood {
   virtual double log_likelihood(gen_params_base<double>* params) const = 0;
 
   /// @brief Generate polarization modes at @p freqs for the MCMC parameter
-  /// vector @p theta. The single source of truth for theta → waveform conversion.
-  /// Only meaningful for likelihoods that hold a ParameterMap; throws for others.
+  /// vector @p theta. The single source of truth for theta → waveform
+  /// conversion. Only meaningful for likelihoods that hold a ParameterMap;
+  /// throws for others.
   virtual std::vector<VECCPL> generate_modes(const double* theta,
                                              const VECDBL& freqs) const {
-    throw std::logic_error("generate_modes() not supported for this likelihood type");
+    throw std::logic_error(
+        "generate_modes() not supported for this likelihood type");
   }
 
   /// @brief Number of detectors (IFOs) this likelihood operates over.
@@ -37,7 +39,8 @@ class Likelihood {
   /// @brief Per-mode sky-averaging factors. Only meaningful for polarization
   /// likelihoods; throws for others.
   virtual const std::vector<double>& sky_avg_factors() const {
-    throw std::logic_error("sky_avg_factors() not supported for this likelihood type");
+    throw std::logic_error(
+        "sky_avg_factors() not supported for this likelihood type");
   }
 };
 
@@ -77,7 +80,8 @@ class CoherentBareLikelihood : public Likelihood {
 };
 
 /// @class PolarizationsLikelihood
-/// @brief Sky-averaged likelihood computed directly from waveform polarizations.
+/// @brief Sky-averaged likelihood computed directly from waveform
+/// polarizations.
 ///
 /// The inner product is summed over all active polarization modes with per-mode
 /// sky-average factors:
@@ -100,9 +104,8 @@ class PolarizationsLikelihood : public Likelihood {
                           const PolarizationData& data,
                           std::vector<double> sky_avg_factors,
                           const Quadrature& q,
-                          const WaveformGenerator& wf_generator,
-                          double f_ref, double gmst,
-                          bool shift_time, bool shift_phase)
+                          const WaveformGenerator& wf_generator, double f_ref,
+                          double gmst, bool shift_time, bool shift_phase)
       : pmap_(pmap),
         data_(data),
         sky_avg_factors_(std::move(sky_avg_factors)),
@@ -113,10 +116,10 @@ class PolarizationsLikelihood : public Likelihood {
         shift_time_(shift_time),
         shift_phase_(shift_phase) {
     if (sky_avg_factors_.size() != data_.modes.size())
-      throw std::invalid_argument(
-          "sky_avg_factors size (" + std::to_string(sky_avg_factors_.size()) +
-          ") must match data modes size (" +
-          std::to_string(data_.modes.size()) + ")");
+      throw std::invalid_argument("sky_avg_factors size (" +
+                                  std::to_string(sky_avg_factors_.size()) +
+                                  ") must match data modes size (" +
+                                  std::to_string(data_.modes.size()) + ")");
   }
 
   double log_likelihood(gen_params_base<double>* params) const override;
@@ -207,7 +210,8 @@ class RelativeBinningBisectionLikelihood : public Likelihood {
 };
 
 /// @class RelativeBinningBisectionPolarizationsLikelihood
-/// @brief Bisection relative-binning likelihood for sky-averaged polarization data.
+/// @brief Bisection relative-binning likelihood for sky-averaged polarization
+/// data.
 ///
 /// Bin placement minimises the total log-likelihood error summed across all
 /// active polarization modes. Each mode contributes independently to the
@@ -215,6 +219,14 @@ class RelativeBinningBisectionLikelihood : public Likelihood {
 /// sky-average factor.
 class RelativeBinningBisectionPolarizationsLikelihood : public Likelihood {
  public:
+  /// @param test_modes_multi One or more candidate test-mode-sets
+  ///     (test_modes_multi[p][m] is polarization mode m at test point p).
+  ///     bin_bisection requires every bin to satisfy epsilon against the
+  ///     WORST of these points, not just one -- building bins from a single
+  ///     point (e.g. find_fiducial's raw chain endpoint) leaves them fragile,
+  ///     since that endpoint is just one noisy draw whose excursion size can
+  ///     vary by an order of magnitude or more between otherwise-identical
+  ///     runs.
   /// @param validity_guard_tol Relative tolerance (|r_mid - r0| / |r0|) for
   ///     the guard below. A finite value turns the guard on; the default
   ///     (kInf) turns it off with no extra per-evaluation cost (no bin-center
@@ -230,15 +242,12 @@ class RelativeBinningBisectionPolarizationsLikelihood : public Likelihood {
   ///     in any statistical sense. Use set_validity_guard_tol() to change
   ///     this after construction without rebuilding the bin structure.
   RelativeBinningBisectionPolarizationsLikelihood(
-      const ParameterMap& pmap,
-      const PolarizationData& data,
+      const ParameterMap& pmap, const PolarizationData& data,
       const std::vector<VECCPL>& fiducial_modes,
-      const std::vector<VECCPL>& test_modes,
+      const std::vector<std::vector<VECCPL>>& test_modes_multi,
       const std::vector<double>& sky_avg_factors,
-      const WaveformGenerator& waveform_generator,
-      double epsilon, double f_ref, double gmst,
-      bool shift_time, bool shift_phase,
-      bool log_spacing = false,
+      const WaveformGenerator& waveform_generator, double epsilon, double f_ref,
+      double gmst, bool shift_time, bool shift_phase, bool log_spacing = false,
       double validity_guard_tol = kInf);
 
   double log_likelihood(gen_params_base<double>* params) const override;
@@ -249,8 +258,8 @@ class RelativeBinningBisectionPolarizationsLikelihood : public Likelihood {
     return sky_avg_factors_;
   }
 
-  /// @brief Evaluate RB logL from template modes already extracted at bin edges.
-  /// h_at_bins[m] must have exactly bin_inds_.size() entries.
+  /// @brief Evaluate RB logL from template modes already extracted at bin
+  /// edges. h_at_bins[m] must have exactly bin_inds_.size() entries.
   double log_likelihood_at_waveform(const std::vector<VECCPL>& h_at_bins) const;
 
   VECDBL get_bin_freqs() const { return bin_freqs_; }
@@ -305,9 +314,10 @@ class RelativeBinningBisectionPolarizationsLikelihood : public Likelihood {
 
   int number_of_bins_;
   int number_of_modes_;
-  std::vector<SummaryData> summary_data_;   // one per mode
-  std::vector<VECCPL> fiducial_at_edges_;   // [mode][edge], size = bin_inds_.size() per mode
-  PolarizationData binned_data_;            // freqs at bin edges; modes unused
+  std::vector<SummaryData> summary_data_;  // one per mode
+  std::vector<VECCPL>
+      fiducial_at_edges_;  // [mode][edge], size = bin_inds_.size() per mode
+  PolarizationData binned_data_;  // freqs at bin edges; modes unused
 
   VECINT bin_inds_;
   VECDBL bin_freqs_;
@@ -317,9 +327,9 @@ class RelativeBinningBisectionPolarizationsLikelihood : public Likelihood {
   // Validity guard: one interior (full-resolution-grid) sample per bin, used
   // to check the linear ratio model against the actual waveform instead of
   // trusting it unconditionally past construction time.
-  VECINT bin_center_inds_;                  // full-resolution index per bin; -1 if degenerate
-  VECDBL bin_center_freqs_;                 // frequency at bin_center_inds_[b]
-  std::vector<VECCPL> fiducial_at_centers_; // [mode][bin]
+  VECINT bin_center_inds_;   // full-resolution index per bin; -1 if degenerate
+  VECDBL bin_center_freqs_;  // frequency at bin_center_inds_[b]
+  std::vector<VECCPL> fiducial_at_centers_;  // [mode][bin]
   mutable bool last_guard_fired_ = false;
   mutable int last_guard_mode_ = -1;
   mutable int last_guard_bin_ = -1;
@@ -335,15 +345,17 @@ class RelativeBinningBisectionPolarizationsLikelihood : public Likelihood {
 
   std::pair<int, int> find_min_max_indices(const std::vector<VECCPL>& modes);
 
-  double bin_log_likelihood_error(int left_idx, int right_idx,
-                                  const PolarizationData& data,
-                                  const std::vector<VECCPL>& fiducial_modes,
-                                  const std::vector<VECCPL>& test_modes,
-                                  bool log_spacing);
+  /// @brief Worst-case (max over test_modes_multi) absolute logL error for
+  /// the proposed bin [left_idx, right_idx).
+  double bin_log_likelihood_error(
+      int left_idx, int right_idx, const PolarizationData& data,
+      const std::vector<VECCPL>& fiducial_modes,
+      const std::vector<std::vector<VECCPL>>& test_modes_multi,
+      bool log_spacing);
 
   void bin_bisection(const PolarizationData& data,
                      const std::vector<VECCPL>& fiducial_modes,
-                     const std::vector<VECCPL>& test_modes,
+                     const std::vector<std::vector<VECCPL>>& test_modes_multi,
                      double epsilon, bool log_spacing);
 
   void setup_summary_data(const PolarizationData& data,

@@ -40,6 +40,17 @@ struct GWModel {
   gw_fishers::GWNumericalFishers*   fisher     = nullptr;
   gw_likelihoods::Likelihood*       likelihood = nullptr;
 
+  /// Optional: used instead of `likelihood` for chains at beta==0 (the
+  /// hottest PT rung, which by design explores the full prior and ignores
+  /// the likelihood for acceptance -- see MCMC_likelihood_wrapper::eval()).
+  /// Meant for when `likelihood` is a fast approximation (e.g. relative
+  /// binning) with a validity guard that would reject almost the entire
+  /// prior volume there, corrupting evidence's thermodynamic integration at
+  /// that anchor point: only ensembleN chains ever sit at beta==0, so
+  /// paying for an exact likelihood just there is cheap. Leave null to use
+  /// `likelihood` at every beta (default, backward compatible).
+  gw_likelihoods::Likelihood*       beta_zero_likelihood = nullptr;
+
   bool active() const { return param_map != nullptr && likelihood != nullptr; }
 };
 

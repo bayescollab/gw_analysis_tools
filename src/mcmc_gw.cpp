@@ -483,7 +483,10 @@ class MCMC_likelihood_wrapper : public bayesship::probabilityFn {
 
     if (mcmcVar->model && mcmcVar->model->active()) {
       mcmcVar->model->param_map->to_gen_params(pos->parameters, gen_params);
-      return mcmcVar->model->likelihood->log_likelihood(&gen_params);
+      gw_likelihoods::Likelihood* ll_to_use = mcmcVar->model->likelihood;
+      if (mcmcVar->model->beta_zero_likelihood && sampler->betas[chainID] == 0.0)
+        ll_to_use = mcmcVar->model->beta_zero_likelihood;
+      return ll_to_use->log_likelihood(&gen_params);
     }
 
     double* temp_params = new double[dimension];

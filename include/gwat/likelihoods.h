@@ -330,6 +330,22 @@ class RelativeBinningBisectionPolarizationsLikelihood : public Likelihood {
   VECINT bin_center_inds_;   // full-resolution index per bin; -1 if degenerate
   VECDBL bin_center_freqs_;  // frequency at bin_center_inds_[b]
   std::vector<VECCPL> fiducial_at_centers_;  // [mode][bin]
+
+  // Ascending merge of bin_freqs_ (edges) and the valid bin_center_freqs_
+  // (skipping degenerate bins with no center), used so a guarded
+  // log_likelihood() call needs only ONE generate_polarizations() call
+  // instead of two. Must stay sorted: some waveform generators (e.g. EFPE)
+  // derive their evaluation range from the first/last frequency in the
+  // array they're given, so an unsorted edges-then-centers concatenation
+  // would silently truncate that range. edge_combined_idx_[e]/
+  // center_combined_idx_[b] give each edge/center's position in
+  // combined_freqs_ (center_combined_idx_[b] is -1 for degenerate bins,
+  // mirroring bin_center_inds_).
+  VECDBL combined_freqs_;
+  VECINT edge_combined_idx_;
+  VECINT center_combined_idx_;
+  void build_combined_freqs();
+
   mutable bool last_guard_fired_ = false;
   mutable int last_guard_mode_ = -1;
   mutable int last_guard_bin_ = -1;

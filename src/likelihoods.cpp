@@ -489,6 +489,7 @@ RelativeBinningBisectionPolarizationsLikelihood::
                         " test points)");
 
   setup_summary_data(data, fiducial_modes, log_spacing);
+  build_combined_freqs();
 
   int n_edges = static_cast<int>(bin_inds_.size());
   double logL_min = std::numeric_limits<double>::infinity();
@@ -775,6 +776,36 @@ RelativeBinningBisectionPolarizationsLikelihood::log_likelihood_at_waveform(
   return ll;
 }
 
+void RelativeBinningBisectionPolarizationsLikelihood::build_combined_freqs() {
+  struct Point {
+    double freq;
+    bool is_center;
+    int idx;  // edge index or bin index, per is_center
+  };
+  int n_edges = static_cast<int>(bin_freqs_.size());
+
+  std::vector<Point> pts;
+  pts.reserve(n_edges + number_of_bins_);
+  for (int e = 0; e < n_edges; ++e) pts.push_back({bin_freqs_[e], false, e});
+  for (int b = 0; b < number_of_bins_; ++b)
+    if (bin_center_inds_[b] >= 0)
+      pts.push_back({bin_center_freqs_[b], true, b});
+
+  std::stable_sort(pts.begin(), pts.end(),
+                   [](const Point& a, const Point& b) { return a.freq < b.freq; });
+
+  combined_freqs_.resize(pts.size());
+  edge_combined_idx_.assign(n_edges, -1);
+  center_combined_idx_.assign(number_of_bins_, -1);
+  for (int k = 0; k < static_cast<int>(pts.size()); ++k) {
+    combined_freqs_[k] = pts[k].freq;
+    if (pts[k].is_center)
+      center_combined_idx_[pts[k].idx] = k;
+    else
+      edge_combined_idx_[pts[k].idx] = k;
+  }
+}
+
 bool RelativeBinningBisectionPolarizationsLikelihood::check_validity(
     const std::vector<VECCPL>& h_at_bins,
     const std::vector<VECCPL>& h_at_centers) const {
@@ -833,21 +864,43 @@ double RelativeBinningBisectionPolarizationsLikelihood::log_likelihood(
   local_params.shift_time = shift_time_;
   local_params.shift_phase = shift_phase_;
 
-  auto h_at_bins = waveform_generator_.generate_polarizations(&local_params,
-                                                              binned_data_.freqs);
+  if (!std::isfinite(validity_guard_tol_)) {
+    auto h_at_bins = waveform_generator_.generate_polarizations(
+        &local_params, binned_data_.freqs);
+    if (static_cast<int>(h_at_bins.size()) != number_of_modes_)
+      throw std::runtime_error(
+          "RELATIVE BINNING (POLARIZATIONS): waveform generator produced " +
+          std::to_string(h_at_bins.size()) + " active modes but expected " +
+          std::to_string(number_of_modes_));
+    return log_likelihood_at_waveform(h_at_bins);
+  }
 
-  if (static_cast<int>(h_at_bins.size()) != number_of_modes_)
+  // Guard on: fetch both edges and bin-centers from a single combined call
+  // (one waveform-generator invocation instead of two) and split the result
+  // back out -- see build_combined_freqs().
+  auto h_combined = waveform_generator_.generate_polarizations(&local_params,
+                                                                combined_freqs_);
+  if (static_cast<int>(h_combined.size()) != number_of_modes_)
     throw std::runtime_error(
         "RELATIVE BINNING (POLARIZATIONS): waveform generator produced " +
-        std::to_string(h_at_bins.size()) + " active modes but expected " +
+        std::to_string(h_combined.size()) + " active modes but expected " +
         std::to_string(number_of_modes_));
 
-  if (std::isfinite(validity_guard_tol_)) {
-    auto h_at_centers = waveform_generator_.generate_polarizations(
-        &local_params, bin_center_freqs_);
-    if (!check_validity(h_at_bins, h_at_centers))
-      return -kInf;
+  int n_edges = static_cast<int>(bin_inds_.size());
+  std::vector<VECCPL> h_at_bins(number_of_modes_), h_at_centers(number_of_modes_);
+  for (int m = 0; m < number_of_modes_; ++m) {
+    h_at_bins[m].resize(n_edges);
+    for (int e = 0; e < n_edges; ++e)
+      h_at_bins[m][e] = h_combined[m][edge_combined_idx_[e]];
+
+    h_at_centers[m].resize(number_of_bins_);
+    for (int b = 0; b < number_of_bins_; ++b)
+      h_at_centers[m][b] = center_combined_idx_[b] >= 0
+                               ? h_combined[m][center_combined_idx_[b]]
+                               : CPL(0.);
   }
+
+  if (!check_validity(h_at_bins, h_at_centers)) return -kInf;
 
   return log_likelihood_at_waveform(h_at_bins);
 }

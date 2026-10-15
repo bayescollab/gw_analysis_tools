@@ -1737,8 +1737,8 @@ void unpack_parameters(double* parameters,
         parameters[7] = input_params->nbc1;
         parameters[8] = input_params->nbc2;
         parameters[11] = input_params->bump_mag;
-        parameters[12] = input_params->bump_width;
-        parameters[13] = input_params->bump_offset;
+        parameters[12] = input_params->bump_start;
+        parameters[13] = input_params->bump_end;
         if (input_params->EOS_plat_flag) {
           parameters[14] = input_params->plat;
         }
@@ -2168,8 +2168,8 @@ void repack_parameters(T* avec_parameters, gen_params_base<T>* a_params,
     a_params->nbc1 = avec_parameters[7];
     a_params->nbc2 = avec_parameters[8];
     a_params->bump_mag = avec_parameters[11];
-    a_params->bump_width = avec_parameters[12];
-    a_params->bump_offset = avec_parameters[13];
+    a_params->bump_start = avec_parameters[12];
+    a_params->bump_end = avec_parameters[13];
     if (a_params->EOS_plat_flag) {
       a_params->plat = avec_parameters[14];
     }

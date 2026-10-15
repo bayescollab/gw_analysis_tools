@@ -253,8 +253,8 @@ void EOS_Constructor::convert_cs2_to_eos(std::size_t start_index) {
  */
 void Bumpy_EOS_Constructor::store_EOS_params(gen_params_base<adouble>* params) {
   eos_params.bump_magnitude = params->bump_mag.value();
-  eos_params.bump_width = convert_nsat_to_MeV(params->bump_width.value());
-  eos_params.bump_offset = convert_nsat_to_MeV(params->bump_offset.value());
+  eos_params.bump_start = convert_nsat_to_MeV(params->bump_start.value());
+  eos_params.bump_end = convert_nsat_to_MeV(params->bump_end.value());
   eos_params.plat = params->plat.value();
   eos_params.n1 = convert_nsat_to_MeV(params->nbc1.value());
   eos_params.n2 = convert_nsat_to_MeV(params->nbc2.value());
@@ -268,8 +268,8 @@ void Bumpy_EOS_Constructor::store_EOS_params(gen_params_base<adouble>* params) {
  */
 void Bumpy_EOS_Constructor::store_EOS_params(gen_params_base<double>* params) {
   eos_params.bump_magnitude = params->bump_mag;
-  eos_params.bump_width = convert_nsat_to_MeV(params->bump_width);
-  eos_params.bump_offset = convert_nsat_to_MeV(params->bump_offset);
+  eos_params.bump_start = convert_nsat_to_MeV(params->bump_start);
+  eos_params.bump_end = convert_nsat_to_MeV(params->bump_end);
   eos_params.plat = params->plat;
   eos_params.n1 = convert_nsat_to_MeV(params->nbc1);
   eos_params.n2 = convert_nsat_to_MeV(params->nbc2);
@@ -277,8 +277,6 @@ void Bumpy_EOS_Constructor::store_EOS_params(gen_params_base<double>* params) {
 
 void Bumpy_EOS_Constructor::get_additional_EOS_params() {
   // Get additional helpful values to define the bump
-  eos_params.bump_start = eos_params.bump_offset - (eos_params.bump_width / 2);
-  eos_params.bump_end = eos_params.bump_offset + (eos_params.bump_width / 2);
   eos_params.max_nb = std::max(eos_params.n1, eos_params.n2);
   Interpolation cs2_of_nb((gsl_interp_type*)gsl_interp_steffen, crust.nb,
                           crust.cs2);
@@ -334,7 +332,7 @@ void Bumpy_EOS_Constructor::construct_EOS() {
 void Bumpy_EOS_Constructor::build_cs2_one_quad_bump() {
   // Define parameters for interpolation in nb
   // How much to step by during the bump
-  double nb_step_bump = eos_params.bump_width / 1e3;
+  double nb_step_bump = (eos_params.bump_end - eos_params.bump_start) / 1e3;
   // How much to step by during the plateau
   double nb_step_plat = 10 * nb_step_bump;
   // Define an ending value slightly greater than the max central nb value, to

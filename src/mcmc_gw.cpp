@@ -1465,7 +1465,7 @@ void RJPTMCMC_method_specific_prep(std::string generation_method, int dimension,
              (dimension - totalmod) == 14) {
     std::cout
         << "Sampling in parameters: RA, sin  DEC, psi, cos iota, phi_ref, tc,  "
-           "ln DL, nbc1, nbc2, chi1, chi2, bump_mag, bump_width, bump_offset"
+           "ln DL, nbc1, nbc2, chi1, chi2, bump_mag, bump_start, bump_end"
         << std::endl;
     for (int i = 0; i < totalmod; i++) {
       std::cout << ", mod_" << i;
@@ -1476,7 +1476,7 @@ void RJPTMCMC_method_specific_prep(std::string generation_method, int dimension,
              (dimension - totalmod) == 15) {
     std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota, "
                  "phi_ref, tc,  ln DL, nbc1, nbc2, chi1, chi2, bump_mag, "
-                 "bump_width, bump_offset, plat"
+                 "bump_start, bump_end, plat"
               << std::endl;
     for (int i = 0; i < totalmod; i++) {
       std::cout << ", mod_" << i;
@@ -1620,7 +1620,7 @@ void PTMCMC_method_specific_prep(std::string generation_method, int dimension,
     } else if (has_substring(generation_method, "EOS") && nonModDim == 14) {
       std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota, "
                    "phi_ref, tc, ln DL, nbc1, nbc2, chi1, chi2, bump_mag, "
-                   "bump_width, bump_offset"
+                   "bump_start, bump_end"
                 << std::endl;
       for (int i = 0; i < totalmod; i++) {
         std::cout << ", mod_" << i;
@@ -1630,7 +1630,7 @@ void PTMCMC_method_specific_prep(std::string generation_method, int dimension,
     } else if (has_substring(generation_method, "EOS") && nonModDim == 15) {
       std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota, "
                    "phi_ref, tc, ln DL, nbc1, nbc2, chi1, chi2, bump_mag, "
-                   "bump_width, bump_offset, plat"
+                   "bump_start, bump_end, plat"
                 << std::endl;
       for (int i = 0; i < totalmod; i++) {
         std::cout << ", mod_" << i;

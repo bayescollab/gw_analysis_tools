@@ -391,24 +391,25 @@ double logPriorStandard_D_NRT_EOS::eval(bayesship::positionInfo* position,
   }  // bump_mag
   if ((pos[12]) < PD->EOS_prior[2] || (pos[12]) > PD->EOS_prior[3]) {
     return bayesship::limitInf;
-  }  // bump_width
+  }  // bump_start
   if ((pos[13]) < PD->EOS_prior[4] || (pos[13]) > PD->EOS_prior[5]) {
     return bayesship::limitInf;
-  }  // bump_offset
+  }  // bump_end
   if (PD->EOS_plat_flag) {
     if ((pos[14]) < PD->EOS_prior[6] || (pos[14]) > PD->EOS_prior[7]) {
       return bayesship::limitInf;
     }  // plat
   }
-  if ((pos[13] - (pos[12] / 2)) <= 0.50) {
+  // Restrict injection below 0.5 nsat
+  if (pos[13] <= 0.50) {
     return bayesship::limitInf;
   }
 
   // Checks if a parabola can actually be created for this set of points.
   Bumpy_EOS_Constructor* bumpy_eos = new Bumpy_EOS_Constructor;
   bumpy_eos->eos_params.bump_magnitude = pos[11];
-  bumpy_eos->eos_params.bump_width = bumpy_eos->convert_nsat_to_MeV(pos[12]);
-  bumpy_eos->eos_params.bump_offset = bumpy_eos->convert_nsat_to_MeV(pos[13]);
+  bumpy_eos->eos_params.bump_start = bumpy_eos->convert_nsat_to_MeV(pos[12]);
+  bumpy_eos->eos_params.bump_end = bumpy_eos->convert_nsat_to_MeV(pos[13]);
   if (PD->EOS_plat_flag) {
     bumpy_eos->eos_params.plat = pos[14];
   } else {

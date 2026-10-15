@@ -181,7 +181,7 @@ int fourier_waveform(
     } else if (local_method == "IMRPhenomD_NRT_EOS") {
       IMRPhenomD_NRT_EOS<T> modelNRTEOS;
       status = modelNRTEOS.construct_waveform(frequencies, length, wp->hplus,
-                                               &params);
+                                              &params);
 
     } else if (local_method == "EA_IMRPhenomD_NRT") {
       restrictedEval = false;
@@ -630,7 +630,7 @@ int fourier_amplitude(
     } else if (local_method == "IMRPhenomD_NRT_EOS") {
       IMRPhenomD_NRT_EOS<T> modelNRTEOS;
       status = modelNRTEOS.construct_amplitude(frequencies, length, amplitude,
-                                                &params);
+                                               &params);
 
     } else if (local_method == "EA_IMRPhenomD_NRT") {
       EA_IMRPhenomD_NRT<T> EAmodeldNRT;
@@ -925,8 +925,8 @@ int fourier_phase(
 
     } else if (local_method == "IMRPhenomD_NRT_EOS") {
       IMRPhenomD_NRT_EOS<T> modelNRTEOS;
-      status = modelNRTEOS.construct_phase(frequencies, length, phase_plus,
-                                            &params);
+      status =
+          modelNRTEOS.construct_phase(frequencies, length, phase_plus, &params);
 
     } else if (local_method == "EA_IMRPhenomD_NRT") {
       EA_IMRPhenomD_NRT<T> EAmodeldNRT;
@@ -1428,8 +1428,8 @@ std::string prep_source_parameters(source_parameters<T>* out,
   }
   if (has_substring(generation_method, "EOS")) {
     out->bump_mag = in->bump_mag;
-    out->bump_width = in->bump_width;
-    out->bump_offset = in->bump_offset;
+    out->bump_start = in->bump_start;
+    out->bump_end = in->bump_end;
     out->plat = in->plat;
     out->nbc1 = in->nbc1;
     out->nbc2 = in->nbc2;

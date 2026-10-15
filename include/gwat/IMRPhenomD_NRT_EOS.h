@@ -164,16 +164,14 @@ class Bumpy_EOS_Constructor : public EOS_Constructor {
    */
   struct BumpyParams {
     double bump_magnitude;
-    double bump_width;
-    double bump_offset;
+    double bump_start;
+    double bump_end;
     double plat;
     double nbc;
     double n1;
     double n2;
 
     // Additional params
-    double bump_start;
-    double bump_end;
     double f1_n1;
     double max_nb;
   };

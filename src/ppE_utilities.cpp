@@ -39,29 +39,6 @@
  * EA_fully_restricted_v1 -- Einstein-Aether neglecting other polarizations, higher harmonics, and amplitude corrections  -- input betas are c1, c2, c3, c4, tc_T (time of coalescence of for tensor mode)
  */
 
-template<class T>
-void extra_modifications(std::string generation_method,gen_params_base<T> *gp, source_parameters<T> *p, waveform_polarizations<T> *wp,T *freqs, int length)
-{
-  /*	if(has_substring(generation_method, "EA_fully_restricted_v1")){
-		//debugger_print(__FILE__,__LINE__,"POST");
-		source_parameters<T> temp_sp;
-		temp_sp.populate_source_parameters(gp);
-		temp_sp.phiRef = gp->phiRef;
-		temp_sp.f_ref = gp->f_ref;
-		temp_sp.shift_phase = gp->shift_phase;
-		temp_sp.shift_time = gp->shift_time;
-		temp_sp.incl_angle = gp->incl_angle;
-		temp_sp.betappe = gp->betappe;
-		pre_calculate_EA_factors(&temp_sp);
-		return EA_fully_restricted_v1_additional_modifications(&temp_sp,wp,freqs,length);
-	}
-  */
-	return ;
-}
-template void extra_modifications(std::string, gen_params_base<double> * gp,source_parameters<double> *, waveform_polarizations<double> *,double *, int );
-template void extra_modifications(std::string, gen_params_base<adouble> * gp,source_parameters<adouble> *, waveform_polarizations<adouble> *, adouble *, int);
-
-
 bool check_mod(std::string generation_method)
 {
 	if(has_substring(generation_method, "ppE"))
@@ -230,19 +207,6 @@ void assign_mapping(std::string generation_method,theory_ppE_map<T> *mapping, ge
 		mapping->beta_fns[0] = [](source_parameters<T> *p){return ExtraDimension_beta(p);} ;
 		ins = true;
 	}
-	//else if(has_substring(generation_method, "EA_fully_restricted_v1")){
-	/*else if(has_substring(generation_method, "EA_IMRPhenomD_NRT")){
-		//Need to pre-calculate EA variables here -- Needs to actually be in waveform_generator file..
-		//pre_calculate_EA_factors(params_in);
-		mapping->Nmod = 2;
-		mapping->bppe = new double[2];
-		mapping->bppe[0] =-7;
-		mapping->bppe[1] =-5;
-		mapping->beta_fns = new beta_fn<T>[mapping->Nmod]; 
-		mapping->beta_fns[0] = [](source_parameters<T> *p){return EA_fully_restricted_phase0(p);} ;
-		mapping->beta_fns[1] = [](source_parameters<T> *p){return EA_fully_restricted_phase1(p);} ;
-		ins = true;
-		}*/
 	else if(has_substring(generation_method, "BHEvaporation")){
 		mapping->Nmod = 1;
 		mapping->bppe = new double[1];
@@ -361,44 +325,7 @@ template void assign_mapping(std::string,theory_ppE_map<double>*,gen_params_base
 template void assign_mapping(std::string,theory_ppE_map<adouble>*,gen_params_base<adouble>*);
 
 
-/*template<class T>
-void EA_fully_restricted_v1_additional_modifications(source_parameters<T> *param, waveform_polarizations<T> *wp, T *freqs, int length)
-{
-	std::complex<T> *hall = new std::complex<T>[length];//Waveform common to all polarizations
 
-	T ci = cos(param->incl_angle);
-	T si = sin(param->incl_angle);
-	for(int i = 0 ; i<length; i++){
-		hall[i] = wp->hplus[i] / std::complex<T>(-1*(1+ci*ci),0) ;	
-	}
-	//T dtV = param->tc*(1./param->cT_EA-1./param->cV_EA)/(1-1./param->cT_EA);
-	//T dtS = param->tc*(1./param->cT_EA-1./param->cS_EA)/(1-1./param->cT_EA);
-	T dtV = (1.- param->cT_EA/param->cV_EA);
-	T dtS = (1.- param->cT_EA/param->cS_EA);
-	std::complex<T> shift_V ;
-	std::complex<T> shift_S ;
-	T u2m2=0;
-	for(int i = 0 ; i<length; i++){
-		u2m2 = pow(M_PI * param->chirpmass * freqs[i],-2./3.);
-		//std::complex<T> time_shift = ( exp(std::complex<T>(0,2*M_PI*freqs[i]*dtV)+exp(std::complex<T>(0,2*M_PI*freqs[i]*dtS))));
-		//wp->hplus[i]*=time_shift;
-		//wp->hcross[i]*=time_shift;
-		shift_V = exp(std::complex<T>(0,-2*M_PI*freqs[i] *param->tc* dtV));
-		shift_S = exp(std::complex<T>(0,-2*M_PI*freqs[i] *param->tc* dtS));
-
-		wp->hplus[i] *= (std::complex<T>(1 + u2m2 * param->alpha_ppE_2T_0_EA,0) + shift_V + shift_S);
-		wp->hcross[i] *= (std::complex<T>(1 + u2m2 * param->alpha_ppE_2T_0_EA,0) + shift_V + shift_S);
-
-		wp->hb[i] = hall[i] * std::complex<T>(0.5,0) * u2m2* param->alpha_ppE_2T_0_EA* param->gb1_EA * (std::complex<T>(1,0) - param->abL_EA)*shift_S*si*si;
-		wp->hx[i] = hall[i] *u2m2 * param->alpha_ppE_2T_0_EA*param->gX1_EA * si * shift_V * ci;
-		wp->hy[i] = hall[i] *u2m2 * param->alpha_ppE_2T_0_EA*param->gX1_EA * si * shift_V * std::complex<T>(0,1);
-	} 
-	delete [] hall;
-	return ;
-}
-template void EA_fully_restricted_v1_additional_modifications(source_parameters<double> *param, waveform_polarizations<double> *wp, double *, int);
-template void EA_fully_restricted_v1_additional_modifications(source_parameters<adouble> *param, waveform_polarizations<adouble> *wp, adouble *, int);
-*/
 
 /* \brief ppEAlt conversion
  *
@@ -443,32 +370,7 @@ T PNSeries_beta(int term,source_parameters<T> *param)
 }
 template double PNSeries_beta(int ,source_parameters<double> *);
 template adouble PNSeries_beta(int , source_parameters<adouble> *);
-/*
-template<class T>
-T EA_fully_restricted_phase0(source_parameters<T> *p)
-{
-	pre_calculate_EA_factors(p);
-	T out = 0;
-	out = -3./224. * 1./p->kappa3_EA * pow(p->eta,2./5.) * p->epsilon_x_EA;
-	
-	//Minus one comes from sign choice from paper
-	return -1*out;
-}
-template double EA_fully_restricted_phase0(source_parameters<double> *);
-template adouble EA_fully_restricted_phase0(source_parameters<adouble> *);
 
-template<class T>
-T EA_fully_restricted_phase1(source_parameters<T> *p)
-{
-	pre_calculate_EA_factors(p);
-	T out = 0;
-	out = -3./128. * ( -2./3. * ( p->s1_EA+p->s2_EA) - 1./2. * (p->c1_EA + p->c4_EA) + ( p->kappa3_EA - 1.)) ;
-	//Minus one comes from sign choice from paper
-	return -1*out;
-}
-template double EA_fully_restricted_phase1(source_parameters<double> *);
-template adouble EA_fully_restricted_phase1(source_parameters<adouble> *);
-*/
 template<class T>
 T dCS_beta(source_parameters<T> *param)
 {
@@ -834,102 +736,3 @@ int dispersion_lookup(double alpha)
 	return -1;
 }
 
-/*
-template<class T>
-void pre_calculate_EA_factors(source_parameters<T> *p)
-{
-  p->ca_EA = p->betappe[0];
-  p->ctheta_EA = p->betappe[1];
-  p->cw_EA = p->betappe[2];
-  p->csigma_EA = p->betappe[3];
-  p->s1_EA = 2e-5;
-  p->s2_EA = 1e-5;
-  p->V_x_EA = 0;
-  p->V_y_EA = 0;
-  p->V_z_EA = 0;
-
-  //Transforming to the parameters used in arXiv:1911.10278v2 (because that is where these formulas come from)
-  p->c1_EA = (p->cw_EA + p->csigma_EA)/2.;
-  p->c2_EA = (p->ctheta_EA - p->csigma_EA)/3.;
-  p->c3_EA = (p->csigma_EA - p->cw_EA)/2.;
-  p->c4_EA = p->ca_EA - (p->csigma_EA + p->cw_EA)/2.; 
-  
-  //more convenient parameters
-  p->c13_EA = p->c1_EA + p->c3_EA;
-  p->cminus_EA = p->c1_EA - p->c3_EA;
-  p->c14_EA = p->c1_EA + p->c4_EA;
-
-  //squared speeds of the different polarizations
-  p->cTsq_EA = 1./(1. - p->c13_EA);
-  p->cVsq_EA = (2.*p->c1_EA - p->c13_EA*p->cminus_EA)/(2.*(1.- p->c13_EA)*p->c14_EA);
-  p->cSsq_EA = ((2. - p->c14_EA)*(p->c13_EA + p->c2_EA))/((2.+3.*p->c2_EA + p->c13_EA)*(1. - p->c13_EA)*p->c14_EA);
-
-  //speeds of the different polarizations
-  p->cT_EA = sqrt(p->cTsq_EA);
-  p->cV_EA = sqrt(p->cVsq_EA);
-  p->cS_EA = sqrt(p->cSsq_EA);
-
-  //Relevant combinations of parameters
-  p->alpha1_EA = -8.*(p->c1_EA*p->c14_EA - p->cminus_EA*p->c13_EA)/(2.*p->c1_EA - p->cminus_EA*p->c13_EA);
-  p->alpha2_EA = (1./2.)*p->alpha1_EA + ((p->c14_EA - 2.*p->c13_EA)*(3.*p->c2_EA + p->c13_EA + p->c14_EA))/((p->c2_EA + p->c13_EA)*(2. - p->c14_EA));
-  p->beta1_EA = -2.* p->c13_EA / p->cV_EA; 
-  p->beta2_EA = (p->c14_EA - 2.* p->c13_EA)/(2.*p->c14_EA * (1 - p->c13_EA) * p->cS_EA * p->cS_EA); 
-  
-  p->Z_EA = ((p->alpha1_EA - 2.*p->alpha2_EA)*(1. - p->c13_EA)) / (3.*(2.*p->c13_EA - p->c14_EA));
-  
-  p->A1_EA = (1./p->cT_EA) + (2*p->c14_EA*p->c13_EA*p->c13_EA)/((2.*p->c1_EA - p->c13_EA*p->cminus_EA)*(2.*p->c1_EA - p->c13_EA*p->cminus_EA)*p->cV_EA) + (3.*p->c14_EA*(p->Z_EA - 1.)*(p->Z_EA - 1.))/(2.*(2. - p->c14_EA)*p->cS_EA);
-  
-  p->A2_EA = -(2.*p->c13_EA)/((2.*p->c1_EA - p->c13_EA*p->cminus_EA)*pow(p->cV_EA, 3.)) - 2.*(p->Z_EA - 1.)/((2. - p->c14_EA)*pow(p->cS_EA, 3.));
-  
-  p->A3_EA = 1./(2.*p->c14_EA* pow(p->cV_EA, 5.)) + 2./(3.*p->c14_EA * (2. - p->c14_EA)*pow(p->cS_EA, 5.));
- 
-  p->B3_EA = 1./(9.*p->c14_EA*(2. - p->c14_EA)*pow(p->cS_EA, 5.));
-  
-  p->C_EA = 4./(3.*p->c14_EA * pow(p->cV_EA, 3.)) + 4./(3.*p->c14_EA*(2. - p->c14_EA)*pow(p->cS_EA, 3.));
-  
-  p->D_EA = 1./(6.*p->c14_EA * pow(p->cV_EA, 5.));
-
-  /*
-  //Sensitivities
-  p->compact1 = 1.; //FIX
-  p->compact2 = 1.; //FIX
-  
-  p->O_m1_EA = (-5./7.)*p->compact1 - ((18275.*p->alpha1_EA)/168168.)*pow(p->compact1, 3.);
-  p->O_m2_EA = (-5./7.)*p->compact2 - ((18275.*p->alpha1_EA)/168168.)*pow(p->compact2, 3.);
-  
-  p->s1_EA = ((3.*p->alpha1_EA + 2.*p->alpha2_EA)/3.) * (p->O_m1_EA)
-    +((573.*pow(p->alpha1_EA, 3.) + p->alpha1_EA*p->alpha1_EA*(67669. - 764.*p->alpha2_EA) + 96416.*p->alpha2_EA*p->alpha2_EA + 68.*p->alpha1_EA*p->alpha2_EA*(9.*p->alpha2_EA - 2632.))/(25740.*p->alpha1_EA)) * (p->O_m1_EA*p->O_m1_EA)
-    + (1./(656370000.*p->cw_EA*p->alpha1_EA*p->alpha1_EA))*(-4.*p->alpha1_EA*p->alpha1_EA*(p->alpha1_EA + 8.)*(36773030.*p->alpha1_EA*p->alpha1_EA - 39543679.*p->alpha1_EA*p->alpha2_EA + 11403314.*p->alpha2_EA*p->alpha2_EA) + p->cw_EA*(1970100.*pow(p->alpha1_EA,5.) - 13995878400.*pow(p->alpha2_EA, 3.) - 640.*p->alpha1_EA*p->alpha2_EA*p->alpha2_EA*(-49528371. + 345040.*p->alpha2_EA) - 5.*pow(p->alpha1_EA, 4.)*(19548109. + 788040.*p->alpha2_EA) - 16.*p->alpha1_EA*p->alpha1_EA*p->alpha2_EA*(1294533212. - 29152855.*p->alpha2_EA + 212350.*p->alpha2_EA*p->alpha2_EA) + pow(p->alpha1_EA,3.)*(2699192440. - 309701434.*p->alpha2_EA + 5974000.*p->alpha2_EA*p->alpha2_EA))) * (pow(p->O_m1_EA, 3.));
-
-    p->s2_EA = ((3.*p->alpha1_EA + 2.*p->alpha2_EA)/3.) * (p->O_m2_EA)
-    +((573.*pow(p->alpha1_EA, 3.) + p->alpha1_EA*p->alpha1_EA*(67669. - 764.*p->alpha2_EA) + 96416.*p->alpha2_EA*p->alpha2_EA + 68.*p->alpha1_EA*p->alpha2_EA*(9.*p->alpha2_EA - 2632.))/(25740.*p->alpha1_EA)) * (p->O_m2_EA*p->O_m2_EA)
-    + (1./(656370000.*p->cw_EA*p->alpha1_EA*p->alpha1_EA))*(-4.*p->alpha1_EA*p->alpha1_EA*(p->alpha1_EA + 8.)*(36773030.*p->alpha1_EA*p->alpha1_EA - 39543679.*p->alpha1_EA*p->alpha2_EA + 11403314.*p->alpha2_EA*p->alpha2_EA) + p->cw_EA*(1970100.*pow(p->alpha1_EA,5.) - 13995878400.*pow(p->alpha2_EA, 3.) - 640.*p->alpha1_EA*p->alpha2_EA*p->alpha2_EA*(-49528371. + 345040.*p->alpha2_EA) - 5.*pow(p->alpha1_EA, 4.)*(19548109. + 788040.*p->alpha2_EA) - 16.*p->alpha1_EA*p->alpha1_EA*p->alpha2_EA*(1294533212. - 29152855.*p->alpha2_EA + 212350.*p->alpha2_EA*p->alpha2_EA) + pow(p->alpha1_EA,3.)*(2699192440. - 309701434.*p->alpha2_EA + 5974000.*p->alpha2_EA*p->alpha2_EA))) * (pow(p->O_m2_EA, 3.));
-  */
-/*
-  //The functions that are actually used to compute the phase
-  p->S_EA = p->s1_EA*(p->mass2/p->M) + p->s2_EA*(p->mass1/p->M); 
-  p->kappa3_EA = p->A1_EA + p->S_EA * p->A2_EA + p->S_EA*p->S_EA * p->A3_EA;
-  p->epsilon_x_EA = (((p->s1_EA - p->s2_EA)*(p->s1_EA - p->s2_EA))/(32.*p->kappa3_EA))*((21.*p->A3_EA + 90.*p->B3_EA + 5.*p->D_EA)*(p->V_x_EA*p->V_x_EA + p->V_y_EA*p->V_y_EA + p->V_z_EA*p->V_z_EA) - (3.*p->A3_EA + 90.*p->B3_EA - 5.*p->D_EA)*p->V_z_EA*p->V_z_EA + 5.*p->C_EA);
-
-  //Functions necessary for corrections to the amplitude
-  p->alpha_ppE_2T_0_EA = -(1./2.)*(1./sqrt(p->kappa3_EA)) * pow(p->eta, 2./5.) * p->epsilon_x_EA;
-  p->abL_EA = 1. + 2*p->beta2_EA; 
-  p->gb1_EA = (2./(2. - p->c14_EA)) * (-3. *p->c14_EA * (p->Z_EA - 1) * p->cS_EA * p->cS_EA + 2.*p->S_EA)/(p->cS_EA * p->cS_EA);
-  p->gX1_EA = - (p->beta1_EA)/(2*p->c1_EA - p->c13_EA*p->cminus_EA) * (1./p->cV_EA) * (p->S_EA - p->c13_EA/(1 - p->c13_EA)); 
-  //debugger_print(__FILE__,__LINE__,"EA Debugging");
-  //std::cout<<"aBL "<<p->abL_EA<<std::endl;
-  //std::cout<<"gb1 "<<p->gb1_EA<<std::endl;
-  //std::cout<<"gX1 "<<p->gX1_EA<<std::endl;
-  //std::cout<<"epsilon_x "<<p->epsilon_x_EA<<std::endl;
-  //std::cout<<"S "<<p->S_EA<<std::endl;
-  //std::cout<<"alpha "<<p->alpha_ppE_2T_0_EA<<std::endl;
-  //std::cout<<"k3 "<<p->kappa3_EA<<std::endl;
-  //std::cout<<"cT "<<p->cT_EA<<std::endl;
-  //std::cout<<"cV "<<p->cV_EA<<std::endl;
-  //std::cout<<"cS "<<p->cS_EA<<std::endl;
-  
-}
-template void pre_calculate_EA_factors(source_parameters<double> *);
-template void pre_calculate_EA_factors(source_parameters<adouble> *);
-*/
-//#############################################################

@@ -326,7 +326,7 @@ double Z_from_DL_interp(double DL, gsl_interp_accel* Z_DL_accel_ptr,
   double DLtemp = DL;
   // if(DL>DLvec[npts-1]){
   //	std::cout<<"WARNING: DL exceeded limit: setting to highest value in
-  //table"<<std::endl; 	DLtemp=DLvec[npts-1]; 	std::cout<<DL<<std::endl;
+  // table"<<std::endl; 	DLtemp=DLvec[npts-1]; std::cout<<DL<<std::endl;
   //	std::cout<<DLtemp<<std::endl;
   // }
 
@@ -1034,8 +1034,8 @@ void source_parameters<T>::populate_source_parameters(
 //{
 //
 //	/* Convert all dimensionful quantities to seconds and build all needed
-//source quantities once*/ 	source_parameters<T> params; 	params.mass1 =
-//param_in->mass1*MSOL_SEC; 	params.mass2 = param_in->mass2*MSOL_SEC;
+// source quantities once*/ 	source_parameters<T> params; 	params.mass1 =
+// param_in->mass1*MSOL_SEC; 	params.mass2 = param_in->mass2*MSOL_SEC;
 //	params.spin1x = param_in->spin1[0];
 //	params.spin2x = param_in->spin2[0];
 //	params.spin1y = param_in->spin1[1];
@@ -1052,12 +1052,13 @@ void source_parameters<T>::populate_source_parameters(
 //	params.eta = calculate_eta(params.mass1,params.mass2);
 //	params.M = params.mass1 + params.mass2;
 //	params.chi_eff = (params.mass1*(params.spin1z)+
-//params.mass2*(params.spin2z))/(params.M); 	params.chi_pn = params.chi_eff -
+// params.mass2*(params.spin2z))/(params.M); 	params.chi_pn = params.chi_eff -
 //(38*params.eta/113)*(2*params.chi_s); 	params.DL =
-//param_in->Luminosity_Distance*MPC_SEC; 	params.delta_mass =
-//sqrt(1.-4*params.eta); 	params.phiRef = param_in->phiRef; 	params.tc =
-//param_in->tc; 	params.sky_average = param_in->sky_average; 	params.A0 =
-//A0_from_DL(params.chirpmass, params.DL, params.sky_average); 	return params;
+// param_in->Luminosity_Distance*MPC_SEC; 	params.delta_mass =
+// sqrt(1.-4*params.eta); 	params.phiRef = param_in->phiRef; params.tc =
+// param_in->tc; 	params.sky_average = param_in->sky_average; params.A0 =
+// A0_from_DL(params.chirpmass, params.DL, params.sky_average); 	return
+// params;
 // }
 /*! \brief TESTING Simple utility to copy the members of param_in to param_out,
  * for whatever types those are.

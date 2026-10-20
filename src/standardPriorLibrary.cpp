@@ -350,60 +350,82 @@ double logPriorStandard_D_NRT_EOS::eval(bayesship::positionInfo* position,
                                         int chainID) {
   int dim = position->dimension;
   double* pos = position->parameters;
-  if (pos[7] < PD->nbc1_prior[0] || pos[7] > PD->nbc1_prior[1]) {
-    return bayesship::limitInf;
-  }
-  if (pos[8] < PD->nbc2_prior[0] || pos[8] > PD->nbc2_prior[1]) {
-    return bayesship::limitInf;
-  }
-  // ###########
+
+  /* ------------------------------------------------------------------------ */
+  // RA
   if ((pos[0]) < PD->RA_bounds[0] || (pos[0]) > PD->RA_bounds[1]) {
     return bayesship::limitInf;
-  }  // RA
+  }
+  // sinDEC
   if ((pos[1]) < PD->sinDEC_bounds[0] || (pos[1]) > PD->sinDEC_bounds[1]) {
     return bayesship::limitInf;
-  }  // sinDEC
+  }
+  // PSI
   if ((pos[2]) < 0 || (pos[2]) > M_PI) {
     return bayesship::limitInf;
-  }  // PSI
+  }
+  // cos \iota
   if ((pos[3]) < -1 || (pos[3]) > 1) {
     return bayesship::limitInf;
-  }  // cos \iota
+  }
+  // phiRef
   if ((pos[4]) < 0 || (pos[4]) > 2 * M_PI) {
     return bayesship::limitInf;
-  }  // phiRef
+  }
+  // DL
   if (pos[5] < (PD->T_merger - .1) || pos[5] > (PD->T_merger + .1)) {
     return bayesship::limitInf;
   }
+  // DL
   if (std::exp(pos[6]) < PD->DL_prior[0] ||
       std::exp(pos[6]) > PD->DL_prior[1]) {
     return bayesship::limitInf;
-  }  // DL
+  }
+  // chi1
   if ((pos[9]) < PD->spin1_prior[0] || (pos[9]) > PD->spin1_prior[1]) {
     return bayesship::limitInf;
-  }  // chi1
+  }
+  // chi2
   if ((pos[10]) < PD->spin2_prior[0] || (pos[10]) > PD->spin2_prior[1]) {
     return bayesship::limitInf;
-  }  // chi2
-  // ###########
+  }
+  /* ------------------------------------------------------------------------ */
+  // nbc1
+  if (pos[7] < PD->nbc1_prior[0] || pos[7] > PD->nbc1_prior[1]) {
+    return bayesship::limitInf;
+  }
+  // nbc2
+  if (pos[8] < PD->nbc2_prior[0] || pos[8] > PD->nbc2_prior[1]) {
+    return bayesship::limitInf;
+  }
+  // bump_mag
   if ((pos[11]) < PD->EOS_prior[0] || (pos[11]) > PD->EOS_prior[1]) {
     return bayesship::limitInf;
-  }  // bump_mag
+  }
+  // bump_start
   if ((pos[12]) < PD->EOS_prior[2] || (pos[12]) > PD->EOS_prior[3]) {
     return bayesship::limitInf;
-  }  // bump_start
+  }
+  // bump_end
   if ((pos[13]) < PD->EOS_prior[4] || (pos[13]) > PD->EOS_prior[5]) {
     return bayesship::limitInf;
-  }  // bump_end
+  }
+  // plateau
   if (PD->EOS_plat_flag) {
     if ((pos[14]) < PD->EOS_prior[6] || (pos[14]) > PD->EOS_prior[7]) {
       return bayesship::limitInf;
-    }  // plat
+    }
+  }
+  // Make sure bump start is before the bump end
+  if (pos[12] > pos[13]) {
+    return bayesship::limitInf;
   }
   // Restrict injection below 0.5 nsat
   if (pos[13] <= 0.50) {
     return bayesship::limitInf;
   }
+
+  /* ------------------------------------------------------------------------ */
 
   // Checks if a parabola can actually be created for this set of points.
   Bumpy_EOS_Constructor* bumpy_eos = new Bumpy_EOS_Constructor;
@@ -435,6 +457,8 @@ double logPriorStandard_D_NRT_EOS::eval(bayesship::positionInfo* position,
   if ((leq_check1 && leq_check2) || (geq_check1 && geq_check2)) {
     return bayesship::limitInf;
   }
+
+  /* ------------------------------------------------------------------------ */
 
   return log(aligned_spin_prior(pos[9])) + log(aligned_spin_prior(pos[10])) +
          3 * pos[6];

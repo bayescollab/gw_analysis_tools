@@ -406,7 +406,7 @@ double logPriorStandard_D_NRT_EOS::eval(bayesship::positionInfo* position,
   if ((pos[12]) < PD->EOS_prior[2] || (pos[12]) > PD->EOS_prior[3]) {
     return bayesship::limitInf;
   }
-  // bump_end
+  // bump_width
   if ((pos[13]) < PD->EOS_prior[4] || (pos[13]) > PD->EOS_prior[5]) {
     return bayesship::limitInf;
   }
@@ -416,12 +416,8 @@ double logPriorStandard_D_NRT_EOS::eval(bayesship::positionInfo* position,
       return bayesship::limitInf;
     }
   }
-  // Make sure bump start is before the bump end
-  if (pos[12] > pos[13]) {
-    return bayesship::limitInf;
-  }
   // Restrict injection below 0.5 nsat
-  if (pos[13] <= 0.50) {
+  if (pos[12] <= 0.50) {
     return bayesship::limitInf;
   }
 
@@ -431,7 +427,7 @@ double logPriorStandard_D_NRT_EOS::eval(bayesship::positionInfo* position,
   Bumpy_EOS_Constructor* bumpy_eos = new Bumpy_EOS_Constructor;
   bumpy_eos->eos_params.bump_magnitude = pos[11];
   bumpy_eos->eos_params.bump_start = bumpy_eos->convert_nsat_to_MeV(pos[12]);
-  bumpy_eos->eos_params.bump_end = bumpy_eos->convert_nsat_to_MeV(pos[13]);
+  bumpy_eos->eos_params.bump_width = bumpy_eos->convert_nsat_to_MeV(pos[13]);
   if (PD->EOS_plat_flag) {
     bumpy_eos->eos_params.plat = pos[14];
   } else {

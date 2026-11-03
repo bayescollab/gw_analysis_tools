@@ -228,7 +228,7 @@ class gen_params_base {
                    c^2) */
   T bump_start; /*! Starting value of feature in baryon number density (units of
                 nsat) */
-  T bump_end;   /*! Ending value of feature in baryon number density (units of
+  T bump_width; /*! Width of feature in baryon number density (units of
                  * nsat)
                  */
   T plat = 1. / 3.; /*! Constant value (or plateau) of cs^2 after feature */
@@ -606,9 +606,8 @@ struct source_parameters {
                    c^2) */
   T bump_start; /*! Starting value of feature in baryon number density (units of
                 nsat) */
-  T bump_end;   /*! Ending value of feature in baryon number density (units of
-                 * nsat)
-                 */
+  T bump_width; /*! Width of the feature in baryon number density (units of
+                 * nsat) */
   T plat = 1. / 3.; /*! Constant value (or plateau) of cs^2 after feature */
 
   bool EOS_plat_flag =

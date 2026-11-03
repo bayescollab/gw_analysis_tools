@@ -118,6 +118,8 @@ class EOS_Constructor {
 
   // Static object to store the crust table
   static CrustEoS crust;
+  // Static object to store the crust speed of sound values.
+  static Interpolation crust_cs2_of_nb;
 
   // Constructor and destructor for inheritance, if necessary
   EOS_Constructor() {}
@@ -165,13 +167,14 @@ class Bumpy_EOS_Constructor : public EOS_Constructor {
   struct BumpyParams {
     double bump_magnitude;
     double bump_start;
-    double bump_end;
+    double bump_width;
     double plat;
     double nbc;
     double n1;
     double n2;
 
     // Additional params
+    double bump_end;
     double f1_n1;
     double max_nb;
   };

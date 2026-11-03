@@ -874,7 +874,7 @@ std::string prep_source_parameters(source_parameters<T>* out,
   if (has_substring(generation_method, "EOS")) {
     out->bump_mag = in->bump_mag;
     out->bump_start = in->bump_start;
-    out->bump_end = in->bump_end;
+    out->bump_width = in->bump_width;
     out->plat = in->plat;
     out->nbc1 = in->nbc1;
     out->nbc2 = in->nbc2;

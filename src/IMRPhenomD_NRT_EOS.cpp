@@ -108,7 +108,10 @@ template class IMRPhenomD_NRT_EOS<adouble>;
 
 /* ---------------------------- Public Functions ---------------------------- */
 
+// Static objects of the read-in crust EoS. This is to prevent unnecessary file
+// re-reads and re-calculations.
 CrustEoS EOS_Constructor::crust;
+Interpolation EOS_Constructor::crust_cs2_of_nb;
 
 /**
  * @brief Read-in and store an EoS table
@@ -140,22 +143,24 @@ void EOS_Constructor::get_crust(std::string EoS_filepath,
   crust.epsilon = EoS_Table.at(epsilon_header);
   crust.nb = EoS_Table.at(nb_header);
   convert_crust_to_cs2();
+  // Store interpolation object for the speed of sound squared
+  crust_cs2_of_nb.initialize((gsl_interp_type*)gsl_interp_steffen, crust.nb,
+                             crust.cs2);
 }
 
 /**
- * @brief Function to clear the crust EoS vectors
- *
+ * @brief Function to clear the crust EoS vectors and interpolation
  */
 void EOS_Constructor::clear_crust() {
   crust.pressure.clear();
   crust.epsilon.clear();
   crust.nb.clear();
   crust.cs2.clear();
+  crust_cs2_of_nb.free();
 }
 
 /**
  * @brief Function to clear the built EoS vectors and central values
- *
  */
 void EOS_Constructor::clear_EOS() {
   eos.pressure.clear();
@@ -193,7 +198,6 @@ double EOS_Constructor::convert_nsat_to_MeV(double x) {
 /**
  * @brief Calculate the speed of sound squared for each entry in the provided
  * EoS table.
- *
  */
 void EOS_Constructor::convert_crust_to_cs2() {
   Interpolation p_of_e((gsl_interp_type*)gsl_interp_steffen, crust.epsilon,
@@ -252,12 +256,17 @@ void EOS_Constructor::convert_cs2_to_eos(std::size_t start_index) {
  * @param params GWAT's source_parameters object.
  */
 void Bumpy_EOS_Constructor::store_EOS_params(gen_params_base<adouble>* params) {
+  // Bump parameters
   eos_params.bump_magnitude = params->bump_mag.value();
   eos_params.bump_start = convert_nsat_to_MeV(params->bump_start.value());
-  eos_params.bump_end = convert_nsat_to_MeV(params->bump_end.value());
+  eos_params.bump_width = convert_nsat_to_MeV(params->bump_width.value());
+  eos_params.bump_end = eos_params.bump_start + eos_params.bump_width;
+  // Plateau
   eos_params.plat = params->plat.value();
+  // Baryon number density parameters
   eos_params.n1 = convert_nsat_to_MeV(params->nbc1.value());
   eos_params.n2 = convert_nsat_to_MeV(params->nbc2.value());
+  eos_params.max_nb = std::max(eos_params.n1, eos_params.n2);
 }
 
 /**
@@ -267,26 +276,37 @@ void Bumpy_EOS_Constructor::store_EOS_params(gen_params_base<adouble>* params) {
  * @param params GWAT's source_parameters object.
  */
 void Bumpy_EOS_Constructor::store_EOS_params(gen_params_base<double>* params) {
+  // Bump parameters
   eos_params.bump_magnitude = params->bump_mag;
   eos_params.bump_start = convert_nsat_to_MeV(params->bump_start);
-  eos_params.bump_end = convert_nsat_to_MeV(params->bump_end);
+  eos_params.bump_width = convert_nsat_to_MeV(params->bump_width);
+  eos_params.bump_end = eos_params.bump_start + eos_params.bump_width;
+  // Plateau
   eos_params.plat = params->plat;
+  // Baryon number density parameters
   eos_params.n1 = convert_nsat_to_MeV(params->nbc1);
   eos_params.n2 = convert_nsat_to_MeV(params->nbc2);
+  eos_params.max_nb = std::max(eos_params.n1, eos_params.n2);
 }
 
+/**
+ * @brief Creates an interpolation of cs^2 and nb to define additional bump
+ * parameters
+ *
+ * @details The parabolic equation used to calculate the bump in cs^2 is a
+ * piecewise function, with its conditions dependent on the value in cs^2 at the
+ * start of the bump, as compared to the plateau value. As such, the cs^2 at
+ * bump_start for the CRUST EOS is needed to calculate bump values; this is what
+ * the variable f1_n1 stores and refers to.
+ */
 void Bumpy_EOS_Constructor::get_additional_EOS_params() {
-  // Get additional helpful values to define the bump
-  eos_params.max_nb = std::max(eos_params.n1, eos_params.n2);
-  Interpolation cs2_of_nb((gsl_interp_type*)gsl_interp_steffen, crust.nb,
-                          crust.cs2);
-  eos_params.f1_n1 = cs2_of_nb.yofx(eos_params.bump_start);
+  // Get additional helpful value to define the bump
+  eos_params.f1_n1 = crust_cs2_of_nb.yofx(eos_params.bump_start);
 }
 
 /**
  * @brief Constructs and stores a GSL interpolation object for a bumpy EoS from
  * a given set of parameters.
- *
  */
 void Bumpy_EOS_Constructor::construct_EOS() {
   // Check for valid inputs
@@ -316,31 +336,32 @@ void Bumpy_EOS_Constructor::construct_EOS() {
   e_of_nb = 0;
 }
 
-/* --------------------------- Protected Functions -------------------------- */
+/* --------------------------- Protected Functions --------------------------
+ */
 
 /**
  * @brief Interpolates the baryon number density and calculates the expected
  * cs^2 values for the given bump parameters.
  *
- * @details Uses the crust table points prior to the start of the bump, then
- * interpolates once the bump actually starts (step size of 100 in MeV), then
- * much less finely once the plateau starts (step size of 1000 in MeV). Calls
- * the quadratic bump calculator in the region of the bump, and simply uses
- * either crust or plateau values outside of this range.
- *
+ * @details Uses the crust table points prior to the start of the bump,
+ * interpolates finely up to and across the bump (100 points up to and 1000
+ * points across), then much less finely once the plateau starts (only 100
+ * points.) Calls the quadratic bump calculator in the region of the bump,
+ * and simply uses either crust or plateau values outside of this range.
  */
 void Bumpy_EOS_Constructor::build_cs2_one_quad_bump() {
   // Define parameters for interpolation in nb
+
   // How much to step by during the bump
-  double nb_step_bump = (eos_params.bump_end - eos_params.bump_start) / 1e3;
-  // How much to step by during the plateau
-  double nb_step_plat = 10 * nb_step_bump;
-  // Define an ending value slightly greater than the max central nb value, to
-  // prevent interpolation errors
+  double nb_step_bump = eos_params.bump_width / 1e3;
+  // How much to step by during the plateau - don't need as many points
+  double nb_step_plat = abs(eos_params.max_nb - eos_params.bump_end) / 1e2;
+  // Making sure there's at least one step beyond the maximum value
   double nb_end = eos_params.max_nb + nb_step_plat;
+  // Define stepping variable
   double nb;
 
-  // Simply use the crust prior to the start of the bump
+  // Use the crust table prior to the start of the bump
   for (int i = 0; i < crust.nb.size(); i++) {
     nb = crust.nb.at(i);
     if ((nb > nb_end) || (nb >= eos_params.bump_start)) {
@@ -356,18 +377,22 @@ void Bumpy_EOS_Constructor::build_cs2_one_quad_bump() {
   // Interpolate up to the bump start (this is a separate loop to prevent
   // creating an interpolation object when it's not necessary)
   if (nb < eos_params.bump_start) {
-    // Get central epsilon values
-    Interpolation* cs2_of_nb = new Interpolation;
-    cs2_of_nb->initialize((gsl_interp_type*)gsl_interp_steffen, crust.nb,
-                          crust.cs2);
+    // How much to step by leading up to the bump
+    double nb_step_before_bump = (eos_params.bump_start - nb) / 1e2;
+
+    // Loop through and interpolate crust values
     while ((nb < eos_params.bump_start) && (nb <= nb_end)) {
-      double cs2_val = cs2_of_nb->yofx(nb);
+      double cs2_val = crust_cs2_of_nb.yofx(nb);
       eos.cs2.push_back(cs2_val);
       eos.nb.push_back(nb);
-      nb += nb_step_bump;
+      nb += nb_step_before_bump;
     }
-    delete cs2_of_nb;
   }
+
+  // At this point, nb should have either stepped up to the end of the bump or
+  // to the end of the table. We want to make sure it doesn't overshoot the
+  // bump, so we set it to whichever value is smaller.
+  nb = std::min(eos_params.bump_start, nb_end);
 
   // Inject bump if maximum value has not yet been reached
   while (nb <= nb_end) {
@@ -392,13 +417,13 @@ void Bumpy_EOS_Constructor::build_cs2_one_quad_bump() {
  *
  * @details Defines a quadratic parabola to calculate cs2 points. The quadratic
  * is piecewise due to 2 roots resulting from whether the bump magnitude is
- * greater or less than the cs2 value at the start of the bump. For the purposes
- * of defining the function, it is useful to consider that the bump_start
- * parameter is "n1", the bump_end is "n2", and thus the cs2 value at n1 is
- * "f1_n1" and the plateau is then equivalent to the cs2 value at n2, "f3_n2."
- * Then, the quadratic is found by simply solving f1_n1 = a1 + a2 n_1 + a3
- * n_1^2 and f3_n2 = a1 + a2 n_2 + a3 n_2^2 (with the condition that the bump
- * magnitude is the peak of the parabola).
+ * greater or less than the cs2 value at the start of the bump. For the
+ * purposes of defining the function, it is useful to consider that the
+ * bump_start parameter is "n1", the bump_end is "n2", and thus the cs2 value
+ * at n1 is "f1_n1" and the plateau is then equivalent to the cs2 value at n2,
+ * "f3_n2." Then, the quadratic is found by simply solving f1_n1 = a1 + a2 n_1
+ * + a3 n_1^2 and f3_n2 = a1 + a2 n_2 + a3 n_2^2 (with the condition that the
+ * bump magnitude is the peak of the parabola).
  *
  * @param nb Baryon number density at which to evaluate
  * @param f1_n1 Transition point of the bump
@@ -438,11 +463,14 @@ double Bumpy_EOS_Constructor::get_quadratic_bump_point(const double& nb,
   return return_value;
 }
 
-/* -------------------------------------------------------------------------- */
-/*                       ObservablesIntegrator Functions                      */
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
+/*                       ObservablesIntegrator Functions */
+/* --------------------------------------------------------------------------
+ */
 
-/* ---------------------------- Public Functions ---------------------------- */
+/* ---------------------------- Public Functions ----------------------------
+ */
 
 /**
  * @brief Construct a new Observables Integrator object, initialize the EoS in
@@ -463,14 +491,15 @@ ObservablesIntegrator::ObservablesIntegrator(Interpolation& p_of_e, double ec_1,
 }
 
 /**
- * @brief Integrates for the observable mass and radius based on the stored EoS.
+ * @brief Integrates for the observable mass and radius based on the stored
+ * EoS.
  *
  * @details Sets some small starting radius (R_epsilon) and calculates the
  * corrected starting pseudo-enthalpy, h_c - h_epsilon (h_epsilon from
  * R_epsilon). Then, uses a classic fixed-step Runge-Kutta (rk4) routine to
  * integrate the TOV equations in terms of pseudo-enthalpy from the corrected
- * starting enthalpy to 0 (the surface of the star). Default number of steps for
- * integration is 10,000.
+ * starting enthalpy to 0 (the surface of the star). Default number of steps
+ * for integration is 10,000.
  *
  * @param first_observables Eigen vector to store the first set of
  * calculated neutron star observables (Radius, Mass, Tidal).
@@ -519,7 +548,8 @@ void ObservablesIntegrator::integrate_for_observables(
   // TODO: (Kaitlyn) Look into replacing rk4 routine with GSL or other
   // integration functionality.
 
-  /* -------------------- Integrate for First Observables ------------------- */
+  /* -------------------- Integrate for First Observables -------------------
+   */
 
   // Set starting values
   first_observables = {R_start, M_start_1, Y_start};
@@ -631,7 +661,7 @@ void ObservablesIntegrator::integrate_for_observables(
   } */
 }
 
-/* --------------------------- Protected Functions -------------------------- */
+/* -------------------------- Protected Functions ------------------------- */
 
 /**
  * @brief Finds the derivative of enthalpy in terms of energy density for a
@@ -777,7 +807,8 @@ void ObservablesIntegrator::evaluate_ODE_at_point(double h,
 /**
  * @brief Simple classic fixed-step Runge-Kutta method for integration
  *
- * @param t Independent variable which functions are being taken with respect to
+ * @param t Independent variable which functions are being taken with respect
+ * to
  * @param y Functions given in terms of the independent variable t
  * @param h Step size for the rk4 routine
  */
@@ -809,8 +840,8 @@ void ObservablesIntegrator::rk4(double& t, Eigen::Vector3d& y, double h) {
  *
  * @param value Double to convert.
  * @param unit Unit to convert ("km," "MeV/fm^3")
- * @param adimensionalize Boolean determining whether to convert to solar masses
- * (True) or convert from solar masses (False).
+ * @param adimensionalize Boolean determining whether to convert to solar
+ * masses (True) or convert from solar masses (False).
  * @return The converted double.
  */
 double ObservablesIntegrator::convert_dimensions(double value, std::string unit,
@@ -848,11 +879,11 @@ double ObservablesIntegrator::convert_dimensions(double value, std::string unit,
   return converted_value;
 }
 
-/* -------------------------------------------------------------------------- */
-/*                        Interpolation Class Functions                       */
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------ */
+/*                       Interpolation Class Functions                      */
+/* ------------------------------------------------------------------------ */
 
-/* ---------------------------- Public Functions ---------------------------- */
+/* --------------------------- Public Functions --------------------------- */
 
 // Constructors
 
@@ -945,4 +976,6 @@ void Interpolation::free() {
   gsl_interp_accel_free(acc);
 }
 
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------ */
+/*                                End of File                               */
+/* ------------------------------------------------------------------------ */

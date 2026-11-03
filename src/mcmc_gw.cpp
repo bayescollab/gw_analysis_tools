@@ -731,9 +731,9 @@ bayesship::bayesshipSampler* RJPTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
   // ######################################################
   int T = (int)(1. / (mcmcVarRJ.mcmc_frequencies[0][1] -
                       mcmcVarRJ.mcmc_frequencies[0][0]));
-  debugger_print(__FILE__, __LINE__, T);
+  // debugger_print(__FILE__, __LINE__, T);
   int burn_factor = T / 4;  // Take all sources to 4 seconds
-  debugger_print(__FILE__, __LINE__, burn_factor);
+  // debugger_print(__FILE__, __LINE__, burn_factor);
   std::complex<double>** burn_data =
       new std::complex<double>*[mcmcVarRJ.mcmc_num_detectors];
   double** burn_freqs = new double*[mcmcVarRJ.mcmc_num_detectors];
@@ -1120,9 +1120,9 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
 
   int T = (int)(1. / (mcmcVar.mcmc_frequencies[0][1] -
                       mcmcVar.mcmc_frequencies[0][0]));
-  debugger_print(__FILE__, __LINE__, T);
+  // debugger_print(__FILE__, __LINE__, T);
   int burn_factor = T / 4;  // Take all sources to 4 seconds
-  debugger_print(__FILE__, __LINE__, burn_factor);
+  // debugger_print(__FILE__, __LINE__, burn_factor);
   std::complex<double>** burn_data =
       new std::complex<double>*[mcmcVar.mcmc_num_detectors];
   double** burn_freqs = new double*[mcmcVar.mcmc_num_detectors];
@@ -1402,7 +1402,7 @@ void RJPTMCMC_method_specific_prep(std::string generation_method, int dimension,
   if (has_substring(generation_method, "EA")) {
     totalmod += 3;
   }
-  debugger_print(__FILE__, __LINE__, totalmod);
+  // debugger_print(__FILE__, __LINE__, totalmod);
   if (has_substring(generation_method, "PhenomD") &&
       (dimension - totalmod) == 4) {
     std::cout << "Sampling in parameters: ln chirpmass, eta, chi1, chi2";
@@ -1465,7 +1465,7 @@ void RJPTMCMC_method_specific_prep(std::string generation_method, int dimension,
              (dimension - totalmod) == 14) {
     std::cout
         << "Sampling in parameters: RA, sin  DEC, psi, cos iota, phi_ref, tc,  "
-           "ln DL, nbc1, nbc2, chi1, chi2, bump_mag, bump_start, bump_end"
+           "ln DL, nbc1, nbc2, chi1, chi2, bump_mag, bump_start, bump_width"
         << std::endl;
     for (int i = 0; i < totalmod; i++) {
       std::cout << ", mod_" << i;
@@ -1476,7 +1476,7 @@ void RJPTMCMC_method_specific_prep(std::string generation_method, int dimension,
              (dimension - totalmod) == 15) {
     std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota, "
                  "phi_ref, tc,  ln DL, nbc1, nbc2, chi1, chi2, bump_mag, "
-                 "bump_start, bump_end, plat"
+                 "bump_start, bump_width, plat"
               << std::endl;
     for (int i = 0; i < totalmod; i++) {
       std::cout << ", mod_" << i;
@@ -1521,7 +1521,7 @@ void PTMCMC_method_specific_prep(std::string generation_method, int dimension,
   if (has_substring(generation_method, "EA")) {
     totalmod += 2;
   }  // two dissipative tidal dissipation numbers
-  debugger_print(__FILE__, __LINE__, totalmod);
+  // debugger_print(__FILE__, __LINE__, totalmod);
   const int nonModDim = dimension - totalmod;
   // EFPE branches checked before other models to avoid false matches from
   // find()
@@ -1620,7 +1620,7 @@ void PTMCMC_method_specific_prep(std::string generation_method, int dimension,
     } else if (has_substring(generation_method, "EOS") && nonModDim == 14) {
       std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota, "
                    "phi_ref, tc, ln DL, nbc1, nbc2, chi1, chi2, bump_mag, "
-                   "bump_start, bump_end"
+                   "bump_start, bump_width"
                 << std::endl;
       for (int i = 0; i < totalmod; i++) {
         std::cout << ", mod_" << i;
@@ -1630,7 +1630,7 @@ void PTMCMC_method_specific_prep(std::string generation_method, int dimension,
     } else if (has_substring(generation_method, "EOS") && nonModDim == 15) {
       std::cout << "Sampling in parameters: RA, sin  DEC, psi, cos iota, "
                    "phi_ref, tc, ln DL, nbc1, nbc2, chi1, chi2, bump_mag, "
-                   "bump_start, bump_end, plat"
+                   "bump_start, bump_width, plat"
                 << std::endl;
       for (int i = 0; i < totalmod; i++) {
         std::cout << ", mod_" << i;

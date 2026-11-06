@@ -483,10 +483,7 @@ class MCMC_likelihood_wrapper : public bayesship::probabilityFn {
 
     if (mcmcVar->model && mcmcVar->model->active()) {
       mcmcVar->model->param_map->to_gen_params(pos->parameters, gen_params);
-      gw_likelihoods::Likelihood* ll_to_use = mcmcVar->model->likelihood;
-      if (mcmcVar->model->beta_zero_likelihood && sampler->betas[chainID] == 0.0)
-        ll_to_use = mcmcVar->model->beta_zero_likelihood;
-      return ll_to_use->log_likelihood(&gen_params);
+      return mcmcVar->model->likelihood->log_likelihood(&gen_params);
     }
 
     double* temp_params = new double[dimension];
@@ -609,6 +606,18 @@ class MCMC_likelihood_wrapper : public bayesship::probabilityFn {
     return ll;
   }
 };
+
+/*! Copy the checkpoint / resume settings from mod_struct onto the sampler
+ * (see MCMC_modification_struct and BayesShip's docs/checkpointing.md)*/
+static void set_checkpoint_options(bayesship::bayesshipSampler* sampler,
+                                   const MCMC_modification_struct* mod_struct) {
+  sampler->hotChainHistoryLength = mod_struct->hotChainHistoryLength;
+  sampler->checkpointGenerationsToKeep = mod_struct->checkpointGenerationsToKeep;
+  sampler->resumeValueRelTol = mod_struct->resumeValueRelTol;
+  sampler->wallTimeLimitSeconds = mod_struct->wallTimeLimitSeconds;
+  sampler->wallTimeMarginSeconds = mod_struct->wallTimeMarginSeconds;
+  sampler->handleStopSignals = mod_struct->handleStopSignals;
+}
 
 /*! \brief Takes in an MCMC checkpoint file and continues the chain
  *
@@ -804,6 +813,7 @@ bayesship::bayesshipSampler* RJPTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
   sampler->burnPriorIterations = burnPriorIterations;
   sampler->priorIterations = priorIterations;
   sampler->writePriorData = writePriorData;
+  sampler->swapProb = swapProb;
   sampler->threads = numThreads;
   sampler->threadPool = pool;
   sampler->maxDim = maxDim;
@@ -815,6 +825,7 @@ bayesship::bayesshipSampler* RJPTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
   sampler->initialPositionEnsemble = initialEnsemble;
   sampler->ignoreExistingCheckpoint = ignoreExistingCheckpoint;
   sampler->restrictSwapTemperatures = restrictSwapTemperatures;
+  set_checkpoint_options(sampler, mod_struct);
 
   sampler->coldOnlyStorage = coldChainStorageOnly;
 
@@ -848,9 +859,9 @@ bayesship::bayesshipSampler* RJPTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
         sampler, blocksDiff, blocksProbDiff);
   }
 
-  propArray[2] =
-      new bayesship::KDEProposal(sampler->ensembleN * sampler->ensembleSize,
-                                 sampler->maxDim, sampler, false);
+  // Slot 2 has weight 0 (propProb[i][2] below): a do-nothing placeholder keeps
+  // the proposal numbering and stat-file columns without KDE's storage
+  propArray[2] = new bayesship::proposal();
 
   propArray[3] = new bayesship::randomLayerRJProposal(sampler, .5);
 
@@ -1181,6 +1192,7 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
   sampler->burnPriorIterations = burnPriorIterations;
   sampler->priorIterations = priorIterations;
   sampler->writePriorData = writePriorData;
+  sampler->swapProb = swapProb;
   sampler->threads = numThreads;
   sampler->threadPool = pool;
   sampler->maxDim = dimension;
@@ -1194,6 +1206,7 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
   sampler->t0 = mod_struct->t0;
   sampler->nu = mod_struct->nu;
   sampler->Tmax = mod_struct->Tmax;
+  set_checkpoint_options(sampler, mod_struct);
 
   sampler->coldOnlyStorage = coldChainStorageOnly;
 
@@ -1205,7 +1218,7 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
   sampler->userParameters = (void**)mcmcVarVec;
 
   int proposalFnN = 5;
-  bayesship::proposal** propArray = new bayesship::proposal*[proposalFnN];
+  bayesship::proposal** propArray = new bayesship::proposal*[proposalFnN]();
   propArray[0] = new bayesship::gaussianProposal(
       sampler->ensembleN * sampler->ensembleSize, sampler->maxDim, sampler);
   if (mcmcVar.model && mcmcVar.model->active()) {
@@ -1274,9 +1287,14 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
         blocksDiff, blocksProbDiff, 10, 10, 10, 1e-10, false,
         sampler->maxDim * 100);
   }
-  propArray[2] =
-      new bayesship::KDEProposal(sampler->ensembleN * sampler->ensembleSize,
-                                 sampler->maxDim, sampler, false);
+  // Slots 2 (KDE, unused) and 4 (GMM, only some branches above set it) get a
+  // do-nothing placeholder with weight 0 below: it keeps the proposal numbering
+  // and stat-file columns without allocating anything
+  const bool gmmSet = propArray[4] != nullptr;
+  if (!gmmSet) {
+    propArray[4] = new bayesship::proposal();
+  }
+  propArray[2] = new bayesship::proposal();
 
   if (mcmcVar.model && mcmcVar.model->active()) {
     const auto& ext_idx = mcmcVar.model->param_map->extrinsic_indices();
@@ -1356,7 +1374,8 @@ bayesship::bayesshipSampler* PTMCMC_MH_dynamic_PT_alloc_uncorrelated_GW(
 
     propProb[i][1] = .4 - 0.15 * (betaTemp[ensemble]);   //.25 to .7
     propProb[i][3] = 0.05 + .55 * (betaTemp[ensemble]);  //.7 to .15
-    propProb[i][4] = 0.1 + .05 * (betaTemp[ensemble]);   //.7 to .15
+    propProb[i][4] =
+        gmmSet ? 0.1 + .05 * (betaTemp[ensemble]) : 0.0;  //.7 to .15
     propProb[i][0] = 0.05;
 
     double sum = 0;

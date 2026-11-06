@@ -40,17 +40,6 @@ struct GWModel {
   gw_fishers::GWNumericalFishers*   fisher     = nullptr;
   gw_likelihoods::Likelihood*       likelihood = nullptr;
 
-  /// Optional: used instead of `likelihood` for chains at beta==0 (the
-  /// hottest PT rung, which by design explores the full prior and ignores
-  /// the likelihood for acceptance -- see MCMC_likelihood_wrapper::eval()).
-  /// Meant for when `likelihood` is a fast approximation (e.g. relative
-  /// binning) with a validity guard that would reject almost the entire
-  /// prior volume there, corrupting evidence's thermodynamic integration at
-  /// that anchor point: only ensembleN chains ever sit at beta==0, so
-  /// paying for an exact likelihood just there is cheap. Leave null to use
-  /// `likelihood` at every beta (default, backward compatible).
-  gw_likelihoods::Likelihood*       beta_zero_likelihood = nullptr;
-
   bool active() const { return param_map != nullptr && likelihood != nullptr; }
 };
 
@@ -109,6 +98,27 @@ struct MCMC_modification_struct {
   double t0 = 0.;
   // Timescale of adjustments
   double nu = 100.;
+
+  // ---- Checkpoint / resume settings ----
+  // Passed to the bayesshipSampler members of the same name; the defaults
+  // match BayesShip's. See docs/checkpointing.md in BayesShip.
+  // Recent steps each hot chain keeps in memory and in every checkpoint
+  // (coldOnlyStorage, non-RJ only). 0 keeps the full history and saves none.
+  int hotChainHistoryLength = 2000;
+  // Complete checkpoint generations kept on disk.
+  int checkpointGenerationsToKeep = 2;
+  // On resume, the re-evaluated log likelihood/prior of every chain must match
+  // the checkpoint to this relative tolerance. Negative disables the check.
+  double resumeValueRelTol = 1e-10;
+  // Stop cleanly after a batch once this many seconds since sampling began
+  // leave no room for another. 0: no limit of its own (SLURM_JOB_END_TIME and
+  // BAYESSHIP_WALL_TIME_LIMIT still apply).
+  double wallTimeLimitSeconds = 0;
+  // Margin kept free at the end of the wall time (BAYESSHIP_WALL_TIME_MARGIN
+  // overrides it).
+  double wallTimeMarginSeconds = 120;
+  // Catch SIGTERM/SIGUSR1/SIGINT and stop after the current batch.
+  bool handleStopSignals = true;
 };
 
 struct MCMC_user_param {

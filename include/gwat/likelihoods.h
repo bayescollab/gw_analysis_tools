@@ -250,6 +250,21 @@ class RelativeBinningBisectionPolarizationsLikelihood : public Likelihood {
       double gmst, bool shift_time, bool shift_phase, bool log_spacing = false,
       double validity_guard_tol = kInf);
 
+  /// @brief Rebuild from bin edges found earlier (get_bin_inds()), without
+  /// redoing the bisection -- e.g. to resume a run with exactly the
+  /// likelihood it was sampling with. With the same data, fiducial modes,
+  /// log_spacing and validity_guard_tol as the original object, the result
+  /// evaluates identically: everything else (summary data, bin centers, the
+  /// guard's interior samples) is derived from these.
+  /// @param bin_inds Strictly increasing indices into data.freqs (at least 2).
+  RelativeBinningBisectionPolarizationsLikelihood(
+      const ParameterMap& pmap, const PolarizationData& data,
+      const std::vector<VECCPL>& fiducial_modes, const VECINT& bin_inds,
+      const std::vector<double>& sky_avg_factors,
+      const WaveformGenerator& waveform_generator, double f_ref, double gmst,
+      bool shift_time, bool shift_phase, bool log_spacing = false,
+      double validity_guard_tol = kInf);
+
   double log_likelihood(gen_params_base<double>* params) const override;
   std::vector<VECCPL> generate_modes(const double* theta,
                                      const VECDBL& freqs) const override;
@@ -360,6 +375,17 @@ class RelativeBinningBisectionPolarizationsLikelihood : public Likelihood {
                       const std::vector<VECCPL>& h_at_centers) const;
 
   std::pair<int, int> find_min_max_indices(const std::vector<VECCPL>& modes);
+
+  /// @brief Argument checks shared by both constructors.
+  void check_mode_counts(const PolarizationData& data,
+                         const std::vector<VECCPL>& fiducial_modes,
+                         const std::vector<double>& sky_avg_factors) const;
+  /// @brief Store the bin edges and derive bin_freqs_/widths/centers.
+  void set_bins(const VECINT& bin_inds, const PolarizationData& data,
+                bool log_spacing);
+  /// @brief Log-likelihood of the data itself through the bins, reported as
+  /// the binned SNR.
+  void print_data_snr(const PolarizationData& data) const;
 
   /// @brief Worst-case (max over test_modes_multi) absolute logL error for
   /// the proposed bin [left_idx, right_idx).

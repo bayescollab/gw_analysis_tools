@@ -53,7 +53,8 @@ double CoherentBareLikelihood::log_likelihood(
   const IfoData& reference_ifo = ifos_[0];
   waveform_polarizations<double> wf;
   wf.allocate_memory(reference_ifo.freqs.size());
-  waveform_generator_.fill_polarizations(&wf, &local_params, reference_ifo.freqs);
+  waveform_generator_.fill_polarizations(&wf, &local_params,
+                                         reference_ifo.freqs);
 
   double ll = 0.0;
   for (auto& ifo : ifos_) {
@@ -99,7 +100,8 @@ double PolarizationsLikelihood::log_likelihood(
   local_params.shift_time = shift_time_;
   local_params.shift_phase = shift_phase_;
 
-  auto modes = waveform_generator_.generate_polarizations(&local_params, data_.freqs);
+  auto modes =
+      waveform_generator_.generate_polarizations(&local_params, data_.freqs);
 
   double ll = 0.0;
   for (int m = 0; m < static_cast<int>(modes.size()); ++m)
@@ -138,7 +140,8 @@ void compute_summary_data_per_bin_trapezoid_rule(
     CPL& A0, CPL& A1, double& B0, double& B1, double bin_m, int left_idx,
     int right_idx, const VECDBL& freqs, const VECDBL& psd, const VECCPL& h0,
     const VECCPL& d, bool log_spacing, double overall_factor = 1.0) {
-  A0 = A1 = 0.; B0 = B1 = 0.;
+  A0 = A1 = 0.;
+  B0 = B1 = 0.;
 
   for (int i = left_idx + 1; i < right_idx; i++) {
     double delta = (log_spacing ? std::log10(freqs[i]) : freqs[i]) - bin_m;
@@ -384,7 +387,8 @@ void RelativeBinningBisectionLikelihood::setup_summary_data(const IfoData& ifo,
 
 void RelativeBinningBisectionLikelihood::compute_waveform_ratios(
     VECCPL& r0, VECCPL& r1, const VECCPL& h, const VECCPL& data) const {
-  r0.clear(); r1.clear();
+  r0.clear();
+  r1.clear();
 
   CPL ratio_left = h[0] / data.front();
   CPL ratio_right;
@@ -447,15 +451,13 @@ double RelativeBinningBisectionLikelihood::log_likelihood(
 
 RelativeBinningBisectionPolarizationsLikelihood::
     RelativeBinningBisectionPolarizationsLikelihood(
-        const ParameterMap& pmap,
-        const PolarizationData& data,
+        const ParameterMap& pmap, const PolarizationData& data,
         const std::vector<VECCPL>& fiducial_modes,
         const std::vector<std::vector<VECCPL>>& test_modes_multi,
         const std::vector<double>& sky_avg_factors,
-        const WaveformGenerator& waveform_generator,
-        double epsilon, double f_ref, double gmst,
-        bool shift_time, bool shift_phase, bool log_spacing,
-        double validity_guard_tol)
+        const WaveformGenerator& waveform_generator, double epsilon,
+        double f_ref, double gmst, bool shift_time, bool shift_phase,
+        bool log_spacing, double validity_guard_tol)
     : pmap_(pmap),
       waveform_generator_(waveform_generator),
       f_ref_(f_ref),
@@ -470,11 +472,7 @@ RelativeBinningBisectionPolarizationsLikelihood::
     throw std::invalid_argument(
         "RELATIVE BINNING (POLARIZATIONS): test_modes_multi must contain at "
         "least one test point.");
-  if (static_cast<int>(fiducial_modes.size()) != number_of_modes_ ||
-      static_cast<int>(sky_avg_factors.size()) != number_of_modes_)
-    throw std::invalid_argument(
-        "RELATIVE BINNING (POLARIZATIONS): fiducial_modes, sky_avg_factors, "
-        "and data.modes must all have the same length.");
+  check_mode_counts(data, fiducial_modes, sky_avg_factors);
   for (const auto& test_modes : test_modes_multi)
     if (static_cast<int>(test_modes.size()) != number_of_modes_)
       throw std::invalid_argument(
@@ -485,8 +483,8 @@ RelativeBinningBisectionPolarizationsLikelihood::
 
   bin_bisection(data, fiducial_modes, test_modes_multi, epsilon, log_spacing);
   RelativeBinningPrinter(std::to_string(number_of_bins_) + " bins setup (" +
-                        std::to_string(test_modes_multi.size()) +
-                        " test points)");
+                         std::to_string(test_modes_multi.size()) +
+                         " test points)");
 
   setup_summary_data(data, fiducial_modes, log_spacing);
   build_combined_freqs();
@@ -503,8 +501,95 @@ RelativeBinningBisectionPolarizationsLikelihood::
     logL_max = std::max(logL_max, logL);
   }
   RelativeBinningPrinter("logL of test data: min=" + std::to_string(logL_min) +
-                        " max=" + std::to_string(logL_max));
+                         " max=" + std::to_string(logL_max));
+  print_data_snr(data);
+}
 
+RelativeBinningBisectionPolarizationsLikelihood::
+    RelativeBinningBisectionPolarizationsLikelihood(
+        const ParameterMap& pmap, const PolarizationData& data,
+        const std::vector<VECCPL>& fiducial_modes, const VECINT& bin_inds,
+        const std::vector<double>& sky_avg_factors,
+        const WaveformGenerator& waveform_generator, double f_ref, double gmst,
+        bool shift_time, bool shift_phase, bool log_spacing,
+        double validity_guard_tol)
+    : pmap_(pmap),
+      waveform_generator_(waveform_generator),
+      f_ref_(f_ref),
+      gmst_(gmst),
+      shift_time_(shift_time),
+      shift_phase_(shift_phase),
+      sky_avg_factors_(sky_avg_factors),
+      validity_guard_tol_(validity_guard_tol) {
+  number_of_modes_ = static_cast<int>(data.modes.size());
+  check_mode_counts(data, fiducial_modes, sky_avg_factors);
+
+  const int n_freqs = static_cast<int>(data.freqs.size());
+  if (bin_inds.size() < 2)
+    throw std::invalid_argument(
+        "RELATIVE BINNING (POLARIZATIONS): bin_inds needs at least two "
+        "edges.");
+  for (size_t k = 0; k < bin_inds.size(); ++k) {
+    if (bin_inds[k] < 0 || bin_inds[k] >= n_freqs)
+      throw std::invalid_argument(
+          "RELATIVE BINNING (POLARIZATIONS): bin_inds[" + std::to_string(k) +
+          "] = " + std::to_string(bin_inds[k]) +
+          " is outside the data's frequency grid (" + std::to_string(n_freqs) +
+          " points).");
+    if (k > 0 && bin_inds[k] <= bin_inds[k - 1])
+      throw std::invalid_argument(
+          "RELATIVE BINNING (POLARIZATIONS): bin_inds must be strictly "
+          "increasing.");
+  }
+
+  std::cout << "\nRELATIVE BINNING (BISECTION, POLARIZATIONS) FROM STORED "
+               "BINS\n";
+  set_bins(bin_inds, data, log_spacing);
+  RelativeBinningPrinter(std::to_string(number_of_bins_) +
+                         " bins restored (no bisection)");
+  setup_summary_data(data, fiducial_modes, log_spacing);
+  build_combined_freqs();
+  print_data_snr(data);
+}
+
+void RelativeBinningBisectionPolarizationsLikelihood::check_mode_counts(
+    const PolarizationData& data, const std::vector<VECCPL>& fiducial_modes,
+    const std::vector<double>& sky_avg_factors) const {
+  const size_t n = data.modes.size();
+  if (fiducial_modes.size() != n || sky_avg_factors.size() != n)
+    throw std::invalid_argument(
+        "RELATIVE BINNING (POLARIZATIONS): fiducial_modes, sky_avg_factors, "
+        "and data.modes must all have the same length.");
+}
+
+void RelativeBinningBisectionPolarizationsLikelihood::set_bins(
+    const VECINT& bin_inds, const PolarizationData& data, bool log_spacing) {
+  bin_inds_.clear();
+  bin_freqs_.clear();
+  bin_widths_.clear();
+  bin_centers_.clear();
+  for (int idx : bin_inds) {
+    bin_inds_.push_back(idx);
+    bin_freqs_.push_back(data.freqs[idx]);
+  }
+
+  number_of_bins_ = static_cast<int>(bin_inds_.size()) - 1;
+  for (int i = 1; i < static_cast<int>(bin_inds_.size()); ++i) {
+    if (log_spacing) {
+      bin_widths_.push_back(std::log10(bin_freqs_[i]) -
+                            std::log10(bin_freqs_[i - 1]));
+      bin_centers_.push_back(
+          (std::log10(bin_freqs_[i]) + std::log10(bin_freqs_[i - 1])) * 0.5);
+    } else {
+      bin_widths_.push_back(bin_freqs_[i] - bin_freqs_[i - 1]);
+      bin_centers_.push_back((bin_freqs_[i] + bin_freqs_[i - 1]) * 0.5);
+    }
+  }
+}
+
+void RelativeBinningBisectionPolarizationsLikelihood::print_data_snr(
+    const PolarizationData& data) const {
+  const int n_edges = static_cast<int>(bin_inds_.size());
   std::vector<VECCPL> d(number_of_modes_, VECCPL(n_edges));
   for (int m = 0; m < number_of_modes_; ++m)
     for (int k = 0; k < n_edges; ++k) d[m][k] = data.modes[m][bin_inds_[k]];
@@ -519,8 +604,9 @@ RelativeBinningBisectionPolarizationsLikelihood::find_min_max_indices(
   int max_idx = static_cast<int>(modes[0].size()) - 1;
 
   for (const auto& mode : modes) {
-    auto first_nz = std::find_if(mode.begin(), mode.end(),
-                                 [](const CPL& v) { return std::norm(v) > 0.; });
+    auto first_nz = std::find_if(mode.begin(), mode.end(), [](const CPL& v) {
+      return std::norm(v) > 0.;
+    });
     if (first_nz == mode.end())
       throw std::runtime_error(
           "RELATIVE BINNING (POLARIZATIONS): A polarization mode is entirely "
@@ -542,21 +628,20 @@ double
 RelativeBinningBisectionPolarizationsLikelihood::bin_log_likelihood_error(
     int left_idx, int right_idx, const PolarizationData& data,
     const std::vector<VECCPL>& fiducial_modes,
-    const std::vector<std::vector<VECCPL>>& test_modes_multi, bool log_spacing) {
+    const std::vector<std::vector<VECCPL>>& test_modes_multi,
+    bool log_spacing) {
   double weight =
       (log_spacing
            ? LOG10 * (std::log10(data.freqs[1]) - std::log10(data.freqs[0]))
            : (data.freqs[1] - data.freqs[0])) *
       4.0;
-  double f_m =
-      (log_spacing
-           ? std::log10(data.freqs[left_idx]) + std::log10(data.freqs[right_idx])
-           : data.freqs[left_idx] + data.freqs[right_idx]) *
-      0.5;
-  double bin_width =
-      log_spacing
-          ? std::log10(data.freqs[right_idx]) - std::log10(data.freqs[left_idx])
-          : data.freqs[right_idx] - data.freqs[left_idx];
+  double f_m = (log_spacing ? std::log10(data.freqs[left_idx]) +
+                                  std::log10(data.freqs[right_idx])
+                            : data.freqs[left_idx] + data.freqs[right_idx]) *
+               0.5;
+  double bin_width = log_spacing ? std::log10(data.freqs[right_idx]) -
+                                       std::log10(data.freqs[left_idx])
+                                 : data.freqs[right_idx] - data.freqs[left_idx];
 
   // A0/A1/B0/B1 depend only on the fiducial and the data, not on any test
   // point, so they're computed once per mode and reused across every test
@@ -577,12 +662,14 @@ RelativeBinningBisectionPolarizationsLikelihood::bin_log_likelihood_error(
       double exact_dh = 0., exact_hh = 0.;
       for (int j = left_idx + 1; j < right_idx; ++j) {
         double fac = (log_spacing ? data.freqs[j] : 1.0) / data.psd[j];
-        exact_dh += std::real(data.modes[m][j] * std::conj(test_modes[m][j])) * fac;
+        exact_dh +=
+            std::real(data.modes[m][j] * std::conj(test_modes[m][j])) * fac;
         exact_hh += std::norm(test_modes[m][j]) * fac;
       }
       for (int j : {left_idx, right_idx}) {
         double fac = 0.5 * (log_spacing ? data.freqs[j] : 1.0) / data.psd[j];
-        exact_dh += std::real(data.modes[m][j] * std::conj(test_modes[m][j])) * fac;
+        exact_dh +=
+            std::real(data.modes[m][j] * std::conj(test_modes[m][j])) * fac;
         exact_hh += std::norm(test_modes[m][j]) * fac;
       }
       exact_dh *= weight;
@@ -591,30 +678,32 @@ RelativeBinningBisectionPolarizationsLikelihood::bin_log_likelihood_error(
       CPL r_left = (fiducial_modes[m][left_idx] != CPL(0.))
                        ? test_modes[m][left_idx] / fiducial_modes[m][left_idx]
                        : CPL(0.);
-      CPL r_right = (fiducial_modes[m][right_idx] != CPL(0.))
-                        ? test_modes[m][right_idx] / fiducial_modes[m][right_idx]
-                        : CPL(0.);
+      CPL r_right =
+          (fiducial_modes[m][right_idx] != CPL(0.))
+              ? test_modes[m][right_idx] / fiducial_modes[m][right_idx]
+              : CPL(0.);
       CPL r0 = 0.5 * (r_left + r_right);
       CPL r1 = (bin_width > 0.) ? (r_right - r_left) / bin_width : CPL(0.);
 
-      double approx_dh = std::real(A0s[m] * std::conj(r0) + A1s[m] * std::conj(r1));
-      double approx_hh = B0s[m] * std::norm(r0) +
-                         2. * B1s[m] * std::real(r0 * std::conj(r1));
+      double approx_dh =
+          std::real(A0s[m] * std::conj(r0) + A1s[m] * std::conj(r1));
+      double approx_hh =
+          B0s[m] * std::norm(r0) + 2. * B1s[m] * std::real(r0 * std::conj(r1));
 
       if (std::getenv("GWAT_BISECTION_DEBUG")) {
         std::cerr << "[bisect debug]   point=" << p << " mode=" << m
                   << " r_left=" << r_left << " r_right=" << r_right
-                  << " r0=" << r0 << " r1=" << r1
-                  << " exact_dh=" << exact_dh << " approx_dh=" << approx_dh
-                  << " exact_hh=" << exact_hh << " approx_hh=" << approx_hh
-                  << "\n";
+                  << " r0=" << r0 << " r1=" << r1 << " exact_dh=" << exact_dh
+                  << " approx_dh=" << approx_dh << " exact_hh=" << exact_hh
+                  << " approx_hh=" << approx_hh << "\n";
       }
 
-      total_exact_ll  += sky_avg_factors_[m] * (-0.5 * exact_hh  + exact_dh);
+      total_exact_ll += sky_avg_factors_[m] * (-0.5 * exact_hh + exact_dh);
       total_approx_ll += sky_avg_factors_[m] * (-0.5 * approx_hh + approx_dh);
     }
 
-    max_abs_err = std::max(max_abs_err, std::abs(total_exact_ll - total_approx_ll));
+    max_abs_err =
+        std::max(max_abs_err, std::abs(total_exact_ll - total_approx_ll));
   }
 
   return max_abs_err;
@@ -660,23 +749,7 @@ void RelativeBinningBisectionPolarizationsLikelihood::bin_bisection(
     }
   }
 
-  for (int idx : boundaries) {
-    bin_inds_.push_back(idx);
-    bin_freqs_.push_back(data.freqs[idx]);
-  }
-
-  number_of_bins_ = static_cast<int>(bin_inds_.size()) - 1;
-  for (int i = 1; i < static_cast<int>(bin_inds_.size()); ++i) {
-    if (log_spacing) {
-      bin_widths_.push_back(std::log10(bin_freqs_[i]) -
-                            std::log10(bin_freqs_[i - 1]));
-      bin_centers_.push_back(
-          (std::log10(bin_freqs_[i]) + std::log10(bin_freqs_[i - 1])) * 0.5);
-    } else {
-      bin_widths_.push_back(bin_freqs_[i] - bin_freqs_[i - 1]);
-      bin_centers_.push_back((bin_freqs_[i] + bin_freqs_[i - 1]) * 0.5);
-    }
-  }
+  set_bins(VECINT(boundaries.begin(), boundaries.end()), data, log_spacing);
 }
 
 void RelativeBinningBisectionPolarizationsLikelihood::setup_summary_data(
@@ -712,8 +785,8 @@ void RelativeBinningBisectionPolarizationsLikelihood::setup_summary_data(
     bin_center_inds_.push_back(mid);
     bin_center_freqs_.push_back(mid >= 0 ? data.freqs[mid] : data.freqs[start]);
     for (int m = 0; m < number_of_modes_; ++m)
-      fiducial_at_centers_[m].push_back(
-          mid >= 0 ? fiducial_modes[m][mid] : CPL(0.));
+      fiducial_at_centers_[m].push_back(mid >= 0 ? fiducial_modes[m][mid]
+                                                 : CPL(0.));
 
     for (int m = 0; m < number_of_modes_; ++m) {
       CPL A0 = 0., A1 = 0.;
@@ -791,8 +864,9 @@ void RelativeBinningBisectionPolarizationsLikelihood::build_combined_freqs() {
     if (bin_center_inds_[b] >= 0)
       pts.push_back({bin_center_freqs_[b], true, b});
 
-  std::stable_sort(pts.begin(), pts.end(),
-                   [](const Point& a, const Point& b) { return a.freq < b.freq; });
+  std::stable_sort(pts.begin(), pts.end(), [](const Point& a, const Point& b) {
+    return a.freq < b.freq;
+  });
 
   combined_freqs_.resize(pts.size());
   edge_combined_idx_.assign(n_edges, -1);
@@ -845,7 +919,8 @@ bool RelativeBinningBisectionPolarizationsLikelihood::check_validity(
   return !last_guard_fired_;
 }
 
-std::vector<VECCPL> RelativeBinningBisectionPolarizationsLikelihood::generate_modes(
+std::vector<VECCPL>
+RelativeBinningBisectionPolarizationsLikelihood::generate_modes(
     const double* theta, const VECDBL& freqs) const {
   gen_params_base<double> gp;
   pmap_.to_gen_params(theta, gp);
@@ -879,7 +954,7 @@ double RelativeBinningBisectionPolarizationsLikelihood::log_likelihood(
   // (one waveform-generator invocation instead of two) and split the result
   // back out -- see build_combined_freqs().
   auto h_combined = waveform_generator_.generate_polarizations(&local_params,
-                                                                combined_freqs_);
+                                                               combined_freqs_);
   if (static_cast<int>(h_combined.size()) != number_of_modes_)
     throw std::runtime_error(
         "RELATIVE BINNING (POLARIZATIONS): waveform generator produced " +
@@ -887,7 +962,8 @@ double RelativeBinningBisectionPolarizationsLikelihood::log_likelihood(
         std::to_string(number_of_modes_));
 
   int n_edges = static_cast<int>(bin_inds_.size());
-  std::vector<VECCPL> h_at_bins(number_of_modes_), h_at_centers(number_of_modes_);
+  std::vector<VECCPL> h_at_bins(number_of_modes_),
+      h_at_centers(number_of_modes_);
   for (int m = 0; m < number_of_modes_; ++m) {
     h_at_bins[m].resize(n_edges);
     for (int e = 0; e < n_edges; ++e)

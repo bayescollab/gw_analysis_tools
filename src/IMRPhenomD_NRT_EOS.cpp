@@ -349,31 +349,29 @@ void Bumpy_EOS_Constructor::construct_EOS() {
  * outside of this range.
  */
 void Bumpy_EOS_Constructor::build_cs2_one_quad_bump() {
-  // Use the crust table prior to the start of the bump
-  double max_table_value = std::min(eos_params.max_nb, eos_params.bump_start);
-  auto nearest_index = std::distance(
+  // Define maximum nb value to build to
+  const double max_interp = eos_params.max_nb + 100;
+  // Grab index at which to stop using the table of crust values
+  double max_table_value = std::min(max_interp, eos_params.bump_start);
+  injection_index = std::distance(
       crust.nb.begin(),
       std::lower_bound(crust.nb.begin(), crust.nb.end(), max_table_value));
-  // Save the index at which crust values stop being used
-  injection_index = nearest_index;
+  // Copy crust table values prior to the bumpy
   eos.nb.insert(eos.nb.end(), crust.nb.begin(),
-                crust.nb.begin() + nearest_index);
+                crust.nb.begin() + injection_index);
   eos.cs2.insert(eos.cs2.end(), crust.cs2.begin(),
-                 crust.cs2.begin() + nearest_index);
+                 crust.cs2.begin() + injection_index);
 
-  // Interpolate up to the bump
-  if (eos.nb.back() < eos_params.bump_start) {
+  // Interpolate up to the bump from the table
+  if ((eos.nb.back() < eos_params.bump_start) &&
+      (eos.nb.back() < eos_params.max_nb)) {
     // Get the last saved baryon number density
     double nb = eos.nb.back();
-    // Define interpolation parameters
-    double max_table_interp_value =
-        std::min(eos_params.bump_start, eos_params.max_nb);
+    // Define interpolation step count and size
     int steps_before_bump = 10;
-    // The +1 is just to make sure the ending value is within range.
-    double nb_step_before_bump =
-        1 + (max_table_interp_value - nb) / steps_before_bump;
+    double nb_step_before_bump = (max_table_value - nb) / steps_before_bump;
 
-    // Reserve/resize vectors
+    // Reserve space for vectors
     eos.nb.reserve(eos.nb.size() + steps_before_bump);
     eos.cs2.reserve(eos.cs2.size() + steps_before_bump);
 
@@ -384,18 +382,19 @@ void Bumpy_EOS_Constructor::build_cs2_one_quad_bump() {
                    std::back_inserter(eos.cs2),
                    [](double nb) { return crust_cs2_of_nb.yofx(nb); });
   }
+
   // Calculate values during the bump
-  if ((eos.nb.back() < eos_params.bump_end) ||
+  if ((eos.nb.back() < eos_params.bump_end) &&
       (eos.nb.back() < eos_params.max_nb)) {
     // Get the last saved baryon number density
     double nb = eos.nb.back();
-    // Define interpolation parameters
-    double max_bump_value = std::min(eos_params.bump_end, eos_params.max_nb);
+    // Define the maximum value to interpolate to
+    double max_bump_value = std::min(eos_params.bump_end, max_interp);
+    // Define interpolation step count and size
     int steps_bump = 1000;
-    // The +1 is just to make sure the ending value is within range.
-    double nb_bump_step = 1 + (max_bump_value - nb) / steps_bump;
+    double nb_bump_step = (max_bump_value - nb) / steps_bump;
 
-    // Reserve/resize vectors
+    // Reserve space for vectors
     eos.nb.reserve(eos.nb.size() + steps_bump);
     eos.cs2.reserve(eos.cs2.size() + steps_bump);
 
@@ -408,21 +407,22 @@ void Bumpy_EOS_Constructor::build_cs2_one_quad_bump() {
         [get_quadratic_bump_point =
              &Bumpy_EOS_Constructor::get_quadratic_bump_point,
          this](double nb) { return this->get_quadratic_bump_point(nb); });
-  }  // Insert plateau values once bump ends
+  }
+
+  // Insert plateau values once bump ends
   if (eos.nb.back() < eos_params.max_nb) {
     // Get the last saved baryon number density
     double nb = eos.nb.back();
-    // Define interpolation parameters
+    // Define interpolation step count and size
     int steps_plat = 100;
-    // The +1 is just to make sure the ending value is within range.
-    double nb_plat_step = 1 + (eos_params.max_nb - nb) / steps_plat;
+    double nb_plat_step = (max_interp - nb) / steps_plat;
 
-    // Reserve/resize vectors
+    // Reserve space for vectors
     eos.nb.reserve(eos.nb.size() + steps_plat);
     eos.cs2.reserve(eos.cs2.size() + steps_plat);
 
     // Interpolate baryon number density
-    std::generate_n(std::back_inserter(eos.nb), nb_plat_step,
+    std::generate_n(std::back_inserter(eos.nb), steps_plat,
                     [&]() { return nb += nb_plat_step; });
     // Fill with plateau value
     std::fill_n(std::back_inserter(eos.cs2), steps_plat, eos_params.plat);
@@ -981,7 +981,7 @@ void Interpolation::initialize(const gsl_interp_type* interp_type,
 
   int status = gsl_spline_init(spline, x.data(), y.data(), size);
   if (status != GSL_SUCCESS) {
-    std::cerr << "GSL error code: " << status << "invoked.";
+    std::cerr << "GSL error code: " << status << " invoked.";
     if (status == GSL_EINVAL) {
       throw std::invalid_argument(
           "Invalid data passed to create GSL spline object.");

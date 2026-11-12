@@ -67,10 +67,9 @@ void IMRPhenomD_NRT_EOS<T>::get_m_love(gen_params_base<T>* parameters) {
   ec2 = bumpy_eos->eos.eps_c2;
   // Interpolated pressure in terms of epsilon
   Interpolation* p_of_e =
-      new Interpolation((gsl_interp_type*)gsl_interp_steffen,
+      new Interpolation(static_cast<const gsl_interp_type*>(gsl_interp_steffen),
                         bumpy_eos->eos.epsilon, bumpy_eos->eos.pressure);
   delete bumpy_eos;
-  bumpy_eos = 0;
 
   // Get observable values
   ObservablesIntegrator* integrator =
@@ -81,9 +80,7 @@ void IMRPhenomD_NRT_EOS<T>::get_m_love(gen_params_base<T>* parameters) {
                                         CurvatureCheck);
 
   delete integrator;
-  integrator = 0;
   delete p_of_e;
-  p_of_e = 0;
 
   /* // Check if curvature is valid
   if (CurvatureCheck) {
@@ -144,8 +141,9 @@ void EOS_Constructor::get_crust(std::string EoS_filepath,
   crust.nb = EoS_Table.at(nb_header);
   convert_crust_to_cs2();
   // Store interpolation object for the speed of sound squared
-  crust_cs2_of_nb.initialize((gsl_interp_type*)gsl_interp_steffen, crust.nb,
-                             crust.cs2);
+  crust_cs2_of_nb.initialize(
+      static_cast<const gsl_interp_type*>(gsl_interp_steffen), crust.nb,
+      crust.cs2);
 }
 
 /**
@@ -200,8 +198,8 @@ double EOS_Constructor::convert_nsat_to_MeV(double x) {
  * EoS table.
  */
 void EOS_Constructor::convert_crust_to_cs2() {
-  Interpolation p_of_e((gsl_interp_type*)gsl_interp_steffen, crust.epsilon,
-                       crust.pressure);
+  Interpolation p_of_e(static_cast<const gsl_interp_type*>(gsl_interp_steffen),
+                       crust.epsilon, crust.pressure);
 
   for (double epsilon : crust.epsilon) {
     crust.cs2.push_back(p_of_e.dyofx(epsilon));
@@ -264,9 +262,9 @@ void Bumpy_EOS_Constructor::store_EOS_params(gen_params_base<adouble>* params) {
   // Plateau
   eos_params.plat = params->plat.value();
   // Baryon number density parameters
-  eos_params.n1 = convert_nsat_to_MeV(params->nbc1.value());
-  eos_params.n2 = convert_nsat_to_MeV(params->nbc2.value());
-  eos_params.max_nb = std::max(eos_params.n1, eos_params.n2);
+  eos_params.nbc1 = convert_nsat_to_MeV(params->nbc1.value());
+  eos_params.nbc2 = convert_nsat_to_MeV(params->nbc2.value());
+  eos_params.max_nb = std::max(eos_params.nbc1, eos_params.nbc2);
 }
 
 /**
@@ -284,9 +282,9 @@ void Bumpy_EOS_Constructor::store_EOS_params(gen_params_base<double>* params) {
   // Plateau
   eos_params.plat = params->plat;
   // Baryon number density parameters
-  eos_params.n1 = convert_nsat_to_MeV(params->nbc1);
-  eos_params.n2 = convert_nsat_to_MeV(params->nbc2);
-  eos_params.max_nb = std::max(eos_params.n1, eos_params.n2);
+  eos_params.nbc1 = convert_nsat_to_MeV(params->nbc1);
+  eos_params.nbc2 = convert_nsat_to_MeV(params->nbc2);
+  eos_params.max_nb = std::max(eos_params.nbc1, eos_params.nbc2);
 }
 
 /**
@@ -328,12 +326,11 @@ void Bumpy_EOS_Constructor::construct_EOS() {
   // Get central epsilon values
   Interpolation* e_of_nb = new Interpolation;
 
-  e_of_nb->initialize((gsl_interp_type*)gsl_interp_steffen, eos.nb,
-                      eos.epsilon);
-  eos.eps_c1 = e_of_nb->yofx(eos_params.n1);
-  eos.eps_c2 = e_of_nb->yofx(eos_params.n2);
+  e_of_nb->initialize(static_cast<const gsl_interp_type*>(gsl_interp_steffen),
+                      eos.nb, eos.epsilon);
+  eos.eps_c1 = e_of_nb->yofx(eos_params.nbc1);
+  eos.eps_c2 = e_of_nb->yofx(eos_params.nbc2);
   delete e_of_nb;
-  e_of_nb = 0;
 }
 
 /* --------------------------- Protected Functions --------------------------
@@ -344,70 +341,91 @@ void Bumpy_EOS_Constructor::construct_EOS() {
  * cs^2 values for the given bump parameters.
  *
  * @details Uses the crust table points prior to the start of the bump,
- * interpolates finely up to and across the bump (100 points up to and 1000
- * points across), then much less finely once the plateau starts (only 100
- * points.) Calls the quadratic bump calculator in the region of the bump,
- * and simply uses either crust or plateau values outside of this range.
+ * interpolates 10 points up to the start of the bump (or maximum central baryon
+ * number density, whichever is smaller), interpolates 1000 points on the bump,
+ * then interpolates 100 points on the plateau (if the maximum central baryon
+ * number denisty hasn't been reached yet.) Calls the quadratic bump calculator
+ * in the region of the bump, and simply uses either crust or plateau values
+ * outside of this range.
  */
 void Bumpy_EOS_Constructor::build_cs2_one_quad_bump() {
-  // Define parameters for interpolation in nb
-
-  // How much to step by during the bump
-  double nb_step_bump = eos_params.bump_width / 1e3;
-  // How much to step by during the plateau - don't need as many points
-  double nb_step_plat = abs(eos_params.max_nb - eos_params.bump_end) / 1e2;
-  // Making sure there's at least one step beyond the maximum value
-  double nb_end = eos_params.max_nb + nb_step_plat;
-  // Define stepping variable
-  double nb;
-
   // Use the crust table prior to the start of the bump
-  for (int i = 0; i < crust.nb.size(); i++) {
-    nb = crust.nb.at(i);
-    if ((nb > nb_end) || (nb >= eos_params.bump_start)) {
-      injection_index = i - 1;
-      nb = crust.nb.at(i - 1) + nb_step_bump;
-      break;
-    } else {
-      eos.cs2.push_back(crust.cs2.at(i));
-      eos.nb.push_back(nb);
-    }
+  double max_table_value = std::min(eos_params.max_nb, eos_params.bump_start);
+  auto nearest_index = std::distance(
+      crust.nb.begin(),
+      std::lower_bound(crust.nb.begin(), crust.nb.end(), max_table_value));
+  // Save the index at which crust values stop being used
+  injection_index = nearest_index;
+  eos.nb.insert(eos.nb.end(), crust.nb.begin(),
+                crust.nb.begin() + nearest_index);
+  eos.cs2.insert(eos.cs2.end(), crust.cs2.begin(),
+                 crust.cs2.begin() + nearest_index);
+
+  // Interpolate up to the bump
+  if (eos.nb.back() < eos_params.bump_start) {
+    // Get the last saved baryon number density
+    double nb = eos.nb.back();
+    // Define interpolation parameters
+    double max_table_interp_value =
+        std::min(eos_params.bump_start, eos_params.max_nb);
+    int steps_before_bump = 10;
+    // The +1 is just to make sure the ending value is within range.
+    double nb_step_before_bump =
+        1 + (max_table_interp_value - nb) / steps_before_bump;
+
+    // Reserve/resize vectors
+    eos.nb.reserve(eos.nb.size() + steps_before_bump);
+    eos.cs2.reserve(eos.cs2.size() + steps_before_bump);
+
+    // Interpolate baryon number density and cs^2
+    std::generate_n(std::back_inserter(eos.nb), steps_before_bump,
+                    [&]() { return nb += nb_step_before_bump; });
+    std::transform(eos.nb.end() - steps_before_bump, eos.nb.end(),
+                   std::back_inserter(eos.cs2),
+                   [](double nb) { return crust_cs2_of_nb.yofx(nb); });
   }
+  // Calculate values during the bump
+  if ((eos.nb.back() < eos_params.bump_end) ||
+      (eos.nb.back() < eos_params.max_nb)) {
+    // Get the last saved baryon number density
+    double nb = eos.nb.back();
+    // Define interpolation parameters
+    double max_bump_value = std::min(eos_params.bump_end, eos_params.max_nb);
+    int steps_bump = 1000;
+    // The +1 is just to make sure the ending value is within range.
+    double nb_bump_step = 1 + (max_bump_value - nb) / steps_bump;
 
-  // Interpolate up to the bump start (this is a separate loop to prevent
-  // creating an interpolation object when it's not necessary)
-  if (nb < eos_params.bump_start) {
-    // How much to step by leading up to the bump
-    double nb_step_before_bump = (eos_params.bump_start - nb) / 1e2;
+    // Reserve/resize vectors
+    eos.nb.reserve(eos.nb.size() + steps_bump);
+    eos.cs2.reserve(eos.cs2.size() + steps_bump);
 
-    // Loop through and interpolate crust values
-    while ((nb < eos_params.bump_start) && (nb <= nb_end)) {
-      double cs2_val = crust_cs2_of_nb.yofx(nb);
-      eos.cs2.push_back(cs2_val);
-      eos.nb.push_back(nb);
-      nb += nb_step_before_bump;
-    }
-  }
+    // Interpolate baryon number density
+    std::generate_n(std::back_inserter(eos.nb), steps_bump,
+                    [&]() { return nb += nb_bump_step; });
+    // Calculate cs2 values
+    std::transform(
+        eos.nb.end() - steps_bump, eos.nb.end(), std::back_inserter(eos.cs2),
+        [get_quadratic_bump_point =
+             &Bumpy_EOS_Constructor::get_quadratic_bump_point,
+         this](double nb) { return this->get_quadratic_bump_point(nb); });
+  }  // Insert plateau values once bump ends
+  if (eos.nb.back() < eos_params.max_nb) {
+    // Get the last saved baryon number density
+    double nb = eos.nb.back();
+    // Define interpolation parameters
+    int steps_plat = 100;
+    // The +1 is just to make sure the ending value is within range.
+    double nb_plat_step = 1 + (eos_params.max_nb - nb) / steps_plat;
 
-  // At this point, nb should have either stepped up to the end of the bump or
-  // to the end of the table. We want to make sure it doesn't overshoot the
-  // bump, so we set it to whichever value is smaller.
-  nb = std::min(eos_params.bump_start, nb_end);
+    // Reserve/resize vectors
+    eos.nb.reserve(eos.nb.size() + steps_plat);
+    eos.cs2.reserve(eos.cs2.size() + steps_plat);
 
-  // Inject bump if maximum value has not yet been reached
-  while (nb <= nb_end) {
-    // Inject bump values between bump start and end
-    if ((eos_params.bump_start <= nb) && (nb <= eos_params.bump_end)) {
-      eos.cs2.push_back(get_quadratic_bump_point(nb, eos_params.f1_n1));
-      eos.nb.push_back(nb);
-      nb += nb_step_bump;
-    }
-    // Use plateau values after bump
-    else {
-      eos.cs2.push_back(eos_params.plat);
-      eos.nb.push_back(nb);
-      nb += nb_step_plat;
-    }
+    // Interpolate baryon number density
+    std::generate_n(std::back_inserter(eos.nb), nb_plat_step,
+                    [&]() { return nb += nb_plat_step; });
+    // Fill with plateau value
+    std::fill_n(std::back_inserter(eos.cs2), steps_plat, eos_params.plat);
   }
 }
 
@@ -426,41 +444,38 @@ void Bumpy_EOS_Constructor::build_cs2_one_quad_bump() {
  * bump magnitude is the peak of the parabola).
  *
  * @param nb Baryon number density at which to evaluate
- * @param f1_n1 Transition point of the bump
  * @return double
  */
-double Bumpy_EOS_Constructor::get_quadratic_bump_point(const double& nb,
-                                                       const double& f1_n1) {
+double Bumpy_EOS_Constructor::get_quadratic_bump_point(const double& nb) {
   // Define helpful constants
-  const double x1 = (nb - eos_params.bump_start);
-  const double x1_2 = x1 * x1;
+  const double dist_start = (nb - eos_params.bump_start);
+  const double dist_start_2 = dist_start * dist_start;
 
-  const double x2 = (nb - eos_params.bump_end);
-  const double x2_2 = x2 * x2;
+  const double dist_end = (nb - eos_params.bump_end);
+  const double dist_end_2 = dist_end * dist_end;
 
-  const double x3 = (eos_params.bump_start - eos_params.bump_end);
-  const double x3_2 = x3 * x3;
+  const double width_2 = eos_params.bump_width * eos_params.bump_width;
 
-  // Define unchanged terms in the function
-  const double term1 = eos_params.plat * x1_2;
-  const double term2 = f1_n1 * x2_2;
-  const double term3 = 2 * eos_params.bump_magnitude * x1 * x2;
-  const double unchanged_terms = term1 + term2 - term3;
+  // Define constant terms in the function
+  const double term1 = eos_params.plat * dist_start_2;
+  const double term2 = eos_params.f1_n1 * dist_end_2;
+  const double term3 = 2 * eos_params.bump_magnitude * dist_start * dist_end;
+  const double constant_terms = term1 + term2 - term3;
 
   // Define the function roots (will change sign depending on conditions)
-  const double func_root = 2 * x1 * x2 *
-                           sqrt((eos_params.bump_magnitude - f1_n1) *
+  const double func_root = 2 * dist_start * dist_end *
+                           sqrt((eos_params.bump_magnitude - eos_params.f1_n1) *
                                 (eos_params.bump_magnitude - eos_params.plat));
 
   // Calculate value of piecewise function
-  double return_value;
-  if (f1_n1 < eos_params.bump_magnitude) {
-    return_value = (1 / x3_2) * (unchanged_terms - func_root);
+  double cs2;
+  if (eos_params.f1_n1 < eos_params.bump_magnitude) {
+    cs2 = (1 / width_2) * (constant_terms - func_root);
   } else {
-    return_value = (1 / x3_2) * (unchanged_terms + func_root);
+    cs2 = (1 / width_2) * (constant_terms + func_root);
   }
 
-  return return_value;
+  return cs2;
 }
 
 /* --------------------------------------------------------------------------
@@ -717,7 +732,6 @@ void ObservablesIntegrator::integrate_for_eos_of_h(Interpolation& p_of_e,
       delta_e = e_stop - e;
       // Exit if delta_e is too small to proceed
       if (delta_e < 1e-6) {
-        e = e_stop;
         break;
       }
     }
@@ -737,11 +751,14 @@ void ObservablesIntegrator::integrate_for_eos_of_h(Interpolation& p_of_e,
   }
 
   // Define interpolations
-  e_of_h.initialize((gsl_interp_type*)gsl_interp_steffen, enthalpy, epsilon);
-  p_of_h.initialize((gsl_interp_type*)gsl_interp_steffen, enthalpy, pressure);
+  e_of_h.initialize(static_cast<const gsl_interp_type*>(gsl_interp_steffen),
+                    enthalpy, epsilon);
+  p_of_h.initialize(static_cast<const gsl_interp_type*>(gsl_interp_steffen),
+                    enthalpy, pressure);
 
   // Get central enthalpy values
-  Interpolation h_of_e((gsl_interp_type*)gsl_interp_steffen, epsilon, enthalpy);
+  Interpolation h_of_e(static_cast<const gsl_interp_type*>(gsl_interp_steffen),
+                       epsilon, enthalpy);
   hc_1 = h_of_e.yofx(convert_dimensions(ec_1, "MeV/fm^3", true));
   hc_2 = h_of_e.yofx(convert_dimensions(ec_2, "MeV/fm^3", true));
 
@@ -846,24 +863,19 @@ void ObservablesIntegrator::rk4(double& t, Eigen::Vector3d& y, double h) {
  */
 double ObservablesIntegrator::convert_dimensions(double value, std::string unit,
                                                  bool adimensionalize) {
-  // Define constants
-  double eV = 1.602176634e-19;
-  double MeV = 1e6 * eV;
-  double fm = 1e-15;
-  double km = 1e3;
-
   // Calculate and store the conversion factor
   double conversion_factor;
 
   if (unit == "km") {
-    conversion_factor = km * (c * c / GWAT_G_SI) * (1 / GWAT_MSUN_SI);
+    conversion_factor = 1e3 * (c * c / GWAT_G_SI) * (1 / GWAT_MSUN_SI);
   } else if (unit == "MeV/fm^3") {
-    conversion_factor = (MeV / (fm * fm * fm)) *
+    conversion_factor = (GWAT_eV * 1e51) *
                         sqrt(pow(GWAT_G_SI, 6) / pow(c, 16)) *
                         (GWAT_MSUN_SI * GWAT_MSUN_SI);
   } else {
     std::cerr << "Unsupported unit type passed to "
-                 "ObservablesIntegrator::adimensionalize.\n";
+                 "ObservablesIntegrator::adimensionalize. Returning "
+                 "unconverted value. \n";
     conversion_factor = 1;
   }
 
@@ -887,7 +899,7 @@ double ObservablesIntegrator::convert_dimensions(double value, std::string unit,
 
 // Constructors
 
-Interpolation::Interpolation(gsl_interp_type* interp_type,
+Interpolation::Interpolation(const gsl_interp_type* interp_type,
                              std::vector<double> x, std::vector<double> y) {
   initialize(interp_type, x, y);
 }
@@ -909,11 +921,15 @@ Interpolation::~Interpolation() { free(); }
  */
 double Interpolation::yofx(double x) {
   double result;
-  if (x >= 0.0) {
-    result = gsl_spline_eval(spline, x, acc);
-  } else {
-    result = 0.0;
+
+  if (std::isnan(x)) {
+    throw std::invalid_argument(
+        "A NaN value was passed to an Interpolation object. Aborting to "
+        "prevent a segmentation fault.");
   }
+
+  result = gsl_spline_eval(spline, x, acc);
+
   return result;
 }
 
@@ -925,11 +941,15 @@ double Interpolation::yofx(double x) {
  */
 double Interpolation::dyofx(double x) {
   double result;
-  if (x > 0.0) {
-    result = gsl_spline_eval_deriv(spline, x, acc);
-  } else {
-    result = 0.0;
+
+  if (std::isnan(x)) {
+    throw std::invalid_argument(
+        "A NaN value was passed to an Interpolation object. Aborting to "
+        "prevent a segmentation fault.");
   }
+
+  result = gsl_spline_eval_deriv(spline, x, acc);
+
   return result;
 }
 
@@ -940,7 +960,7 @@ double Interpolation::dyofx(double x) {
  * @param x
  * @param y
  */
-void Interpolation::initialize(gsl_interp_type* interp_type,
+void Interpolation::initialize(const gsl_interp_type* interp_type,
                                std::vector<double> x, std::vector<double> y) {
   type = interp_type;
   // Size of the independent variable vector
@@ -949,9 +969,8 @@ void Interpolation::initialize(gsl_interp_type* interp_type,
   // Allocating GSL interpolation accelerator
   acc = gsl_interp_accel_alloc();
   if (!acc) {
-    std::cerr << "Error: Failed to allocate memory for accelerator."
-              << std::endl;
-    std::exit(EXIT_FAILURE);
+    std::cerr << "Failed to allocate memory for GSL accelerator.\n";
+    throw std::bad_alloc();
   }
 
   // Allocating GSL spline of specified type and size
@@ -962,8 +981,16 @@ void Interpolation::initialize(gsl_interp_type* interp_type,
 
   int status = gsl_spline_init(spline, x.data(), y.data(), size);
   if (status != GSL_SUCCESS) {
-    std::cerr << "gsl_spline_init failed: " << gsl_strerror(status) << "\n";
-    std::exit(EXIT_FAILURE);
+    std::cerr << "GSL error code: " << status << "invoked.";
+    if (status == GSL_EINVAL) {
+      throw std::invalid_argument(
+          "Invalid data passed to create GSL spline object.");
+    } else if (status == GSL_ENOMEM) {
+      std::cerr << "Failed to allocate memory for GSL accelerator.\n";
+      throw std::bad_alloc();
+    } else {
+      throw std::logic_error("GSL spline encountered a domain or range error.");
+    }
   }
 }
 

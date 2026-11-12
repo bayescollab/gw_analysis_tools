@@ -73,8 +73,6 @@ constexpr double c = 299792458.;
 // const double G =6.67430e-11*(1.98855e30);
 constexpr double G = GWAT_G_SI * (1.988409902147041637325262574352366540e30);
 /*! G/c**3 seconds per solar mass*/
-// const double MSOL_SEC =492549095.e-14;
-// const double MSOL_SEC =492549095.e-14;
 constexpr double MSOL_SEC = 4.925491025543575903411922162094833998e-6;
 /*! Meters in a megaparsec */
 constexpr double GWAT_MPC_SI = 3.085677581491367278913937957796471611e22;
@@ -90,6 +88,8 @@ constexpr double AXIAL_TILT = 0.409092627749;
 // const double AXIAL_TILT=0.4075;
 /*! 1AU in seconds*/
 constexpr double AU_SEC = 499.005;
+/*! 1eV in Joules */
+constexpr double GWAT_eV = 1.602176634e-19;
 
 /*! Planck's constant (unbarred) in ev sec*/
 constexpr double h_planck = 4.135667696e-15;

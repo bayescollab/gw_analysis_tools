@@ -31,13 +31,13 @@
 class Interpolation {
  public:
   // Constructors and destructors
-  Interpolation(gsl_interp_type* interp_type, std::vector<double> x,
+  Interpolation(const gsl_interp_type* interp_type, std::vector<double> x,
                 std::vector<double> y);
   Interpolation();
   ~Interpolation();
 
   // Function to initialize GSL splines for interpolation
-  void initialize(gsl_interp_type* interp_type, std::vector<double> x,
+  void initialize(const gsl_interp_type* interp_type, std::vector<double> x,
                   std::vector<double> y);
 
   // Function to free GSL spline and accelerator memory
@@ -51,7 +51,7 @@ class Interpolation {
   // GSL-type variables for interpolation
   gsl_interp_accel* acc;
   gsl_spline* spline;
-  gsl_interp_type* type;
+  const gsl_interp_type* type;
 
   // Size of data
   size_t size;
@@ -169,9 +169,8 @@ class Bumpy_EOS_Constructor : public EOS_Constructor {
     double bump_start;
     double bump_width;
     double plat;
-    double nbc;
-    double n1;
-    double n2;
+    double nbc1;
+    double nbc2;
 
     // Additional params
     double bump_end;
@@ -195,7 +194,7 @@ class Bumpy_EOS_Constructor : public EOS_Constructor {
 
   // Functinos to calculate points in cs2 for the quadratic bump
   void build_cs2_one_quad_bump();
-  double get_quadratic_bump_point(const double& nb, const double& f1_n1);
+  double get_quadratic_bump_point(const double& nb);
 };
 
 /* -------------------------------------------------------------------------- */

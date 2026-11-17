@@ -5,7 +5,11 @@
 #include <bayesship/proposalFunctions.h>
 #include <bayesship/utilities.h>
 
+#include <algorithm>
 #include <cstdlib>
+#include <limits>
+#include <gsl/gsl_eigen.h>
+#include <gsl/gsl_matrix.h>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -2587,15 +2591,29 @@ void find_fiducial(const GWModel& model, const VECDBL& initial_params,
   gsl_rng_free(rng);
 }
 
-double calibrate_validity_guard_tol(
+namespace {
+// Value at fraction p of the sorted data (nearest rank). Takes a copy.
+double residual_quantile(std::vector<double> v, double p) {
+  if (v.empty()) return std::numeric_limits<double>::quiet_NaN();
+  const size_t k = std::min(v.size() - 1,
+                            static_cast<size_t>(p * static_cast<double>(v.size())));
+  std::nth_element(v.begin(), v.begin() + k, v.end());
+  return v[k];
+}
+}  // namespace
+
+ValidityGuardCalibration calibrate_validity_guard_tol(
     gw_likelihoods::RelativeBinning::RelativeBinningBisectionPolarizationsLikelihood& rb_ll,
-    const GWModel& model, const VECDBL& fiducial_params, int stage_steps,
-    int max_stages, double plateau_rel_tol, double safety_margin) {
+    const GWModel& model, const VECDBL& fiducial_params,
+    const ValidityGuardCalibrationOptions& opts) {
+  const char* tag = "[calibrate_validity_guard_tol] ";
   const bool debug = std::getenv("GWAT_CALIB_DEBUG") != nullptr;
   const ParameterMap& pmap = *model.param_map;
   const int dim = pmap.dim();
+  const auto names = pmap.names();
+  const int min_burn = opts.min_burn_steps > 0 ? opts.min_burn_steps : 800 * dim;
+  const int max_burn = std::max(min_burn, opts.max_burn_steps);
 
-  // Per-parameter Gibbs step sizes -- identical recipe to find_fiducial.
   std::vector<double> prior_widths(dim, 1.0);
   for (const auto& kv : pmap.specs()) {
     if (kv.second.fixed) continue;
@@ -2603,43 +2621,96 @@ double calibrate_validity_guard_tol(
     if (idx >= 0) prior_widths[idx] = kv.second.hi - kv.second.lo;
   }
 
+  // Prior-regularized Fisher at the fiducial.
   std::vector<double> fisher_storage(dim * dim, 0.0);
   std::vector<double*> fisher_mat(dim);
   for (int i = 0; i < dim; i++) fisher_mat[i] = fisher_storage.data() + i * dim;
   model.fisher->compute_Fisher(fisher_mat.data(), fiducial_params.data());
+  gw_fishers::apply_prior_regularization(fisher_mat.data(), pmap);
 
-  const double c_mh = 2.38 / std::sqrt(static_cast<double>(dim));
-  std::vector<double> sigma(dim);
+  // Proposal directions: each parameter's axis, then the eigenvectors of the
+  // Fisher scaled to unit diagonal (C = D^-1/2 Gamma D^-1/2). Along
+  // eigenvector u_k of C (eigenvalue mu_k) the raw-parameter step is
+  // z / sqrt(mu_k) * D^-1/2 u_k.
+  struct Direction {
+    std::vector<double> v;  // raw-parameter direction
+    double sigma = 0;       // current step width along v
+    double sigma_max = 0;   // half the prior box along v
+    long proposed = 0, accepted = 0;
+    bool eigen = false;
+  };
+  std::vector<Direction> dirs;
+  std::vector<double> d(dim);
   for (int i = 0; i < dim; i++) {
-    double gamma_ii = fisher_mat[i][i];
-    double fisher_sigma =
-        (gamma_ii > 0.0) ? c_mh / std::sqrt(gamma_ii) : 0.1 * prior_widths[i];
-    sigma[i] = std::min(fisher_sigma, 0.5 * prior_widths[i]);
+    const double gii = fisher_mat[i][i];
+    d[i] = gii > 0.0 ? std::sqrt(gii) : 1.0 / prior_widths[i];
   }
-
-  if (debug) {
-    auto names = pmap.names();
-    std::cerr << "[calib debug] dim=" << dim << " c_mh=" << c_mh << "\n";
-    for (int i = 0; i < dim; i++) {
-      std::cerr << "[calib debug]  " << names[i]
-                << "  Gamma_ii=" << fisher_mat[i][i]
-                << "  prior_width=" << prior_widths[i] << "  sigma=" << sigma[i]
-                << (sigma[i] >= 0.5 * prior_widths[i] ? "  (CLAMPED to prior)"
-                                                      : "")
-                << "\n";
+  auto box_limit = [&](const std::vector<double>& v) {
+    double lim = std::numeric_limits<double>::infinity();
+    for (int i = 0; i < dim; i++)
+      if (v[i] != 0.0) lim = std::min(lim, 0.5 * prior_widths[i] / std::abs(v[i]));
+    return lim;
+  };
+  for (int i = 0; i < dim; i++) {
+    Direction dir;
+    dir.v.assign(dim, 0.0);
+    dir.v[i] = 1.0;
+    dir.sigma_max = box_limit(dir.v);
+    dir.sigma = std::min(1.0 / d[i], dir.sigma_max);
+    dirs.push_back(dir);
+  }
+  int n_eigen = 0;
+  {
+    gsl_matrix* C = gsl_matrix_alloc(dim, dim);
+    for (int i = 0; i < dim; i++)
+      for (int j = 0; j < dim; j++)
+        gsl_matrix_set(C, i, j, 0.5 * (fisher_mat[i][j] + fisher_mat[j][i]) / (d[i] * d[j]));
+    gsl_vector* mu = gsl_vector_alloc(dim);
+    gsl_matrix* U = gsl_matrix_alloc(dim, dim);
+    gsl_eigen_symmv_workspace* ws = gsl_eigen_symmv_alloc(dim);
+    const int status = gsl_eigen_symmv(C, mu, U, ws);
+    gsl_eigen_symmv_free(ws);
+    if (status == 0) {
+      for (int k = 0; k < dim; k++) {
+        const double mu_k = gsl_vector_get(mu, k);
+        Direction dir;
+        dir.eigen = true;
+        dir.v.resize(dim);
+        for (int i = 0; i < dim; i++) dir.v[i] = gsl_matrix_get(U, i, k) / d[i];
+        dir.sigma_max = box_limit(dir.v);
+        // A non-positive eigenvalue (finite-difference noise) gets the box
+        // limit; the adaptation then finds its real width.
+        dir.sigma = mu_k > 0.0 ? std::min(1.0 / std::sqrt(mu_k), dir.sigma_max)
+                               : dir.sigma_max;
+        dirs.push_back(dir);
+        n_eigen++;
+      }
+    } else {
+      std::cout << tag << "WARNING: Fisher eigen-decomposition failed; using "
+                   "parameter-axis moves only.\n";
     }
+    gsl_matrix_free(U);
+    gsl_vector_free(mu);
+    gsl_matrix_free(C);
   }
+  const double coord_frac = n_eigen > 0 ? opts.coordinate_fraction : 1.0;
 
   // Evaluates logPrior, RB logL, and the guard residual at theta in one call.
   bayesship::positionInfo pos_tmp(dim);
   auto eval = [&](const std::vector<double>& theta, double& logL_out,
-                 double& resid_out) -> double {
+                  double& resid_out) -> double {
+    for (int i = 0; i < dim; i++) pos_tmp.parameters[i] = theta[i];
+    const double lp = model.prior->eval(&pos_tmp, 0);
+    if (!std::isfinite(lp)) {  // outside the prior: no waveform needed
+      logL_out = -std::numeric_limits<double>::infinity();
+      resid_out = std::numeric_limits<double>::quiet_NaN();
+      return lp;
+    }
     gen_params_base<double> gp;
     pmap.to_gen_params(theta.data(), gp);
     logL_out = rb_ll.log_likelihood(&gp);  // populates last_guard_residual()
     resid_out = rb_ll.last_guard_residual();
-    for (int i = 0; i < dim; i++) pos_tmp.parameters[i] = theta[i];
-    return model.prior->eval(&pos_tmp, 0);
+    return lp;
   };
 
   // Must be finite (not kInf) so check_validity() actually runs every call,
@@ -2647,120 +2718,267 @@ double calibrate_validity_guard_tol(
   const double original_tol = rb_ll.validity_guard_tol();
   rb_ll.set_validity_guard_tol(1.0e300);
 
-  double fiducial_logL = 0.0, fiducial_resid = 0.0;
-  double fiducial_lp = eval(fiducial_params, fiducial_logL, fiducial_resid);
+  ValidityGuardCalibration res;
+  std::vector<double> current = fiducial_params;
+  double current_logL = 0.0, current_resid = 0.0;
+  double current_lp = eval(current, current_logL, current_resid);
+  res.fiducial_residual = current_resid;
+  if (!std::isfinite(current_lp + current_logL)) {
+    rb_ll.set_validity_guard_tol(original_tol);
+    throw std::runtime_error(
+        "calibrate_validity_guard_tol: the fiducial has a non-finite log "
+        "posterior");
+  }
+
+  std::ofstream trace;
+  if (!opts.trace_path.empty()) {
+    trace.open(opts.trace_path);
+    if (!trace)
+      std::cout << tag << "WARNING: cannot write " << opts.trace_path << "\n";
+    trace << "step,burn_in,move,direction,accepted,logL,logPrior,residual";
+    for (const auto& name : names) trace << ',' << name;
+    trace << '\n';
+    trace << std::setprecision(10);
+  }
+
+  std::cout << tag << "moves: " << 100 * opts.de_fraction
+            << "% differential evolution, otherwise " << dim << " parameter-axis and "
+            << n_eigen << " eigen-direction moves; burn-in " << min_burn << "-" << max_burn
+            << " steps, then at least " << opts.min_samples
+            << " samples; tol = " << opts.margin << " x the " << opts.quantile
+            << " quantile; at most " << opts.max_steps << " steps\n";
 
   gsl_rng* rng = gsl_rng_alloc(gsl_rng_default);
-  const double burn_in_frac = 0.2;  // applied once, within stage 1 only
+  gsl_rng_set(rng, opts.seed);
 
-  std::vector<double> current = fiducial_params;
-  double current_logL = fiducial_logL, current_lp = fiducial_lp,
-         current_resid = fiducial_resid;
+  double max_log_post = current_logL + current_lp;
+  int crossing_step = -1;  // first step dim/2 below the best log posterior
+  int burn_end = -1;       // decided once crossing_step is known
+  std::vector<double> residuals;
+  residuals.reserve(std::min(opts.max_steps, 1 << 20));
+  long interval_accepted = 0, sample_accepted = 0;
+  std::vector<double> proposal(dim);
 
-  int steps_total = 0;
-  double prev_stage_max = std::numeric_limits<double>::quiet_NaN();
-  double running_max = fiducial_resid;  // all-time worst seen; never resets
-  double final_max = fiducial_resid;
+  std::vector<std::vector<double>> burn_positions;
+  bool empirical_done = false;
+  // DE history: every de_thin-th position, from the start
+  std::vector<std::vector<double>> history;
+  Direction de_moves;  // acceptance bookkeeping for DE moves only
 
-  for (int stage = 1; stage <= max_stages; stage++) {
-    std::vector<double> stage_residuals;
-    stage_residuals.reserve(stage_steps);
-    int accepted_in_stage = 0;
-    for (int s = 0; s < stage_steps; s++) {
-      int i = steps_total % dim;  // cycle through parameters
-      std::vector<double> proposal = current;
-      proposal[i] = current[i] + gsl_ran_gaussian(rng, sigma[i]);
+  int step = 0;
+  for (; step < opts.max_steps; step++) {
+    const bool burning = burn_end < 0 || step < burn_end;
 
-      double prop_logL = 0.0, prop_resid = 0.0;
-      double prop_lp = eval(proposal, prop_logL, prop_resid);
+    // Differential evolution (DE): x + gamma * (h_a - h_b) for two past
+    // positions h_a != h_b. Symmetric (swapping a and b reverses the move),
+    // and its jumps take the shape and size of the region explored so far.
+    // Otherwise a 1-D move along one direction.
+    int k = -1;  // direction index; -1 for a DE move
+    if (history.size() >= 2 * static_cast<size_t>(dim) &&
+        gsl_rng_uniform(rng) < opts.de_fraction) {
+      const size_t a = gsl_rng_uniform_int(rng, history.size());
+      size_t b = gsl_rng_uniform_int(rng, history.size() - 1);
+      if (b >= a) b++;
+      // gamma = 1 now and then lets the chain jump between separated regions
+      double gamma = gsl_rng_uniform(rng) < 0.1 ? 1.0 : 2.38 / std::sqrt(2.0 * dim);
+      gamma *= 1.0 + 0.1 * gsl_ran_gaussian(rng, 1.0);
+      for (int i = 0; i < dim; i++)
+        proposal[i] = current[i] + gamma * (history[a][i] - history[b][i]);
+    } else {
+      if (gsl_rng_uniform(rng) < coord_frac)
+        k = static_cast<int>(gsl_rng_uniform_int(rng, dim));
+      else
+        k = dim + static_cast<int>(gsl_rng_uniform_int(rng, n_eigen));
+      const double z = gsl_ran_gaussian(rng, dirs[k].sigma);
+      for (int i = 0; i < dim; i++) proposal[i] = current[i] + z * dirs[k].v[i];
+    }
+    Direction& dir = k >= 0 ? dirs[k] : de_moves;
 
-      bool accept = false;
-      if (std::isfinite(prop_lp) && std::isfinite(prop_logL)) {
-        double log_alpha = (prop_logL + prop_lp) - (current_logL + current_lp);
-        accept = (log_alpha >= 0.0) || (std::log(gsl_rng_uniform(rng)) < log_alpha);
-      }
-      if (accept) {
-        current = proposal;
-        current_logL = prop_logL;
-        current_lp = prop_lp;
-        current_resid = prop_resid;
-        accepted_in_stage++;
-      }
-      stage_residuals.push_back(current_resid);
-      steps_total++;
+    double prop_logL = 0.0, prop_resid = 0.0;
+    const double prop_lp = eval(proposal, prop_logL, prop_resid);
+    bool accept = false;
+    if (std::isfinite(prop_lp) && std::isfinite(prop_logL)) {
+      const double log_alpha = (prop_logL + prop_lp) - (current_logL + current_lp);
+      accept = log_alpha >= 0.0 || std::log(gsl_rng_uniform(rng)) < log_alpha;
+    }
+    dir.proposed++;
+    if (accept) {
+      dir.accepted++;
+      current.swap(proposal);
+      current_logL = prop_logL;
+      current_lp = prop_lp;
+      current_resid = prop_resid;
+      interval_accepted++;
     }
 
-    // Zero acceptance for a whole stage means the chain is frozen, not
-    // converged: it landed somewhere whose neighborhood evaluates to a
-    // non-finite RB logL for every proposal direction (a genuine RB
-    // breakdown region), so nothing can ever be accepted again. The
-    // residual there is real but not a trustworthy "typical" tail value --
-    // treat it as a hard stop and report the last stage that still had
-    // healthy mixing instead of the frozen value.
-    if (accepted_in_stage == 0) {
-      std::cout << "[calibrate_validity_guard_tol] WARNING: stage " << stage
-                << " had zero accepted proposals (chain frozen in an RB "
-                   "breakdown region); discarding this stage and reporting "
-                << (std::isfinite(prev_stage_max)
-                        ? "the last healthy stage's max."
-                        : "the fiducial's own residual.")
-                << " The fiducial/test-point pair feeding this RB "
-                   "likelihood's bins may not be robust.\n";
+    if (burning) {
+      // Robbins-Monro adaptation of this direction's width.
+      if (k >= 0) {
+        const double gain = 1.0 / std::sqrt(static_cast<double>(dir.proposed));
+        dir.sigma *= std::exp(gain * ((accept ? 1.0 : 0.0) - opts.target_acceptance));
+        dir.sigma = std::min(dir.sigma, dir.sigma_max);
+      }
+      const double log_post = current_logL + current_lp;
+      max_log_post = std::max(max_log_post, log_post);
+      if (crossing_step < 0 && log_post <= max_log_post - 0.5 * dim) {
+        crossing_step = step + 1;
+        burn_end = std::min(max_burn, std::max(min_burn, 2 * crossing_step));
+      }
+      if (burn_end < 0 && step + 1 >= max_burn) burn_end = max_burn;
+
+      // Empirical directions: positions from the second quarter of burn-in
+      // give the posterior's covariance; halfway through burn-in its
+      // eigenvectors replace the Fisher's, and the second half adapts their
+      // widths.
+      if (opts.empirical_directions && n_eigen > 0 && burn_end > 0 &&
+          !empirical_done) {
+        if (step + 1 > burn_end / 4) burn_positions.push_back(current);
+        if (step + 1 >= burn_end / 2) {
+          empirical_done = true;
+          const int n = static_cast<int>(burn_positions.size());
+          if (n >= 2 * dim) {
+            std::vector<double> mean(dim, 0.0);
+            for (const auto& x : burn_positions)
+              for (int i = 0; i < dim; i++) mean[i] += d[i] * x[i] / n;
+            gsl_matrix* cov = gsl_matrix_calloc(dim, dim);
+            for (const auto& x : burn_positions)
+              for (int i = 0; i < dim; i++)
+                for (int j = 0; j < dim; j++)
+                  *gsl_matrix_ptr(cov, i, j) += (d[i] * x[i] - mean[i]) *
+                                                (d[j] * x[j] - mean[j]) / (n - 1);
+            gsl_vector* lam = gsl_vector_alloc(dim);
+            gsl_matrix* U = gsl_matrix_alloc(dim, dim);
+            gsl_eigen_symmv_workspace* ws = gsl_eigen_symmv_alloc(dim);
+            const int status = gsl_eigen_symmv(cov, lam, U, ws);
+            gsl_eigen_symmv_free(ws);
+            if (status == 0) {
+              for (int k = 0; k < n_eigen; k++) {
+                Direction& dk = dirs[dim + k];
+                for (int i = 0; i < dim; i++) dk.v[i] = gsl_matrix_get(U, i, k) / d[i];
+                dk.sigma_max = box_limit(dk.v);
+                const double var = gsl_vector_get(lam, k);
+                // 2.4 sigma is the optimal 1-D random-walk step
+                dk.sigma = var > 0.0 ? std::min(2.4 * std::sqrt(var), dk.sigma_max)
+                                     : dk.sigma_max;
+                dk.proposed = dk.accepted = 0;
+              }
+              std::cout << tag << "eigen-directions replaced by those of the "
+                        << "covariance of " << n << " burn-in positions\n";
+            }
+            gsl_matrix_free(U);
+            gsl_vector_free(lam);
+            gsl_matrix_free(cov);
+          }
+          burn_positions.clear();
+          burn_positions.shrink_to_fit();
+        }
+      }
+
+      if (burn_end >= 0 && step + 1 >= burn_end) {
+        res.burn_steps = step + 1;
+        std::cout << tag << "burn-in ended after " << res.burn_steps << " steps ("
+                  << (crossing_step > 0
+                          ? "log posterior first fell dim/2 below its maximum at step " +
+                                std::to_string(crossing_step)
+                          : std::string("never fell dim/2 below its maximum; "
+                                        "max_burn_steps reached"))
+                  << ")\n";
+        if (debug) {
+          for (int j = 0; j < static_cast<int>(dirs.size()); j++) {
+            const Direction& dj = dirs[j];
+            std::cerr << "[calib debug] "
+                      << (dj.eigen ? "eigen " + std::to_string(j - dim) : names[j])
+                      << "  sigma=" << dj.sigma << "  sigma_max=" << dj.sigma_max
+                      << "  acceptance=" << (dj.proposed ? double(dj.accepted) / dj.proposed : 0.0)
+                      << " (" << dj.proposed << " proposals)\n";
+          }
+        }
+      }
+    } else {
+      residuals.push_back(current_resid);
+      if (accept) sample_accepted++;
+    }
+
+    if ((step + 1) % opts.de_thin == 0) history.push_back(current);
+
+    if (trace.is_open()) {
+      trace << step + 1 << ',' << (burning ? 1 : 0) << ','
+            << (k < 0 ? 2 : dir.eigen ? 1 : 0) << ',' << k << ','
+            << (accept ? 1 : 0) << ','
+            << current_logL << ',' << current_lp << ',' << current_resid;
+      for (int i = 0; i < dim; i++) trace << ',' << current[i];
+      trace << '\n';
+    }
+
+    if ((step + 1) % opts.check_interval != 0) continue;
+
+    if (interval_accepted == 0) {
+      std::cout << tag << "WARNING: no proposal accepted in the last "
+                << opts.check_interval << " steps: the chain froze in an RB "
+                   "breakdown region. Stopping; the result is not converged, "
+                   "and the fiducial/test points behind the bins may not be "
+                   "robust.\n";
+      res.stop_reason = "chain froze";
+      step++;
       break;
     }
+    interval_accepted = 0;
 
-    // Plateau is judged on each stage's OWN (independent) max, not a
-    // cumulative running max: a cumulative max can only ever grow or stay
-    // flat, so a single outlier step in one stage would permanently floor
-    // every later stage's reading at that value, making the very next
-    // stage trivially look "plateaued" (zero growth) regardless of whether
-    // the chain actually stabilized.
-    //
-    // The RETURNED tol is based on this plateaued per-stage value, not the
-    // all-time running max: an unguarded calibration chain can itself
-    // wander into a genuine phantom-mode excursion (a huge, one-off
-    // residual spike) -- that is precisely the kind of point the guard
-    // exists to reject, so it must stay well BELOW tol, not be allowed to
-    // inflate tol past itself. running_max is kept only as a diagnostic.
-    size_t burn =
-        (stage == 1)
-            ? static_cast<size_t>(burn_in_frac * stage_residuals.size())
-            : 0;
-    double stage_max = *std::max_element(stage_residuals.begin() + burn,
-                                         stage_residuals.end());
-    running_max = std::max(running_max, stage_max);
-    final_max = stage_max;
-
-    double rel_growth =
-        std::isfinite(prev_stage_max) && prev_stage_max > 0.0
-            ? std::abs(stage_max - prev_stage_max) / prev_stage_max
-            : kInf;
-    if (debug) {
-      std::cerr << "[calib debug] stage=" << stage
-                << " steps_total=" << steps_total
-                << " accepted_in_stage=" << accepted_in_stage
-                << " stage_max=" << stage_max << " running_max=" << running_max
-                << " rel_growth=" << rel_growth << "\n";
+    const int n = static_cast<int>(residuals.size());
+    if (n == 0) {
+      std::cout << tag << "step " << step + 1 << ": burning in, residual "
+                << current_resid << "\n";
+      continue;
     }
-    if (stage > 1 && rel_growth < plateau_rel_tol) break;
-    prev_stage_max = stage_max;
+    const std::vector<double> first(residuals.begin(), residuals.begin() + n / 2);
+    const std::vector<double> second(residuals.begin() + n / 2, residuals.end());
+    res.quantile_residual = residual_quantile(residuals, opts.quantile);
+    res.quantile_first_half = residual_quantile(first, opts.quantile);
+    res.quantile_second_half = residual_quantile(second, opts.quantile);
+    const double split = std::abs(res.quantile_first_half - res.quantile_second_half) /
+                         res.quantile_residual;
+    std::cout << tag << "step " << step + 1 << ": " << n << " samples, quantile "
+              << res.quantile_residual << " (halves " << res.quantile_first_half
+              << ", " << res.quantile_second_half << ", differ by "
+              << 100.0 * split << "%), max "
+              << *std::max_element(residuals.begin(), residuals.end()) << "\n";
+    if (n >= opts.min_samples && split < opts.rel_tol) {
+      res.converged = true;
+      res.stop_reason = "converged";
+      step++;
+      break;
+    }
   }
-
-  if (running_max > final_max * 2.0) {
-    std::cout << "[calibrate_validity_guard_tol] NOTE: the calibration chain "
-                 "briefly saw a residual of "
-              << running_max << " mid-run, well above the plateaued value "
-              << final_max
-              << " the returned tol is based on. "
-                 "If it recurs often, "
-                 "it may indicate that the fiducial/test-point pair's RB "
-                 "bins are fragile.\n";
-  }
+  if (res.stop_reason.empty()) res.stop_reason = "max_steps reached";
 
   gsl_rng_free(rng);
   rb_ll.set_validity_guard_tol(original_tol);
 
-  return safety_margin * final_max;
+  res.samples = static_cast<int>(residuals.size());
+  if (res.burn_steps == 0) res.burn_steps = step;
+  if (res.samples > 0) {
+    res.quantile_residual = residual_quantile(residuals, opts.quantile);
+    res.max_residual = *std::max_element(residuals.begin(), residuals.end());
+    res.acceptance = double(sample_accepted) / res.samples;
+  } else {
+    // Never got past burn-in: fall back on the fiducial's residual.
+    res.quantile_residual = res.max_residual = res.fiducial_residual;
+  }
+  res.tol = opts.margin * res.quantile_residual;
+
+  std::cout << tag << res.stop_reason << " after " << step << " steps ("
+            << res.burn_steps << " burn-in, " << res.samples
+            << " samples, acceptance " << res.acceptance << "): " << opts.quantile
+            << " quantile " << res.quantile_residual << ", max " << res.max_residual
+            << ", fiducial " << res.fiducial_residual << " -> tol " << res.tol << "\n";
+  if (!res.converged)
+    std::cout << tag << "WARNING: not converged (" << res.stop_reason
+              << "); treat the tolerance with caution.\n";
+  if (res.max_residual > res.tol)
+    std::cout << tag << "NOTE: the chain's largest residual " << res.max_residual
+              << " is above the tolerance; " << std::count_if(residuals.begin(), residuals.end(), [&](double r) { return r > res.tol; })
+              << " of " << res.samples << " samples would be rejected.\n";
+  return res;
 }
 
 std::vector<VECDBL> fisher_axis_points(const GWModel& model,

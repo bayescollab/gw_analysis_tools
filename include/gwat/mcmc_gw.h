@@ -20,6 +20,7 @@
 #include <fstream>
 #include <iostream>
 #include <mutex>
+#include <string>
 #include <thread>
 #include <vector>
 
@@ -316,73 +317,143 @@ void find_fiducial(const GWModel& model, const VECDBL& initial_params,
                    std::vector<double>& map_params_out,
                    std::vector<double>& final_params_out);
 
+/// Settings for calibrate_validity_guard_tol(). The defaults suit an
+/// expensive waveform (tens of ms per call): typically a few 10^4 steps.
+struct ValidityGuardCalibrationOptions {
+  /// Hard cap on chain steps (burn-in included).
+  int max_steps = 200000;
+  /// Burn-in bounds. 0 for min_burn_steps means 800 * dim.
+  int min_burn_steps = 0;
+  int max_burn_steps = 50000;
+  /// Post-burn-in steps required before convergence is tested.
+  int min_samples = 20000;
+  /// Steps between convergence tests (and progress lines).
+  int check_interval = 2000;
+  /// Quantile of the post-burn-in residuals the tolerance is based on.
+  double quantile = 0.999;
+  /// Converged once the quantiles of the two halves of the post-burn-in
+  /// residuals agree to this relative tolerance.
+  double rel_tol = 0.1;
+  /// Returned tol = margin * quantile.
+  double margin = 5.0;
+  /// Probability that a step moves one parameter; otherwise it moves along
+  /// one eigen-direction of the Fisher matrix.
+  double coordinate_fraction = 0.5;
+  /// Probability that a step is a differential-evolution move
+  /// x + gamma * (h_a - h_b) from two past positions (once the history holds
+  /// 2 * dim of them); otherwise a 1-D move as below.
+  double de_fraction = 0.5;
+  /// Every de_thin-th position is added to the DE history.
+  int de_thin = 10;
+  /// Halfway through burn-in, replace the Fisher eigen-directions with those
+  /// of the covariance of the burn-in positions so far.
+  bool empirical_directions = true;
+  /// Acceptance rate each direction's step width is adapted toward during
+  /// burn-in (0.44 is optimal for a 1-D Gaussian random walk).
+  double target_acceptance = 0.44;
+  /// gsl RNG seed (0 is gsl's default seed).
+  unsigned long seed = 0;
+  /// If non-empty, every step is written to this CSV file.
+  std::string trace_path;
+};
+
+/// What calibrate_validity_guard_tol() found.
+struct ValidityGuardCalibration {
+  double tol = 0;                // margin * quantile_residual
+  double quantile_residual = 0;  // over all post-burn-in steps
+  double quantile_first_half = 0, quantile_second_half = 0;
+  double max_residual = 0;       // largest post-burn-in residual
+  double fiducial_residual = 0;
+  int burn_steps = 0;
+  int samples = 0;               // post-burn-in steps
+  double acceptance = 0;         // post-burn-in acceptance rate
+  bool converged = false;        // false: stopped at max_steps or froze
+  std::string stop_reason;
+};
+
 /// @brief Calibrates a validity_guard_tol for a
 /// RelativeBinningBisectionPolarizationsLikelihood, specific to the given
 /// injection/Fisher matrix, instead of hardcoding a cross-injection constant.
 ///
-/// Runs a staged per-parameter (Gibbs) M-H chain around @p fiducial_params --
-/// the same proposal scheme find_fiducial uses (sigma_i =
-/// min(c_mh/sqrt(Gamma_ii), 0.5*prior_width_i), c_mh = 2.38/sqrt(dim), one
-/// parameter proposed per step, Metropolis acceptance) -- in blocks of @p
-/// stage_steps, each stage computing its own (independent,
-/// post-burn-in-for-stage-1-only) max of rb_ll's guard residual (the same
-/// diagnostic last_guard_residual() reports). Plateau is judged by comparing
-/// consecutive stages' own maxes, not a cumulative running max: a cumulative
-/// max can only grow or stay flat, so a single outlier step in one stage would
-/// permanently floor every later stage's reading there, making the very next
-/// stage trivially look plateaued regardless of whether the chain actually
-/// stabilized. The function stops once consecutive stage maxes agree within @p
-/// plateau_rel_tol (relative, either direction), or after @p max_stages stages,
-/// whichever comes first; the returned tol is based on that plateaued per-stage
-/// value, not the all-time running max across all stages. An unguarded
-/// calibration chain can itself wander into a genuine phantom-mode excursion (a
-/// huge, one-off residual spike) -- that is precisely the kind of point the
-/// guard exists to reject, so it must stay well below tol rather than inflate
-/// tol past itself. The all-time running max is tracked only to emit a stdout
-/// NOTE when it significantly exceeds the plateaued value, flagging that such
-/// an excursion occurred.
+/// Runs a Metropolis chain on the RB posterior (RB log-likelihood + the
+/// model's prior) from @p fiducial_params, records rb_ll's guard residual
+/// (last_guard_residual()) at every step after burn-in, and returns
+/// margin * (a high quantile of those residuals).
 ///
-/// If a stage has zero accepted proposals, the chain has frozen: it landed
-/// where every neighboring step evaluates to a non-finite RB log-likelihood,
-/// so nothing can ever be accepted again. That frozen residual is real but
-/// not a representative tail value, so it is discarded -- the function logs
-/// a warning and returns using the last stage that still had
-/// healthy mixing (or the fiducial's own residual, if even the first stage
-/// froze) instead. Seeing this warning means the fiducial/test-point pair
-/// used to build rb_ll's bins is not robust and the returned tol should not
-/// be trusted as a tight threshold.
+/// **Proposal.** Three kinds of Metropolis move:
+/// - differential evolution (DE), with probability de_fraction once the
+///   history holds 2*dim positions: x + gamma * (h_a - h_b) for two past
+///   positions (every de_thin-th position is kept), gamma = 2.38/sqrt(2 dim)
+///   (1 for a tenth of the moves), jittered by 10%. Its jumps take the shape
+///   and size of the region explored so far, so they open up long, curved
+///   degeneracies that fixed directions crawl along. Like DREAM(ZS), the
+///   proposal depends on the chain's past.
+/// - otherwise a 1-D Gaussian move along one direction, like BayesShip's
+///   Fisher proposal: with probability coordinate_fraction along one
+///   parameter's axis, otherwise along one eigen-direction.
 ///
-/// A plain joint (all-parameters-at-once) Gaussian proposal from the full
-/// Fisher covariance does not work for this: at realistic SNR the Fisher
-/// matrix is typically too ill-conditioned (the tightest- and
-/// loosest-constrained directions can differ by many orders of magnitude)
-/// for a joint step to mix, so it predominantly proposes points with
-/// catastrophic likelihood -- the same failure find_fiducial itself avoids
-/// by proposing one parameter at a time, reused here for the same reason.
+/// The eigen-directions start as those of the Fisher matrix at the fiducial,
+/// regularized with the prior widths (Gamma_ii += 1/w_i^2) and decomposed
+/// after scaling it to unit diagonal (D^-1/2 Gamma D^-1/2): the raw matrix's
+/// condition number (~1e13 at realistic SNR) is mostly units, and decomposing
+/// it directly leaves the small eigenvalues as numerical noise. With
+/// empirical_directions, halfway through burn-in they are replaced by the
+/// eigenvectors of the covariance of the burn-in positions so far, which
+/// follow the posterior where the finite-difference Fisher's do not. A joint
+/// all-parameters Gaussian move from the Fisher covariance is not used: with
+/// an ill-conditioned, finite-difference Fisher it mostly proposes
+/// catastrophic points.
+///
+/// Each direction starts at its natural width (1/sqrt(Gamma_ii) along a
+/// parameter axis; 1/sqrt(eigenvalue), or 2.4 sample standard deviations,
+/// along an eigen-direction), never more than half the prior box, and its
+/// width is adapted toward target_acceptance during burn-in, then frozen. A
+/// direction whose starting width is wrong is shrunk by the adaptation
+/// instead of wasting steps.
+///
+/// Tested on an IMRPhenomD injection (dim 8): the spin posterior is far
+/// wider than the Fisher at the fiducial suggests (chi1 std ~0.1), and
+/// one-parameter and Fisher eigen-direction moves alone needed ~10^4-10^5
+/// steps per independent sample. With DE and empirical directions, 600k-step
+/// chains agree on the 0.999 quantile to 5% (10% without DE), and
+/// default-length runs land 0-40% below it.
+///
+/// **Burn-in.** The chain starts at the fiducial, near the posterior mode,
+/// where residuals are smallest. Near the mode, logL_max - logL is
+/// chi^2_dim/2, typically dim/2. Burn-in ends at twice the step at which the
+/// log posterior first falls dim/2 below the largest value seen, bounded by
+/// [min_burn_steps, max_burn_steps].
+///
+/// **Estimate and stopping.** The tolerance comes from a quantile of all
+/// post-burn-in residuals, not a maximum: one outlier barely moves it, and an
+/// unguarded calibration chain can itself wander into a phantom-mode
+/// excursion (a huge one-off residual), which the guard exists to reject and
+/// must not set the tolerance. Convergence: once min_samples post-burn-in
+/// steps exist, every check_interval steps the quantiles of the first and
+/// second halves are compared; the chain stops when they agree within
+/// rel_tol, or at max_steps (result marked not converged).
+///
+/// If a whole check interval has zero accepted proposals, the chain has
+/// frozen where every neighboring step has a non-finite RB log-likelihood (a
+/// genuine RB breakdown region). It stops with a warning, and the result is
+/// marked not converged: the fiducial/test points behind rb_ll's bins may not
+/// be robust.
 ///
 /// rb_ll's own validity_guard_tol() is saved and restored around the
-/// calibration run (temporarily set large enough to never reject, so every
+/// calibration (temporarily set large enough to never reject, so every
 /// step's residual is recorded); call rb_ll.set_validity_guard_tol() yourself
-/// with the returned value once you're satisfied with it.
+/// with the returned tol.
 ///
 /// \param rb_ll            RB likelihood to calibrate against.
 /// \param model            Supplies param_map, prior, and fisher (the same
 /// GWModel bundle find_fiducial takes).
 /// \param fiducial_params  Chain starting point (typically find_fiducial's
 /// map_params_out).
-/// \param stage_steps      Gibbs steps per stage.
-/// \param max_stages       Upper bound on stages run.
-/// \param plateau_rel_tol  Stop once the running max residual grows by less
-/// than this fraction between consecutive stages.
-/// \param safety_margin    Returned tol = safety_margin * plateaued max
-/// residual.
-///
-/// \return Recommended validity_guard_tol.
-double calibrate_validity_guard_tol(
+/// \param opts             See ValidityGuardCalibrationOptions.
+ValidityGuardCalibration calibrate_validity_guard_tol(
     gw_likelihoods::RelativeBinning::RelativeBinningBisectionPolarizationsLikelihood& rb_ll,
     const GWModel& model, const VECDBL& fiducial_params,
-    int stage_steps = 20000, int max_stages = 15,
-    double plateau_rel_tol = 0.05, double safety_margin = 10.0);
+    const ValidityGuardCalibrationOptions& opts = {});
 
 /// @brief Generates deterministic candidate points along each parameter's
 /// own Fisher axis at @p fiducial_params, for use as additional RB
@@ -403,8 +474,8 @@ double calibrate_validity_guard_tol(
 /// w_i the prior width) so a weakly-constrained direction gets a sensibly
 /// bounded sigma_i (<= w_i) instead of an unbounded one whose candidate
 /// would otherwise just be silently dropped by the prior check below --
-/// unlike find_fiducial/calibrate_validity_guard_tol, this function has no
-/// separate min(sigma, 0.5*prior_width) clip to fall back on.
+/// unlike find_fiducial, this function has no separate
+/// min(sigma, 0.5*prior_width) clip to fall back on.
 ///
 /// An earlier version of this function used the Fisher matrix's full
 /// eigen-decomposition instead of per-parameter axes, to also cover
@@ -416,9 +487,11 @@ double calibrate_validity_guard_tol(
 /// terms, not real degeneracies, giving some eigenvectors an astronomically
 /// large (physically meaningless) implied sigma -- whitening by each
 /// parameter's own diagonal scale first did not fix this. Per-parameter
-/// axes reuse the exact diagonal-only formula find_fiducial and
-/// calibrate_validity_guard_tol already rely on, which is numerically sane
-/// for this same matrix, at the cost of not covering correlated directions.
+/// axes reuse the exact diagonal-only formula find_fiducial relies on,
+/// which is numerically sane for this same matrix, at the cost of not
+/// covering correlated directions. (calibrate_validity_guard_tol does use
+/// eigen-directions, but only as proposal directions whose widths it adapts,
+/// so a noise-dominated eigenvalue costs it nothing.)
 ///
 /// A candidate is dropped (not clipped) if @p model's prior rejects it:
 /// BHBPriorFn's non-rectangular mass/spin constraints mean an axis-aligned

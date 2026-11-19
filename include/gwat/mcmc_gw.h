@@ -317,22 +317,31 @@ void find_fiducial(const GWModel& model, const VECDBL& initial_params,
                    std::vector<double>& map_params_out,
                    std::vector<double>& final_params_out);
 
-/// Settings for calibrate_validity_guard_tol(). The defaults suit an
+/// Settings for @ref calibrate_validity_guard_tol(). The defaults suit an
 /// expensive waveform (tens of ms per call): typically a few 10^4 steps.
 struct ValidityGuardCalibrationOptions {
-  /// Hard cap on chain steps (burn-in included).
+  /// Number of chains. They share the DE history and are stepped in rounds
+  /// of check_interval steps, in parallel on n_threads threads.
+  int n_chains = 1;
+  /// Threads the chains run on; 0 means one per chain. The result does not
+  /// depend on it.
+  int n_threads = 0;
+  /// Hard cap on each chain's steps (burn-in included).
   int max_steps = 200000;
-  /// Burn-in bounds. 0 for min_burn_steps means 800 * dim.
+  /// Each chain's burn-in bounds. 0 for min_burn_steps means 800 * dim.
   int min_burn_steps = 0;
   int max_burn_steps = 50000;
-  /// Post-burn-in steps required before convergence is tested.
+  /// Post-burn-in steps, summed over the chains, required before
+  /// convergence is tested.
   int min_samples = 20000;
   /// Steps between convergence tests (and progress lines).
   int check_interval = 2000;
   /// Quantile of the post-burn-in residuals the tolerance is based on.
   double quantile = 0.999;
-  /// Converged once the quantiles of the two halves of the post-burn-in
-  /// residuals agree to this relative tolerance.
+  /// Converged once the quantiles of two halves of the post-burn-in
+  /// residuals agree to this relative tolerance: the first and second half
+  /// of the steps for one chain, the first and second half of the chains
+  /// for several.
   double rel_tol = 0.1;
   /// Returned tol = margin * quantile.
   double margin = 5.0;
@@ -351,21 +360,26 @@ struct ValidityGuardCalibrationOptions {
   /// Acceptance rate each direction's step width is adapted toward during
   /// burn-in (0.44 is optimal for a 1-D Gaussian random walk).
   double target_acceptance = 0.44;
-  /// gsl RNG seed (0 is gsl's default seed).
+  /// gsl RNG seed of chain 0 (0 is gsl's default seed); chain c uses
+  /// seed + c * 2654435761.
   unsigned long seed = 0;
-  /// If non-empty, every step is written to this CSV file.
+  /// If non-empty, every step of every chain is written to this CSV file.
   std::string trace_path;
 };
 
 /// What calibrate_validity_guard_tol() found.
 struct ValidityGuardCalibration {
   double tol = 0;                // margin * quantile_residual
-  double quantile_residual = 0;  // over all post-burn-in steps
+  double quantile_residual = 0;  // over all post-burn-in steps of all chains
+  /// The two halves of the convergence test (steps for one chain, chains for
+  /// several), at the last test.
   double quantile_first_half = 0, quantile_second_half = 0;
   double max_residual = 0;       // largest post-burn-in residual
   double fiducial_residual = 0;
-  int burn_steps = 0;
-  int samples = 0;               // post-burn-in steps
+  int n_chains = 1;
+  int steps = 0;                 // steps per chain, burn-in included
+  int burn_steps = 0;            // longest burn-in of any chain
+  int samples = 0;               // post-burn-in steps, all chains
   double acceptance = 0;         // post-burn-in acceptance rate
   bool converged = false;        // false: stopped at max_steps or froze
   std::string stop_reason;
@@ -375,9 +389,9 @@ struct ValidityGuardCalibration {
 /// RelativeBinningBisectionPolarizationsLikelihood, specific to the given
 /// injection/Fisher matrix, instead of hardcoding a cross-injection constant.
 ///
-/// Runs a Metropolis chain on the RB posterior (RB log-likelihood + the
-/// model's prior) from @p fiducial_params, records rb_ll's guard residual
-/// (last_guard_residual()) at every step after burn-in, and returns
+/// Runs one or more Metropolis chains on the RB posterior (RB log-likelihood
+/// + the model's prior) from @p fiducial_params, records rb_ll's guard
+/// residual at every step after burn-in, and returns
 /// margin * (a high quantile of those residuals).
 ///
 /// **Proposal.** Three kinds of Metropolis move:
@@ -429,15 +443,45 @@ struct ValidityGuardCalibration {
 /// unguarded calibration chain can itself wander into a phantom-mode
 /// excursion (a huge one-off residual), which the guard exists to reject and
 /// must not set the tolerance. Convergence: once min_samples post-burn-in
-/// steps exist, every check_interval steps the quantiles of the first and
-/// second halves are compared; the chain stops when they agree within
-/// rel_tol, or at max_steps (result marked not converged).
+/// steps exist, every check_interval steps the quantiles of two halves are
+/// compared; the calibration stops when they agree within rel_tol, or at
+/// max_steps (result marked not converged).
 ///
-/// If a whole check interval has zero accepted proposals, the chain has
-/// frozen where every neighboring step has a non-finite RB log-likelihood (a
-/// genuine RB breakdown region). It stops with a warning, and the result is
-/// marked not converged: the fiducial/test points behind rb_ll's bins may not
-/// be robust.
+/// **Several chains** (n_chains > 1). The residuals' upper tail comes from
+/// rare excursions that one chain revisits only every ~10^4 steps (EFPE): a
+/// single chain can spend its first few 10^4 steps where residuals are small
+/// and pass its own split-half test there. Independent chains explore the
+/// tail independently, and run in parallel, so the same number of samples
+/// takes 1/n_chains of the time (burn-in is still paid by every chain).
+/// - Chain 0 starts at the fiducial. Chain c > 0 starts at a draw from the
+///   Gaussian of the Fisher at the fiducial, accepted only if its log
+///   posterior is within dim of the fiducial's (each 100 failed draws halve
+///   the draw's scale; after 1000 the chain starts at the fiducial).
+/// - Every chain has its own RNG, proposal widths, burn-in and empirical
+///   directions. The DE history is shared: a DE move draws from every
+///   chain's history up to the start of the current round, plus its own
+///   since, so jumps cover the region all chains have explored.
+/// - The chains step in rounds of check_interval steps. After each round,
+///   the new history, trace rows and messages are merged in chain order,
+///   so the result depends on the seed and n_chains, not on n_threads or
+///   thread timing.
+/// - Convergence needs every chain past burn-in, and compares the quantile
+///   of the first n_chains/2 chains' residuals with that of the rest,
+///   instead of the first and second halves of the steps: two groups of
+///   independent chains are unlikely to both miss the tail.
+/// With n_chains = 1 the calibration is the single chain described above,
+/// step for step.
+///
+/// If a whole check interval has zero accepted proposals in any chain, that
+/// chain has frozen where every neighboring step has a non-finite RB
+/// log-likelihood (a genuine RB breakdown region). The calibration stops with
+/// a warning, and the result is marked not converged: the fiducial/test
+/// points behind rb_ll's bins may not be robust.
+///
+/// rb_ll is called from several threads at once with n_threads > 1, through
+/// its thread-safe log_likelihood(params, guard) overload; the waveform
+/// generator and the model's prior must be thread-safe, as for BayesShip's
+/// threaded sampling.
 ///
 /// rb_ll's own validity_guard_tol() is saved and restored around the
 /// calibration (temporarily set large enough to never reject, so every

@@ -7,12 +7,15 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <exception>
 #include <limits>
+#include <memory>
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_matrix.h>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 
 #include "detector_util.h"
 #include "fisher.h"
@@ -2600,6 +2603,41 @@ double residual_quantile(std::vector<double> v, double p) {
   std::nth_element(v.begin(), v.begin() + k, v.end());
   return v[k];
 }
+
+// One 1-D proposal direction of a calibration chain.
+struct CalibDirection {
+  std::vector<double> v;  // raw-parameter direction
+  double sigma = 0;       // current step width along v
+  double sigma_max = 0;   // half the prior box along v
+  long proposed = 0, accepted = 0;
+  bool eigen = false;
+};
+
+// One calibration chain. Everything but the DE history is the chain's own,
+// so the chains of a round can step concurrently.
+struct CalibChain {
+  gsl_rng* rng = nullptr;
+  std::vector<double> current;
+  double logL = 0, lp = 0, resid = 0;
+  std::vector<CalibDirection> dirs;
+  CalibDirection de_moves;  // acceptance bookkeeping for DE moves only
+  double max_log_post = 0;
+  int crossing_step = -1;  // first step dim/2 below the best log posterior
+  int burn_end = -1;       // decided once crossing_step is known
+  int burn_steps = 0;      // set when burn-in ends
+  bool empirical_done = false;
+  std::vector<std::vector<double>> burn_positions;
+  std::vector<double> residuals;
+  long sample_accepted = 0, round_accepted = 0;
+  // Produced during a round, merged in chain order after it.
+  std::vector<std::vector<double>> new_history;
+  std::ostringstream trace, log;
+  std::exception_ptr error;
+
+  ~CalibChain() {
+    if (rng) gsl_rng_free(rng);
+  }
+};
 }  // namespace
 
 ValidityGuardCalibration calibrate_validity_guard_tol(
@@ -2613,6 +2651,9 @@ ValidityGuardCalibration calibrate_validity_guard_tol(
   const auto names = pmap.names();
   const int min_burn = opts.min_burn_steps > 0 ? opts.min_burn_steps : 800 * dim;
   const int max_burn = std::max(min_burn, opts.max_burn_steps);
+  const int n_chains = std::max(1, opts.n_chains);
+  const int n_threads =
+      std::max(1, std::min(n_chains, opts.n_threads > 0 ? opts.n_threads : n_chains));
 
   std::vector<double> prior_widths(dim, 1.0);
   for (const auto& kv : pmap.specs()) {
@@ -2628,18 +2669,11 @@ ValidityGuardCalibration calibrate_validity_guard_tol(
   model.fisher->compute_Fisher(fisher_mat.data(), fiducial_params.data());
   gw_fishers::apply_prior_regularization(fisher_mat.data(), pmap);
 
-  // Proposal directions: each parameter's axis, then the eigenvectors of the
-  // Fisher scaled to unit diagonal (C = D^-1/2 Gamma D^-1/2). Along
-  // eigenvector u_k of C (eigenvalue mu_k) the raw-parameter step is
-  // z / sqrt(mu_k) * D^-1/2 u_k.
-  struct Direction {
-    std::vector<double> v;  // raw-parameter direction
-    double sigma = 0;       // current step width along v
-    double sigma_max = 0;   // half the prior box along v
-    long proposed = 0, accepted = 0;
-    bool eigen = false;
-  };
-  std::vector<Direction> dirs;
+  // Proposal directions (each chain starts from a copy): each parameter's
+  // axis, then the eigenvectors of the Fisher scaled to unit diagonal
+  // (C = D^-1/2 Gamma D^-1/2). Along eigenvector u_k of C (eigenvalue mu_k)
+  // the raw-parameter step is z / sqrt(mu_k) * D^-1/2 u_k.
+  std::vector<CalibDirection> dirs0;
   std::vector<double> d(dim);
   for (int i = 0; i < dim; i++) {
     const double gii = fisher_mat[i][i];
@@ -2652,12 +2686,12 @@ ValidityGuardCalibration calibrate_validity_guard_tol(
     return lim;
   };
   for (int i = 0; i < dim; i++) {
-    Direction dir;
+    CalibDirection dir;
     dir.v.assign(dim, 0.0);
     dir.v[i] = 1.0;
     dir.sigma_max = box_limit(dir.v);
     dir.sigma = std::min(1.0 / d[i], dir.sigma_max);
-    dirs.push_back(dir);
+    dirs0.push_back(dir);
   }
   int n_eigen = 0;
   {
@@ -2673,7 +2707,7 @@ ValidityGuardCalibration calibrate_validity_guard_tol(
     if (status == 0) {
       for (int k = 0; k < dim; k++) {
         const double mu_k = gsl_vector_get(mu, k);
-        Direction dir;
+        CalibDirection dir;
         dir.eigen = true;
         dir.v.resize(dim);
         for (int i = 0; i < dim; i++) dir.v[i] = gsl_matrix_get(U, i, k) / d[i];
@@ -2682,7 +2716,7 @@ ValidityGuardCalibration calibrate_validity_guard_tol(
         // limit; the adaptation then finds its real width.
         dir.sigma = mu_k > 0.0 ? std::min(1.0 / std::sqrt(mu_k), dir.sigma_max)
                                : dir.sigma_max;
-        dirs.push_back(dir);
+        dirs0.push_back(dir);
         n_eigen++;
       }
     } else {
@@ -2695,12 +2729,15 @@ ValidityGuardCalibration calibrate_validity_guard_tol(
   }
   const double coord_frac = n_eigen > 0 ? opts.coordinate_fraction : 1.0;
 
-  // Evaluates logPrior, RB logL, and the guard residual at theta in one call.
-  bayesship::positionInfo pos_tmp(dim);
-  auto eval = [&](const std::vector<double>& theta, double& logL_out,
-                  double& resid_out) -> double {
-    for (int i = 0; i < dim; i++) pos_tmp.parameters[i] = theta[i];
-    const double lp = model.prior->eval(&pos_tmp, 0);
+  // Evaluates logPrior, RB logL, and the guard residual at theta in one
+  // call. Thread-safe: pos is the caller's, and the residual comes back
+  // through log_likelihood's GuardCheck, not rb_ll's shared last_guard_*().
+  using RBLikelihood =
+      gw_likelihoods::RelativeBinning::RelativeBinningBisectionPolarizationsLikelihood;
+  auto eval = [&](const std::vector<double>& theta, bayesship::positionInfo& pos,
+                  double& logL_out, double& resid_out) -> double {
+    for (int i = 0; i < dim; i++) pos.parameters[i] = theta[i];
+    const double lp = model.prior->eval(&pos, 0);
     if (!std::isfinite(lp)) {  // outside the prior: no waveform needed
       logL_out = -std::numeric_limits<double>::infinity();
       resid_out = std::numeric_limits<double>::quiet_NaN();
@@ -2708,254 +2745,412 @@ ValidityGuardCalibration calibrate_validity_guard_tol(
     }
     gen_params_base<double> gp;
     pmap.to_gen_params(theta.data(), gp);
-    logL_out = rb_ll.log_likelihood(&gp);  // populates last_guard_residual()
-    resid_out = rb_ll.last_guard_residual();
+    RBLikelihood::GuardCheck guard;
+    logL_out = rb_ll.log_likelihood(&gp, &guard);
+    resid_out = guard.residual;
     return lp;
   };
 
-  // Must be finite (not kInf) so check_validity() actually runs every call,
-  // but large enough to never reject during calibration; restored below.
-  const double original_tol = rb_ll.validity_guard_tol();
+  // Must be finite (not kInf) so the guard check actually runs every call,
+  // but large enough to never reject during calibration; restored on return
+  // or exception.
+  struct TolRestore {
+    RBLikelihood& ll;
+    double tol;
+    ~TolRestore() { ll.set_validity_guard_tol(tol); }
+  } tol_restore{rb_ll, rb_ll.validity_guard_tol()};
   rb_ll.set_validity_guard_tol(1.0e300);
 
   ValidityGuardCalibration res;
-  std::vector<double> current = fiducial_params;
-  double current_logL = 0.0, current_resid = 0.0;
-  double current_lp = eval(current, current_logL, current_resid);
-  res.fiducial_residual = current_resid;
-  if (!std::isfinite(current_lp + current_logL)) {
-    rb_ll.set_validity_guard_tol(original_tol);
+  res.n_chains = n_chains;
+  bayesship::positionInfo fid_pos(dim);
+  double fid_logL = 0.0, fid_resid = 0.0;
+  const double fid_lp = eval(fiducial_params, fid_pos, fid_logL, fid_resid);
+  res.fiducial_residual = fid_resid;
+  if (!std::isfinite(fid_lp + fid_logL))
     throw std::runtime_error(
         "calibrate_validity_guard_tol: the fiducial has a non-finite log "
         "posterior");
+  const double fid_log_post = fid_lp + fid_logL;
+
+  std::vector<std::unique_ptr<CalibChain>> chains;
+  for (int c = 0; c < n_chains; c++) {
+    chains.emplace_back(new CalibChain);
+    CalibChain& ch = *chains.back();
+    ch.rng = gsl_rng_alloc(gsl_rng_default);
+    gsl_rng_set(ch.rng, opts.seed + static_cast<unsigned long>(c) * 2654435761UL);
+    ch.dirs = dirs0;
+    ch.current = fiducial_params;
+    ch.logL = fid_logL;
+    ch.lp = fid_lp;
+    ch.resid = fid_resid;
+    ch.max_log_post = fid_log_post;
+    ch.trace << std::setprecision(10);
   }
+  auto rethrow_chain_error = [&]() {
+    for (const auto& ch : chains)
+      if (ch->error) std::rethrow_exception(ch->error);
+  };
+  auto chain_prefix = [&](int c) {
+    return n_chains > 1 ? "chain " + std::to_string(c) + ": " : std::string();
+  };
+  // Prints what the chains logged during a round, in chain order.
+  auto flush_chain_logs = [&]() {
+    for (auto& ch : chains) {
+      std::cout << ch->log.str();
+      ch->log.str("");
+    }
+  };
 
   std::ofstream trace;
   if (!opts.trace_path.empty()) {
     trace.open(opts.trace_path);
     if (!trace)
       std::cout << tag << "WARNING: cannot write " << opts.trace_path << "\n";
-    trace << "step,burn_in,move,direction,accepted,logL,logPrior,residual";
+    trace << "chain,step,burn_in,move,direction,accepted,logL,logPrior,residual";
     for (const auto& name : names) trace << ',' << name;
     trace << '\n';
-    trace << std::setprecision(10);
   }
 
-  std::cout << tag << "moves: " << 100 * opts.de_fraction
-            << "% differential evolution, otherwise " << dim << " parameter-axis and "
-            << n_eigen << " eigen-direction moves; burn-in " << min_burn << "-" << max_burn
+  std::cout << tag << n_chains << (n_chains > 1 ? " chains" : " chain") << " on "
+            << n_threads << (n_threads > 1 ? " threads" : " thread") << "; moves: "
+            << 100 * opts.de_fraction << "% differential evolution, otherwise "
+            << dim << " parameter-axis and " << n_eigen
+            << " eigen-direction moves; burn-in " << min_burn << "-" << max_burn
             << " steps, then at least " << opts.min_samples
             << " samples; tol = " << opts.margin << " x the " << opts.quantile
-            << " quantile; at most " << opts.max_steps << " steps\n";
+            << " quantile; at most " << opts.max_steps
+            << (n_chains > 1 ? " steps per chain\n" : " steps\n");
 
-  gsl_rng* rng = gsl_rng_alloc(gsl_rng_default);
-  gsl_rng_set(rng, opts.seed);
+  // Chains 1..n-1 start at draws from the Fisher's Gaussian at the fiducial,
+  // along its eigen-directions (parameter axes if the decomposition failed),
+  // within dim of the fiducial's log posterior.
+  if (n_chains > 1) {
+    const int first_dir = n_eigen > 0 ? dim : 0;
+    const int n_draw_dirs = n_eigen > 0 ? n_eigen : dim;
+#pragma omp parallel for num_threads(n_threads) schedule(dynamic, 1)
+    for (int c = 1; c < n_chains; c++) {
+      CalibChain& ch = *chains[c];
+      try {
+        bayesship::positionInfo pos(dim);
+        std::vector<double> x(dim);
+        double scale = 1.0;
+        bool found = false;
+        for (int t = 0; t < 1000 && !found; t++) {
+          if (t > 0 && t % 100 == 0) scale *= 0.5;
+          x = fiducial_params;
+          for (int k = first_dir; k < first_dir + n_draw_dirs; k++) {
+            const double z = gsl_ran_gaussian(ch.rng, scale * dirs0[k].sigma);
+            for (int i = 0; i < dim; i++) x[i] += z * dirs0[k].v[i];
+          }
+          double logL = 0.0, resid = 0.0;
+          const double lp = eval(x, pos, logL, resid);
+          if (std::isfinite(lp + logL) && lp + logL >= fid_log_post - dim) {
+            found = true;
+            ch.current = x;
+            ch.logL = logL;
+            ch.lp = lp;
+            ch.resid = resid;
+            ch.max_log_post = lp + logL;
+            ch.log << tag << chain_prefix(c) << "starts "
+                   << fid_log_post - (lp + logL)
+                   << " below the fiducial's log posterior (draw " << t + 1 << ")\n";
+          }
+        }
+        if (!found)
+          ch.log << tag << chain_prefix(c) << "WARNING: no draw within " << dim
+                 << " of the fiducial's log posterior in 1000 tries; starting at "
+                    "the fiducial\n";
+      } catch (...) {
+        ch.error = std::current_exception();
+      }
+    }
+    rethrow_chain_error();
+    flush_chain_logs();
+  }
 
-  double max_log_post = current_logL + current_lp;
-  int crossing_step = -1;  // first step dim/2 below the best log posterior
-  int burn_end = -1;       // decided once crossing_step is known
-  std::vector<double> residuals;
-  residuals.reserve(std::min(opts.max_steps, 1 << 20));
-  long interval_accepted = 0, sample_accepted = 0;
-  std::vector<double> proposal(dim);
-
-  std::vector<std::vector<double>> burn_positions;
-  bool empirical_done = false;
-  // DE history: every de_thin-th position, from the start
+  // DE history: every de_thin-th position of every chain, from the start.
+  // Read-only during a round; each chain's new positions are appended after
+  // it.
   std::vector<std::vector<double>> history;
-  Direction de_moves;  // acceptance bookkeeping for DE moves only
 
-  int step = 0;
-  for (; step < opts.max_steps; step++) {
-    const bool burning = burn_end < 0 || step < burn_end;
+  // Steps chain c (number c) from step `from` to step `to`.
+  auto run_steps = [&](CalibChain& ch, int c, int from, int to) {
+    bayesship::positionInfo pos(dim);
+    std::vector<double> proposal(dim);
+    const std::string cp = chain_prefix(c);
+    // The DE history this chain sees: everyone's up to this round, then its
+    // own since.
+    auto hist = [&](size_t i) -> const std::vector<double>& {
+      return i < history.size() ? history[i] : ch.new_history[i - history.size()];
+    };
 
-    // Differential evolution (DE): x + gamma * (h_a - h_b) for two past
-    // positions h_a != h_b. Symmetric (swapping a and b reverses the move),
-    // and its jumps take the shape and size of the region explored so far.
-    // Otherwise a 1-D move along one direction.
-    int k = -1;  // direction index; -1 for a DE move
-    if (history.size() >= 2 * static_cast<size_t>(dim) &&
-        gsl_rng_uniform(rng) < opts.de_fraction) {
-      const size_t a = gsl_rng_uniform_int(rng, history.size());
-      size_t b = gsl_rng_uniform_int(rng, history.size() - 1);
-      if (b >= a) b++;
-      // gamma = 1 now and then lets the chain jump between separated regions
-      double gamma = gsl_rng_uniform(rng) < 0.1 ? 1.0 : 2.38 / std::sqrt(2.0 * dim);
-      gamma *= 1.0 + 0.1 * gsl_ran_gaussian(rng, 1.0);
-      for (int i = 0; i < dim; i++)
-        proposal[i] = current[i] + gamma * (history[a][i] - history[b][i]);
-    } else {
-      if (gsl_rng_uniform(rng) < coord_frac)
-        k = static_cast<int>(gsl_rng_uniform_int(rng, dim));
-      else
-        k = dim + static_cast<int>(gsl_rng_uniform_int(rng, n_eigen));
-      const double z = gsl_ran_gaussian(rng, dirs[k].sigma);
-      for (int i = 0; i < dim; i++) proposal[i] = current[i] + z * dirs[k].v[i];
-    }
-    Direction& dir = k >= 0 ? dirs[k] : de_moves;
+    for (int step = from; step < to; step++) {
+      const bool burning = ch.burn_end < 0 || step < ch.burn_end;
 
-    double prop_logL = 0.0, prop_resid = 0.0;
-    const double prop_lp = eval(proposal, prop_logL, prop_resid);
-    bool accept = false;
-    if (std::isfinite(prop_lp) && std::isfinite(prop_logL)) {
-      const double log_alpha = (prop_logL + prop_lp) - (current_logL + current_lp);
-      accept = log_alpha >= 0.0 || std::log(gsl_rng_uniform(rng)) < log_alpha;
-    }
-    dir.proposed++;
-    if (accept) {
-      dir.accepted++;
-      current.swap(proposal);
-      current_logL = prop_logL;
-      current_lp = prop_lp;
-      current_resid = prop_resid;
-      interval_accepted++;
-    }
-
-    if (burning) {
-      // Robbins-Monro adaptation of this direction's width.
-      if (k >= 0) {
-        const double gain = 1.0 / std::sqrt(static_cast<double>(dir.proposed));
-        dir.sigma *= std::exp(gain * ((accept ? 1.0 : 0.0) - opts.target_acceptance));
-        dir.sigma = std::min(dir.sigma, dir.sigma_max);
+      // Differential evolution (DE): x + gamma * (h_a - h_b) for two past
+      // positions h_a != h_b. Symmetric (swapping a and b reverses the move),
+      // and its jumps take the shape and size of the region explored so far.
+      // Otherwise a 1-D move along one direction.
+      int k = -1;  // direction index; -1 for a DE move
+      const size_t n_hist = history.size() + ch.new_history.size();
+      if (n_hist >= 2 * static_cast<size_t>(dim) &&
+          gsl_rng_uniform(ch.rng) < opts.de_fraction) {
+        const size_t a = gsl_rng_uniform_int(ch.rng, n_hist);
+        size_t b = gsl_rng_uniform_int(ch.rng, n_hist - 1);
+        if (b >= a) b++;
+        // gamma = 1 now and then lets the chain jump between separated regions
+        double gamma =
+            gsl_rng_uniform(ch.rng) < 0.1 ? 1.0 : 2.38 / std::sqrt(2.0 * dim);
+        gamma *= 1.0 + 0.1 * gsl_ran_gaussian(ch.rng, 1.0);
+        const std::vector<double>& ha = hist(a);
+        const std::vector<double>& hb = hist(b);
+        for (int i = 0; i < dim; i++)
+          proposal[i] = ch.current[i] + gamma * (ha[i] - hb[i]);
+      } else {
+        if (gsl_rng_uniform(ch.rng) < coord_frac)
+          k = static_cast<int>(gsl_rng_uniform_int(ch.rng, dim));
+        else
+          k = dim + static_cast<int>(gsl_rng_uniform_int(ch.rng, n_eigen));
+        const double z = gsl_ran_gaussian(ch.rng, ch.dirs[k].sigma);
+        for (int i = 0; i < dim; i++)
+          proposal[i] = ch.current[i] + z * ch.dirs[k].v[i];
       }
-      const double log_post = current_logL + current_lp;
-      max_log_post = std::max(max_log_post, log_post);
-      if (crossing_step < 0 && log_post <= max_log_post - 0.5 * dim) {
-        crossing_step = step + 1;
-        burn_end = std::min(max_burn, std::max(min_burn, 2 * crossing_step));
-      }
-      if (burn_end < 0 && step + 1 >= max_burn) burn_end = max_burn;
+      CalibDirection& dir = k >= 0 ? ch.dirs[k] : ch.de_moves;
 
-      // Empirical directions: positions from the second quarter of burn-in
-      // give the posterior's covariance; halfway through burn-in its
-      // eigenvectors replace the Fisher's, and the second half adapts their
-      // widths.
-      if (opts.empirical_directions && n_eigen > 0 && burn_end > 0 &&
-          !empirical_done) {
-        if (step + 1 > burn_end / 4) burn_positions.push_back(current);
-        if (step + 1 >= burn_end / 2) {
-          empirical_done = true;
-          const int n = static_cast<int>(burn_positions.size());
-          if (n >= 2 * dim) {
-            std::vector<double> mean(dim, 0.0);
-            for (const auto& x : burn_positions)
-              for (int i = 0; i < dim; i++) mean[i] += d[i] * x[i] / n;
-            gsl_matrix* cov = gsl_matrix_calloc(dim, dim);
-            for (const auto& x : burn_positions)
-              for (int i = 0; i < dim; i++)
-                for (int j = 0; j < dim; j++)
-                  *gsl_matrix_ptr(cov, i, j) += (d[i] * x[i] - mean[i]) *
-                                                (d[j] * x[j] - mean[j]) / (n - 1);
-            gsl_vector* lam = gsl_vector_alloc(dim);
-            gsl_matrix* U = gsl_matrix_alloc(dim, dim);
-            gsl_eigen_symmv_workspace* ws = gsl_eigen_symmv_alloc(dim);
-            const int status = gsl_eigen_symmv(cov, lam, U, ws);
-            gsl_eigen_symmv_free(ws);
-            if (status == 0) {
-              for (int k = 0; k < n_eigen; k++) {
-                Direction& dk = dirs[dim + k];
-                for (int i = 0; i < dim; i++) dk.v[i] = gsl_matrix_get(U, i, k) / d[i];
-                dk.sigma_max = box_limit(dk.v);
-                const double var = gsl_vector_get(lam, k);
-                // 2.4 sigma is the optimal 1-D random-walk step
-                dk.sigma = var > 0.0 ? std::min(2.4 * std::sqrt(var), dk.sigma_max)
-                                     : dk.sigma_max;
-                dk.proposed = dk.accepted = 0;
+      double prop_logL = 0.0, prop_resid = 0.0;
+      const double prop_lp = eval(proposal, pos, prop_logL, prop_resid);
+      bool accept = false;
+      if (std::isfinite(prop_lp) && std::isfinite(prop_logL)) {
+        const double log_alpha = (prop_logL + prop_lp) - (ch.logL + ch.lp);
+        accept = log_alpha >= 0.0 || std::log(gsl_rng_uniform(ch.rng)) < log_alpha;
+      }
+      dir.proposed++;
+      if (accept) {
+        dir.accepted++;
+        ch.current.swap(proposal);
+        ch.logL = prop_logL;
+        ch.lp = prop_lp;
+        ch.resid = prop_resid;
+        ch.round_accepted++;
+      }
+
+      if (burning) {
+        // Robbins-Monro adaptation of this direction's width.
+        if (k >= 0) {
+          const double gain = 1.0 / std::sqrt(static_cast<double>(dir.proposed));
+          dir.sigma *= std::exp(gain * ((accept ? 1.0 : 0.0) - opts.target_acceptance));
+          dir.sigma = std::min(dir.sigma, dir.sigma_max);
+        }
+        const double log_post = ch.logL + ch.lp;
+        ch.max_log_post = std::max(ch.max_log_post, log_post);
+        if (ch.crossing_step < 0 && log_post <= ch.max_log_post - 0.5 * dim) {
+          ch.crossing_step = step + 1;
+          ch.burn_end = std::min(max_burn, std::max(min_burn, 2 * ch.crossing_step));
+        }
+        if (ch.burn_end < 0 && step + 1 >= max_burn) ch.burn_end = max_burn;
+
+        // Empirical directions: positions from the second quarter of burn-in
+        // give the posterior's covariance; halfway through burn-in its
+        // eigenvectors replace the Fisher's, and the second half adapts their
+        // widths.
+        if (opts.empirical_directions && n_eigen > 0 && ch.burn_end > 0 &&
+            !ch.empirical_done) {
+          if (step + 1 > ch.burn_end / 4) ch.burn_positions.push_back(ch.current);
+          if (step + 1 >= ch.burn_end / 2) {
+            ch.empirical_done = true;
+            const int n = static_cast<int>(ch.burn_positions.size());
+            if (n >= 2 * dim) {
+              std::vector<double> mean(dim, 0.0);
+              for (const auto& x : ch.burn_positions)
+                for (int i = 0; i < dim; i++) mean[i] += d[i] * x[i] / n;
+              gsl_matrix* cov = gsl_matrix_calloc(dim, dim);
+              for (const auto& x : ch.burn_positions)
+                for (int i = 0; i < dim; i++)
+                  for (int j = 0; j < dim; j++)
+                    *gsl_matrix_ptr(cov, i, j) += (d[i] * x[i] - mean[i]) *
+                                                  (d[j] * x[j] - mean[j]) / (n - 1);
+              gsl_vector* lam = gsl_vector_alloc(dim);
+              gsl_matrix* U = gsl_matrix_alloc(dim, dim);
+              gsl_eigen_symmv_workspace* ws = gsl_eigen_symmv_alloc(dim);
+              const int status = gsl_eigen_symmv(cov, lam, U, ws);
+              gsl_eigen_symmv_free(ws);
+              if (status == 0) {
+                for (int e = 0; e < n_eigen; e++) {
+                  CalibDirection& de = ch.dirs[dim + e];
+                  for (int i = 0; i < dim; i++) de.v[i] = gsl_matrix_get(U, i, e) / d[i];
+                  de.sigma_max = box_limit(de.v);
+                  const double var = gsl_vector_get(lam, e);
+                  // 2.4 sigma is the optimal 1-D random-walk step
+                  de.sigma = var > 0.0 ? std::min(2.4 * std::sqrt(var), de.sigma_max)
+                                       : de.sigma_max;
+                  de.proposed = de.accepted = 0;
+                }
+                ch.log << tag << cp << "eigen-directions replaced by those of the "
+                       << "covariance of " << n << " burn-in positions\n";
               }
-              std::cout << tag << "eigen-directions replaced by those of the "
-                        << "covariance of " << n << " burn-in positions\n";
+              gsl_matrix_free(U);
+              gsl_vector_free(lam);
+              gsl_matrix_free(cov);
             }
-            gsl_matrix_free(U);
-            gsl_vector_free(lam);
-            gsl_matrix_free(cov);
-          }
-          burn_positions.clear();
-          burn_positions.shrink_to_fit();
-        }
-      }
-
-      if (burn_end >= 0 && step + 1 >= burn_end) {
-        res.burn_steps = step + 1;
-        std::cout << tag << "burn-in ended after " << res.burn_steps << " steps ("
-                  << (crossing_step > 0
-                          ? "log posterior first fell dim/2 below its maximum at step " +
-                                std::to_string(crossing_step)
-                          : std::string("never fell dim/2 below its maximum; "
-                                        "max_burn_steps reached"))
-                  << ")\n";
-        if (debug) {
-          for (int j = 0; j < static_cast<int>(dirs.size()); j++) {
-            const Direction& dj = dirs[j];
-            std::cerr << "[calib debug] "
-                      << (dj.eigen ? "eigen " + std::to_string(j - dim) : names[j])
-                      << "  sigma=" << dj.sigma << "  sigma_max=" << dj.sigma_max
-                      << "  acceptance=" << (dj.proposed ? double(dj.accepted) / dj.proposed : 0.0)
-                      << " (" << dj.proposed << " proposals)\n";
+            ch.burn_positions.clear();
+            ch.burn_positions.shrink_to_fit();
           }
         }
+
+        if (ch.burn_end >= 0 && step + 1 >= ch.burn_end) {
+          ch.burn_steps = step + 1;
+          ch.log << tag << cp << "burn-in ended after " << ch.burn_steps << " steps ("
+                 << (ch.crossing_step > 0
+                         ? "log posterior first fell dim/2 below its maximum at step " +
+                               std::to_string(ch.crossing_step)
+                         : std::string("never fell dim/2 below its maximum; "
+                                       "max_burn_steps reached"))
+                 << ")\n";
+          if (debug) {
+            for (int j = 0; j < static_cast<int>(ch.dirs.size()); j++) {
+              const CalibDirection& dj = ch.dirs[j];
+              ch.log << "[calib debug] " << cp
+                     << (dj.eigen ? "eigen " + std::to_string(j - dim) : names[j])
+                     << "  sigma=" << dj.sigma << "  sigma_max=" << dj.sigma_max
+                     << "  acceptance="
+                     << (dj.proposed ? double(dj.accepted) / dj.proposed : 0.0)
+                     << " (" << dj.proposed << " proposals)\n";
+            }
+          }
+        }
+      } else {
+        ch.residuals.push_back(ch.resid);
+        if (accept) ch.sample_accepted++;
       }
-    } else {
-      residuals.push_back(current_resid);
-      if (accept) sample_accepted++;
+
+      if ((step + 1) % opts.de_thin == 0) ch.new_history.push_back(ch.current);
+
+      if (trace.is_open()) {
+        ch.trace << c << ',' << step + 1 << ',' << (burning ? 1 : 0) << ','
+                 << (k < 0 ? 2 : dir.eigen ? 1 : 0) << ',' << k << ','
+                 << (accept ? 1 : 0) << ',' << ch.logL << ',' << ch.lp << ','
+                 << ch.resid;
+        for (int i = 0; i < dim; i++) ch.trace << ',' << ch.current[i];
+        ch.trace << '\n';
+      }
     }
+  };
 
-    if ((step + 1) % opts.de_thin == 0) history.push_back(current);
-
-    if (trace.is_open()) {
-      trace << step + 1 << ',' << (burning ? 1 : 0) << ','
-            << (k < 0 ? 2 : dir.eigen ? 1 : 0) << ',' << k << ','
-            << (accept ? 1 : 0) << ','
-            << current_logL << ',' << current_lp << ',' << current_resid;
-      for (int i = 0; i < dim; i++) trace << ',' << current[i];
-      trace << '\n';
+  // Rounds of check_interval steps: every chain takes the round's steps (in
+  // parallel), then the results are merged in chain order, so the outcome
+  // does not depend on the threads or their timing.
+  int step = 0;  // steps taken by each chain
+  while (step < opts.max_steps) {
+    const int round_end = std::min(
+        opts.max_steps, (step / opts.check_interval + 1) * opts.check_interval);
+#pragma omp parallel for num_threads(n_threads) schedule(dynamic, 1)
+    for (int c = 0; c < n_chains; c++) {
+      try {
+        run_steps(*chains[c], c, step, round_end);
+      } catch (...) {
+        chains[c]->error = std::current_exception();
+      }
     }
+    rethrow_chain_error();
+    step = round_end;
 
-    if ((step + 1) % opts.check_interval != 0) continue;
+    for (auto& ch : chains) {
+      history.insert(history.end(), ch->new_history.begin(), ch->new_history.end());
+      ch->new_history.clear();
+      if (trace.is_open()) trace << ch->trace.str();
+      ch->trace.str("");
+    }
+    flush_chain_logs();
+    if (step % opts.check_interval != 0) break;  // max_steps reached
 
-    if (interval_accepted == 0) {
+    std::vector<int> frozen;
+    for (int c = 0; c < n_chains; c++) {
+      if (chains[c]->round_accepted == 0) frozen.push_back(c);
+      chains[c]->round_accepted = 0;
+    }
+    if (!frozen.empty()) {
       std::cout << tag << "WARNING: no proposal accepted in the last "
-                << opts.check_interval << " steps: the chain froze in an RB "
-                   "breakdown region. Stopping; the result is not converged, "
-                   "and the fiducial/test points behind the bins may not be "
-                   "robust.\n";
+                << opts.check_interval << " steps";
+      if (n_chains > 1) {
+        std::cout << " of chain" << (frozen.size() > 1 ? "s" : "");
+        for (int c : frozen) std::cout << ' ' << c;
+      }
+      std::cout << ": the chain froze in an RB breakdown region. Stopping; the "
+                   "result is not converged, and the fiducial/test points behind "
+                   "the bins may not be robust.\n";
       res.stop_reason = "chain froze";
-      step++;
       break;
     }
-    interval_accepted = 0;
 
-    const int n = static_cast<int>(residuals.size());
+    size_t n = 0;
+    int sampling = 0;  // chains past burn-in
+    for (const auto& ch : chains) {
+      n += ch->residuals.size();
+      if (ch->burn_steps > 0) sampling++;
+    }
     if (n == 0) {
-      std::cout << tag << "step " << step + 1 << ": burning in, residual "
-                << current_resid << "\n";
+      if (n_chains == 1)
+        std::cout << tag << "step " << step << ": burning in, residual "
+                  << chains[0]->resid << "\n";
+      else
+        std::cout << tag << "step " << step << ": all " << n_chains
+                  << " chains burning in\n";
       continue;
     }
-    const std::vector<double> first(residuals.begin(), residuals.begin() + n / 2);
-    const std::vector<double> second(residuals.begin() + n / 2, residuals.end());
-    res.quantile_residual = residual_quantile(residuals, opts.quantile);
+
+    // The two halves compared: the first and second half of the steps for
+    // one chain; the first n_chains/2 chains and the rest for several.
+    std::vector<double> all, first, second;
+    all.reserve(n);
+    if (n_chains == 1) {
+      const auto& r = chains[0]->residuals;
+      all = r;
+      first.assign(r.begin(), r.begin() + r.size() / 2);
+      second.assign(r.begin() + r.size() / 2, r.end());
+    } else {
+      for (int c = 0; c < n_chains; c++) {
+        const auto& r = chains[c]->residuals;
+        all.insert(all.end(), r.begin(), r.end());
+        auto& group = c < n_chains / 2 ? first : second;
+        group.insert(group.end(), r.begin(), r.end());
+      }
+    }
+    const double max_r = *std::max_element(all.begin(), all.end());
+    res.quantile_residual = residual_quantile(all, opts.quantile);
+    if (sampling < n_chains) {
+      std::cout << tag << "step " << step << ": " << n << " samples, "
+                << n_chains - sampling << " of " << n_chains
+                << " chains still burning in; quantile " << res.quantile_residual
+                << ", max " << max_r << "\n";
+      continue;
+    }
     res.quantile_first_half = residual_quantile(first, opts.quantile);
     res.quantile_second_half = residual_quantile(second, opts.quantile);
     const double split = std::abs(res.quantile_first_half - res.quantile_second_half) /
                          res.quantile_residual;
-    std::cout << tag << "step " << step + 1 << ": " << n << " samples, quantile "
-              << res.quantile_residual << " (halves " << res.quantile_first_half
-              << ", " << res.quantile_second_half << ", differ by "
-              << 100.0 * split << "%), max "
-              << *std::max_element(residuals.begin(), residuals.end()) << "\n";
-    if (n >= opts.min_samples && split < opts.rel_tol) {
+    std::cout << tag << "step " << step << ": " << n << " samples, quantile "
+              << res.quantile_residual
+              << (n_chains == 1 ? " (halves " : " (chain groups ")
+              << res.quantile_first_half << ", " << res.quantile_second_half
+              << ", differ by " << 100.0 * split << "%), max " << max_r << "\n";
+    if (n >= static_cast<size_t>(opts.min_samples) && split < opts.rel_tol) {
       res.converged = true;
       res.stop_reason = "converged";
-      step++;
       break;
     }
   }
   if (res.stop_reason.empty()) res.stop_reason = "max_steps reached";
 
-  gsl_rng_free(rng);
-  rb_ll.set_validity_guard_tol(original_tol);
-
+  std::vector<double> residuals;
+  long sample_accepted = 0;
+  for (const auto& ch : chains) {
+    residuals.insert(residuals.end(), ch->residuals.begin(), ch->residuals.end());
+    sample_accepted += ch->sample_accepted;
+    res.burn_steps = std::max(res.burn_steps, ch->burn_steps > 0 ? ch->burn_steps : step);
+  }
+  res.steps = step;
   res.samples = static_cast<int>(residuals.size());
-  if (res.burn_steps == 0) res.burn_steps = step;
   if (res.samples > 0) {
     res.quantile_residual = residual_quantile(residuals, opts.quantile);
     res.max_residual = *std::max_element(residuals.begin(), residuals.end());
@@ -2966,17 +3161,24 @@ ValidityGuardCalibration calibrate_validity_guard_tol(
   }
   res.tol = opts.margin * res.quantile_residual;
 
-  std::cout << tag << res.stop_reason << " after " << step << " steps ("
-            << res.burn_steps << " burn-in, " << res.samples
-            << " samples, acceptance " << res.acceptance << "): " << opts.quantile
-            << " quantile " << res.quantile_residual << ", max " << res.max_residual
-            << ", fiducial " << res.fiducial_residual << " -> tol " << res.tol << "\n";
+  std::cout << tag << res.stop_reason << " after " << step << " steps";
+  if (n_chains > 1)
+    std::cout << " per chain (" << n_chains << " chains; burn-in up to "
+              << res.burn_steps << ", ";
+  else
+    std::cout << " (" << res.burn_steps << " burn-in, ";
+  std::cout << res.samples << " samples, acceptance " << res.acceptance << "): "
+            << opts.quantile << " quantile " << res.quantile_residual << ", max "
+            << res.max_residual << ", fiducial " << res.fiducial_residual
+            << " -> tol " << res.tol << "\n";
   if (!res.converged)
     std::cout << tag << "WARNING: not converged (" << res.stop_reason
               << "); treat the tolerance with caution.\n";
   if (res.max_residual > res.tol)
-    std::cout << tag << "NOTE: the chain's largest residual " << res.max_residual
-              << " is above the tolerance; " << std::count_if(residuals.begin(), residuals.end(), [&](double r) { return r > res.tol; })
+    std::cout << tag << "NOTE: the largest residual " << res.max_residual
+              << " is above the tolerance; "
+              << std::count_if(residuals.begin(), residuals.end(),
+                               [&](double r) { return r > res.tol; })
               << " of " << res.samples << " samples would be rejected.\n";
   return res;
 }

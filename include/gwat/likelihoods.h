@@ -266,6 +266,24 @@ class RelativeBinningBisectionPolarizationsLikelihood : public Likelihood {
       double validity_guard_tol = kInf);
 
   double log_likelihood(gen_params_base<double>* params) const override;
+
+  /// What one validity-guard check found: the worst-case per-bin relative
+  /// ratio residual, where it occurred, and whether it exceeded
+  /// validity_guard_tol().
+  struct GuardCheck {
+    double residual = 0.0;
+    int mode = -1;
+    int bin = -1;
+    bool fired = false;
+  };
+
+  /// @brief log_likelihood() that also returns the guard check through
+  /// @p guard (left unchanged when the guard is off), without touching the
+  /// last_guard_*() diagnostics. Safe to call from several threads at once,
+  /// as long as the waveform generator is: the last_guard_*() members are
+  /// shared, so concurrent callers that need the residual must use this.
+  double log_likelihood(gen_params_base<double>* params, GuardCheck* guard) const;
+
   std::vector<VECCPL> generate_modes(const double* theta,
                                      const VECDBL& freqs) const override;
   int detector_number() const override { return 1; }
@@ -368,11 +386,10 @@ class RelativeBinningBisectionPolarizationsLikelihood : public Likelihood {
 
   /// @brief True if the trial waveform's ratio at each bin's interior sample
   /// is consistent (within validity_guard_tol_) with the linear (r0, r1)
-  /// model fit from the bin's edges. Always records the worst-case residual
-  /// found (last_guard_residual_/_mode_/_bin_); last_guard_fired_ is the
-  /// only one of these gated on validity_guard_tol_.
-  bool check_validity(const std::vector<VECCPL>& h_at_bins,
-                      const std::vector<VECCPL>& h_at_centers) const;
+  /// model fit from the bin's edges. Returns the worst-case residual found
+  /// and where; fired is the only field gated on validity_guard_tol_.
+  GuardCheck check_validity(const std::vector<VECCPL>& h_at_bins,
+                            const std::vector<VECCPL>& h_at_centers) const;
 
   std::pair<int, int> find_min_max_indices(const std::vector<VECCPL>& modes);
 

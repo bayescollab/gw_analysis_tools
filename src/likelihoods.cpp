@@ -880,7 +880,8 @@ void RelativeBinningBisectionPolarizationsLikelihood::build_combined_freqs() {
   }
 }
 
-bool RelativeBinningBisectionPolarizationsLikelihood::check_validity(
+RelativeBinningBisectionPolarizationsLikelihood::GuardCheck
+RelativeBinningBisectionPolarizationsLikelihood::check_validity(
     const std::vector<VECCPL>& h_at_bins,
     const std::vector<VECCPL>& h_at_centers) const {
   double worst_resid = 0.0;
@@ -912,11 +913,12 @@ bool RelativeBinningBisectionPolarizationsLikelihood::check_validity(
     }
   }
 
-  last_guard_residual_ = worst_resid;
-  last_guard_mode_ = worst_mode;
-  last_guard_bin_ = worst_bin;
-  last_guard_fired_ = worst_resid > validity_guard_tol_;
-  return !last_guard_fired_;
+  GuardCheck g;
+  g.residual = worst_resid;
+  g.mode = worst_mode;
+  g.bin = worst_bin;
+  g.fired = worst_resid > validity_guard_tol_;
+  return g;
 }
 
 std::vector<VECCPL>
@@ -933,6 +935,19 @@ RelativeBinningBisectionPolarizationsLikelihood::generate_modes(
 
 double RelativeBinningBisectionPolarizationsLikelihood::log_likelihood(
     gen_params_base<double>* params) const {
+  GuardCheck g;
+  const double logL = log_likelihood(params, &g);
+  if (std::isfinite(validity_guard_tol_)) {
+    last_guard_residual_ = g.residual;
+    last_guard_mode_ = g.mode;
+    last_guard_bin_ = g.bin;
+    last_guard_fired_ = g.fired;
+  }
+  return logL;
+}
+
+double RelativeBinningBisectionPolarizationsLikelihood::log_likelihood(
+    gen_params_base<double>* params, GuardCheck* guard) const {
   gen_params_base<double> local_params = *params;
   local_params.f_ref = f_ref_;
   local_params.gmst = gmst_;
@@ -976,7 +991,9 @@ double RelativeBinningBisectionPolarizationsLikelihood::log_likelihood(
                                : CPL(0.);
   }
 
-  if (!check_validity(h_at_bins, h_at_centers)) return -kInf;
+  const GuardCheck g = check_validity(h_at_bins, h_at_centers);
+  if (guard) *guard = g;
+  if (g.fired) return -kInf;
 
   return log_likelihood_at_waveform(h_at_bins);
 }
